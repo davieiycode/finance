@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
   <div class="container">
     <header class="header">
@@ -124,16 +126,19 @@
 
         <div class="form-group">
           <label class="label">Description (HTML/Markdown Ready)</label>
-          <textarea class="textarea" id="transaction-description" placeholder="Write details here... Support for longtext, HTML, or Markdown codes." style="min-height: 160px;"></textarea>
+          <textarea class="textarea" id="transaction-description"
+            placeholder="Write details here... Support for longtext, HTML, or Markdown codes."
+            style="min-height: 160px;"></textarea>
         </div>
       </div>
 
       <!-- Step 2: Accounts -->
       <div class="step-content" id="step-2">
-         <div class="form-group" id="payment-account-group">
+        <div class="form-group" id="payment-account-group">
           <label class="label">Payment Account<span>*</span></label>
           <div class="input-container">
-            <input type="text" class="input" id="payment-account" list="payment-list" placeholder="Select or enter account">
+            <input type="text" class="input" id="payment-account" list="payment-list"
+              placeholder="Select or enter account">
             <datalist id="payment-list">
               <option value="Bank Central Asia (BCA)">Personal Account</option>
               <option value="Cash">Wallet</option>
@@ -145,7 +150,8 @@
         <div class="form-group" id="received-account-group" style="display: none;">
           <label class="label">Received Account<span>*</span></label>
           <div class="input-container">
-            <input type="text" class="input" id="received-account" list="received-list" placeholder="Select or enter account">
+            <input type="text" class="input" id="received-account" list="received-list"
+              placeholder="Select or enter account">
             <datalist id="received-list">
               <option value="Bank Central Asia (BCA)">Personal Account</option>
               <option value="Cash">Wallet</option>
@@ -217,7 +223,8 @@
         <div class="form-group">
           <label class="label">Category<span>*</span></label>
           <div class="input-container">
-            <input type="text" class="input input-with-left-icon" id="category-input" list="category-list" value="Food & Groceries">
+            <input type="text" class="input input-with-left-icon" id="category-input" list="category-list"
+              value="Food & Groceries">
             <span id="category-icon-container" class="input-icon-left">
               <i data-lucide="shopping-cart" style="width: 18px; color: var(--accent);"></i>
             </span>
@@ -337,6 +344,9 @@
               <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
             </div>
           </div>
+          <div id="price-insight"
+            style="margin-top: 0.5rem; font-size: 0.75rem; display: none; align-items: center; gap: 0.35rem; font-weight: 500;">
+          </div>
         </div>
 
         <div class="form-group">
@@ -365,7 +375,8 @@
 
         <div class="form-group">
           <label class="label">Total<span>*</span></label>
-          <div id="calculation-breakdown" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; opacity: 0.8; font-family: monospace;">
+          <div id="calculation-breakdown"
+            style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; opacity: 0.8; font-family: monospace;">
             (0 x Rp 0.00) - Rp 0.00 + Rp 0.00
           </div>
           <div class="total-field">
@@ -379,7 +390,8 @@
         <div class="form-group">
           <label class="label">Receipt</label>
           <div class="input-container">
-            <input type="text" class="input" id="receipt-input" list="receipt-list" value="Indomaret Manisrenggo 01/27/2025 00:00:00">
+            <input type="text" class="input" id="receipt-input" list="receipt-list"
+              value="Indomaret Manisrenggo 01/27/2025 00:00:00">
             <datalist id="receipt-list">
               <option value="Indomaret Manisrenggo 01/27/2025 00:00:00">Main Receipt</option>
               <option value="Starbucks Coffee 03/10/2025">Food Receipt</option>
@@ -389,8 +401,11 @@
 
         <div id="receipt-preview" style="margin-top: 1.5rem; text-align: center;">
           <div class="preview-card" style="display: inline-block; position: relative;">
-            <img id="receipt-img" src="/Users/rafieiy/.gemini/antigravity/brain/8433b4ab-9906-4905-b9b7-e56872277bf6/receipt_thumbnail_mockup_1774474517929.png" style="width: 100%; max-width: 280px; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid var(--border);">
-            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 1rem; border-radius: 0 0 1rem 1rem;">
+            <img id="receipt-img"
+              src="/Users/rafieiy/.gemini/antigravity/brain/8433b4ab-9906-4905-b9b7-e56872277bf6/receipt_thumbnail_mockup_1774474517929.png"
+              style="width: 100%; max-width: 280px; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid var(--border);">
+            <div
+              style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 1rem; border-radius: 0 0 1rem 1rem;">
               <span style="font-size: 0.75rem; color: var(--text-secondary);">Tap to Expand</span>
             </div>
           </div>
@@ -399,7 +414,9 @@
     </form>
   </div>
 
-  <div id="toast-container" style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; align-items: center; width: 100%; max-width: 400px; padding: 0 1rem; pointer-events: none;"></div>
+  <div id="toast-container"
+    style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; align-items: center; width: 100%; max-width: 400px; padding: 0 1rem; pointer-events: none;">
+  </div>
 
   <!-- Confirmation Modal -->
   <div id="confirm-modal" class="modal-backdrop" style="display: none;">
@@ -408,14 +425,102 @@
         <i data-lucide="alert-triangle"></i>
       </div>
       <h3 class="modal-title">Discard changes?</h3>
-      <p class="modal-text">You have unsaved information. Are you sure you want to cancel? This action cannot be undone.</p>
+      <p class="modal-text">You have unsaved information. Are you sure you want to cancel? This action cannot be undone.
+      </p>
       <div class="modal-actions">
         <button id="cancel-discard" class="btn btn-secondary" style="flex: 1;">Keep Editing</button>
-        <button id="confirm-discard" class="btn btn-primary" style="flex: 1; background: var(--danger); border-color: var(--danger);">Yes, Discard</button>
+        <button id="confirm-discard" class="btn btn-primary"
+          style="flex: 1; background: var(--danger); border-color: var(--danger);">Yes, Discard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox-modal" class="modal-backdrop" style="display: none; padding: 2rem;">
+    <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+      <button id="close-lightbox" class="close-btn"
+        style="position: absolute; top: -1.5rem; right: -1.5rem; font-size: 2rem; color: white;">×</button>
+      <img id="lightbox-img" src="" alt="Full Receipt"
+        style="width: 100%; height: 100%; object-fit: contain; border-radius: 1rem; box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+    </div>
+  </div>
+
+  <!-- Transaction Detail View -->
+  <div id="detail-view" class="container" style="display: none; padding: 0;">
+    <header class="header" style="justify-content: center; position: relative;">
+      <button id="close-detail" class="close-btn" style="position: absolute; left: 1rem;">×</button>
+      <span style="font-weight: 700;">Transaction Summary</span>
+    </header>
+
+    <div class="form-content" style="padding-bottom: 2rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div class="modal-icon"
+          style="background: rgba(34, 197, 94, 0.1); color: #22c55e; margin-bottom: 0.5rem; width: 56px; height: 56px;">
+          <i data-lucide="check-circle-2"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; color: white;">Transaction Saved!</h2>
+        <p style="color: var(--text-secondary); font-size: 0.8125rem;">Your financial record has been securely logged.
+        </p>
+      </div>
+
+      <div class="preview-card"
+        style="width: 100%; padding: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; margin-bottom: 1.5rem;">
+        <div
+          style="text-align: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
+          <span id="detail-item-name" style="font-size: 1.125rem; font-weight: 600; color: white;">-</span>
+          <div id="detail-total"
+            style="font-size: 2.25rem; font-weight: 800; color: var(--accent); margin-top: 0.25rem;">Rp 0.00</div>
+
+          <div id="receipt-summary"
+            style="margin-top: 1.5rem; border-top: 1px dashed var(--border); padding-top: 1.25rem; font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left;">
+            <!-- Dynamic lines like Price x Qty, Discount, Fee -->
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">CATEGORY</label>
+            <div id="detail-category"
+              style="display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">MERCHANT</label>
+            <div id="detail-merchant" style="font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">ACCOUNT</label>
+            <div id="detail-account" style="font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">CLEARED
+              STATUS</label>
+            <div id="detail-status" style="font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.5rem;">TAGS</label>
+            <div id="detail-tags-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.5rem;">PROJECTS</label>
+            <div id="detail-projects-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">-</div>
+          </div>
+          <div style="grid-column: span 2; border-top: 1px solid var(--border); padding-top: 1rem; text-align: center;">
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.25rem;">DATE & TIME</label>
+            <div id="detail-date" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem;">
+        <button id="btn-done" class="btn btn-primary" style="flex: 1;">Done</button>
+        <button id="btn-share" class="btn btn-secondary" style="padding: 0.75rem 1rem;">
+          <i data-lucide="share-2" style="width: 18px;"></i>
+        </button>
       </div>
     </div>
   </div>
 
   <script src="script.js"></script>
 </body>
+
 </html>

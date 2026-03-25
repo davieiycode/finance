@@ -266,12 +266,43 @@ function isFormDirty() {
          (desc.trim() !== '');
 }
 
-// Global Actions (Toast triggers)
+const lightboxModal = document.getElementById('lightbox-modal');
+const lightboxImg = document.getElementById('lightbox-img');
+const closeLightbox = document.getElementById('close-lightbox');
+const previewCard = document.querySelector('.preview-card');
+
+// Global Action Buttons
 const dismissBtn = document.getElementById('dismiss-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const confirmModal = document.getElementById('confirm-modal');
 const confirmDiscardBtn = document.getElementById('confirm-discard');
 const cancelDiscardBtn = document.getElementById('cancel-discard');
+
+if (previewCard) {
+  previewCard.addEventListener('click', () => {
+    const src = document.getElementById('receipt-img')?.src;
+    if (src && lightboxModal && lightboxImg) {
+      lightboxImg.src = src;
+      lightboxModal.style.display = 'flex';
+      lucide.createIcons();
+    }
+  });
+}
+
+if (closeLightbox) {
+  closeLightbox.onclick = () => {
+    lightboxModal.style.display = 'none';
+  };
+}
+
+// Close lightbox on backdrop click
+if (lightboxModal) {
+  lightboxModal.onclick = (e) => {
+    if (e.target === lightboxModal) {
+      lightboxModal.style.display = 'none';
+    }
+  }
+}
 
 function handleFormExit(actionLabel) {
   if (isFormDirty()) {
@@ -348,6 +379,127 @@ function validateStep(step) {
   return true;
 }
 
+function showTransactionDetail() {
+  const formContainer = document.querySelector('.container:not(#detail-view)');
+  const detailView = document.getElementById('detail-view');
+  
+  // Data Extraction
+  const itemName = document.getElementById('item-input')?.value || 'Item';
+  const quantity = parseFloat(document.getElementById('quantity-input')?.value) || 0;
+  const scale = document.getElementById('item-scale')?.value || '';
+  const amountVal = parseFloat(document.getElementById('amount-input')?.value.replace(/,/g, '')) || 0;
+  const discountVal = parseFloat(document.getElementById('discount-input')?.value.replace(/,/g, '')) || 0;
+  const feeVal = parseFloat(document.getElementById('fee-input')?.value.replace(/,/g, '')) || 0;
+  const totalDisplay = document.getElementById('total-display')?.innerText || 'Rp 0.00';
+  
+  const merchant = document.getElementById('merchant-input')?.value || 'Merchant';
+  const categoryLabel = document.getElementById('category-input')?.value || 'General';
+  const categoryIcon = document.querySelector('#category-icon-container i')?.dataset.lucide || 'box';
+  const paymentAcc = document.getElementById('payment-account')?.value || '-';
+  const receivedAcc = document.getElementById('received-account')?.value || '-';
+  const dateVal = document.getElementById('transaction-date')?.value || '';
+  const timeVal = document.getElementById('transaction-time')?.value || '';
+  const statusActive = document.querySelector('#cleared-selector .type-btn.active')?.dataset.type || 'Cleared';
+
+  // Receipt Breakdown HTML Generation
+  const subtotal = quantity * amountVal;
+  const format = (num) => 'Rp ' + num.toLocaleString('en-US', { minimumFractionDigits: 2 });
+  
+  let receiptHTML = `
+    <div style="display: flex; justify-content: space-between; opacity: 0.7;">
+      <span>${itemName} <span style="font-size: 0.75rem;">(x${quantity}${scale})</span></span>
+      <span>${format(amountVal)}</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-weight: 600;">
+      <span>Subtotal</span>
+      <span>${format(subtotal)}</span>
+    </div>
+  `;
+
+  if (discountVal > 0) {
+    receiptHTML += `
+      <div style="display: flex; justify-content: space-between; color: #ef4444;">
+        <span>Promo Discount</span>
+        <span>- ${format(discountVal)}</span>
+      </div>
+    `;
+  }
+
+  if (feeVal > 0) {
+    receiptHTML += `
+      <div style="display: flex; justify-content: space-between; color: #f59e0b;">
+        <span>Additional Fee</span>
+        <span>+ ${format(feeVal)}</span>
+      </div>
+    `;
+  }
+
+  receiptHTML += `
+    <div style="margin-top: 0.5rem; border-top: 1px dashed var(--border); padding-top: 0.5rem; display: flex; justify-content: space-between; font-weight: 800; color: var(--accent); font-size: 1rem;">
+      <span>Grand Total</span>
+      <span>${totalDisplay}</span>
+    </div>
+  `;
+
+  const getChips = (wrapperId) => {
+    const chips = Array.from(document.querySelectorAll(`#${wrapperId} .chip span`)).map(s => s.innerText);
+    if (chips.length === 0) return `<span style="color: var(--text-secondary); font-size: 0.8125rem;">-</span>`;
+    return chips.map(tag => `<div class="chip" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">${tag}</div>`).join('');
+  };
+
+  // Date/Time
+  let dateFinal = '-';
+  if (dateVal) {
+    const d = new Date(dateVal + 'T' + (timeVal || '00:00'));
+    dateFinal = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '');
+  }
+
+  // Populate
+  document.getElementById('detail-item-name').innerText = itemName;
+  document.getElementById('detail-total').innerText = totalDisplay;
+  document.getElementById('receipt-summary').innerHTML = receiptHTML;
+  document.getElementById('detail-merchant').innerText = merchant;
+  document.getElementById('detail-category').innerHTML = `<i data-lucide="${categoryIcon}" style="width: 16px;"></i> ${categoryLabel}`;
+  document.getElementById('detail-account').innerText = receivedAcc !== '-' ? `${paymentAcc} → ${receivedAcc}` : paymentAcc;
+  document.getElementById('detail-date').innerText = dateFinal;
+  document.getElementById('detail-status').innerHTML = statusActive === 'Cleared' 
+    ? `<span style="color: #22c55e; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="check-circle" style="width:14px;"></i> Cleared</span>` 
+    : `<span style="color: #ef4444; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="alert-circle" style="width:14px;"></i> Uncleared</span>`;
+  document.getElementById('detail-tags-list').innerHTML = getChips('tags-wrapper');
+  document.getElementById('detail-projects-list').innerHTML = getChips('projects-wrapper');
+
+  // Switch View
+  if (formContainer) formContainer.style.display = 'none';
+  detailView.style.display = 'flex';
+  lucide.createIcons();
+
+  // Share Actions logic
+  const shareBtn = document.getElementById('btn-share');
+  if (shareBtn) {
+    shareBtn.onclick = async () => {
+      const shareData = {
+        title: 'Transaction Details',
+        text: `Transaction saved: ${itemName} for ${totalDisplay} at ${merchant}!`,
+        url: window.location.href
+      };
+      
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          showToast('Share options: WhatsApp, Instagram, or Copy Link', 'warning', 'share-2');
+        }
+      } catch (err) {}
+    };
+  }
+}
+
+// Detail View Actions
+const btnDoneView = document.getElementById('btn-done');
+const btnCloseDetailView = document.getElementById('close-detail');
+if (btnDoneView) btnDoneView.onclick = () => location.reload();
+if (btnCloseDetailView) btnCloseDetailView.onclick = () => location.reload();
+
 nextBtn.addEventListener('click', (e) => {
   e.preventDefault();
   
@@ -356,7 +508,7 @@ nextBtn.addEventListener('click', (e) => {
   if (currentStep < totalSteps) {
     updateStep(currentStep + 1);
   } else {
-    // Construct dynamic success message (Rest of current Save logic)
+    // Construct dynamic success message (Toast)
     const itemName = document.getElementById('item-input')?.value || 'Item';
     const merchant = document.getElementById('merchant-input')?.value || 'Merchant';
     const quantity = document.getElementById('quantity-input')?.value || '0';
@@ -368,20 +520,15 @@ nextBtn.addEventListener('click', (e) => {
     try {
       if (date) {
         const d = new Date(date + 'T' + (time || '00:00'));
-        const options = { 
-          day: 'numeric', 
-          month: 'long', 
-          year: 'numeric', 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          hour12: true 
-        };
-        dateStr = d.toLocaleDateString('en-GB', options).replace(',', '');
+        dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '');
       }
     } catch (err) {}
 
     const successMsg = `${quantity} ${scale} ${itemName} has been successfully saved in the ${merchant} at ${dateStr}!`;
     showToast(successMsg);
+    
+    // Show Summary Detail View
+    setTimeout(showTransactionDetail, 1200);
   }
 });
 
@@ -492,33 +639,34 @@ calculateTotal();
 // Multi-select Tags Logic
 function setupTagInput(wrapperId) {
   const wrapper = document.getElementById(wrapperId);
-  const input = wrapper.querySelector('.tag-input');
+  if (!wrapper) return;
+  const input = wrapper.querySelector('input');
+  if (!input) return;
 
-  const addTag = (text) => {
-    text = text.trim();
-    if (!text) return;
+  const addTag = (val) => {
+    const trimmed = val.trim();
+    if (!trimmed) return;
     
-    // Check for duplicates
-    const existing = Array.from(wrapper.querySelectorAll('.chip span')).map(s => s.innerText);
-    if (existing.includes(text)) {
-      input.value = '';
+    // Prevent duplicates
+    const existing = Array.from(wrapper.querySelectorAll('.chip')).map(c => c.dataset.value);
+    if (existing.includes(trimmed)) {
+      input.value = ''; // Just clear and ignore
       return;
     }
 
     const chip = document.createElement('div');
     chip.className = 'chip';
-    chip.innerHTML = `
-      <span>${text}</span>
-      <button type="button" class="chip-remove"><i data-lucide="x" style="width: 14px;"></i></button>
-    `;
+    chip.dataset.value = trimmed;
+    chip.innerHTML = `<span>${trimmed}</span><i data-lucide="x" style="width: 12px; cursor: pointer;"></i>`;
     
-    chip.querySelector('.chip-remove').onclick = () => {
+    chip.querySelector('i').onclick = (e) => {
+      e.stopPropagation();
       chip.remove();
     };
 
     wrapper.insertBefore(chip, input);
-    input.value = '';
     lucide.createIcons();
+    input.value = ''; // CLEAR AFTER ADDING
   };
 
   input.addEventListener('keydown', (e) => {
@@ -533,12 +681,15 @@ function setupTagInput(wrapperId) {
   });
 
   input.addEventListener('input', (e) => {
-    // Check if the value matches one of the datalist options to auto-add
     const val = input.value;
-    const list = document.getElementById(input.getAttribute('list'));
-    const options = Array.from(list.options).map(o => o.value);
-    if (options.includes(val)) {
-      addTag(val);
+    const listId = input.getAttribute('list');
+    if (!listId) return;
+    const list = document.getElementById(listId);
+    if (list) {
+      const options = Array.from(list.options).map(o => o.value);
+      if (options.includes(val)) {
+        addTag(val);
+      }
     }
   });
 
@@ -559,12 +710,40 @@ const itemHistory = {
 const itemInput = document.getElementById('item-input');
 // (quantityInput, amountInput, etc. are already declared at line 287)
 
+function updatePriceInsight() {
+  const insight = document.getElementById('price-insight');
+  if (!insight || !itemInput) return;
+
+  const itemName = itemInput.value;
+  const currentVal = parseFloat(amountInput.value.replace(/,/g, '')) || 0;
+  const history = itemHistory[itemName];
+
+  if (history && currentVal > 0) {
+    const diff = currentVal - history.amount;
+    if (diff === 0) {
+      insight.style.display = 'none';
+    } else {
+      insight.style.display = 'flex';
+      const isUp = diff > 0;
+      const color = isUp ? '#ef4444' : '#22c55e';
+      const icon = isUp ? 'trending-up' : 'trending-down';
+      const text = isUp ? 'more expensive' : 'cheaper';
+      
+      const diffFormatted = Math.abs(diff).toLocaleString();
+      insight.style.color = color;
+      insight.innerHTML = `<i data-lucide="${icon}" style="width: 14px;"></i> <span>Rp ${diffFormatted} ${text} than last time</span>`;
+      lucide.createIcons();
+    }
+  } else {
+    insight.style.display = 'none';
+  }
+}
+
 if (itemInput) {
   itemInput.addEventListener('input', (e) => {
     const val = e.target.value;
     const history = itemHistory[val];
     
-    // Always default Quantity to 1 and Receipt to empty when item name changes
     if (quantityInput) quantityInput.value = '1';
     if (receiptInput) receiptInput.value = '';
     if (receiptPreview) receiptPreview.style.display = 'none';
@@ -574,11 +753,14 @@ if (itemInput) {
       if (itemScale) itemScale.value = history.scale;
       if (discountInput) discountInput.value = history.discount;
       if (feeInput) feeInput.value = history.fee;
-      
-      // Trigger update calculation
       calculateTotal();
     }
+    updatePriceInsight(); // NEW
   });
+}
+
+if (amountInput) {
+  amountInput.addEventListener('input', updatePriceInsight);
 }
 
 if (receiptInput) {

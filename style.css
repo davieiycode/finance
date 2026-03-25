@@ -201,21 +201,25 @@ body {
   position: relative;
 }
 
+/* Input focus micro-interaction */
 .input, .select, .textarea {
   width: 100%;
   background-color: var(--bg-input);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   padding: 0.875rem 1rem;
   color: var(--text-primary);
   font-size: 0.9375rem;
   font-family: inherit;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
-  transition: border-color 0.2s;
 }
 
 .input:focus, .select:focus, .textarea:focus {
   border-color: var(--accent);
+  background-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+  transform: translateY(-1px);
 }
 
 .input-with-icon {
@@ -233,15 +237,6 @@ body {
 .select {
   appearance: none;
   cursor: pointer;
-  width: 100%;
-  background-color: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 0.875rem 1rem;
-  color: var(--text-primary);
-  font-size: 0.9375rem;
-  font-family: inherit;
-  outline: none;
 }
 
 .input-with-left-icon {
@@ -311,6 +306,22 @@ body {
   justify-content: center;
 }
 
+.preview-card {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.preview-card:hover {
+  transform: scale(1.02) translateY(-4px);
+  filter: brightness(1.1);
+}
+
+.preview-card span {
+  pointer-events: none;
+}
+
 /* Premium Toggle Switch */
 .switch {
   position: relative;
@@ -343,6 +354,61 @@ body {
   color: var(--text-secondary);
   font-size: 0.8125rem;
   font-weight: 600;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid transparent;
+}
+
+.btn-primary:active, .btn-secondary:active {
+  transform: scale(0.95);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.4);
+}
+
+.tab {
+  padding: 0.875rem 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.tab:hover:not(.active) {
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.step-content {
+  display: none;
+  animation: slideIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .total-field {
