@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Item Management - Finance</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="theme.js"></script>
+  <style>
+    :root {
+      --violet: var(--accent);
+      --bg-darker: var(--bg-secondary);
+    }
+
+    .search-container { position: relative; margin-bottom: 1rem; }
+    .search-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 0.8125rem 1rem 0.8125rem 2.75rem; color: var(--text-primary); outline: none; transition: 0.3s; }
+    .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); width: 18px; }
+
+    .filter-scroll { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 1.5rem; scrollbar-width: none; }
+    .filter-chip { padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 2rem; color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+    .filter-chip.active { background: var(--violet); border-color: var(--violet); color: var(--text-primary); }
+
+    .item-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; cursor: pointer; transition: all 0.3s; }
+    .i-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); font-size: 1.2rem; }
+    
+    .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(25px); z-index: 1000; display: none; overflow-y: auto; }
+    .modal-container { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; background: var(--bg-darker); }
+    .modal-header { padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-darker); z-index: 10; }
+    
+    .modal-tabs { display: flex; background: var(--glass); padding: 0.25rem; border-radius: 0.75rem; margin: 1rem 1.5rem; gap: 0.25rem; }
+    .modal-tab { flex: 1; padding: 0.6rem; border-radius: 0.6rem; border: none; background: none; color: var(--text-secondary); font-weight: 600; font-size: 0.8125rem; cursor: pointer; }
+    .modal-tab.active { 
+       background: var(--violet); 
+       color: white; 
+       box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .view-content { padding: 1.5rem; display: none; flex-direction: column; gap: 1.5rem; }
+    .view-content.active { display: flex; }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .form-label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
+    .form-label span { color: var(--violet); }
+    .f-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.8125rem 1rem; color: var(--text-primary); outline: none; transition: 0.3s; font-size: 0.9375rem; }
+    .select-wrapper { position: relative; }
+    .select-wrapper::after { content: '▾'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); pointer-events: none; }
+
+    .price-input-group { display: flex; align-items: center; background: var(--bg-input); border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.5rem; gap: 0.5rem; }
+    .price-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .price-field { flex: 1; border: none; background: none; color: var(--text-primary); font-weight: 700; outline: none; text-align: center; }
+
+    .image-placeholder { width: 100%; aspect-ratio: 16/9; border: 1px dashed var(--border); border-radius: 1rem; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); color: var(--text-secondary); cursor: pointer; }
+
+    .status-toggle { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; }
+    .st-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.875rem; background: rgba(255,255,255,0.03); color: var(--text-secondary); font-weight: 600; border: none; cursor: pointer; }
+    .st-btn.active.active-st { background: var(--violet); color: var(--text-primary); }
+
+    .ana-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem; }
+    .ana-lbl { font-size: 0.65rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem; }
+
+    .btn-violet { background: var(--violet); color: var(--text-primary); border: none; font-weight: 700; padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.8125rem; }
+    .btn-cancel { background: rgba(255,255,255,0.08); color: var(--text-secondary); border: none; font-weight: 700; padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.8125rem; }
+    .back-btn { width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    
+    .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 0.875rem; }
+
+    #scanner-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
+    #reader { width: 100%; max-width: 400px; border-radius: 1rem; overflow: hidden; background: #111; }
+    .scanner-header { position: absolute; top: 1.5rem; width: 100%; padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; color: white; }
+    
+    .fuzzy-suggestion {
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px dashed var(--violet);
+      border-radius: 0.875rem;
+      padding: 0.75rem 1rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--violet);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      animation: fadeIn 0.3s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <div id="scanner-overlay">
+     <div class="scanner-header"><h3 style="font-weight:700;">Scan Barcode</h3><button onclick="stopScanner()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:40px; height:40px; border-radius:20px; cursor:pointer;"><i data-lucide="x"></i></button></div>
+     <div id="reader"></div>
+     <p style="color:var(--text-secondary); font-size:0.8125rem; margin-top:2rem; text-align:center;">Center the product barcode inside the frame.<br>Scanner will auto-capture.</p>
+  </div>
+
+  <div class="container" style="max-width: 630px; padding: 1.5rem;">
+    <header class="header" style="margin-bottom: 1.5rem;">
+      <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
+      <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Item Catalog</h1>
+      <button class="btn-violet" onclick="openModal(null, 'form')">+ New</button>
+    </header>
+
+    <div class="search-container">
+       <i data-lucide="search" class="search-icon"></i>
+       <input type="text" id="i-search" class="search-input" placeholder="Search items..." oninput="handleFilter()">
+    </div>
+
+    <div class="filter-scroll" id="i-filter-chips"></div>
+
+    <div id="item-list"></div>
+  </div>
+
+  <div id="item-modal" class="modal-backdrop">
+    <div class="modal-container">
+      <header class="modal-header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <span id="modal-title-text" style="font-weight: 700; font-size: 1.125rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Details</span>
+        </div>
+        <div id="header-actions" style="display: flex; gap: 0.5rem;"></div>
+      </header>
+
+      <div class="modal-tabs" id="modal-tabs">
+         <button class="modal-tab active" data-view="activity">Activity</button>
+         <button class="modal-tab" data-view="form">Information</button>
+      </div>
+
+      <div id="view-activity" class="view-content active">
+         <div class="ana-card">
+            <div class="ana-lbl">Item Overview</div>
+            <div id="ana-desc" style="font-size: 0.8125rem; color: var(--text-primary); font-weight: 600;">-</div>
+         </div>
+         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+            <div class="ana-card"><div class="ana-lbl">Usage Count</div><div id="ana-count" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">0 Times</div></div>
+            <div class="ana-card"><div class="ana-lbl">Total Spent</div><div id="ana-spent" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">Rp 0</div></div>
+         </div>
+         <section>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">Recent History</h3>
+            <div id="ana-tx-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+         </section>
+      </div>
+
+      <div id="view-form" class="view-content">
+        <div class="form-group">
+          <label class="form-label">Item Name<span>*</span></label>
+          <input type="text" id="f-name" class="f-input" placeholder="e.g. 3 Ayam Mie Telur Kuning" oninput="handleItemInput()">
+          <div id="i-suggestion-box" class="fuzzy-suggestion" style="display: none;">
+             <span>Already exists: <strong id="i-suggested-name" style="cursor: pointer; text-decoration: underline;"></strong></span>
+             <p style="font-size: 0.6rem; opacity: 0.8; margin: 0;">Click the name above to auto-fill details from this item.</p>
+          </div>
+          <div id="i-error-duplicate" style="display:none; color:#ef4444; font-size:0.7rem; font-weight:700; margin-top:0.25rem;">
+             Error: This exact item name already exists in your catalog.
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Item Category<span>*</span></label>
+          <div class="select-wrapper">
+             <input type="text" class="f-input" id="f-category" list="category-list" oninput="autoSave()">
+             <datalist id="category-list">
+               <option value="Food & Groceries">Purchases of food and household consumables</option>
+               <option value="Dining Out">Meals and drinks purchased at restaurants</option>
+               <option value="Transportation">Public transport, fuel, ride-hailing</option>
+               <option value="Personal Care">Haircuts, toiletries, cosmetics</option>
+               <option value="Clothing & Apparel">Clothes, shoes, accessories</option>
+               <option value="Housing">Rent, mortgage, maintenance</option>
+               <option value="Utilities">Electricity, water, gas bills</option>
+               <option value="Internet & Phone">Mobile plans, broadband</option>
+               <option value="Subscriptions">Streaming, software, memberships</option>
+               <option value="Insurance">Health, home, auto premiums</option>
+               <option value="Entertainment">Movies, concerts, events</option>
+               <option value="Hobbies">Books, games, crafts</option>
+               <option value="Travel & Holidays">Flights, hotels, tours</option>
+               <option value="Sports & Fitness">Gym, equipment, classes</option>
+               <option value="Debt Repayment">Loan payments, credit card repayments</option>
+               <option value="Education & Self-Development">Tuition, courses, training</option>
+               <option value="Medical & Dental">Doctor visits, pharmacy, dental</option>
+               <option value="Health Insurance">Health insurance premiums</option>
+               <option value="Wellness">Spa, therapy, supplements</option>
+               <option value="Donations">Charity, NGO contributions</option>
+               <option value="Family Support">Allowances, remittances</option>
+               <option value="Office Supplies">Stationery, work tools</option>
+               <option value="Professional Services">Accounting, legal fees</option>
+               <option value="Marketing & Advertising">Ads, promotions</option>
+               <option value="Business Travel">Work trip expenses</option>
+               <option value="Unexpected Expenses">Emergency repairs, sudden costs</option>
+               <option value="Miscellaneous">Other categorization</option>
+             </datalist>
+          </div>
+        </div>
+        <div class="form-group">
+           <label class="form-label">Item Image</label>
+           <input type="file" id="f-image-input" accept="image/*" style="display: none;" onchange="handleImage(this)">
+           <div class="image-placeholder" onclick="document.getElementById('f-image-input').click()">
+              <img id="f-img-preview" src="" style="width:100%; height:100%; object-fit:cover; border-radius:1rem; display:none;">
+              <i id="f-img-icon" data-lucide="camera" style="width:24px;"></i>
+           </div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+           <div class="form-group">
+              <label class="form-label">Manufacturer</label>
+              <input type="text" id="f-manu" class="f-input" list="manu-list" oninput="autoSave()">
+              <datalist id="manu-list"></datalist>
+           </div>
+           <div class="form-group"><label class="form-label">Model</label><input type="text" id="f-model" class="f-input" oninput="autoSave()"></div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+           <div class="form-group">
+              <label class="form-label">Scale<span>*</span></label>
+              <div class="select-wrapper">
+                <input type="text" class="f-input" id="f-unit" list="scale-list" oninput="autoSave()">
+                <datalist id="scale-list">
+                   <option value="pcs">Pieces</option>
+                   <option value="unit">Vehicle/Asset</option>
+                   <option value="ticket">Ticket</option>
+                   <option value="trans">Transaction</option>
+                   <option value="person">Person</option>
+                   <option value="glass">Glass</option>
+                   <option value="cup">Cup</option>
+                   <option value="bowl">Bowl</option>
+                   <option value="kg">Kilogram</option>
+                   <option value="g">Gram</option>
+                   <option value="L">Liter</option>
+                   <option value="mL">Milliliter</option>
+                   <option value="m">Meter</option>
+                </datalist>
+              </div>
+           </div>
+           <div class="form-group">
+              <label class="form-label">Currency</label>
+              <div class="select-wrapper">
+                <input type="text" class="f-input" id="f-currency" list="currency-list" oninput="autoSave()">
+                <datalist id="currency-list">
+                  <option value="IDR">Indonesian Rupiah</option>
+                  <option value="USD">US Dollar</option>
+                  <option value="EUR">Euro</option>
+                  <option value="JPY">Japanese Yen</option>
+                  <option value="GBP">British Pound</option>
+                  <option value="AUD">Australian Dollar</option>
+                  <option value="CAD">Canadian Dollar</option>
+                  <option value="CHF">Swiss Franc</option>
+                  <option value="CNY">Chinese Yuan</option>
+                  <option value="HKD">Hong Kong Dollar</option>
+                  <option value="NZD">New Zealand Dollar</option>
+                  <option value="SEK">Swedish Krona</option>
+                  <option value="KRW">South Korean Won</option>
+                  <option value="SGD">Singapore Dollar</option>
+                  <option value="NOK">Norwegian Krone</option>
+                  <option value="MXN">Mexican Peso</option>
+                  <option value="INR">Indian Rupee</option>
+                  <option value="RUB">Russian Ruble</option>
+                  <option value="ZAR">South African Rand</option>
+                  <option value="TRY">Turkish Lira</option>
+                  <option value="BRL">Brazilian Real</option>
+                  <option value="TWD">New Taiwan Dollar</option>
+                  <option value="DKK">Danish Krone</option>
+                  <option value="PLN">Polish Zloty</option>
+                  <option value="THB">Thai Baht</option>
+                  <option value="AED">United Arab Emirates Dirham</option>
+                  <option value="SAR">Saudi Riyal</option>
+                  <option value="MYR">Malaysian Ringgit</option>
+                  <option value="PHP">Philippine Peso</option>
+                  <option value="VND">Vietnamese Dong</option>
+                  <option value="ILS">Israeli New Shekel</option>
+                  <option value="HUF">Hungarian Forint</option>
+                  <option value="CZK">Czech Koruna</option>
+                  <option value="CLP">Chilean Peso</option>
+                  <option value="COP">Colombian Peso</option>
+                  <option value="ARS">Argentine Peso</option>
+                  <option value="PEN">Peruvian Sol</option>
+                  <option value="KWD">Kuwaiti Dinar</option>
+                  <option value="QAR">Qatari Rial</option>
+                  <option value="PKR">Pakistani Rupee</option>
+                  <option value="EGP">Egyptian Pound</option>
+                </datalist>
+              </div>
+           </div>
+        </div>
+        <div class="form-group">
+           <label class="form-label">Default Unit Price</label>
+           <div class="price-input-group">
+              <span style="font-weight:700; color:var(--text-secondary); margin-left: 0.5rem;">Rp</span>
+              <input type="text" id="f-price" class="price-field" value="0" oninput="autoSave()">
+              <button class="price-btn" onclick="adjPrice(-100)"><i data-lucide="minus"></i></button>
+              <button class="price-btn" onclick="adjPrice(100)"><i data-lucide="plus"></i></button>
+           </div>
+        </div>
+        <div class="form-group"><label class="form-label">Warranty / Expiry Date</label><input type="date" id="f-expiry" class="f-input" onclick="this.showPicker()" onchange="autoSave()"></div>
+        <div class="form-group">
+           <label class="form-label">Stock Keeping Unit (SKU)</label>
+           <div style="position:relative; display:flex; align-items:center;">
+              <input type="text" id="f-sku" class="f-input" style="padding-right: 3rem;" oninput="autoSave()">
+              <button class="price-btn" style="position:absolute; right:0.5rem;" onclick="scanBarcode()"><i data-lucide="maximize"></i></button>
+           </div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><textarea id="f-notes" class="f-input" style="min-height: 80px;" oninput="autoSave()"></textarea></div>
+        <div class="form-group"><label class="form-label">Status<span>*</span></label><div class="status-toggle"><button class="st-btn inactive" data-status="Inactive" onclick="setStatus('Inactive')">Inactive</button><button class="st-btn active active-st" data-status="Active" onclick="setStatus('Active')">Active</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    const categories = ['All', 'Food & Groceries', 'Dining Out', 'Transportation', 'Personal Care', 'Clothing & Apparel', 'Housing', 'Utilities', 'Internet & Phone', 'Subscriptions', 'Insurance', 'Entertainment', 'Hobbies', 'Travel & Holidays', 'Sports & Fitness', 'Debt Repayment', 'Education & Self-Development', 'Medical & Dental', 'Health Insurance', 'Wellness', 'Donations', 'Family Support', 'Office Supplies', 'Professional Services', 'Marketing & Advertising', 'Business Travel', 'Unexpected Expenses', 'Miscellaneous'];
+    let items = JSON.parse(localStorage.getItem('items') || '[]');
+    if (items.length === 0) {
+      items = [
+        { id: 1, name: '3 Ayam Mie Telur Kuning 200 g', category: 'Food & Groceries', status: 'Active', price: 5300, unit: 'pcs', sku: 'SKU-001', manu: 'Manufacturer', model: 'Model X', image: '' },
+        { id: 2, name: 'Pertamax', category: 'Transportation', status: 'Active', price: 13500, unit: 'L', image: '' },
+        { id: 3, name: 'Coffee Latte', category: 'Dining Out', status: 'Active', price: 35000, unit: 'cup', image: '' }
+      ];
+      localStorage.setItem('items', JSON.stringify(items));
+    }
+
+    function updateManuList() {
+      const ms = [...new Set(items.map(i => i.manu).filter(m => m))];
+      document.getElementById('manu-list').innerHTML = ms.map(m => `<option value="${m}">`).join('');
+    }
+
+    function handleImage(input) {
+       if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.getElementById('f-img-preview').src = e.target.result;
+            document.getElementById('f-img-preview').style.display = 'block';
+            document.getElementById('f-img-icon').style.display = 'none';
+            autoSave();
+          };
+          reader.readAsDataURL(input.files[0]);
+       }
+    }
+
+    let html5QrCode = null;
+
+    function scanBarcode() {
+       document.getElementById('scanner-overlay').style.display = 'flex';
+       html5QrCode = new Html5Qrcode("reader");
+       const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+          document.getElementById('f-sku').value = decodedText;
+          autoSave();
+          stopScanner();
+       };
+       const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+       html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+         .catch(err => {
+            console.error(err);
+            alert("Unable to start camera. Please ensure permissions are granted.");
+            stopScanner();
+         });
+    }
+
+    function stopScanner() {
+       if (html5QrCode) {
+          html5QrCode.stop().then(() => {
+             document.getElementById('scanner-overlay').style.display = 'none';
+          }).catch(err => {
+             document.getElementById('scanner-overlay').style.display = 'none';
+          });
+       } else {
+          document.getElementById('scanner-overlay').style.display = 'none';
+       }
+    }
+
+    let activeCat = 'All';
+    let searchTerm = '';
+
+    function handleFilter() { searchTerm = document.getElementById('i-search').value.toLowerCase(); renderItems(); }
+    function setCategory(cat) { activeCat = cat; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.innerText === cat)); renderItems(); }
+
+    function renderFilterChips() {
+      const parent = document.getElementById('i-filter-chips');
+      parent.innerHTML = categories.map(c => `<button class="filter-chip ${c===activeCat?'active':''}" onclick="setCategory('${c}')">${c}</button>`).join('');
+    }
+
+    function renderItems() {
+      const filtered = items.filter(i => {
+        const matchCat = activeCat === 'All' || i.category === activeCat;
+        const s = searchTerm.toLowerCase();
+        const matchSearch = i.name.toLowerCase().includes(s) || 
+                          (i.sku || '').toLowerCase().includes(s) ||
+                          (i.model || '').toLowerCase().includes(s) ||
+                          (i.manu || '').toLowerCase().includes(s) ||
+                          (i.notes || '').toLowerCase().includes(s);
+        return matchCat && matchSearch;
+      });
+      document.getElementById('item-list').innerHTML = filtered.map(i => `
+        <div class="item-card" onclick="openModal(${i.id}, 'activity')">
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <div class="i-icon" style="background:${i.image ? 'none' : 'rgba(139,92,246,0.1)'}; color:var(--violet); overflow:hidden;">
+               ${i.image ? `<img src="${i.image}" style="width:100%; height:100%; object-fit:cover;">` : (i.name || 'I')[0].toUpperCase()}
+            </div>
+            <div>
+              <div style="font-weight:700; color:white;">${i.name}</div>
+              <div style="font-size:0.7rem; color:var(--text-secondary);">${i.category} • Rp ${i.price.toLocaleString('id-ID')} / ${i.unit}</div>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" style="color:var(--text-secondary); width:18px;"></i>
+        </div>`).join('');
+      lucide.createIcons();
+    }
+
+    const modal = document.getElementById('item-modal');
+    const tabs = document.querySelectorAll('.modal-tab');
+    const contents = document.querySelectorAll('.view-content');
+    let currentEditId = null;
+    let currentStatus = 'Active';
+
+    function openModal(id, view) {
+      currentEditId = id;
+      updateManuList();
+      const it = id ? items.find(x => x.id === id) : null;
+      document.getElementById('modal-title-text').innerText = it ? it.name : 'New Item';
+      document.getElementById('modal-tabs').style.display = id ? 'flex' : 'none';
+      switchView(id ? view : 'form');
+
+      if (it) {
+         document.getElementById('ana-desc').innerText = `${it.manu || '-'} ${it.model || ''} (${it.sku || '-'})`;
+         const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+         const filtered = txs.filter(t => (t.name || '').toLowerCase() === it.name.toLowerCase());
+         document.getElementById('ana-count').innerText = filtered.length + ' Times';
+         document.getElementById('ana-spent').innerText = 'Rp ' + filtered.reduce((s,t)=>s+t.amount,0).toLocaleString('id-ID');
+         document.getElementById('ana-tx-list').innerHTML = filtered.map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.merchant || 'General'}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('');
+         
+         document.getElementById('f-name').value = it.name;
+         document.getElementById('f-category').value = it.category;
+         document.getElementById('f-manu').value = it.manu || '';
+         document.getElementById('f-model').value = it.model || '';
+         document.getElementById('f-unit').value = it.unit || 'pcs';
+         document.getElementById('f-currency').value = it.currency || 'IDR';
+         document.getElementById('f-price').value = it.price || 0;
+         document.getElementById('f-sku').value = it.sku || '';
+         document.getElementById('f-expiry').value = it.expiry || '';
+         document.getElementById('f-notes').value = it.notes || '';
+         
+         if (it.image) {
+            document.getElementById('f-img-preview').src = it.image;
+            document.getElementById('f-img-preview').style.display = 'block';
+            document.getElementById('f-img-icon').style.display = 'none';
+         } else {
+            document.getElementById('f-img-preview').style.display = 'none';
+            document.getElementById('f-img-icon').style.display = 'block';
+         }
+         setStatus(it.status, false);
+      } else {
+         document.getElementById('f-name').value = '';
+         document.getElementById('f-category').value = 'Food & Groceries';
+         document.getElementById('f-manu').value = '';
+         document.getElementById('f-model').value = '';
+         document.getElementById('f-price').value = 0;
+         document.getElementById('f-sku').value = '';
+         document.getElementById('f-expiry').value = '';
+         document.getElementById('f-notes').value = '';
+         document.getElementById('f-img-preview').style.display = 'none';
+         document.getElementById('f-img-icon').style.display = 'block';
+         setStatus('Active', false);
+      }
+      modal.style.display = 'block';
+      lucide.createIcons();
+    }
+
+    function switchView(view) {
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.view === view));
+      contents.forEach(c => c.classList.toggle('active', c.id === 'view-' + view));
+      const actions = document.getElementById('header-actions');
+      
+      let h = '';
+      if (currentEditId) h += `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteItem()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+      h += `<button class="btn-violet" onclick="closeModal()">Done</button>`;
+      actions.innerHTML = h;
+      lucide.createIcons();
+    }
+
+    function setStatus(s, save = true) { 
+      currentStatus = s; 
+      document.querySelectorAll('.st-btn').forEach(b => {
+        const isTarget = b.dataset.status === s;
+        b.classList.toggle('active', isTarget);
+        if (b.dataset.status === 'Active') b.classList.toggle('active-st', isTarget);
+      });
+      if (save) autoSave();
+    }
+
+    function adjPrice(v) {
+      const el = document.getElementById('f-price');
+      let val = parseInt(el.value) || 0;
+      el.value = Math.max(0, val + v);
+      autoSave();
+    }
+
+    tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
+    function closeModal() { modal.style.display = 'none'; renderItems(); }
+
+    function deleteItem() {
+      if (!confirm('Delete this item?')) return;
+      items = items.filter(i => i.id !== currentEditId);
+      localStorage.setItem('items', JSON.stringify(items));
+      closeModal();
+    }
+
+    function handleItemInput() {
+      const input = document.getElementById('f-name').value;
+      const box = document.getElementById('i-suggestion-box');
+      const err = document.getElementById('i-error-duplicate');
+      
+      if (!input || input.length < 2) {
+        box.style.display = 'none';
+        err.style.display = 'none';
+        autoSave();
+        return;
+      }
+
+      const lower = input.toLowerCase();
+      const exactMatch = items.find(i => i.name.toLowerCase() === lower && i.id !== currentEditId);
+      const fuzzyMatch = items.find(i => i.id !== currentEditId && (i.name.toLowerCase().includes(lower) || lower.includes(i.name.toLowerCase())));
+
+      if (exactMatch) {
+         err.style.display = 'block';
+         box.style.display = 'none';
+      } else if (fuzzyMatch) {
+         err.style.display = 'none';
+         box.style.display = 'block';
+         const sugName = document.getElementById('i-suggested-name');
+         sugName.innerText = fuzzyMatch.name;
+         sugName.onclick = () => {
+            document.getElementById('f-name').value = fuzzyMatch.name;
+            document.getElementById('f-category').value = fuzzyMatch.category;
+            if (fuzzyMatch.price) document.getElementById('f-price').value = fuzzyMatch.price;
+            if (fuzzyMatch.unit) document.getElementById('f-unit').value = fuzzyMatch.unit;
+            if (fuzzyMatch.sku) document.getElementById('f-sku').value = fuzzyMatch.sku;
+            handleItemInput();
+         };
+         autoSave();
+      } else {
+         err.style.display = 'none';
+         box.style.display = 'none';
+         autoSave();
+      }
+    }
+
+    function autoSave() {
+      const name = document.getElementById('f-name').value;
+      if (!name) return;
+
+      // Exact Duplicate Protection
+      const isDuplicate = items.some(i => i.name.toLowerCase() === name.toLowerCase() && i.id !== currentEditId);
+      if (isDuplicate) return; 
+
+      const cat = document.getElementById('f-category').value;
+      const price = parseInt(document.getElementById('f-price').value) || 0;
+      const unit = document.getElementById('f-unit').value;
+      const currency = document.getElementById('f-currency').value;
+      const manu = document.getElementById('f-manu').value;
+      const model = document.getElementById('f-model').value;
+      const sku = document.getElementById('f-sku').value;
+      const expiry = document.getElementById('f-expiry').value;
+      const notes = document.getElementById('f-notes').value;
+      const image = document.getElementById('f-img-preview').style.display === 'block' ? document.getElementById('f-img-preview').src : '';
+
+      const obj = { id: currentEditId || Date.now(), name, category: cat, price, unit, currency, manu, model, sku, expiry, notes, status: currentStatus, image };
+
+      const idx = items.findIndex(i => i.id === obj.id);
+      if (idx !== -1) {
+        items[idx] = obj;
+      } else {
+        items.push(obj);
+        currentEditId = obj.id; // Switch to edit mode once created
+      }
+      localStorage.setItem('items', JSON.stringify(items));
+    }
+
+    renderFilterChips();
+    renderItems();
+  </script>
+</body>
+</html>
