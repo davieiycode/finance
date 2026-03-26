@@ -10,7 +10,7 @@
   <script src="theme.js"></script>
   <style>
     :root {
-      --violet: #8B5CF6;
+      --violet: var(--accent);
       --violet-soft: rgba(139, 92, 246, 0.15);
       --bg-darker: var(--bg-secondary);
     }
@@ -50,7 +50,11 @@
        flex: 1; padding: 0.6rem; border-radius: 0.6rem; border: none; background: none; color: var(--text-secondary);
        font-weight: 600; font-size: 0.8125rem; cursor: pointer; transition: all 0.2s;
     }
-    .modal-tab.active { background: var(--violet); color: var(--text-primary); }
+    .modal-tab.active { 
+       background: var(--violet); 
+       color: white; 
+       box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
 
     .view-content { padding: 1.5rem; display: none; flex-direction: column; gap: 1.5rem; }
     .view-content.active { display: flex; }
@@ -180,7 +184,7 @@
             </div>
           </div>
           <div style="text-align:right;">
-             <div style="font-weight:700; color:white;">Rp ${acc.balance.toLocaleString('id-ID')}</div>
+             <div style="font-weight:700; color:var(--text-primary);">Rp ${acc.balance.toLocaleString('id-ID')}</div>
              <div style="font-size:0.65rem; color:${acc.status === 'Active' ? '#32D74B' : '#FF453A'}; font-weight:700;">${acc.status}</div>
           </div>
         </div>
@@ -209,7 +213,7 @@
          document.getElementById('ana-tx-list').innerHTML = filtered.map(t => `
             <div class="tx-item">
                <div>
-                  <div style="font-weight:600; font-size:0.8125rem; color:white;">${t.merchant || t.name}</div>
+                  <div style="font-weight:600; font-size:0.8125rem; color:var(--text-primary);">${t.merchant || t.name}</div>
                   <div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div>
                </div>
                <div style="font-weight:700; color:${t.type === 'Expense' ? '#ef4444' : '#10b981'}">
