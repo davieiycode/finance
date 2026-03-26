@@ -46,6 +46,7 @@ body {
 }
 
 @media (max-width: 480px) {
+  html { font-size: 90%; }
   body { padding: 0.5rem; }
   .container { border-radius: 1rem; min-height: 95vh; }
   .header { padding: 1rem; }
