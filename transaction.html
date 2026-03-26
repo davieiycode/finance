@@ -21,398 +21,310 @@
         <span>Transaction Details</span>
       </div>
       <div class="header-actions">
-        <button id="prev-btn" class="btn btn-secondary" style="display: none;">
-          <i data-lucide="chevron-left" style="width: 16px;"></i> Prev
-        </button>
         <button id="cancel-btn" class="btn btn-secondary">Cancel</button>
-        <button id="next-btn" class="btn btn-primary">
-          Next <i data-lucide="chevron-right" style="width: 16px;"></i>
+        <button id="next-btn" class="btn btn-primary" style="background: var(--success); border-color: var(--success);">
+          <i data-lucide="check" style="width: 16px;"></i> Save Transaction
         </button>
       </div>
     </header>
 
-    <div class="tabs-container">
-      <nav class="tabs">
-        <div class="tab active" data-step="1">
-          <i data-lucide="pencil" style="width: 16px;"></i> Basic Info
-        </div>
-        <div class="tab" data-step="2">
-          <i data-lucide="landmark" style="width: 16px;"></i> Accounts
-        </div>
-        <div class="tab" data-step="3">
-          <i data-lucide="folder" style="width: 16px;"></i> Category & Merchant
-        </div>
-        <div class="tab" data-step="4">
-          <i data-lucide="package" style="width: 16px;"></i> Item & Stock
-        </div>
-        <div class="tab" data-step="5">
-          <i data-lucide="banknote" style="width: 16px;"></i> Financial Details
-        </div>
-        <div class="tab" data-step="6">
-          <i data-lucide="paperclip" style="width: 16px;"></i> Attachments
-        </div>
-      </nav>
-    </div>
-
     <form class="form-content">
-      <!-- Step 1: Basic Info -->
-      <div class="step-content active" id="step-1">
-        <div class="form-group">
-          <label class="label">Date<span>*</span></label>
-          <div class="input-container">
-            <input type="date" class="input input-with-icon" id="transaction-date" value="2026-03-12">
-            <i data-lucide="calendar" class="input-icon" style="width: 18px;"></i>
-          </div>
+      <!-- Section 1: Time & Identity -->
+      <div class="step-content" id="step-1" style="display: flex;">
+        <div class="section-header">
+           <i data-lucide="clock"></i> <span>1. Time & Identity</span>
         </div>
-
-        <div class="form-group">
-          <label class="label">Time<span>*</span></label>
-          <div class="input-container">
-            <input type="time" class="input input-with-icon" id="transaction-time" value="15:45">
-            <i data-lucide="clock" class="input-icon" style="width: 18px;"></i>
+        <p class="section-subtitle">Set the chronological context for this entry.</p>
+        
+        <div class="form-group-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="label">Date<span>*</span></label>
+            <div class="input-container">
+              <input type="date" class="input input-with-icon" id="transaction-date">
+              <i data-lucide="calendar" class="input-icon" style="width: 18px;"></i>
+            </div>
           </div>
-        </div>
-
-        <div class="form-group" id="type-group">
-          <label class="label">Type<span>*</span></label>
-          <div class="type-btn-group" id="type-selector">
-            <button type="button" class="type-btn type-btn-expense active" data-type="Expense">
-              <i data-lucide="trending-down" style="width: 18px;"></i>
-              <span class="type-label">Expense</span>
-            </button>
-            <button type="button" class="type-btn type-btn-income" data-type="Income">
-              <i data-lucide="trending-up" style="width: 18px;"></i>
-              <span class="type-label">Income</span>
-            </button>
-            <button type="button" class="type-btn type-btn-transfer" data-type="Transfer">
-              <i data-lucide="repeat" style="width: 18px;"></i>
-              <span class="type-label">Transfer</span>
-            </button>
-            <button type="button" class="type-btn type-btn-savings" data-type="Savings">
-              <i data-lucide="piggy-bank" style="width: 18px;"></i>
-              <span class="type-label">Savings</span>
-            </button>
-            <button type="button" class="type-btn type-btn-investment" data-type="Investment">
-              <i data-lucide="bar-chart-3" style="width: 18px;"></i>
-              <span class="type-label">Investment</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="form-group" id="cleared-group">
-          <label class="label">Cleared<span>*</span></label>
-          <div class="type-btn-group" id="cleared-selector">
-            <button type="button" class="type-btn type-btn-expense active" data-cleared="no">
-              <i data-lucide="x-circle" style="width: 18px;"></i>
-              <span class="type-label">No</span>
-            </button>
-            <button type="button" class="type-btn type-btn-income" data-cleared="yes">
-              <i data-lucide="check-circle" style="width: 18px;"></i>
-              <span class="type-label">Yes</span>
-            </button>
+          <div class="form-group">
+            <label class="label">Time<span>*</span></label>
+            <div class="input-container">
+              <input type="time" class="input input-with-icon" id="transaction-time">
+              <i data-lucide="clock" class="input-icon" style="width: 18px;"></i>
+            </div>
           </div>
         </div>
 
         <div class="form-group">
           <label class="label">Author<span>*</span></label>
           <div class="input-container">
-            <input type="text" class="input" id="author-input" list="author-list" value="Muhammad Rafieiy">
-            <datalist id="author-list">
-              <option value="Muhammad Rafieiy">Owner</option>
-              <option value="Jane Doe">Manager</option>
-              <option value="John Smith">Accountant</option>
-            </datalist>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="label">Description (HTML/Markdown Ready)</label>
-          <textarea class="textarea" id="transaction-description"
-            placeholder="Write details here... Support for longtext, HTML, or Markdown codes."
-            style="min-height: 160px;"></textarea>
-        </div>
-      </div>
-
-      <!-- Step 2: Accounts -->
-      <div class="step-content" id="step-2">
-        <div class="form-group" id="payment-account-group">
-          <label class="label">Payment Account<span>*</span></label>
-          <div class="input-container">
-            <input type="text" class="input" id="payment-account" list="payment-list"
-              placeholder="Select or enter account">
-            <datalist id="payment-list">
-              <option value="Bank Central Asia (BCA)">Personal Account</option>
-              <option value="Cash">Wallet</option>
-              <option value="Mandiri">Business Account</option>
-            </datalist>
-          </div>
-        </div>
-
-        <div class="form-group" id="received-account-group" style="display: none;">
-          <label class="label">Received Account<span>*</span></label>
-          <div class="input-container">
-            <input type="text" class="input" id="received-account" list="received-list"
-              placeholder="Select or enter account">
-            <datalist id="received-list">
-              <option value="Bank Central Asia (BCA)">Personal Account</option>
-              <option value="Cash">Wallet</option>
-              <option value="Savings Account">Future Fund</option>
-            </datalist>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="label">Currency<span>*</span></label>
-          <div class="input-container">
-            <input type="text" class="input" id="currency-input" list="currency-list" value="IDR">
-            <datalist id="currency-list">
-              <option value="IDR">Indonesian Rupiah</option>
-              <option value="USD">US Dollar</option>
-              <option value="EUR">Euro</option>
-              <option value="JPY">Japanese Yen</option>
-              <option value="GBP">British Pound</option>
-              <option value="AUD">Australian Dollar</option>
-              <option value="CAD">Canadian Dollar</option>
-              <option value="CHF">Swiss Franc</option>
-              <option value="CNY">Chinese Yuan</option>
-              <option value="HKD">Hong Kong Dollar</option>
-              <option value="NZD">New Zealand Dollar</option>
-              <option value="SEK">Swedish Krona</option>
-              <option value="KRW">South Korean Won</option>
-              <option value="SGD">Singapore Dollar</option>
-              <option value="NOK">Norwegian Krone</option>
-              <option value="MXN">Mexican Peso</option>
-              <option value="INR">Indian Rupee</option>
-              <option value="RUB">Russian Ruble</option>
-              <option value="ZAR">South African Rand</option>
-              <option value="TRY">Turkish Lira</option>
-              <option value="BRL">Brazilian Real</option>
-              <option value="TWD">New Taiwan Dollar</option>
-              <option value="DKK">Danish Krone</option>
-              <option value="PLN">Polish Zloty</option>
-              <option value="THB">Thai Baht</option>
-              <option value="AED">United Arab Emirates Dirham</option>
-              <option value="SAR">Saudi Riyal</option>
-              <option value="MYR">Malaysian Ringgit</option>
-              <option value="PHP">Philippine Peso</option>
-              <option value="VND">Vietnamese Dong</option>
-              <option value="ILS">Israeli New Shekel</option>
-              <option value="HUF">Hungarian Forint</option>
-              <option value="CZK">Czech Koruna</option>
-              <option value="CLP">Chilean Peso</option>
-              <option value="COP">Colombian Peso</option>
-              <option value="ARS">Argentine Peso</option>
-              <option value="PEN">Peruvian Sol</option>
-              <option value="KWD">Kuwaiti Dinar</option>
-              <option value="QAR">Qatari Rial</option>
-              <option value="PKR">Pakistani Rupee</option>
-              <option value="EGP">Egyptian Pound</option>
-            </datalist>
-          </div>
-        </div>
-
-        <div class="form-group" id="exchange-rate-group" style="display: none;">
-          <label class="label">Exchange Rate<span>*</span></label>
-          <div class="input-container">
-            <input type="number" class="input" value="1">
+            <input type="text" class="input" id="author-input" list="author-list" placeholder="Enter author name...">
+            <datalist id="author-list"></datalist>
           </div>
         </div>
       </div>
 
-      <!-- Step 3: Category & Merchant -->
-      <div class="step-content" id="step-3">
+      <!-- Section 2: Item Definition -->
+      <div class="step-content" id="step-2" style="display: flex;">
+        <div class="section-header">
+           <i data-lucide="package"></i> <span>2. Item Definition</span>
+        </div>
+        <p class="section-subtitle">Define the product or service being logged.</p>
+
         <div class="form-group">
-          <label class="label">Category<span>*</span></label>
+          <label class="label">Item Name<span>*</span></label>
           <div class="input-container">
-            <input type="text" class="input input-with-left-icon" id="category-input" list="category-list"
-              value="Food & Groceries">
-            <span id="category-icon-container" class="input-icon-left">
-              <i data-lucide="shopping-cart" style="width: 18px; color: var(--accent);"></i>
-            </span>
-            <datalist id="category-list">
-              <!-- Filtered by JS -->
-            </datalist>
+            <input type="text" class="input input-with-icon" id="item-input" list="item-list"
+              placeholder="Search or scan item..." oninput="validateItemName()">
+            <i data-lucide="search" class="input-icon" style="width: 18px;"></i>
+            <datalist id="item-list"></datalist>
+          </div>
+          <div id="item-suggestion" class="fuzzy-suggestion" style="display: none;">
+            <span>Did you mean: <strong id="suggested-item-name" style="cursor: pointer; color: var(--accent);"></strong>?</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-secondary" id="scan-sku-btn" style="width: 100%; justify-content: center; gap: 0.5rem;">
+          <i data-lucide="scan-barcode" style="width: 18px;"></i> Scan SKU / Barcode
+        </button>
+      </div>
+
+      <!-- Section 3: Core Details -->
+      <div class="step-content" id="step-3" style="display: flex;">
+        <div class="section-header">
+           <i data-lucide="info"></i> <span>3. Core Details</span>
+        </div>
+        <p class="section-subtitle">Select the transaction type and category.</p>
+
+        <div class="form-group">
+          <label class="label">Transaction Type<span>*</span></label>
+          <div class="type-btn-group" id="type-selector">
+            <button type="button" class="type-btn type-btn-expense active" data-type="Expense">
+              <i data-lucide="trending-down"></i> <span class="type-label">Expense</span>
+            </button>
+            <button type="button" class="type-btn type-btn-income" data-type="Income">
+              <i data-lucide="trending-up"></i> <span class="type-label">Income</span>
+            </button>
+            <button type="button" class="type-btn type-btn-transfer" data-type="Transfer">
+              <i data-lucide="repeat"></i> <span class="type-label">Transfer</span>
+            </button>
+            <button type="button" class="type-btn type-btn-savings" data-type="Savings">
+              <i data-lucide="piggy-bank"></i> <span class="type-label">Savings</span>
+            </button>
+            <button type="button" class="type-btn type-btn-investment" data-type="Investment">
+              <i data-lucide="bar-chart-3"></i> <span class="type-label">Invest</span>
+            </button>
           </div>
         </div>
 
         <div class="form-group">
           <label class="label">Merchant</label>
           <div class="input-container">
-            <input type="text" class="input" id="merchant-input" list="merchant-list" value="Pertashop Sambiroto">
-            <datalist id="merchant-list">
-              <option value="Pertashop Sambiroto">Gas Station</option>
-              <option value="Indomaret">Convenience Store</option>
-              <option value="Starbucks">Cafe</option>
-              <option value="Amazon">Online Shopping</option>
-            </datalist>
+            <input type="text" class="input" id="merchant-input" list="merchant-list" placeholder="Enter merchant..." oninput="validateMerchantName()">
+            <datalist id="merchant-list"></datalist>
+          </div>
+          <div id="merchant-suggestion" class="fuzzy-suggestion" style="display: none;">
+            <span>Did you mean: <strong id="suggested-merchant-name" style="cursor: pointer; color: var(--accent);"></strong>?</span>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="label">Tags</label>
-          <div class="tags-input-wrapper" id="tags-wrapper">
-            <input type="text" class="tag-input" list="tag-suggestions" placeholder="Add tag...">
-            <datalist id="tag-suggestions">
-              <option value="Personal"></option>
-              <option value="Business"></option>
-              <option value="Fuel"></option>
-              <option value="Food"></option>
-            </datalist>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="label">Project</label>
-          <div class="tags-input-wrapper" id="projects-wrapper">
-            <input type="text" class="tag-input" list="project-suggestions" placeholder="Add project...">
-            <datalist id="project-suggestions">
-              <option value="Home Reno"></option>
-              <option value="Vacation"></option>
-              <option value="Office Exp"></option>
-            </datalist>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 4: Items & Stock -->
-      <div class="step-content" id="step-4">
-        <div class="form-group">
-          <label class="label">Item Name<span>*</span></label>
+          <label class="label">Category<span>*</span></label>
           <div class="input-container">
-            <input type="text" class="input" id="item-input" list="item-list" value="Pertamax">
-            <datalist id="item-list">
-              <option value="Pertamax">Fuel</option>
-              <option value="Car Wash">Maintenance</option>
-              <option value="Coffee Latte">Beverage</option>
-              <option value="Gaming Subscription">Digital</option>
-            </datalist>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="label">Quantity<span>*</span></label>
-          <div class="number-input-group">
-            <input type="text" class="number-input" id="quantity-input" value="2.459016393">
-            <div class="number-controls">
-              <button type="button" class="num-btn"><i data-lucide="minus" style="width: 18px;"></i></button>
-              <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
+            <input type="text" class="input input-with-icon" id="category-input" list="category-list"
+              placeholder="Select category...">
+            <div id="category-icon-container" class="input-icon">
+              <i data-lucide="box" style="width: 18px;"></i>
             </div>
+            <datalist id="category-list"></datalist>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="label">Scale<span>*</span></label>
-          <div class="input-container select-container">
-            <input type="text" class="input" id="item-scale" list="scale-list" value="pcs">
-            <datalist id="scale-list">
-              <option value="pcs">Pieces</option>
-              <option value="unit">Vehicle/Asset</option>
-              <option value="ticket">Ticket</option>
-              <option value="trans">Transaction</option>
-              <option value="person">Person</option>
-              <option value="glass">Glass</option>
-              <option value="cup">Cup</option>
-              <option value="bowl">Bowl</option>
-              <option value="kg">Kilogram</option>
-              <option value="g">Gram</option>
-              <option value="L">Liter</option>
-              <option value="mL">Milliliter</option>
-              <option value="m">Meter</option>
-              <option value="cm">Centimeter</option>
-              <option value="box">Box</option>
-              <option value="pack">Pack</option>
-              <option value="pkg">Package</option>
-              <option value="pch">Pouch</option>
-              <option value="port">Portion</option>
-              <option value="bndl">Bundle</option>
-              <option value="ctn">Carton</option>
-              <option value="rim">Rim</option>
-              <option value="doz">Dozen</option>
-            </datalist>
-          </div>
+          <label class="label">Description</label>
+          <textarea class="input" id="transaction-description" placeholder="Optional notes about this entry..."
+            style="height: 100px; resize: none; padding-top: 0.75rem; border-radius: 1rem;"></textarea>
         </div>
       </div>
 
-      <!-- Step 5: Financial Details -->
-      <div class="step-content" id="step-5">
-        <div class="form-group">
-          <label class="label">Amount<span>*</span></label>
-          <div class="number-input-group">
-            <span style="color: var(--text-secondary); margin-right: 0.5rem; font-weight: 600;">Rp</span>
-            <input type="text" class="number-input" id="amount-input" value="12200">
-            <div class="number-controls">
-              <button type="button" class="num-btn"><i data-lucide="minus" style="width: 18px;"></i></button>
-              <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
+      <!-- Section 4: Pricing & Volume -->
+      <div class="step-content" id="step-4" style="display: flex;">
+        <div class="section-header">
+           <i data-lucide="banknote"></i> <span>4. Pricing & Volume</span>
+        </div>
+        <p class="section-subtitle">Set the quantitative and monetary values.</p>
+
+        <div class="form-group-row" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="label">Quantity<span>*</span></label>
+            <div class="input-container">
+              <input type="text" class="input num-input" id="quantity-input" value="1" maxlength="10">
             </div>
           </div>
-          <div id="price-insight"
-            style="margin-top: 0.5rem; font-size: 0.75rem; display: none; align-items: center; gap: 0.35rem; font-weight: 500;">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="label">Discount</label>
-          <div class="number-input-group">
-            <span style="color: var(--text-secondary); margin-right: 0.5rem; font-weight: 600;">Rp</span>
-            <input type="text" class="number-input" id="discount-input" value="0">
-            <div class="number-controls">
-              <button type="button" class="num-btn"><i data-lucide="minus" style="width: 18px;"></i></button>
-              <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="label">Additional Fee</label>
-          <div class="number-input-group">
-            <span style="color: var(--text-secondary); margin-right: 0.5rem; font-weight: 600;">Rp</span>
-            <input type="text" class="number-input" id="fee-input" value="0">
-            <div class="number-controls">
-              <button type="button" class="num-btn"><i data-lucide="minus" style="width: 18px;"></i></button>
-              <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
+          <div class="form-group">
+            <label class="label">Unit Scale<span>*</span></label>
+            <div class="input-container">
+              <input type="text" class="input" id="item-scale" list="scale-list" placeholder="Select scale..." value="pcs">
+              <i data-lucide="scaling" class="input-icon" style="width: 18px; opacity: 0.5;"></i>
+              <datalist id="scale-list">
+                <option value="pcs">Pieces - Standard unit for individual items</option>
+                <option value="kg">Kilogram - Mass/Weight for groceries/fuel</option>
+                <option value="gr">Gram - Precision weight for small items</option>
+                <option value="L">Liter - Volume for liquid items</option>
+                <option value="ml">Milliliter - Small volume precision</option>
+                <option value="pack">Package - Wrapped or bundled items</option>
+                <option value="box">Box - Packaged sets or cartons</option>
+                <option value="btl">Bottle - Single beverage or liquid container</option>
+                <option value="m">Meter - Length measurement (cloth, cable)</option>
+                <option value="serv">Serving - Portion of food or meal</option>
+                <option value="trip">Trip - Transportation or travel distance</option>
+                <option value="hrs">Hours - Time-based services or labor</option>
+                <option value="pax">Person - Per head count for tickets/bookings</option>
+              </datalist>
             </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="label">Total<span>*</span></label>
-          <div id="calculation-breakdown"
-            style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; opacity: 0.8; font-family: monospace;">
-            (0 x Rp 0.00) - Rp 0.00 + Rp 0.00
+        <div class="form-group-row" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="label">Currency<span>*</span></label>
+            <div class="input-container">
+              <input type="text" class="input" id="currency-input" list="currency-list" value="IDR">
+              <i data-lucide="coins" class="input-icon" style="width: 18px; opacity: 0.5;"></i>
+              <datalist id="currency-list">
+                <option value="IDR">Indonesian Rupiah - Indonesian national currency</option>
+                <option value="USD">US Dollar - United States official currency</option>
+                <option value="EUR">Euro - European Union shared currency</option>
+                <option value="GBP">British Pound - United Kingdom currency</option>
+                <option value="JPY">Japanese Yen - Japan official currency</option>
+                <option value="SGD">Singapore Dollar - Singapore local currency</option>
+                <option value="AUD">Australian Dollar - Australian regional currency</option>
+                <option value="MYR">Malaysian Ringgit - Malaysia local currency</option>
+                <option value="SAR">Saudi Riyal - Kingdom of Saudi Arabia</option>
+                <option value="CNY">Chinese Yuan - People's Republic of China</option>
+                <option value="KRW">South Korean Won - South Korea currency</option>
+                <option value="TRY">Turkish Lira - Republic of Türkiye</option>
+              </datalist>
+            </div>
           </div>
-          <div class="total-field">
-            <span class="total-label">Rp</span>
-            <span class="total-value" id="total-display">30,000.00</span>
+          <div class="form-group">
+            <label class="label">Amount (per Unit)<span>*</span></label>
+            <div class="input-container">
+              <input type="text" class="input input-amount" id="amount-input" placeholder="0" style="font-size: 1.25rem; font-weight: 800; text-align: right; padding-right: 1.25rem;">
+            </div>
           </div>
         </div>
-      </div>
-      <!-- Step 6: Attachments -->
-      <div class="step-content" id="step-6">
-        <div class="form-group">
-          <label class="label">Receipt</label>
+
+        <div id="price-insight" class="insight-box" style="display: none; margin: -0.5rem 0 1rem;"></div>
+
+        <div class="form-group" id="exchange-rate-group" style="display: none; margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 1rem; border: 1px dashed var(--border);">
+          <label class="label">Exchange Rate (to IDR)<span>*</span></label>
           <div class="input-container">
-            <input type="text" class="input" id="receipt-input" list="receipt-list"
-              value="Indomaret Manisrenggo 01/27/2025 00:00:00">
-            <datalist id="receipt-list">
-              <option value="Indomaret Manisrenggo 01/27/2025 00:00:00">Main Receipt</option>
-              <option value="Starbucks Coffee 03/10/2025">Food Receipt</option>
-            </datalist>
+            <input type="text" class="input num-input" id="exchange-rate-input" placeholder="1.00" value="1.00">
+            <i data-lucide="refresh-cw" class="input-icon" style="width: 18px; opacity: 0.5;"></i>
+          </div>
+          <p class="section-subtitle" style="margin-top: 0.5rem; font-size: 0.75rem;">Specify the conversion factor to your base currency (IDR).</p>
+        </div>
+
+        <div class="form-group-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="label">Discount</label>
+            <input type="text" class="input input-amount" id="discount-input" placeholder="0" style="text-align: right;">
+          </div>
+          <div class="form-group">
+            <label class="label">Additional Fee</label>
+            <input type="text" class="input input-amount" id="fee-input" placeholder="0" style="text-align: right;">
           </div>
         </div>
 
-        <div id="receipt-preview" style="margin-top: 1.5rem; text-align: center;">
-          <div class="preview-card" style="display: inline-block; position: relative;">
-            <img id="receipt-img"
-              src="/Users/rafieiy/.gemini/antigravity/brain/8433b4ab-9906-4905-b9b7-e56872277bf6/receipt_thumbnail_mockup_1774474517929.png"
-              style="width: 100%; max-width: 280px; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid var(--border);">
-            <div
-              style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 1rem; border-radius: 0 0 1rem 1rem;">
-              <span style="font-size: 0.75rem; color: var(--text-secondary);">Tap to Expand</span>
-            </div>
+        <div id="summary-card" class="summary-card" style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); margin-top: 1rem;">
+          <div class="summary-row" style="padding: 1rem;">
+            <span style="font-weight: 600;">Calculated total</span>
+            <span id="total-display" class="total-value" style="font-size: 1.75rem; font-weight: 800; color: var(--accent);">Rp 0.00</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Financial Flow -->
+      <div class="step-content" id="step-5" style="display: flex;">
+        <div class="section-header">
+           <i data-lucide="landmark"></i> <span>5. Financial Flow</span>
+        </div>
+        <p class="section-subtitle">Configure the origin and destination accounts.</p>
+
+        <div class="form-group" id="payment-account-group">
+          <label class="label">Payment Source Account<span>*</span></label>
+          <div class="input-container">
+            <input type="text" class="input" id="payment-account" list="payment-list" placeholder="Select account...">
+            <datalist id="payment-list"></datalist>
+          </div>
+        </div>
+
+        <div class="form-group" id="received-account-group" style="display: none;">
+          <label class="label">Beneficiary Account<span>*</span></label>
+          <div class="input-container">
+            <input type="text" class="input" id="received-account" list="received-list" placeholder="Select account...">
+            <datalist id="received-list"></datalist>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 6: Metadata & Tags -->
+      <div class="step-content" id="step-6" style="display: flex;">
+        <div class="section-header">
+           <i data-lucide="tag"></i> <span>6. Metadata & Tags</span>
+        </div>
+        <p class="section-subtitle">Add labels for improved search and reporting.</p>
+
+        <div class="form-group">
+          <label class="label">Analytics Tags</label>
+          <div id="tags-wrapper" class="chips-wrapper" style="min-height: 48px; background: var(--bg-input); border-radius: 1rem; padding: 0.5rem; border: 1px solid var(--border);">
+            <div class="chips-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;"></div>
+            <input type="text" list="tag-suggestions" placeholder="Type tag and press enter..." style="background: transparent; border: none; outline: none; color: white; width: 100%;">
+            <datalist id="tag-suggestions"></datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Associated Project</label>
+          <div id="projects-wrapper" class="chips-wrapper" style="min-height: 48px; background: var(--bg-input); border-radius: 1rem; padding: 0.5rem; border: 1px solid var(--border);">
+            <div class="chips-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;"></div>
+            <input type="text" list="project-suggestions" placeholder="Type project name..." style="background: transparent; border: none; outline: none; color: white; width: 100%;">
+            <datalist id="project-suggestions"></datalist>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 7: Verification -->
+      <div class="step-content" id="step-7" style="display: flex;">
+        <div class="section-header">
+           <i data-lucide="paperclip"></i> <span>7. Verification</span>
+        </div>
+        <p class="section-subtitle">Attach proof to finalize the record.</p>
+
+        <div class="form-group">
+          <label class="label">Attachment Metadata (Optional)</label>
+          <div class="input-container">
+            <input type="text" class="input" id="receipt-input" list="receipt-list" placeholder="Link, reference, or note...">
+            <datalist id="receipt-list"></datalist>
+          </div>
+        </div>
+        <div id="receipt-preview" style="margin-top: 1.5rem;">
+           <div class="preview-card" style="display: none; border: 1px solid var(--border); border-radius: 1.5rem; overflow: hidden; background: black;">
+              <img id="receipt-img" src="" style="width: 100%; display: block; filter: brightness(0.9);">
+           </div>
+           
+           <div id="receipt-empty-state" class="empty-state-card" style="padding: 3rem 1.5rem; border: 2px dashed var(--border); border-radius: 1.5rem; text-align: center; background: rgba(255,255,255,0.01);">
+              <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                <i data-lucide="image-plus" style="width: 32px; height: 32px; color: var(--text-secondary); opacity: 0.5;"></i>
+              </div>
+              <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1rem;">No Document Attached</h4>
+              <p style="color: var(--text-secondary); font-size: 0.8125rem; margin-bottom: 2rem; max-width: 280px; margin-left: auto; margin-right: auto;">Upload a digital receipt to ensure this transaction is audit-ready and easy to reconcile.</p>
+              <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: center; background: var(--bg-input); border-color: var(--border);">
+                 <i data-lucide="upload-cloud" style="width: 18px;"></i> Upload Documentation
+              </button>
+           </div>
         </div>
       </div>
     </form>
+
   </div>
 
   <div id="toast-container"
@@ -477,12 +389,24 @@
             <!-- Dynamic lines like Price x Qty, Discount, Fee -->
           </div>
         </div>
-
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
           <div>
             <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">CATEGORY</label>
             <div id="detail-category"
               style="display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div style="grid-column: span 2; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 1rem; border: 1px solid var(--border);">
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.75rem; text-align: center;">SET CLEARING STATUS</label>
+            <div class="type-btn-group" id="cleared-selector" style="background: transparent; padding: 0;">
+              <button type="button" class="type-btn type-btn-expense active" data-cleared="no" style="flex: 1;">
+                <i data-lucide="x-circle" style="width: 16px;"></i>
+                <span>Uncleared</span>
+              </button>
+              <button type="button" class="type-btn type-btn-income" data-cleared="yes" style="flex: 1;">
+                <i data-lucide="check-circle" style="width: 16px;"></i>
+                <span>Cleared</span>
+              </button>
+            </div>
           </div>
           <div>
             <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">MERCHANT</label>
@@ -561,6 +485,11 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <div id="reader-container" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem;">
+    <div id="reader" style="width:100%; max-width:400px; border-radius:1rem; overflow:hidden; background:white;"></div>
+    <button type="button" id="close-scanner" class="btn btn-secondary" style="margin-top:2rem; width:100%; max-width:400px; padding:1rem; font-weight:700;">Cancel Scanning</button>
+  </div>
   <script src="script.js"></script>
 </body>
 
