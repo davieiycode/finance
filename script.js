@@ -3,7 +3,7 @@ lucide.createIcons();
 
 // State management
 let currentStep = 1;
-const totalSteps = 6;
+const totalSteps = 7;
 let editId = null;
 let mode = null;
 
@@ -18,6 +18,16 @@ const stepContents = document.querySelectorAll('.step-content');
 const nextBtn = document.getElementById('next-btn');
 const prevBtn = document.getElementById('prev-btn');
 const currencyInput = document.getElementById('currency-input');
+const itemInput = document.getElementById('item-input');
+const merchantInput = document.getElementById('merchant-input');
+const amountInput = document.getElementById('amount-input');
+const quantityInput = document.getElementById('quantity-input');
+const itemScale = document.getElementById('item-scale');
+const discountInput = document.getElementById('discount-input');
+const feeInput = document.getElementById('fee-input');
+const receiptInput = document.getElementById('receipt-input');
+const receiptPreview = document.getElementById('receipt-preview');
+
 // Conditional visibility elements
 const paymentGroup = document.getElementById('payment-account-group');
 const receivedGroup = document.getElementById('received-account-group');
@@ -119,9 +129,11 @@ function updateCategoryIcon(label) {
   }
 }
 
-categoryInput.addEventListener('input', (e) => {
-  updateCategoryIcon(e.target.value);
-});
+if (categoryInput) {
+  categoryInput.addEventListener('input', (e) => {
+    updateCategoryIcon(e.target.value);
+  });
+}
 
 typeButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -151,6 +163,13 @@ typeButtons.forEach(btn => {
 // Initial load & Prefill
 updateCategories('Expense');
 
+// Default Author from User Profile
+const authorInput = document.getElementById('author-input');
+if (authorInput && !editId) {
+  const ps = JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Alex Doe"}');
+  authorInput.value = ps.name || 'Alex Doe';
+}
+
 if (editId) {
   const db = JSON.parse(localStorage.getItem('transactions') || '[]');
   const tx = db.find(t => t.id == editId);
@@ -172,8 +191,24 @@ if (editId) {
     });
 
     // Amount & Details
-    if (document.getElementById('amount-input')) document.getElementById('amount-input').value = tx.amount;
+    if (document.getElementById('amount-input')) document.getElementById('amount-input').value = tx.price || tx.amount;
+    if (tx.qty && document.getElementById('quantity-input')) document.getElementById('quantity-input').value = tx.qty;
+    if (tx.scale && document.getElementById('item-scale')) document.getElementById('item-scale').value = tx.scale;
+    if (tx.discount && document.getElementById('discount-input')) document.getElementById('discount-input').value = tx.discount;
+    if (tx.fee && document.getElementById('fee-input')) document.getElementById('fee-input').value = tx.fee;
+    if (tx.author && document.getElementById('author-input')) document.getElementById('author-input').value = tx.author;
+    if (tx.description && document.getElementById('transaction-description')) document.getElementById('transaction-description').value = tx.description;
+    if (tx.currency && document.getElementById('currency-input')) {
+        document.getElementById('currency-input').value = tx.currency;
+        updateExchangeVisibility(tx.currency);
+    }
+    if (tx.accountPayment && document.getElementById('payment-account')) document.getElementById('payment-account').value = tx.accountPayment;
+    if (tx.accountReceived && document.getElementById('received-account')) document.getElementById('received-account').value = tx.accountReceived;
     
+    // Chips
+    if (tx.tags) tx.tags.forEach(tag => addChip('tags-wrapper', tag));
+    if (tx.projects) tx.projects.forEach(p => addChip('projects-wrapper', p));
+
     // Cleared status
     const clearedBtns = document.querySelectorAll('#cleared-selector .type-btn');
     clearedBtns.forEach(btn => {
@@ -202,24 +237,26 @@ clearedButtons.forEach(btn => {
 });
 
 // Handle Currency Change
-currencyInput.addEventListener('change', (e) => {
-  const currency = e.target.value.trim().toUpperCase();
-  const datalist = document.getElementById('currency-list');
-  const existingOptions = Array.from(datalist.options).map(opt => opt.value);
-  
-  if (currency && !existingOptions.includes(currency)) {
-    const newOption = document.createElement('option');
-    newOption.value = currency;
-    datalist.appendChild(newOption);
-  }
-  
-  // Update exchange rate visibility
-  updateExchangeVisibility(currency);
-});
+if (currencyInput) {
+  currencyInput.addEventListener('change', (e) => {
+    const currency = e.target.value.trim().toUpperCase();
+    const datalist = document.getElementById('currency-list');
+    const existingOptions = Array.from(datalist.options).map(opt => opt.value);
+    
+    if (currency && !existingOptions.includes(currency)) {
+      const newOption = document.createElement('option');
+      newOption.value = currency;
+      if (datalist) datalist.appendChild(newOption);
+    }
+    
+    // Update exchange rate visibility
+    updateExchangeVisibility(currency);
+  });
 
-currencyInput.addEventListener('input', (e) => {
-  updateExchangeVisibility(e.target.value.trim().toUpperCase());
-});
+  currencyInput.addEventListener('input', (e) => {
+    updateExchangeVisibility(e.target.value.trim().toUpperCase());
+  });
+}
 
 function updateExchangeVisibility(currency) {
   if (currency !== 'IDR' && currency !== '') {
@@ -233,36 +270,52 @@ function updateExchangeVisibility(currency) {
 const dateInput = document.getElementById('transaction-date');
 const timeInput = document.getElementById('transaction-time');
 
-dateInput.addEventListener('click', () => {
-  try { dateInput.showPicker(); } catch (e) {}
-});
+if (dateInput) {
+  dateInput.addEventListener('click', () => {
+    try { dateInput.showPicker(); } catch (e) {}
+  });
+}
 
-timeInput.addEventListener('click', () => {
-  try { timeInput.showPicker(); } catch (e) {}
-});
+if (timeInput) {
+  timeInput.addEventListener('click', () => {
+    try { timeInput.showPicker(); } catch (e) {}
+  });
+}
 
-// Function to update the view
+
+
+//// Function to update the view
 function updateStep(step) {
+  if (step < 1 || step > totalSteps) return;
   currentStep = step;
 
-  // Update tabs
-  tabs.forEach(tab => {
-    tab.classList.toggle('active', parseInt(tab.dataset.step) === step);
+  // Re-query current page elements to ensure synchronization
+  const localTabs = document.querySelectorAll('.tab');
+  const localContents = document.querySelectorAll('.step-content');
+
+  // Update tabs (breadcrumbs)
+  localTabs.forEach(tab => {
+    const tabStep = parseInt(tab.dataset.step);
+    if (!tabStep) return;
+    
+    if (tabStep < step) {
+      tab.classList.add('completed');
+      tab.classList.remove('active');
+    } else if (tabStep === step) {
+      tab.classList.remove('completed');
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('completed', 'active');
+    }
   });
 
-  // Update content
-  stepContents.forEach(content => {
-    content.classList.toggle('active', parseInt(content.id.split('-')[1]) === step);
+  // Update step contents
+  localContents.forEach(content => {
+    content.classList.remove('active');
+    if (content.id === `step-${step}`) {
+      content.classList.add('active');
+    }
   });
-
-  // Update buttons
-  prevBtn.style.display = step === 1 ? 'none' : 'flex';
-
-  if (step === totalSteps) {
-    nextBtn.innerHTML = 'Save <i data-lucide="check" style="width: 16px;"></i>';
-  } else {
-    nextBtn.innerHTML = 'Next <i data-lucide="chevron-right" style="width: 16px;"></i>';
-  }
 
   // Re-create icons for the dynamic button content
   lucide.createIcons();
@@ -274,12 +327,17 @@ function updateStep(step) {
   }
 }
 
-// Event Listeners
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    updateStep(parseInt(tab.dataset.step));
-  });
-});
+function adjustNum(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let curr = parseFloat(el.value.replace(/,/g, '')) || 0;
+  el.value = (curr + val).toString();
+  el.dispatchEvent(new Event('input'));
+}
+window.adjustNum = adjustNum;
+
+
+// Event Listeners (Tabs handled at end of script)
 
 function showToast(message, type = 'success', iconName = 'check-circle') {
   const container = document.getElementById('toast-container');
@@ -300,6 +358,137 @@ function showToast(message, type = 'success', iconName = 'check-circle') {
     setTimeout(() => toast.remove(), 400);
   }, 4000);
 }
+
+// Optimized Suggestion Datalist Mapping
+if (itemInput) {
+  const catalog = JSON.parse(localStorage.getItem('items') || '[]');
+  const list = document.getElementById('item-list');
+  if (list) {
+     list.innerHTML = catalog.map(i => {
+        const meta = [i.manu, i.model, i.sku].filter(x => x).join(' • ');
+        return `<option value="${i.name}">${meta}</option>`;
+     }).join('');
+  }
+}
+
+function validateItemName() {
+  const val = itemInput.value.toLowerCase().trim();
+  const suggestionBox = document.getElementById('item-suggestion');
+  const suggestedNameEl = document.getElementById('suggested-item-name');
+  
+  if (val.length < 2) {
+    if (suggestionBox) suggestionBox.style.display = 'none';
+    return;
+  }
+
+  const catalog = JSON.parse(localStorage.getItem('items') || '[]');
+  const match = catalog.find(i => 
+    (i.name.toLowerCase().includes(val) || 
+     (i.sku && i.sku.toLowerCase().includes(val)) || 
+     (i.model && i.model.toLowerCase().includes(val)) || 
+     (i.notes && i.notes.toLowerCase().includes(val))) &&
+     i.name.toLowerCase() !== val
+  );
+
+  if (match) {
+    if (suggestedNameEl) suggestedNameEl.innerText = match.name;
+    if (suggestionBox) suggestionBox.style.display = 'block';
+    
+    if (suggestedNameEl) {
+      suggestedNameEl.onclick = () => {
+        itemInput.value = match.name;
+        if (suggestionBox) suggestionBox.style.display = 'none';
+        itemInput.dispatchEvent(new Event('input'));
+      };
+    }
+  } else {
+    if (suggestionBox) suggestionBox.style.display = 'none';
+  }
+}
+window.validateItemName = validateItemName;
+
+function validateMerchantName() {
+  const val = merchantInput.value.toLowerCase().trim();
+  const suggestionBox = document.getElementById('merchant-suggestion');
+  const suggestedNameEl = document.getElementById('suggested-merchant-name');
+  
+  if (val.length < 2) {
+    if (suggestionBox) suggestionBox.style.display = 'none';
+    return;
+  }
+
+  const merchants = JSON.parse(localStorage.getItem('merchants') || '[]');
+  const match = merchants.find(m => 
+    (m.name.toLowerCase().includes(val) || 
+     (m.city && m.city.toLowerCase().includes(val)) || 
+     (m.category && m.category.toLowerCase().includes(val))) &&
+     m.name.toLowerCase() !== val
+  );
+
+  if (match) {
+    if (suggestedNameEl) suggestedNameEl.innerText = match.name;
+    if (suggestionBox) suggestionBox.style.display = 'block';
+    
+    if (suggestedNameEl) {
+      suggestedNameEl.onclick = () => {
+        merchantInput.value = match.name;
+        if (suggestionBox) suggestionBox.style.display = 'none';
+        merchantInput.dispatchEvent(new Event('input'));
+      };
+    }
+  } else {
+    if (suggestionBox) suggestionBox.style.display = 'none';
+  }
+}
+window.validateMerchantName = validateMerchantName;
+
+// Hardware-Accelerated SKU Scanner
+const scanBtn = document.getElementById('scan-sku-btn');
+const scannerOverlay = document.getElementById('reader-container');
+const scannerClose = document.getElementById('close-scanner');
+let html5QrCode;
+
+if (scanBtn) {
+  scanBtn.onclick = () => {
+    scannerOverlay.style.display = 'flex';
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" }, 
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      (decodedText) => {
+        itemInput.value = decodedText;
+        stopScanner();
+        // Trigger validation and meta-sync
+        validateItemName();
+        itemInput.dispatchEvent(new Event('input'));
+        if (typeof showToast === 'function') showToast(`SKU Scanned: ${decodedText}`, 'success');
+      },
+      (errorMessage) => {}
+    ).catch(err => {
+      console.error(err);
+      if (typeof showToast === 'function') showToast('Camera access required.', 'error');
+      stopScanner();
+    });
+  };
+}
+
+function stopScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      html5QrCode.clear();
+      scannerOverlay.style.display = 'none';
+    }).catch(() => {
+      scannerOverlay.style.display = 'none';
+    });
+  } else {
+    scannerOverlay.style.display = 'none';
+  }
+}
+
+if (scannerClose) scannerClose.onclick = stopScanner;
+
+// Existing logic remains below...
+window.validateItemName = validateItemName;
 
 function isFormDirty() {
   const merchant = document.getElementById('merchant-input')?.value || '';
@@ -327,7 +516,8 @@ const confirmDiscardBtn = document.getElementById('confirm-discard');
 const cancelDiscardBtn = document.getElementById('cancel-discard');
 
 if (previewCard) {
-  previewCard.addEventListener('click', () => {
+  previewCard.addEventListener('dblclick', (e) => {
+    e.preventDefault();
     const src = document.getElementById('receipt-img')?.src;
     if (src && lightboxModal && lightboxImg) {
       lightboxImg.src = src;
@@ -389,44 +579,47 @@ if (confirmDiscardBtn) {
 }
 
 function validateStep(step) {
-  if (step === 1) {
+  // Always permit navigation during Edit Mode
+  if (mode === 'edit') return true;
+
+  if (step === 1) { // Date & Time
     const date = document.getElementById('transaction-date').value;
     const time = document.getElementById('transaction-time').value;
     const author = document.getElementById('author-input').value;
     if (!date) { showToast('Transaction Date is required.', 'danger', 'alert-triangle'); return false; }
     if (!time) { showToast('Transaction Time is required.', 'danger', 'alert-triangle'); return false; }
     if (!author) { showToast('Author is required.', 'danger', 'alert-triangle'); return false; }
-  } else if (step === 2) {
-    const paymentAccount = document.getElementById('payment-account').value;
-    const receivedAccount = document.getElementById('received-account').value;
-    const currency = document.getElementById('currency-input').value;
-    const type = document.querySelector('#type-selector .type-btn.active').dataset.type;
-
-    if (paymentGroup.style.display !== 'none' && !paymentAccount) {
-      showToast('Payment Account is required.', 'danger', 'alert-triangle');
-      return false;
-    }
-    if (receivedGroup.style.display !== 'none' && !receivedAccount) {
-      showToast('Received Account is required.', 'danger', 'alert-triangle');
-      return false;
-    }
-    if (!currency) { showToast('Currency is required.', 'danger', 'alert-triangle'); return false; }
-  } else if (step === 3) {
-    const category = document.getElementById('category-input').value;
-    if (!category) { showToast('Category is required.', 'danger', 'alert-triangle'); return false; }
-  } else if (step === 4) {
+  } else if (step === 2) { // Item Details
     const itemName = document.getElementById('item-input').value;
-    const quantity = document.getElementById('quantity-input').value;
-    const scale = document.getElementById('item-scale').value;
     if (!itemName) { showToast('Item Name is required.', 'danger', 'alert-triangle'); return false; }
-    if (!quantity || parseFloat(quantity) <= 0) { showToast('Quantity must be greater than 0.', 'danger', 'alert-triangle'); return false; }
-    if (!scale) { showToast('Scale (Unit) is required.', 'danger', 'alert-triangle'); return false; }
-  } else if (step === 5) {
+  } else if (step === 3) { // Category & Type
+    const category = document.getElementById('category-input').value;
+    const type = document.querySelector('#type-selector .type-btn.active')?.dataset.type;
+    if (!category) { showToast('Category is required.', 'danger', 'alert-triangle'); return false; }
+    if (!type) { showToast('Transaction Type is required.', 'danger', 'alert-triangle'); return false; }
+  } else if (step === 4) { // Price & Quantity
+    const quantity = document.getElementById('quantity-input').value;
     const amount = document.getElementById('amount-input').value;
-    if (!amount || parseFloat(amount.replace(/,/g, '')) <= 0) { 
-      showToast('Amount must be greater than 0.', 'danger', 'alert-triangle'); 
+    if (!quantity || parseFloat(quantity) <= 0) { showToast('Quantity must be greater than 0.', 'danger', 'alert-triangle'); return false; }
+    if (!amount || parseFloat(amount.replace(/,/g, '')) < 0) { 
+      showToast('Price must be 0 or more.', 'danger', 'alert-triangle'); 
       return false; 
     }
+  } else if (step === 5) { // Accounts
+      const type = document.querySelector('#type-selector .type-btn.active').dataset.type;
+      const paymentAccount = document.getElementById('payment-account').value;
+      const receivedAccount = document.getElementById('received-account').value;
+
+      if (['Expense', 'Transfer', 'Savings', 'Investment'].includes(type) && !paymentAccount) {
+        showToast('Payment Account is required.', 'danger', 'alert-triangle');
+        return false;
+      }
+      if (['Income', 'Transfer'].includes(type) && !receivedAccount) {
+        showToast('Received Account is required.', 'danger', 'alert-triangle');
+        return false;
+      }
+  } else if (step === 6) { // Description & Tags (no mandatory fields for now)
+    // Optional step, no validation needed unless specific fields become mandatory
   }
   return true;
 }
@@ -451,7 +644,7 @@ function showTransactionDetail() {
   const receivedAcc = document.getElementById('received-account')?.value || '-';
   const dateVal = document.getElementById('transaction-date')?.value || '';
   const timeVal = document.getElementById('transaction-time')?.value || '';
-  const statusActive = document.querySelector('#cleared-selector .type-btn.active')?.dataset.type || 'Cleared';
+  const statusActive = document.querySelector('#cleared-selector .type-btn.active')?.dataset.cleared || 'no'; // Corrected to dataset.cleared
   // Receipt Breakdown HTML Generation (Thermal Print Aesthetic)
   const subtotal = quantity * amountVal;
   const format = (num) => 'Rp ' + num.toLocaleString('en-US', { minimumFractionDigits: 2 });
@@ -487,7 +680,7 @@ function showTransactionDetail() {
   }
 
   receiptHTML += `
-    <div style="margin-top: 0.75rem; border-top: 1px dashed var(--border); padding-top: 0.75rem; display: flex; justify-content: space-between; font-weight: 800; color: var(--accent); font-size: 1.125rem; font-family: 'DM Mono', monospace;">
+    <div style="margin-top: 0.75rem; border-top: 1px dashed var(--border); padding-top: 0.75rem; display: flex; justify-content: space-between; font-weight: 800; color: var(--accent); font-size: 1.125rem; font-family: 'DM Mono", monospace;">
       <span>Total Paid</span>
       <span>${totalDisplay}</span>
     </div>
@@ -512,11 +705,53 @@ function showTransactionDetail() {
   document.getElementById('receipt-summary').innerHTML = receiptHTML;
   document.getElementById('detail-merchant').innerText = merchant;
   document.getElementById('detail-category').innerHTML = `<i data-lucide="${categoryIcon}" style="width: 16px;"></i> ${categoryLabel}`;
-  document.getElementById('detail-account').innerText = receivedAcc !== '-' ? `${paymentAcc} → ${receivedAcc}` : paymentAcc;
-  document.getElementById('detail-date').innerText = dateFinal;
-  document.getElementById('detail-status').innerHTML = statusActive === 'Cleared' 
-    ? `<span style="color: #32D74B; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="check-circle" style="width:14px;"></i> Cleared</span>` 
-    : `<span style="color: #FF453A; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="alert-circle" style="width:14px;"></i> Uncleared</span>`;
+  
+  const type = document.querySelector('#type-selector .type-btn.active')?.dataset.type;
+  let accountDisplay = '';
+  if (type === 'Income') {
+    accountDisplay = receivedAcc;
+  } else if (type === 'Expense' || type === 'Savings' || type === 'Investment') {
+    accountDisplay = paymentAcc;
+  } else if (type === 'Transfer') {
+    accountDisplay = `${paymentAcc} → ${receivedAcc}`;
+  }
+  document.getElementById('detail-account').innerText = accountDisplay;
+
+  // Update detail view content
+  const statusEl = document.getElementById('detail-status');
+  const updateStatusUI = (cleared) => {
+    if (!statusEl) return;
+    statusEl.innerHTML = cleared === 'yes' 
+      ? `<span style="color: #32D74B; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="check-circle" style="width:14px;"></i> Cleared</span>` 
+      : `<span style="color: #FF453A; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="alert-circle" style="width:14px;"></i> Uncleared</span>`;
+    lucide.createIcons();
+  };
+  
+  updateStatusUI(statusActive);
+
+  // Link Clearing Status Buttons to Logic
+  const clearedBtns = document.querySelectorAll('#cleared-selector .type-btn');
+  clearedBtns.forEach(btn => {
+    btn.onclick = () => {
+       clearedBtns.forEach(b => b.classList.remove('active'));
+       btn.classList.add('active');
+       const newVal = btn.dataset.cleared;
+       updateStatusUI(newVal);
+
+       // Update DB
+       const txId = mode === 'edit' ? parseInt(editId) : (tx ? tx.id : null);
+       if (txId) {
+          let db = JSON.parse(localStorage.getItem('transactions') || '[]');
+          const idx = db.findIndex(t => t.id == txId);
+          if (idx !== -1) {
+             db[idx].cleared = (newVal === 'yes');
+             localStorage.setItem('transactions', JSON.stringify(db));
+             showToast(`Transaction marked as ${newVal === 'yes' ? 'Cleared' : 'Uncleared'}.`, 'info', 'check-circle');
+          }
+       }
+    };
+  });
+
   document.getElementById('detail-tags-list').innerHTML = getChips('tags-wrapper');
   document.getElementById('detail-projects-list').innerHTML = getChips('projects-wrapper');
 
@@ -550,66 +785,153 @@ const btnCloseDetailView = document.getElementById('close-detail');
 if (btnDoneView) btnDoneView.onclick = () => window.location.href = 'index.html';
 if (btnCloseDetailView) btnCloseDetailView.onclick = () => window.location.href = 'index.html';
 
-nextBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  
-  if (!validateStep(currentStep)) return;
-
-  if (currentStep < totalSteps) {
-    updateStep(currentStep + 1);
-  } else {
-    // Construct dynamic success message (Toast)
-    const itemName = document.getElementById('item-input')?.value || 'Item';
-    const merchant = document.getElementById('merchant-input')?.value || 'Merchant';
-    const quantity = document.getElementById('quantity-input')?.value || '0';
-    const scale = document.getElementById('item-scale')?.value || '';
-    const date = document.getElementById('transaction-date')?.value || '';
-    const time = document.getElementById('transaction-time')?.value || '';
+if (nextBtn) {
+  nextBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     
-    let dateStr = date + ' ' + time;
-    try {
-      if (date) {
-        const d = new Date(date + 'T' + (time || '00:00'));
-        dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '');
-      }
-    } catch (err) {}
-
-    const successMsg = `${quantity} ${scale} ${itemName} has been successfully saved in the ${merchant} at ${dateStr}!`;
-    showToast(successMsg);
-    
-    // SAVE TO LOCAL STORAGE
-    const isCleared = document.querySelector('#cleared-selector .type-btn.active')?.dataset.cleared === 'yes';
-    const tx = {
-      id: mode === 'edit' ? parseInt(editId) : Date.now(),
-      name: itemName,
-      merchant: merchant,
-      amount: parseFloat((totalDisplay?.innerText || '0').replace(/[^0-9.-]+/g, "")) || 0,
-      category: categoryInput?.value || 'Misc',
-      type: document.querySelector('#type-selector .type-btn.active')?.dataset.type || 'Expense',
-      date: date || new Date().toISOString().split('T')[0],
-      time: time || '00:00',
-      cleared: isCleared
-    };
-
-    let db = JSON.parse(localStorage.getItem('transactions') || '[]');
-    if (mode === 'edit') {
-       db = db.map(t => t.id == editId ? tx : t);
-    } else {
-       db.push(tx);
+    // Validate everything in one go since it's a single page flow
+    let isAllValid = true;
+    for (let s = 1; s <= totalSteps; s++) {
+       if (!validateStep(s)) {
+          const invalidEl = document.getElementById(`step-${s}`);
+          if (invalidEl) invalidEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          isAllValid = false;
+          break;
+       }
     }
-    localStorage.setItem('transactions', JSON.stringify(db));
 
-    // Show Summary Detail View
-    setTimeout(showTransactionDetail, 1200);
-  }
-});
+    if (!isAllValid) return;
+  
+    if (false) { // Skip step navigation
+       // ...
+    } else {
+      // Construct dynamic success message (Toast)
+      const itemName = document.getElementById('item-input')?.value || 'Item';
+      const merchant = document.getElementById('merchant-input')?.value || 'Merchant';
+      const quantity = document.getElementById('quantity-input')?.value || '0';
+      const scale = document.getElementById('item-scale')?.value || '';
+      const date = document.getElementById('transaction-date')?.value || '';
+      const time = document.getElementById('transaction-time')?.value || '';
+      
+      let dateStr = date + ' ' + time;
+      try {
+        if (date) {
+          const d = new Date(date + 'T' + (time || '00:00'));
+          dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', '');
+        }
+      } catch (err) {}
+  
+      const successMsg = `${quantity} ${scale} ${itemName} has been successfully saved in the ${merchant} at ${dateStr}!`;
+      showToast(successMsg);
+      
+      // SAVE TO LOCAL STORAGE
+      const isCleared = document.querySelector('#cleared-selector .type-btn.active')?.dataset.cleared === 'yes';
+      const tx = {
+        id: mode === 'edit' ? parseInt(editId) : Date.now(),
+        sku: document.getElementById('sku-input')?.value || '',
+        name: itemName,
+        merchant: merchant,
+        amount: parseFloat((document.getElementById('total-display')?.innerText || '0').replace(/[^0-9.-]+/g, "")) || 0,
+        price: parseFloat((amountInput?.value || '0').replace(/[^0-9.-]+/g, "")) || 0,
+        qty: parseFloat(quantityInput?.value) || 0,
+        scale: itemScale?.value || '',
+        discount: parseFloat((discountInput?.value || '0').replace(/[^0-9.-]+/g, "")) || 0,
+        fee: parseFloat((feeInput?.value || '0').replace(/[^0-9.-]+/g, "")) || 0,
+        category: categoryInput?.value || 'Misc',
+        type: document.querySelector('#type-selector .type-btn.active')?.dataset.type || 'Expense',
+        date: date || new Date().toISOString().split('T')[0],
+        time: time || '00:00',
+        cleared: isCleared,
+        author: document.getElementById('author-input')?.value || '',
+        tags: Array.from(document.querySelectorAll('#tags-wrapper .chip span')).map(s => s.innerText),
+        projects: Array.from(document.querySelectorAll('#projects-wrapper .chip span')).map(s => s.innerText),
+        description: document.getElementById('transaction-description')?.value || '',
+        currency: currencyInput?.value || 'IDR',
+        exchangeRate: parseFloat((document.getElementById('exchange-rate-input')?.value || '1').replace(/[^0-9.-]+/g, "")) || 1,
+        accountPayment: document.getElementById('payment-account')?.value || '',
+        accountReceived: document.getElementById('received-account')?.value || '',
+        receipt: (receiptInput?.value) ? document.getElementById('receipt-img')?.src : ''
+      };
+  
+      // Merchant database auto-sync
+      const mNormalized = (merchant || '').trim();
+      if (mNormalized && !['Merchant', 'Placeholder'].includes(mNormalized)) {
+          let mList = JSON.parse(localStorage.getItem('merchants') || '[]');
+          if (mList.length === 0) {
+              mList = [
+                  { id: 1, name: 'Abata Donuts & Coffee Yosodipuro', category: 'Food & Beverage', status: 'Active', color: '#8B5CF6', address: 'Jl. Yosodipuro No.52D, Surakarta' },
+                  { id: 2, name: 'Supermarket Solo', category: 'Groceries', status: 'Active', color: '#10b981', address: 'Jl. Slamet Riyadi, Surakarta' }
+              ];
+          }
+          const exists = mList.some(m => m.name.toLowerCase() === mNormalized.toLowerCase());
+          if (!exists) {
+              mList.push({
+                  id: Date.now(),
+                  name: mNormalized,
+                  category: tx.category,
+                  status: 'Active',
+                  color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+                  address: 'Auto-created from dashboard'
+              });
+          }
+          localStorage.setItem('merchants', JSON.stringify(mList));
+      }
+  
+      // Item database auto-sync
+      const iNormalized = (itemName || '').trim();
+      if (iNormalized && !['Item', 'Placeholder'].includes(iNormalized)) {
+          let iList = JSON.parse(localStorage.getItem('items') || '[]');
+          if (iList.length === 0) {
+              iList = [
+                  { id: 1, name: '3 Ayam Mie Telur Kuning 200 g', category: 'Food & Groceries', status: 'Active', price: 5300, unit: 'pcs' },
+                  { id: 2, name: 'Pertamax', category: 'Transport', status: 'Active', price: 13500, unit: 'L' }
+              ];
+          }
+          const exists = iList.some(i => i.name.toLowerCase() === iNormalized.toLowerCase());
+          if (!exists) {
+              iList.push({
+                  id: Date.now(),
+                  name: iNormalized,
+                  category: tx.category,
+                  price: tx.price,
+                  unit: tx.scale || 'pcs',
+                  status: 'Active',
+                  manu: '',
+                  model: '',
+                  sku: '',
+                  notes: 'Auto-created from dashboard'
+              });
+          }
+          localStorage.setItem('items', JSON.stringify(iList));
+      }
+  
+      let db = JSON.parse(localStorage.getItem('transactions') || '[]');
+      if (mode === 'edit') {
+         const index = db.findIndex(t => t.id == editId);
+         if (index !== -1) {
+            db[index] = tx;
+         } else {
+            db.push(tx); // Fallback if record was missing
+         }
+      } else {
+         db.push(tx);
+      }
+      localStorage.setItem('transactions', JSON.stringify(db));
+  
+      // Show Summary Detail View
+      setTimeout(showTransactionDetail, 1200);
+    }
+  });
+}
 
-prevBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  if (currentStep > 1) {
-    updateStep(currentStep - 1);
-  }
-});
+if (prevBtn) {
+  prevBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (currentStep > 1) {
+      updateStep(currentStep - 1);
+    }
+  });
+}
 
 
 // Number formatting logic
@@ -645,13 +967,33 @@ function setupInputFormatting(input) {
 numericInputs.forEach(setupInputFormatting);
 
 // Calculation logic
-const quantityInput = document.getElementById('quantity-input');
-const amountInput = document.getElementById('amount-input');
-const discountInput = document.getElementById('discount-input');
-const feeInput = document.getElementById('fee-input');
 const totalDisplay = document.getElementById('total-display');
 const breakdownDisplay = document.getElementById('calculation-breakdown');
-const itemScale = document.getElementById('item-scale');
+
+function formatInputLive(e) {
+  const input = e.target;
+  let cursorPosition = input.selectionStart;
+  let originalLength = input.value.length;
+  
+  let val = input.value.replace(/[^0-9.]/g, '');
+  const parts = val.split('.');
+  if (parts.length > 2) val = parts[0] + '.' + parts.slice(1).join('');
+  
+  if (val === "") {
+    input.value = "";
+    return;
+  }
+
+  let [intPart, decPart] = val.split('.');
+  let formattedInt = intPart === "" ? "" : parseInt(intPart).toLocaleString('en-US');
+  
+  // If user just typed a dot, we should preserve it
+  let finalVal = decPart !== undefined ? formattedInt + "." + decPart : formattedInt;
+  input.value = finalVal;
+  
+  let newLength = input.value.length;
+  input.setSelectionRange(cursorPosition + (newLength - originalLength), cursorPosition + (newLength - originalLength));
+}
 
 const totalFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
@@ -659,31 +1001,64 @@ const totalFormatter = new Intl.NumberFormat('en-US', {
 });
 
 function calculateTotal() {
-  const qStr = quantityInput.value.replace(/,/g, '') || '0';
-  const aStr = amountInput.value.replace(/,/g, '') || '0';
-  const dStr = discountInput.value.replace(/,/g, '') || '0';
-  const fStr = feeInput.value.replace(/,/g, '') || '0';
+  const qStr = (quantityInput?.value || '0').replace(/,/g, '') || '0';
+  const aStr = (amountInput?.value || '0').replace(/,/g, '') || '0';
+  const dStr = (discountInput?.value || '0').replace(/,/g, '') || '0';
+  const fStr = (feeInput?.value || '0').replace(/,/g, '') || '0';
+  const exRateStr = (document.getElementById('exchange-rate-input')?.value || '1').replace(/,/g, '') || '1';
 
   const q = parseFloat(qStr) || 0;
   const a = parseFloat(aStr) || 0;
   const d = parseFloat(dStr) || 0;
   const f = parseFloat(fStr) || 0;
+  const exRate = parseFloat(exRateStr) || 1;
 
-  const total = (q * a) - d + f;
+  // Calculate In Chosen Currency FIRST, then convert to IDR
+  const subtotal = (q * a) - d + f;
+  const total = subtotal * exRate;
   
-  // Format breakdown: (Quantity Scale x Amount) - Discount + Fee
-  const unit = itemScale.value || 'pcs';
-  breakdownDisplay.innerText = `(${q.toLocaleString('en-US', {maximumFractionDigits: 10})} ${unit} x Rp ${a.toLocaleString()}) - Rp ${d.toLocaleString()} + Rp ${f.toLocaleString()}`;
+  const unit = itemScale?.value || 'pcs';
+  const cur = currencyInput?.value || 'IDR';
+
+  if (breakdownDisplay) {
+     let formula = `(${q.toLocaleString('id-ID')} ${unit} x ${cur} ${a.toLocaleString('id-ID')})`;
+     if (d > 0) formula += ` - ${cur} ${d.toLocaleString('id-ID')}`;
+     if (f > 0) formula += ` + ${cur} ${f.toLocaleString('id-ID')}`;
+     if (cur !== 'IDR') formula += ` x Rate ${exRate.toLocaleString('id-ID')}`;
+     breakdownDisplay.innerText = formula;
+  }
   
-  // Update total (2 decimals)
-  totalDisplay.innerText = totalFormatter.format(total);
+  if (totalDisplay) {
+     totalDisplay.innerText = totalFormatter.format(total);
+  }
 }
 
-// Add listeners for live calculation
-[quantityInput, amountInput, discountInput, feeInput, itemScale].forEach(el => {
-  el.addEventListener('input', calculateTotal);
-  el.addEventListener('change', calculateTotal);
+// Add listeners for live calculation and formatting
+const exRateInput = document.getElementById('exchange-rate-input');
+
+[quantityInput, amountInput, discountInput, feeInput, exRateInput].forEach(el => {
+  if (el) {
+    el.addEventListener('input', (e) => {
+       formatInputLive(e);
+       calculateTotal();
+    });
+  }
 });
+
+if (itemScale) itemScale.addEventListener('input', calculateTotal);
+
+if (currencyInput) {
+  const toggleExchangeRate = () => {
+    if (exchangeRateGroup) {
+      exchangeRateGroup.style.display = (currencyInput.value !== 'IDR') ? 'block' : 'none';
+      lucide.createIcons(); // ensure refresh-cw is drawn
+    }
+  };
+  currencyInput.addEventListener('input', toggleExchangeRate);
+  currencyInput.addEventListener('change', toggleExchangeRate);
+  // Initial check
+  toggleExchangeRate();
+}
 
 // Simple number increment/decrement simulation
 document.querySelectorAll('.number-input-group').forEach(group => {
@@ -708,6 +1083,35 @@ document.querySelectorAll('.number-input-group').forEach(group => {
 // Update initial total
 calculateTotal();
 
+window.addChip = (wrapperId, val) => {
+  const wrapper = document.getElementById(wrapperId);
+  if (!wrapper) return;
+  const input = wrapper.querySelector('input');
+  const trimmed = val.trim();
+  if (!trimmed) return;
+
+  const existing = Array.from(wrapper.querySelectorAll('.chip')).map(c => c.dataset.value);
+  if (existing.includes(trimmed)) {
+    if (input) input.value = '';
+    return;
+  }
+
+  const chip = document.createElement('div');
+  chip.className = 'chip';
+  chip.dataset.value = trimmed;
+  chip.innerHTML = `<span>${trimmed}</span><i data-lucide="x" style="width: 12px; cursor: pointer;"></i>`;
+
+  chip.querySelector('i').onclick = (e) => {
+    e.stopPropagation();
+    chip.remove();
+  };
+
+  if (input) wrapper.insertBefore(chip, input);
+  else wrapper.appendChild(chip);
+  lucide.createIcons();
+  if (input) input.value = '';
+};
+
 // Multi-select Tags Logic
 function setupTagInput(wrapperId) {
   const wrapper = document.getElementById(wrapperId);
@@ -715,36 +1119,10 @@ function setupTagInput(wrapperId) {
   const input = wrapper.querySelector('input');
   if (!input) return;
 
-  const addTag = (val) => {
-    const trimmed = val.trim();
-    if (!trimmed) return;
-    
-    // Prevent duplicates
-    const existing = Array.from(wrapper.querySelectorAll('.chip')).map(c => c.dataset.value);
-    if (existing.includes(trimmed)) {
-      input.value = ''; // Just clear and ignore
-      return;
-    }
-
-    const chip = document.createElement('div');
-    chip.className = 'chip';
-    chip.dataset.value = trimmed;
-    chip.innerHTML = `<span>${trimmed}</span><i data-lucide="x" style="width: 12px; cursor: pointer;"></i>`;
-    
-    chip.querySelector('i').onclick = (e) => {
-      e.stopPropagation();
-      chip.remove();
-    };
-
-    wrapper.insertBefore(chip, input);
-    lucide.createIcons();
-    input.value = ''; // CLEAR AFTER ADDING
-  };
-
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addTag(input.value);
+      addChip(wrapperId, input.value);
     }
     if (e.key === 'Backspace' && !input.value) {
       const chips = wrapper.querySelectorAll('.chip');
@@ -760,7 +1138,7 @@ function setupTagInput(wrapperId) {
     if (list) {
       const options = Array.from(list.options).map(o => o.value);
       if (options.includes(val)) {
-        addTag(val);
+        addChip(wrapperId, val);
       }
     }
   });
@@ -779,8 +1157,7 @@ const itemHistory = {
   'Gaming Subscription': { amount: 150000, scale: 'subs', discount: 0, fee: 2500 }
 };
 
-const itemInput = document.getElementById('item-input');
-// (quantityInput, amountInput, etc. are already declared at line 287)
+// (quantityInput, amountInput, etc. are already declared at the top)
 
 function updatePriceInsight() {
   const insight = document.getElementById('price-insight');
@@ -811,23 +1188,72 @@ function updatePriceInsight() {
   }
 }
 
-if (itemInput) {
-  itemInput.addEventListener('input', (e) => {
-    const val = e.target.value;
-    const history = itemHistory[val];
-    
-    if (quantityInput) quantityInput.value = '1';
-    if (receiptInput) receiptInput.value = '';
-    if (receiptPreview) receiptPreview.style.display = 'none';
+// Populating Item Suggestions from Global Catalog
+const itemSuggestions = document.getElementById('item-list');
+const catalogItems = JSON.parse(localStorage.getItem('items') || '[]');
 
-    if (history) {
-      if (amountInput) amountInput.value = history.amount;
-      if (itemScale) itemScale.value = history.scale;
-      if (discountInput) discountInput.value = history.discount;
-      if (feeInput) feeInput.value = history.fee;
+if (itemSuggestions && catalogItems.length > 0) {
+  itemSuggestions.innerHTML = catalogItems.map(i => {
+    const meta = [i.manu, i.model, i.sku, i.notes].filter(x => x).join(' • ');
+    return `<option value="${i.name}">${meta}</option>`;
+  }).join('');
+}
+
+function handleAutoFill(val) {
+   if (!val) return;
+   
+   // SEARCH THROUGH HISTORY
+   const historyDb = JSON.parse(localStorage.getItem('transactions') || '[]');
+   // We search from latest to oldest
+   const latestMatch = [...historyDb].reverse().find(t => t.name.toLowerCase() === val.toLowerCase());
+   
+   if (latestMatch) {
+      // populate form
+      if (latestMatch.type) {
+         const typeBtn = Array.from(typeButtons).find(b => b.dataset.type === latestMatch.type);
+         if (typeBtn) typeBtn.click();
+      }
+      if (latestMatch.merchant) merchantInput.value = latestMatch.merchant;
+      if (latestMatch.category) {
+         categoryInput.value = latestMatch.category;
+         updateCategoryIcon(latestMatch.category);
+      }
+      if (latestMatch.currency) currencyInput.value = latestMatch.currency;
+      if (latestMatch.description) {
+         const descEl = document.getElementById('transaction-description');
+         if (descEl) descEl.value = latestMatch.description;
+      }
+
+      // Step 4 Pricing
+      if (latestMatch.qty) quantityInput.value = latestMatch.qty;
+      if (latestMatch.scale) itemScale.value = latestMatch.scale;
+      if (latestMatch.price) amountInput.value = latestMatch.price;
+      if (latestMatch.discount) discountInput.value = latestMatch.discount;
+      if (latestMatch.fee) feeInput.value = latestMatch.fee;
+
       calculateTotal();
+      updatePriceInsight();
+      showToast(`Restored details for "${val}" from history`, 'info', 'wand-2');
+      return true;
+   }
+   return false;
+}
+
+if (itemInput) {
+  // Use input event for instant reaction when picking from datalist
+  itemInput.addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    // Only autofill if the value matches exactly one of our known items in history or catalog
+    const historyDbNames = JSON.parse(localStorage.getItem('transactions') || '[]').map(t => t.name.toLowerCase());
+    if (historyDbNames.includes(val.toLowerCase())) {
+       handleAutoFill(val);
     }
-    updatePriceInsight(); // NEW
+  });
+
+  itemInput.addEventListener('change', (e) => {
+    const val = e.target.value.trim();
+    if (!val) return;
+    handleAutoFill(val);
   });
 }
 
@@ -836,10 +1262,219 @@ if (amountInput) {
 }
 
 if (receiptInput) {
-  receiptInput.addEventListener('input', (e) => {
-    receiptPreview.style.display = e.target.value.includes('Indomaret') ? 'block' : 'none';
-  });
-  
-  // Initial
-  receiptPreview.style.display = receiptInput.value.includes('Indomaret') ? 'block' : 'none';
+  const updateReceiptPreview = (val) => {
+    if (!receiptPreview) return;
+    const card = receiptPreview.querySelector('.preview-card');
+    const emptyState = document.getElementById('receipt-empty-state');
+    const img = document.getElementById('receipt-img');
+    const isSpecial = val.includes('Indomaret') || val.includes('Alfamart') || val.includes('Bensin');
+    
+    if (val.length > 0) {
+      if (emptyState) emptyState.style.display = 'none';
+      if (card) card.style.display = 'block';
+      if (img) {
+         img.src = isSpecial ? '/Users/rafieiy/.gemini/antigravity/brain/8433b4ab-9906-4905-b9b7-e56872277bf6/receipt_thumbnail_mockup_1774474517929.png' : val;
+      }
+    } else {
+      if (emptyState) emptyState.style.display = 'block';
+      if (card) card.style.display = 'none';
+      lucide.createIcons();
+    }
+  };
+
+  receiptInput.addEventListener('input', (e) => updateReceiptPreview(e.target.value));
+  updateReceiptPreview(receiptInput.value);
 }
+
+function populateDatalists() {
+  const txDb = JSON.parse(localStorage.getItem('transactions') || '[]');
+  const mDb = JSON.parse(localStorage.getItem('merchants') || '[]');
+  const iDb = JSON.parse(localStorage.getItem('items') || '[]');
+  
+  // Merchant list
+  const merchantSet = new Set(mDb.map(m => m.name));
+  txDb.forEach(t => { if (t.merchant) merchantSet.add(t.merchant); });
+  const mList = document.getElementById('merchant-list');
+  if (mList) mList.innerHTML = Array.from(merchantSet).map(m => `<option value="${m}">`).join('');
+
+  // Currency list (International Standards)
+  const currencies = [
+    { code: 'IDR', name: 'Indonesian Rupiah' },
+    { code: 'USD', name: 'US Dollar' },
+    { code: 'EUR', name: 'Euro' },
+    { code: 'JPY', name: 'Japanese Yen' },
+    { code: 'SGD', name: 'Singapore Dollar' },
+    { code: 'AUD', name: 'Australian Dollar' },
+    { code: 'GBP', name: 'British Pound Sterling' },
+    { code: 'CNY', name: 'Chinese Yuan' },
+    { code: 'SAR', name: 'Saudi Riyal' },
+    { code: 'KRW', name: 'South Korean Won' },
+    { code: 'HKD', name: 'Hong Kong Dollar' },
+    { code: 'THB', name: 'Thai Baht' },
+    { code: 'CHF', name: 'Swiss Franc' }
+  ];
+  const curList = document.getElementById('currency-list');
+  if (curList) curList.innerHTML = currencies.map(c => `<option value="${c.code}">${c.name}</option>`).join('');
+
+  // Scale list (Metric & Common Units)
+  const scales = [
+    { name: 'pcs', desc: 'pieces (satuan)' },
+    { name: 'kg', desc: 'kilogram (berat)' },
+    { name: 'g', desc: 'gram (berat)' },
+    { name: 'L', desc: 'Litre (volume)' },
+    { name: 'ml', desc: 'millilitre (volume)' },
+    { name: 'pack', desc: 'package (kemasan)' },
+    { name: 'box', desc: 'box (kotak)' },
+    { name: 'set', desc: 'set (rangkaian)' },
+    { name: 'pair', desc: 'pair (pasang)' },
+    { name: 'm', desc: 'metre (panjang)' },
+    { name: 'cm', desc: 'centimetre (panjang)' },
+    { name: 'sqm', desc: 'square metre (luas)' },
+    { name: 'hour', desc: 'hour (waktu/jam)' },
+    { name: 'day', desc: 'day (waktu/hari)' },
+    { name: 'person', desc: 'person (per orang)' },
+    { name: 'plate', desc: 'plate (piring)' }
+  ];
+  const sList = document.getElementById('scale-list');
+  if (sList) sList.innerHTML = scales.map(s => `<option value="${s.name}">${s.desc}</option>`).join('');
+
+  // Account lists
+  const accounts = JSON.parse(localStorage.getItem('financial_accounts') || '["Cash", "Bank BCA", "BSI Account", "GoPay", "ShopeePay"]');
+  const pList = document.getElementById('payment-list');
+  const rList = document.getElementById('received-list');
+  const accOptions = accounts.map(a => `<option value="${a.name || a}">`).join('');
+  if (pList) pList.innerHTML = accOptions;
+  if (rList) rList.innerHTML = accOptions;
+
+  // Receipt list
+  const receiptSet = new Set(['Indomaret Struk', 'Alfamart Digital', 'Bensin Kita']);
+  txDb.forEach(t => { if (t.receipt && !t.receipt.startsWith('data:')) receiptSet.add(t.receipt); });
+  const recList = document.getElementById('receipt-list');
+  if (recList) recList.innerHTML = Array.from(receiptSet).map(r => `<option value="${r}">`).join('');
+
+  // Metadata
+  const tagSet = new Set(['Urgent', 'Essential', 'Personal', 'Work']);
+  const proSet = new Set(['House Reno', 'Vacation 2026', 'Daily Life']);
+  txDb.forEach(t => {
+     if (t.tags) t.tags.forEach(tg => tagSet.add(tg));
+     if (t.projects) t.projects.forEach(p => proSet.add(p));
+  });
+  const tSug = document.getElementById('tag-suggestions');
+  const pSug = document.getElementById('project-suggestions');
+  if (tSug) tSug.innerHTML = Array.from(tagSet).map(t => `<option value="${t}">`).join('');
+  if (pSug) pSug.innerHTML = Array.from(proSet).map(p => `<option value="${p}">`).join('');
+}
+
+// Re-initialize Tabs for transaction.html explicitly
+if (document.querySelector('.tabs')) {
+  const transactionTabs = document.querySelectorAll('.tab');
+  transactionTabs.forEach(tab => {
+    tab.onclick = () => {
+       const targetStep = parseInt(tab.dataset.step);
+       // Allow jumping freely if in edit mode, or if jumping backward
+       if (mode === 'edit' || targetStep < currentStep) {
+          updateStep(targetStep);
+       } else {
+          // If jumping forward in new mode, validate intervening steps
+          for (let s = currentStep; s < targetStep; s++) {
+             if (!validateStep(s)) return;
+          }
+          updateStep(targetStep);
+       }
+    };
+  });
+}
+
+const initForm = () => {
+  const db = JSON.parse(localStorage.getItem('transactions') || '[]');
+  
+  if ((mode === 'edit' || mode === 'duplicate') && editId) {
+    const tx = db.find(t => t.id == editId);
+    if (tx) {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+      };
+
+      setVal('transaction-date', tx.date);
+      setVal('transaction-time', tx.time);
+      setVal('author-input', tx.author);
+      setVal('item-input', tx.name);
+      setVal('merchant-input', tx.merchant);
+      setVal('category-input', tx.category || 'Misc');
+      setVal('transaction-description', tx.description);
+      setVal('sku-input', tx.sku);
+      
+      if (amountInput) amountInput.value = (tx.price || 0).toLocaleString('id-ID');
+      if (quantityInput) quantityInput.value = tx.qty || 1;
+      if (itemScale) itemScale.value = tx.scale || 'pcs';
+      if (discountInput) discountInput.value = (tx.discount || 0).toLocaleString('id-ID');
+      if (feeInput) feeInput.value = (tx.fee || 0).toLocaleString('id-ID');
+      
+      if (currencyInput) {
+        currencyInput.value = tx.currency || 'IDR';
+        if (typeof toggleExchangeRate === 'function') toggleExchangeRate();
+      }
+      const exRateInput = document.getElementById('exchange-rate-input');
+      if (exRateInput) exRateInput.value = (tx.exchangeRate || 1).toLocaleString('id-ID');
+      
+      const typeBtn = Array.from(typeButtons).find(b => b.dataset.type === tx.type);
+      if (typeBtn) typeBtn.click();
+      
+      setVal('payment-account', tx.accountPayment);
+      setVal('received-account', tx.accountReceived);
+      
+      if (tx.tags) tx.tags.forEach(tag => addChip('tags-wrapper', tag));
+      if (tx.projects) tx.projects.forEach(p => addChip('projects-wrapper', p));
+      
+      if (tx.receipt) {
+        if (receiptInput) receiptInput.value = tx.receipt;
+        if (typeof updateReceiptPreview === 'function') updateReceiptPreview(tx.receipt);
+      }
+      
+      const clearedBtn = Array.from(document.querySelectorAll('#cleared-selector .type-btn')).find(b => b.dataset.cleared === (tx.cleared ? 'yes' : 'no'));
+      if (clearedBtn) clearedBtn.click();
+      
+      calculateTotal();
+      if (typeof updateCategoryIcon === 'function') updateCategoryIcon(tx.category);
+    }
+  } else {
+    // New Mode
+    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    const authorEl = document.getElementById('author-input');
+    if (authorEl && profile.name) authorEl.value = profile.name;
+    const now = new Date();
+    const dateEl = document.getElementById('transaction-date');
+    if (dateEl) dateEl.valueAsDate = now;
+    const timeEl = document.getElementById('transaction-time');
+    if (timeEl) timeEl.value = now.toTimeString().slice(0, 5);
+  }
+};
+
+// Re-initialize Tabs for transaction.html explicitly
+const initTabs = () => {
+  const transactionTabs = document.querySelectorAll('.tab');
+  if (transactionTabs.length > 0) {
+    transactionTabs.forEach(tab => {
+      tab.onclick = () => {
+         const targetStep = parseInt(tab.dataset.step);
+         if (mode === 'edit' || targetStep < currentStep) {
+            updateStep(targetStep);
+         } else {
+            for (let s = currentStep; s < targetStep; s++) {
+               if (!validateStep(s)) return;
+            }
+            updateStep(targetStep);
+         }
+      };
+    });
+  }
+};
+
+// Initial Call
+populateDatalists();
+if (document.getElementById('transaction-date')) initForm();
+initTabs();
+if (typeof updateAccountInputs === 'function') updateAccountInputs();
+if (typeof renderSummary === 'function') renderSummary();
+lucide.createIcons();
