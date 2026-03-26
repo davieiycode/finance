@@ -36,10 +36,12 @@
       <button id="next-month" class="back-btn" style="width: 36px; height: 36px; background: rgba(255,255,255,0.05);"><i data-lucide="chevron-right" style="width: 18px;"></i></button>
     </div>
 
-    <div class="tabs-container" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 0.35rem; display: flex; gap: 0.35rem; margin-bottom: 1.5rem;">
-      <button class="tab-btn active" data-tab="flow" style="flex: 1; border: none; background: none; color: var(--text-primary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Cash Flow</button>
-      <button class="tab-btn" data-tab="spending" style="flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Spending</button>
-      <button class="tab-btn" data-tab="income" style="flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Income</button>
+    <div class="tabs-container" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 0.35rem; display: flex; gap: 0.35rem; margin-bottom: 1.5rem; overflow-x: auto; scrollbar-width: none;">
+      <button class="tab-btn active" data-tab="flow" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-primary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Cash Flow</button>
+      <button class="tab-btn" data-tab="spending" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Spending</button>
+      <button class="tab-btn" data-tab="income" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Income</button>
+      <button class="tab-btn" data-tab="tags" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Tags</button>
+      <button class="tab-btn" data-tab="projects" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Projects</button>
     </div>
 
     <div id="tab-flow" class="tab-content">
@@ -110,6 +112,22 @@
       </div>
       <div id="in-l2" style="display: none;"><h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Sources</h3><div id="sub-in-list" style="display: grid; gap: 0.75rem;"></div></div>
       <div id="in-l3" style="display: none;"><h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Transactions</h3><div id="trans-in-list" style="display: grid; gap: 0.75rem;"></div></div>
+    </div>
+
+    <div id="tab-tags" class="tab-content" style="display: none;">
+      <div class="chart-container">
+        <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 1.5rem;">Tags Breakdown</h3>
+        <canvas id="tagsChart" style="max-height: 250px;"></canvas>
+      </div>
+      <div id="tags-list" style="display: grid; gap: 0.75rem;"></div>
+    </div>
+
+    <div id="tab-projects" class="tab-content" style="display: none;">
+      <div class="chart-container">
+        <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 1.5rem;">Project Analysis</h3>
+        <canvas id="projectsChart" style="max-height: 250px;"></canvas>
+      </div>
+      <div id="projects-list" style="display: grid; gap: 0.75rem;"></div>
     </div>
   </div>
 
@@ -199,11 +217,35 @@
       sankeyChartInstance.setOption({ backgroundColor: 'transparent', tooltip: { trigger: 'item' }, series: [{ type: 'sankey', layout: 'none', data: nodes.length > 2 ? nodes : [{name:'No Data'}], links: links.length ? links : [{source:'A',target:'B',value:0.1}], label: { color: '#eee', fontSize: 10 } }] });
 
       // Update Doughnuts
-      const donutBase = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' };
-      if (spendChart) spendChart.destroy();
-      spendChart = new Chart(document.getElementById('spendingDoughnutChart'), { type: 'doughnut', data: { labels: spendAgg.map(s => s.name), datasets: [{ data: spendAgg.map(s => s.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
       if (incomeChart) incomeChart.destroy();
       incomeChart = new Chart(document.getElementById('incomeDoughnutChart'), { type: 'doughnut', data: { labels: incomeAgg.map(i => i.name), datasets: [{ data: incomeAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
+
+      // Tags & Projects Extraction
+      const tagMap = {}, projMap = {};
+      txs.forEach(t => {
+         (t.tags || []).forEach(tg => {
+            if (tg.startsWith('#')) tagMap[tg] = (tagMap[tg] || 0) + t.amount;
+            if (tg.startsWith('[') && tg.endsWith(']')) projMap[tg] = (projMap[tg] || 0) + t.amount;
+         });
+      });
+
+      const tagData = Object.entries(tagMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
+      const projData = Object.entries(projMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
+
+      const barOpt = (labels, data, color) => ({
+         type: 'bar',
+         data: { labels, datasets: [{ data, backgroundColor: color, borderRadius: 8, barThickness: 20 }] },
+         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false }, ticks: { color: '#888', font: { size: 10 } } } } }
+      });
+
+      if (window.tagChartInst) window.tagChartInst.destroy();
+      window.tagChartInst = new Chart(document.getElementById('tagsChart'), barOpt(tagData.map(d => d.name), tagData.map(d => d.value), '#8b5cf6'));
+      
+      if (window.projChartInst) window.projChartInst.destroy();
+      window.projChartInst = new Chart(document.getElementById('projectsChart'), barOpt(projData.map(d => d.name), projData.map(d => d.value), '#0ea5e9'));
+
+      document.getElementById('tags-list').innerHTML = tagData.map(d => `<div class="stat-card"><div style="display:flex; justify-content:space-between;"><span>${d.name}</span><b>Rp ${d.value.toLocaleString('id-ID')}</b></div></div>`).join('');
+      document.getElementById('projects-list').innerHTML = projData.map(d => `<div class="stat-card"><div style="display:flex; justify-content:space-between;"><span>${d.name}</span><b>Rp ${d.value.toLocaleString('id-ID')}</b></div></div>`).join('');
       
       // Drilling logic needs local txs context
       window.shLvl = (lvl, val) => {
