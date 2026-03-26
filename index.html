@@ -714,8 +714,7 @@
         </div>
 
         <div>
-          <label
-            style="font-size:0.7rem; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">FULL
+          <label style="font-size:0.7rem; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">FULL
             NAME</label><input type="text" id="pref-name"
             style="width:100%; background:var(--bg-input); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; color:var(--text-primary); outline:none; margin-top:0.4rem;">
         </div>
@@ -1025,15 +1024,17 @@ function doPost(e) {
         <div>
           <label class="label" style="font-size:0.75rem;">THEME COLOR</label>
           <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-            <button class="color-bubble custom" id="report-custom-color-bubble" onclick="document.getElementById('report-custom-color').click()">
-               <i data-lucide="more-horizontal" style="color:white; width:20px;"></i>
+            <button class="color-bubble custom" id="report-custom-color-bubble"
+              onclick="document.getElementById('report-custom-color').click()">
+              <i data-lucide="more-horizontal" style="color:white; width:20px;"></i>
             </button>
             <button class="color-bubble active" style="background:#8b5cf6;"
               onclick="setPdfColor([139,92,246], this)"></button>
             <button class="color-bubble" style="background:#0ea5e9;" onclick="setPdfColor([14,165,233], this)"></button>
             <button class="color-bubble" style="background:#16a34a;" onclick="setPdfColor([22,163,74], this)"></button>
             <button class="color-bubble" style="background:#1e293b;" onclick="setPdfColor([30,41,59], this)"></button>
-            <input type="color" id="report-custom-color" style="display:none;" oninput="setPdfColor(this.value, document.getElementById('report-custom-color-bubble'))">
+            <input type="color" id="report-custom-color" style="display:none;"
+              oninput="setPdfColor(this.value, document.getElementById('report-custom-color-bubble'))">
           </div>
         </div>
 
