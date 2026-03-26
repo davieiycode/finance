@@ -2,76 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Merchant Management - Finance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Managed Merchants - Finance App</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="theme.js"></script>
   <style>
     :root {
-      --violet: #8B5CF6;
-      --bg-darker: var(--bg-secondary);
+      --bg-primary: #000000;
+      --bg-secondary: #0a0a0c;
+      --bg-input: #121214;
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --accent: #8b5cf6;
+      --border: rgba(255,255,255,0.08);
+      --glass: rgba(255,255,255,0.03);
     }
-
-    .search-container { position: relative; margin-bottom: 1rem; }
-    .search-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 0.8125rem 1rem 0.8125rem 2.75rem; color: var(--text-primary); outline: none; transition: 0.3s; }
-    .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); width: 18px; }
-
-    .filter-scroll { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 1.5rem; scrollbar-width: none; }
-    .filter-chip { padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 2rem; color: var(--text-secondary); font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.2s; }
-    .filter-chip.active { background: var(--violet); border-color: var(--violet); color: var(--text-primary); }
-
-    .merchant-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; cursor: pointer; transition: all 0.3s; }
-    .m-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); }
+    body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+    .container { max-width: 630px; margin: 0 auto; padding: 1.5rem; }
     
-    .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(25px); z-index: 1000; display: none; overflow-y: auto; }
-    .modal-container { width: 100%; max-width: 500px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; background: var(--bg-darker); }
-    .modal-header { padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-darker); z-index: 10; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+    .back-btn { width: 44px; height: 44px; border-radius: 22px; background: var(--glass); border: 1px solid var(--border); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     
-    .modal-tabs { display: flex; background: var(--glass); padding: 0.25rem; border-radius: 0.75rem; margin: 1rem 1.5rem; gap: 0.25rem; }
-    .modal-tab { flex: 1; padding: 0.6rem; border-radius: 0.6rem; border: none; background: none; color: var(--text-secondary); font-weight: 600; font-size: 0.8125rem; cursor: pointer; }
-    .modal-tab.active { background: var(--violet); color: var(--text-primary); }
+    .search-container { position: relative; margin-bottom: 1.5rem; }
+    .search-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1rem 1rem 3rem; color: white; font-size: 0.9375rem; transition: 0.3s; }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(139,92,246,0.1); }
+    .search-icon { position: absolute; left: 1.125rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); width: 18px; }
 
-    .view-content { padding: 1.5rem; display: none; flex-direction: column; gap: 1.5rem; }
-    .view-content.active { display: flex; }
+    .filter-scroll { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.5rem; scrollbar-width: none; }
+    .filter-chip { padding: 0.5rem 1.25rem; border-radius: 2rem; background: var(--glass); border: 1px solid var(--border); color: var(--text-secondary); white-space: nowrap; cursor: pointer; font-size: 0.8125rem; font-weight: 600; transition: 0.3s; }
+    .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-    .map-box { width: 100%; border-radius: 1rem; border: 1px solid var(--border); background: rgba(255,255,255,0.02); overflow: hidden; position: relative; aspect-ratio: 16/9; }
-    iframe { width: 100%; height: 100%; border:0; filter: invert(90%) hue-rotate(180deg) brightness(0.9); }
+    .merchant-card { background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; cursor: pointer; transition: 0.3s; }
+    .merchant-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+    
+    .m-icon { width: 48px; height: 48px; border-radius: 1.25rem; background: rgba(139,92,246,0.1); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.25rem; }
 
-    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .form-label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; }
-    .form-label span { color: var(--violet); }
-    .f-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 0.75rem; padding: 0.8125rem 1rem; color: var(--text-primary); outline: none; transition: 0.3s; font-size: 0.9375rem; }
-    .cat-desc { font-size: 0.7rem; color: var(--text-secondary); margin-top: -0.25rem; padding: 0 0.5rem; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; z-index: 1000; padding: 1rem; }
+    .modal-container { width: 100%; max-width: 500px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 2rem; margin: 2rem auto; overflow: hidden; position: relative; }
+    .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .modal-tabs { display: flex; padding: 0.5rem 1.5rem; gap: 1.5rem; border-bottom: 1px solid var(--border); }
+    .modal-tab { padding: 0.75rem 0; background: none; border: none; color: var(--text-secondary); font-weight: 700; font-size: 0.875rem; cursor: pointer; position: relative; }
+    .modal-tab.active { color: white; }
+    .modal-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--accent); }
+    .view-content { display: none; padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
+    .view-content.active { display: block; }
 
-    .select-wrapper { position: relative; }
-    .select-wrapper::after { content: '▾'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); pointer-events: none; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .f-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 0.8125rem; padding: 1rem; color: white; font-size: 0.9375rem; outline: none; transition: 0.3s; }
+    .f-input:focus { border-color: var(--accent); }
+    .cat-desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 0.5rem; }
 
-    .tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 0.75rem; min-height: 48px; align-items: center; }
-    .tag { display: flex; align-items: center; gap: 0.35rem; background: rgba(255,255,255,0.08); padding: 0.25rem 0.6rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--text-primary); }
-    .tag-close { background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; padding: 0; }
-    .add-tag-btn { background: none; border: none; color: var(--text-primary); cursor: pointer; padding: 0 0.5rem; margin-left: auto; }
-
-    .status-toggle { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; }
-    .st-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.875rem; background: rgba(255,255,255,0.03); color: var(--text-secondary); font-weight: 600; border: none; cursor: pointer; }
-    .st-btn.active.active-st { background: var(--violet); color: var(--text-primary); }
-    .st-btn.inactive.active { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
-
-    .ana-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem; }
+    .ana-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem; }
     .ana-lbl { font-size: 0.65rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem; }
-    .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 0.875rem; }
+    .map-box { width: 100%; height: 160px; background: #111; border-radius: 0.75rem; margin-top: 1rem; overflow: hidden; }
 
-    .btn-violet { background: var(--violet); color: var(--text-primary); border: none; font-weight: 700; padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.8125rem; }
-    .btn-cancel { background: rgba(255,255,255,0.08); color: var(--text-secondary); border: none; font-weight: 700; padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.8125rem; }
-    .back-btn { width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .btn-violet { background: var(--accent); color: white; border: none; font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.8125rem; cursor: pointer; transition: 0.3s; }
+    .btn-violet:hover { opacity: 0.9; transform: scale(0.98); }
+    
+    .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 0.875rem; }
   </style>
 </head>
 <body>
-  <div class="container" style="max-width: 600px; padding: 1.5rem;">
-    <header class="header" style="margin-bottom: 1.5rem;">
+  <div class="container">
+    <header class="header">
       <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
-      <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Merchants</h1>
+      <h1 style="font-size: 1.25rem; font-weight: 800;">Managed Merchants</h1>
       <button class="btn-violet" onclick="openModal(null, 'form')">+ New</button>
     </header>
 
@@ -89,7 +87,6 @@
     <div class="modal-container">
       <header class="modal-header">
         <div style="display: flex; align-items: center; gap: 1rem;">
-          <button style="background:none; border:none; color:white; cursor:pointer;" onclick="closeModal()"><i data-lucide="x"></i></button>
           <span id="m-title" style="font-weight: 700; font-size: 1.125rem; color: var(--text-primary);">Details</span>
         </div>
         <div id="header-actions" style="display: flex; gap: 0.5rem;"></div>
@@ -97,7 +94,7 @@
 
       <div class="modal-tabs" id="modal-tabs">
          <button class="modal-tab active" data-view="analysis">Activity</button>
-         <button class="modal-tab" data-view="form">Settings</button>
+         <button class="modal-tab" data-view="form">Information</button>
       </div>
 
       <div id="view-analysis" class="view-content active">
@@ -108,112 +105,204 @@
          </div>
          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
             <div class="ana-card"><div class="ana-lbl">Total Spent</div><div id="ana-total" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">Rp 0</div></div>
-            <div class="ana-card"><div class="ana-lbl">Frequency</div><div id="ana-freq" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">0 Times</div></div>
+            <div class="ana-card"><div class="ana-lbl">Transactions</div><div id="ana-count" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">0 Times</div></div>
          </div>
-         <section>
-            <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">Recent History</h3>
-            <div id="ana-tx-list" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
-         </section>
+         <div id="ana-tx-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1rem;"></div>
       </div>
 
       <div id="view-form" class="view-content">
-        <div class="form-group"><label class="form-label">Merchant Name<span>*</span></label><input type="text" id="f-name" class="f-input"></div>
+        <div class="form-group"><label class="form-label">Merchant Name<span>*</span></label><input type="text" id="f-name" class="f-input" placeholder="e.g. Starbucks Solo" oninput="autoSave()"></div>
         <div class="form-group">
-          <label class="form-label">Category<span>*</span></label>
-          <div class="select-wrapper"><select class="f-input" id="f-category" onchange="updateCatDesc()"></select></div>
-          <div id="f-cat-desc" class="cat-desc"></div>
+          <label class="form-label">Merchant Type<span>*</span></label>
+          <div class="select-wrapper">
+             <input type="text" class="f-input" id="f-type" list="type-list" oninput="autoSave()">
+             <datalist id="type-list">
+               <option value="Supermarket">Large retailers like Indogrosir, Hypermart</option>
+               <option value="Convenience Store">Indomaret, Alfamart, Circle K</option>
+               <option value="Restaurant">Dining establishments</option>
+               <option value="Cafe">Coffee shops, patisseries</option>
+               <option value="Gas Station">Pertamina, Shell, Total</option>
+               <option value="Online">E-commerce like Tokopedia, Shopee</option>
+               <option value="Pharmacy">Health & medicine</option>
+               <option value="Other">Miscellaneous merchants</option>
+             </datalist>
+          </div>
         </div>
-        <div class="form-group"><label class="form-label">Primary Contact Name</label><input type="text" id="f-contact" class="f-input"></div>
-        <div class="form-group"><label class="form-label">Phone Number</label><input type="text" id="f-phone" class="f-input"></div>
-        <div class="form-group"><label class="form-label">Email</label><input type="email" id="f-email" class="f-input"></div>
-        <div class="form-group"><label class="form-label">Website</label><input type="text" id="f-web" class="f-input"></div>
-        <div class="form-group"><label class="form-label">Physical Address</label><textarea id="f-addr" class="f-input" style="min-height: 60px;"></textarea></div>
+        
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-           <div class="form-group"><label class="form-label">City<span>*</span></label><div class="select-wrapper"><select class="f-input" id="f-city"><option>Surakarta</option><option>Solo</option></select></div></div>
-           <div class="form-group"><label class="form-label">Country<span>*</span></label><div class="select-wrapper"><select class="f-input" id="f-country"><option>Indonesia</option></select></div></div>
+           <div class="form-group"><label class="form-label">Primary Contact</label><input type="text" id="f-contact" class="f-input" oninput="autoSave()"></div>
+           <div class="form-group"><label class="form-label">Phone Number</label><input type="text" id="f-phone" class="f-input" oninput="autoSave()"></div>
         </div>
-        <div class="form-group"><label class="form-label">Preferred Payment Method</label><div class="tags-container" id="f-tags"><div class="tag">QRIS <button class="tag-close">×</button></div><div class="tag">Cash <button class="tag-close">×</button></div><button class="add-tag-btn"><i data-lucide="plus" style="width:16px;"></i></button></div></div>
-        <div class="form-group"><label class="form-label">Bank Account Details</label><input type="text" id="f-bank" class="f-input"></div>
-        <div class="form-group"><label class="form-label">Notes</label><textarea id="f-notes" class="f-input" style="min-height: 80px;"></textarea></div>
-        <div class="form-group"><label class="form-label">Status<span>*</span></label><div class="status-toggle"><button class="st-btn inactive" data-status="Inactive" onclick="setStatus('Inactive')"><i data-lucide="x-circle" style="width:16px;"></i> Inactive</button><button class="st-btn active active-st" data-status="Active" onclick="setStatus('Active')"><i data-lucide="check-circle" style="width:16px;"></i> Active</button></div></div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+           <div class="form-group"><label class="form-label">Email Address</label><input type="email" id="f-email" class="f-input" oninput="autoSave()"></div>
+           <div class="form-group"><label class="form-label">Website / URL</label><input type="text" id="f-website" class="f-input" oninput="autoSave()"></div>
+        </div>
+
+        <div class="form-group"><label class="form-label">Physical Address</label><textarea id="f-address" class="f-input" style="min-height: 60px;" oninput="autoSave()"></textarea></div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:0.75rem;">
+           <div class="form-group">
+              <label class="form-label">Country</label>
+              <div class="select-wrapper">
+                 <input type="text" id="f-country" class="f-input" list="country-list" placeholder="Country" oninput="autoSave()">
+                 <datalist id="country-list">
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Malaysia">Malaysia</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Japan">Japan</option>
+                 </datalist>
+              </div>
+           </div>
+           <div class="form-group">
+              <label class="form-label">State/Prov</label>
+              <div class="select-wrapper">
+                 <input type="text" id="f-state" class="f-input" list="state-list" placeholder="State" oninput="autoSave()">
+                 <datalist id="state-list">
+                    <option value="Jawa Tengah">Jawa Tengah</option>
+                    <option value="DKI Jakarta">DKI Jakarta</option>
+                    <option value="Jawa Timur">Jawa Timur</option>
+                    <option value="Jawa Barat">Jawa Barat</option>
+                    <option value="Bali">Bali</option>
+                 </datalist>
+              </div>
+           </div>
+           <div class="form-group">
+              <label class="form-label">City</label>
+              <div class="select-wrapper">
+                 <input type="text" id="f-city" class="f-input" list="city-list" placeholder="City" oninput="autoSave()">
+                 <datalist id="city-list">
+                    <option value="Surakarta">Surakarta</option>
+                    <option value="Solo">Solo</option>
+                    <option value="Semarang">Semarang</option>
+                    <option value="Jakarta">Jakarta</option>
+                    <option value="Surabaya">Surabaya</option>
+                    <option value="Bandung">Bandung</option>
+                    <option value="Yogyakarta">Yogyakarta</option>
+                 </datalist>
+              </div>
+           </div>
+        </div>
+
+        <div class="form-group"><label class="form-label">Map Embed Link / URL</label><input type="text" id="f-map" class="f-input" placeholder="https://..." oninput="autoSave()"></div>
       </div>
     </div>
   </div>
 
   <script>
-    lucide.createIcons();
-    const categories = [
-      { id: 'fnb', label: 'Food & Beverage', desc: 'Restaurants, Cafés, Bakeries, or Street Food.' },
-      { id: 'grocery', label: 'Groceries', desc: 'Supermarkets, Mini-markets, or Traditional Markets.' },
-      { id: 'shopping', label: 'Shopping', desc: 'Clothing, Electronics, Furniture, or Household Items.' },
-      { id: 'transport', label: 'Transport & Fuel', desc: 'Airlines, Trains, Ride-hailing, or Fuel Stations.' },
-      { id: 'subs', label: 'Subscriptions', desc: 'Streaming (Netflix/Spotify), SaaS, or Memberships.' },
-      { id: 'personal', label: 'Personal & Health', desc: 'Salons, Spas, Pharmacies, or Medical Clinics.' },
-      { id: 'leisure', label: 'Leisure & Ent', desc: 'Cinemas, Theme Parks, or Hobby Stores.' },
-      { id: 'business', label: 'Bills & Business', desc: 'Utilities like PLN, Office Supplies, or Prof Services.' },
-      { id: 'misc', label: 'Miscellaneous', desc: 'Other merchants not fitting above categories.' }
-    ];
+    let merchants = JSON.parse(localStorage.getItem('merchants') || '[]');
+    if (merchants.length === 0) {
+      merchants = [
+        { id: 1, name: 'Abata Donuts & Coffee Yosodipuro', type: 'Cafe', address: 'Jl. Yosodipuro No.52D, Surakarta', map: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3955.127410497042!2d110.8205463745672!3d-7.55594199245138!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a16828221881b%3A0x117420216654202!2sAbata%20Donuts%20%26%20Coffee%20Yosodipuro!5e0!3m2!1sen!2sid!4v1701000000000!5m2!1sen!2sid' },
+        { id: 2, name: 'Pertashop Sambiroto', type: 'Gas Station', address: 'Sambiroto, Semarang', map: '' },
+        { id: 3, name: 'Netflix Premium', type: 'Online', address: 'Digital/Online', map: '' }
+      ];
+      localStorage.setItem('merchants', JSON.stringify(merchants));
+    }
 
-    let merchants = [
-      { id: 1, name: 'Abata Donuts & Coffee Yosodipuro', category: 'Food & Beverage', status: 'Active', color: '#8B5CF6', address: 'Jl. Yosodipuro No.52D, Surakarta', phone: '6281215399998' },
-      { id: 2, name: 'Supermarket Solo', category: 'Groceries', status: 'Active', color: '#10b981', address: 'Jl. Slamet Riyadi, Surakarta' },
-      { id: 3, name: 'Netflix Premium', category: 'Subscriptions', status: 'Active', color: '#ef4444', address: 'Digital/Online' }
-    ];
-
-    let activeCat = 'All';
+    const types = ['All', 'Supermarket', 'Convenience Store', 'Restaurant', 'Cafe', 'Gas Station', 'Online', 'Pharmacy', 'Other'];
+    let activeType = 'All';
     let searchTerm = '';
 
     function handleFilter() { searchTerm = document.getElementById('m-search').value.toLowerCase(); renderMerchants(); }
-    function setCategory(cat) { activeCat = cat; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.innerText === cat)); renderMerchants(); }
+    function setType(t) { activeType = t; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.innerText === t)); renderMerchants(); }
 
     function renderFilterChips() {
       const parent = document.getElementById('m-filter-chips');
-      parent.innerHTML = `<button class="filter-chip active" onclick="setCategory('All')">All</button>` + 
-        categories.slice(0, 5).map(c => `<button class="filter-chip" onclick="setCategory('${c.label}')">${c.label.split(' ')[0]}</button>`).join('');
+      parent.innerHTML = types.map(t => `<button class="filter-chip ${t===activeType?'active':''}" onclick="setType('${t}')">${t}</button>`).join('');
     }
 
     function renderMerchants() {
-      const filtered = merchants.filter(m => (activeCat === 'All' || m.category === activeCat) && m.name.toLowerCase().includes(searchTerm));
+      const filtered = merchants.filter(m => (activeType === 'All' || m.type === activeType) && m.name.toLowerCase().includes(searchTerm));
       document.getElementById('merchant-list').innerHTML = filtered.map(m => `
-        <div class="merchant-card" onclick="openModal(${m.id}, 'analysis')"><div style="display:flex; align-items:center; gap:1rem;"><div class="m-icon" style="background:${m.color}22; color:${m.color}">${m.name.substring(0,1)}</div><div><div style="font-weight:700; color:white;">${m.name}</div><div style="font-size:0.7rem; color:var(--text-secondary);">${m.category}</div></div></div><i data-lucide="chevron-right" style="color:var(--text-secondary); width:18px;"></i></div>`).join('');
+        <div class="merchant-card" onclick="openModal(${m.id}, 'analysis')">
+          <div style="display:flex; align-items:center; gap:1rem;">
+            <div class="m-icon">${m.name[0].toUpperCase()}</div>
+            <div style="flex:1;">
+              <div style="font-weight:700; color:white;">${m.name}</div>
+              <div style="font-size:0.75rem; color:var(--text-secondary);">${m.type}</div>
+            </div>
+            <i data-lucide="chevron-right" style="color:var(--text-secondary); width:18px;"></i>
+          </div>
+        </div>`).join('');
       lucide.createIcons();
-    }
-
-    function initFormItems() {
-       document.getElementById('f-category').innerHTML = categories.map(c => `<option value="${c.label}">${c.label}</option>`).join('');
-    }
-
-    function updateCatDesc() {
-      const val = document.getElementById('f-category').value;
-      const cat = categories.find(c => c.label === val);
-      document.getElementById('f-cat-desc').innerText = cat ? cat.desc : '';
     }
 
     const modal = document.getElementById('merchant-modal');
     const tabs = document.querySelectorAll('.modal-tab');
     const contents = document.querySelectorAll('.view-content');
+    let currentEditId = null;
+
+    function refreshMap(url) {
+       const container = document.getElementById('map-container');
+       if (url && url.includes('http')) {
+          container.innerHTML = `<iframe src="${url}" style="width:100%; height:100%; border:0;" allowfullscreen="" loading="lazy"></iframe>`;
+          container.style.display = 'block';
+       } else {
+          container.style.display = 'none';
+       }
+    }
 
     function openModal(id, view) {
+      currentEditId = id;
       const m = id ? merchants.find(x => x.id === id) : null;
       document.getElementById('m-title').innerText = m ? m.name : 'New Merchant';
       document.getElementById('modal-tabs').style.display = id ? 'flex' : 'none';
       switchView(id ? view : 'form');
 
       if (m) {
-         document.getElementById('ana-address').innerText = m.address;
-         const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(m.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
-         document.getElementById('map-container').innerHTML = `<iframe src="${mapUrl}"></iframe>`;
+         document.getElementById('ana-address').innerText = m.address || 'No address provided';
          const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-         const filtered = txs.filter(t => (t.merchant || '').toLowerCase().includes(m.name.split(' ')[0].toLowerCase()));
+         const filtered = txs.filter(t => (t.merchant || '').toLowerCase() === m.name.toLowerCase());
+         
+         // Analytics: Top Items (Trends)
+         const itemCounts = {};
+         filtered.forEach(t => {
+            const itemName = t.name || 'General';
+            itemCounts[itemName] = (itemCounts[itemName] || 0) + 1;
+         });
+         const sortedItems = Object.entries(itemCounts).sort((a,b) => b[1] - a[1]).slice(0, 3);
+         
+         document.getElementById('ana-count').innerText = filtered.length + ' Times';
          document.getElementById('ana-total').innerText = 'Rp ' + filtered.reduce((s,t)=>s+t.amount,0).toLocaleString('id-ID');
-         document.getElementById('ana-freq').innerText = filtered.length + ' Times';
-         document.getElementById('ana-tx-list').innerHTML = filtered.map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.name}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('');
+         
+         let hTrend = '';
+         if (sortedItems.length > 0) {
+            hTrend = `<div style="margin-top:1rem;"><label class="ana-lbl">Top Purchase Trends</label><div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.4rem;">` + 
+               sortedItems.map(([name, count]) => `<div style="background:var(--accent); color:white; padding:0.4rem 0.8rem; border-radius:0.75rem; font-size:0.75rem; font-weight:700;">${name} (${count}x)</div>`).join('') + 
+               `</div></div>`;
+         }
+
+         document.getElementById('ana-tx-list').innerHTML = hTrend + `<div style="margin-top:1rem;"><label class="ana-lbl">Recent Activity</label><div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.4rem;">` + 
+            filtered.map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.name || 'General'}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('') + 
+            `</div></div>`;
+         
+         refreshMap(m.map);
+
          document.getElementById('f-name').value = m.name;
-         document.getElementById('f-category').value = m.category;
-         document.getElementById('f-addr').value = m.address || '';
+         document.getElementById('f-type').value = m.type;
+         document.getElementById('f-contact').value = m.contact || '';
          document.getElementById('f-phone').value = m.phone || '';
-         setStatus(m.status);
-         updateCatDesc();
+         document.getElementById('f-email').value = m.email || '';
+         document.getElementById('f-website').value = m.website || '';
+         document.getElementById('f-address').value = m.address || '';
+         document.getElementById('f-city').value = m.city || '';
+         document.getElementById('f-state').value = m.state || '';
+         document.getElementById('f-country').value = m.country || '';
+         document.getElementById('f-map').value = m.map || '';
+      } else {
+         document.getElementById('f-name').value = '';
+         document.getElementById('f-type').value = 'Supermarket';
+         document.getElementById('f-contact').value = '';
+         document.getElementById('f-phone').value = '';
+         document.getElementById('f-email').value = '';
+         document.getElementById('f-website').value = '';
+         document.getElementById('f-address').value = '';
+         document.getElementById('f-city').value = '';
+         document.getElementById('f-state').value = '';
+         document.getElementById('f-country').value = '';
+         document.getElementById('f-map').value = '';
+         refreshMap(null);
       }
       modal.style.display = 'block';
       lucide.createIcons();
@@ -223,17 +312,58 @@
       tabs.forEach(t => t.classList.toggle('active', t.dataset.view === view));
       contents.forEach(c => c.classList.toggle('active', c.id === 'view-' + view));
       const actions = document.getElementById('header-actions');
-      if (view === 'form') actions.innerHTML = `<button class="btn-cancel" onclick="closeModal()">Cancel</button><button class="btn-violet" onclick="save()">Save</button>`;
-      else actions.innerHTML = '';
+      
+      let h = '';
+      if (currentEditId) h += `<button class="btn-violet" style="background:none; border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:0 0.5rem;" onclick="deleteMerchant()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+      h += `<button class="btn-violet" onclick="closeModal()">Done</button>`;
+      actions.innerHTML = h;
+      lucide.createIcons();
     }
 
-    function setStatus(s) { document.querySelectorAll('.st-btn').forEach(b => { const act = b.dataset.status === s; b.classList.toggle('active', act); if (s === 'Active') b.classList.toggle('active-st', act); }); }
     tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
-    function closeModal() { modal.style.display = 'none'; document.body.style.overflow='auto'; }
-    function save() { alert('Updated!'); closeModal(); }
-    
+    function closeModal() { modal.style.display = 'none'; renderMerchants(); }
+
+    function deleteMerchant() {
+      if (!confirm('Delete this merchant?')) return;
+      merchants = merchants.filter(m => m.id !== currentEditId);
+      localStorage.setItem('merchants', JSON.stringify(merchants));
+      closeModal();
+    }
+
+    function autoSave() {
+      const name = document.getElementById('f-name').value;
+      if (!name) return;
+
+      const type = document.getElementById('f-type').value;
+      const contact = document.getElementById('f-contact').value;
+      const phone = document.getElementById('f-phone').value;
+      const email = document.getElementById('f-email').value;
+      const website = document.getElementById('f-website').value;
+      const address = document.getElementById('f-address').value;
+      const city = document.getElementById('f-city').value;
+      const state = document.getElementById('f-state').value;
+      const country = document.getElementById('f-country').value;
+      let map = document.getElementById('f-map').value;
+
+      // Auto-generate map from address
+      if (address && !map && address.length > 5) {
+         map = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+      }
+
+      const obj = { id: currentEditId || Date.now(), name, type, contact, phone, email, website, address, city, state, country, map };
+
+      const idx = merchants.findIndex(m => m.id === obj.id);
+      if (idx !== -1) {
+        merchants[idx] = obj;
+      } else {
+        merchants.push(obj);
+        currentEditId = obj.id;
+      }
+      localStorage.setItem('merchants', JSON.stringify(merchants));
+      refreshMap(map);
+    }
+
     renderFilterChips();
-    initFormItems();
     renderMerchants();
   </script>
 </body>
