@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaction Details - Finance Pro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="theme.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-title">
+        <button id="dismiss-btn" class="close-btn" aria-label="Close">×</button>
+        <span>Transaction Details</span>
+      </div>
+      <div class="header-actions">
+        <button id="prev-btn" class="btn btn-secondary" style="display: none;">
+          <i data-lucide="chevron-left" style="width: 16px;"></i> Prev
+        </button>
+        <button id="cancel-btn" class="btn btn-secondary">Cancel</button>
+        <button id="next-btn" class="btn btn-primary">
+          Next <i data-lucide="chevron-right" style="width: 16px;"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="tabs-container">
+      <nav class="tabs">
+        <div class="tab active" data-step="1">
+          <i data-lucide="pencil" style="width: 16px;"></i> Basic Info
+        </div>
+        <div class="tab" data-step="2">
+          <i data-lucide="landmark" style="width: 16px;"></i> Accounts
+        </div>
+        <div class="tab" data-step="3">
+          <i data-lucide="folder" style="width: 16px;"></i> Category & Merchant
+        </div>
+        <div class="tab" data-step="4">
+          <i data-lucide="package" style="width: 16px;"></i> Item & Stock
+        </div>
+        <div class="tab" data-step="5">
+          <i data-lucide="banknote" style="width: 16px;"></i> Financial Details
+        </div>
+        <div class="tab" data-step="6">
+          <i data-lucide="paperclip" style="width: 16px;"></i> Attachments
+        </div>
+      </nav>
+    </div>
+
+    <form class="form-content">
+      <!-- Step 1: Basic Info -->
+      <div class="step-content active" id="step-1">
+        <div class="form-group">
+          <label class="label">Date<span>*</span></label>
+          <div class="input-container">
+            <input type="date" class="input input-with-icon" id="transaction-date" value="2026-03-12">
+            <i data-lucide="calendar" class="input-icon" style="width: 18px;"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Time<span>*</span></label>
+          <div class="input-container">
+            <input type="time" class="input input-with-icon" id="transaction-time" value="15:45">
+            <i data-lucide="clock" class="input-icon" style="width: 18px;"></i>
+          </div>
+        </div>
+
+        <div class="form-group" id="type-group">
+          <label class="label">Type<span>*</span></label>
+          <div class="type-btn-group" id="type-selector">
+            <button type="button" class="type-btn type-btn-expense active" data-type="Expense">
+              <i data-lucide="trending-down" style="width: 18px;"></i>
+              <span class="type-label">Expense</span>
+            </button>
+            <button type="button" class="type-btn type-btn-income" data-type="Income">
+              <i data-lucide="trending-up" style="width: 18px;"></i>
+              <span class="type-label">Income</span>
+            </button>
+            <button type="button" class="type-btn type-btn-transfer" data-type="Transfer">
+              <i data-lucide="repeat" style="width: 18px;"></i>
+              <span class="type-label">Transfer</span>
+            </button>
+            <button type="button" class="type-btn type-btn-savings" data-type="Savings">
+              <i data-lucide="piggy-bank" style="width: 18px;"></i>
+              <span class="type-label">Savings</span>
+            </button>
+            <button type="button" class="type-btn type-btn-investment" data-type="Investment">
+              <i data-lucide="bar-chart-3" style="width: 18px;"></i>
+              <span class="type-label">Investment</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group" id="cleared-group">
+          <label class="label">Cleared<span>*</span></label>
+          <div class="type-btn-group" id="cleared-selector">
+            <button type="button" class="type-btn type-btn-expense active" data-cleared="no">
+              <i data-lucide="x-circle" style="width: 18px;"></i>
+              <span class="type-label">No</span>
+            </button>
+            <button type="button" class="type-btn type-btn-income" data-cleared="yes">
+              <i data-lucide="check-circle" style="width: 18px;"></i>
+              <span class="type-label">Yes</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Author<span>*</span></label>
+          <div class="input-container">
+            <input type="text" class="input" id="author-input" list="author-list" value="Muhammad Rafieiy">
+            <datalist id="author-list">
+              <option value="Muhammad Rafieiy">Owner</option>
+              <option value="Jane Doe">Manager</option>
+              <option value="John Smith">Accountant</option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Description (HTML/Markdown Ready)</label>
+          <textarea class="textarea" id="transaction-description"
+            placeholder="Write details here... Support for longtext, HTML, or Markdown codes."
+            style="min-height: 160px;"></textarea>
+        </div>
+      </div>
+
+      <!-- Step 2: Accounts -->
+      <div class="step-content" id="step-2">
+        <div class="form-group" id="payment-account-group">
+          <label class="label">Payment Account<span>*</span></label>
+          <div class="input-container">
+            <input type="text" class="input" id="payment-account" list="payment-list"
+              placeholder="Select or enter account">
+            <datalist id="payment-list">
+              <option value="Bank Central Asia (BCA)">Personal Account</option>
+              <option value="Cash">Wallet</option>
+              <option value="Mandiri">Business Account</option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group" id="received-account-group" style="display: none;">
+          <label class="label">Received Account<span>*</span></label>
+          <div class="input-container">
+            <input type="text" class="input" id="received-account" list="received-list"
+              placeholder="Select or enter account">
+            <datalist id="received-list">
+              <option value="Bank Central Asia (BCA)">Personal Account</option>
+              <option value="Cash">Wallet</option>
+              <option value="Savings Account">Future Fund</option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Currency<span>*</span></label>
+          <div class="input-container">
+            <input type="text" class="input" id="currency-input" list="currency-list" value="IDR">
+            <datalist id="currency-list">
+              <option value="IDR">Indonesian Rupiah</option>
+              <option value="USD">US Dollar</option>
+              <option value="EUR">Euro</option>
+              <option value="JPY">Japanese Yen</option>
+              <option value="GBP">British Pound</option>
+              <option value="AUD">Australian Dollar</option>
+              <option value="CAD">Canadian Dollar</option>
+              <option value="CHF">Swiss Franc</option>
+              <option value="CNY">Chinese Yuan</option>
+              <option value="HKD">Hong Kong Dollar</option>
+              <option value="NZD">New Zealand Dollar</option>
+              <option value="SEK">Swedish Krona</option>
+              <option value="KRW">South Korean Won</option>
+              <option value="SGD">Singapore Dollar</option>
+              <option value="NOK">Norwegian Krone</option>
+              <option value="MXN">Mexican Peso</option>
+              <option value="INR">Indian Rupee</option>
+              <option value="RUB">Russian Ruble</option>
+              <option value="ZAR">South African Rand</option>
+              <option value="TRY">Turkish Lira</option>
+              <option value="BRL">Brazilian Real</option>
+              <option value="TWD">New Taiwan Dollar</option>
+              <option value="DKK">Danish Krone</option>
+              <option value="PLN">Polish Zloty</option>
+              <option value="THB">Thai Baht</option>
+              <option value="AED">United Arab Emirates Dirham</option>
+              <option value="SAR">Saudi Riyal</option>
+              <option value="MYR">Malaysian Ringgit</option>
+              <option value="PHP">Philippine Peso</option>
+              <option value="VND">Vietnamese Dong</option>
+              <option value="ILS">Israeli New Shekel</option>
+              <option value="HUF">Hungarian Forint</option>
+              <option value="CZK">Czech Koruna</option>
+              <option value="CLP">Chilean Peso</option>
+              <option value="COP">Colombian Peso</option>
+              <option value="ARS">Argentine Peso</option>
+              <option value="PEN">Peruvian Sol</option>
+              <option value="KWD">Kuwaiti Dinar</option>
+              <option value="QAR">Qatari Rial</option>
+              <option value="PKR">Pakistani Rupee</option>
+              <option value="EGP">Egyptian Pound</option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group" id="exchange-rate-group" style="display: none;">
+          <label class="label">Exchange Rate<span>*</span></label>
+          <div class="input-container">
+            <input type="number" class="input" value="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Category & Merchant -->
+      <div class="step-content" id="step-3">
+        <div class="form-group">
+          <label class="label">Category<span>*</span></label>
+          <div class="input-container">
+            <input type="text" class="input input-with-left-icon" id="category-input" list="category-list"
+              value="Food & Groceries">
+            <span id="category-icon-container" class="input-icon-left">
+              <i data-lucide="shopping-cart" style="width: 18px; color: var(--accent);"></i>
+            </span>
+            <datalist id="category-list">
+              <!-- Filtered by JS -->
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Merchant</label>
+          <div class="input-container">
+            <input type="text" class="input" id="merchant-input" list="merchant-list" value="Pertashop Sambiroto">
+            <datalist id="merchant-list">
+              <option value="Pertashop Sambiroto">Gas Station</option>
+              <option value="Indomaret">Convenience Store</option>
+              <option value="Starbucks">Cafe</option>
+              <option value="Amazon">Online Shopping</option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Tags</label>
+          <div class="tags-input-wrapper" id="tags-wrapper">
+            <input type="text" class="tag-input" list="tag-suggestions" placeholder="Add tag...">
+            <datalist id="tag-suggestions">
+              <option value="Personal"></option>
+              <option value="Business"></option>
+              <option value="Fuel"></option>
+              <option value="Food"></option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Project</label>
+          <div class="tags-input-wrapper" id="projects-wrapper">
+            <input type="text" class="tag-input" list="project-suggestions" placeholder="Add project...">
+            <datalist id="project-suggestions">
+              <option value="Home Reno"></option>
+              <option value="Vacation"></option>
+              <option value="Office Exp"></option>
+            </datalist>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Items & Stock -->
+      <div class="step-content" id="step-4">
+        <div class="form-group">
+          <label class="label">Item Name<span>*</span></label>
+          <div class="input-container">
+            <input type="text" class="input" id="item-input" list="item-list" value="Pertamax">
+            <datalist id="item-list">
+              <option value="Pertamax">Fuel</option>
+              <option value="Car Wash">Maintenance</option>
+              <option value="Coffee Latte">Beverage</option>
+              <option value="Gaming Subscription">Digital</option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Quantity<span>*</span></label>
+          <div class="number-input-group">
+            <input type="text" class="number-input" id="quantity-input" value="2.459016393">
+            <div class="number-controls">
+              <button type="button" class="num-btn"><i data-lucide="minus" style="width: 18px;"></i></button>
+              <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Scale<span>*</span></label>
+          <div class="input-container select-container">
+            <input type="text" class="input" id="item-scale" list="scale-list" value="pcs">
+            <datalist id="scale-list">
+              <option value="pcs">Pieces</option>
+              <option value="unit">Vehicle/Asset</option>
+              <option value="ticket">Ticket</option>
+              <option value="trans">Transaction</option>
+              <option value="person">Person</option>
+              <option value="glass">Glass</option>
+              <option value="cup">Cup</option>
+              <option value="bowl">Bowl</option>
+              <option value="kg">Kilogram</option>
+              <option value="g">Gram</option>
+              <option value="L">Liter</option>
+              <option value="mL">Milliliter</option>
+              <option value="m">Meter</option>
+              <option value="cm">Centimeter</option>
+              <option value="box">Box</option>
+              <option value="pack">Pack</option>
+              <option value="pkg">Package</option>
+              <option value="pch">Pouch</option>
+              <option value="port">Portion</option>
+              <option value="bndl">Bundle</option>
+              <option value="ctn">Carton</option>
+              <option value="rim">Rim</option>
+              <option value="doz">Dozen</option>
+            </datalist>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Financial Details -->
+      <div class="step-content" id="step-5">
+        <div class="form-group">
+          <label class="label">Amount<span>*</span></label>
+          <div class="number-input-group">
+            <span style="color: var(--text-secondary); margin-right: 0.5rem; font-weight: 600;">Rp</span>
+            <input type="text" class="number-input" id="amount-input" value="12200">
+            <div class="number-controls">
+              <button type="button" class="num-btn"><i data-lucide="minus" style="width: 18px;"></i></button>
+              <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
+            </div>
+          </div>
+          <div id="price-insight"
+            style="margin-top: 0.5rem; font-size: 0.75rem; display: none; align-items: center; gap: 0.35rem; font-weight: 500;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Discount</label>
+          <div class="number-input-group">
+            <span style="color: var(--text-secondary); margin-right: 0.5rem; font-weight: 600;">Rp</span>
+            <input type="text" class="number-input" id="discount-input" value="0">
+            <div class="number-controls">
+              <button type="button" class="num-btn"><i data-lucide="minus" style="width: 18px;"></i></button>
+              <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Additional Fee</label>
+          <div class="number-input-group">
+            <span style="color: var(--text-secondary); margin-right: 0.5rem; font-weight: 600;">Rp</span>
+            <input type="text" class="number-input" id="fee-input" value="0">
+            <div class="number-controls">
+              <button type="button" class="num-btn"><i data-lucide="minus" style="width: 18px;"></i></button>
+              <button type="button" class="num-btn"><i data-lucide="plus" style="width: 18px;"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Total<span>*</span></label>
+          <div id="calculation-breakdown"
+            style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem; opacity: 0.8; font-family: monospace;">
+            (0 x Rp 0.00) - Rp 0.00 + Rp 0.00
+          </div>
+          <div class="total-field">
+            <span class="total-label">Rp</span>
+            <span class="total-value" id="total-display">30,000.00</span>
+          </div>
+        </div>
+      </div>
+      <!-- Step 6: Attachments -->
+      <div class="step-content" id="step-6">
+        <div class="form-group">
+          <label class="label">Receipt</label>
+          <div class="input-container">
+            <input type="text" class="input" id="receipt-input" list="receipt-list"
+              value="Indomaret Manisrenggo 01/27/2025 00:00:00">
+            <datalist id="receipt-list">
+              <option value="Indomaret Manisrenggo 01/27/2025 00:00:00">Main Receipt</option>
+              <option value="Starbucks Coffee 03/10/2025">Food Receipt</option>
+            </datalist>
+          </div>
+        </div>
+
+        <div id="receipt-preview" style="margin-top: 1.5rem; text-align: center;">
+          <div class="preview-card" style="display: inline-block; position: relative;">
+            <img id="receipt-img"
+              src="/Users/rafieiy/.gemini/antigravity/brain/8433b4ab-9906-4905-b9b7-e56872277bf6/receipt_thumbnail_mockup_1774474517929.png"
+              style="width: 100%; max-width: 280px; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 1px solid var(--border);">
+            <div
+              style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 1rem; border-radius: 0 0 1rem 1rem;">
+              <span style="font-size: 0.75rem; color: var(--text-secondary);">Tap to Expand</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div id="toast-container"
+    style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; align-items: center; width: 100%; max-width: 400px; padding: 0 1rem; pointer-events: none;">
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-icon warning">
+        <i data-lucide="alert-triangle"></i>
+      </div>
+      <h3 class="modal-title">Discard changes?</h3>
+      <p class="modal-text">You have unsaved information. Are you sure you want to cancel? This action cannot be undone.
+      </p>
+      <div class="modal-actions">
+        <button id="cancel-discard" class="btn btn-secondary" style="flex: 1;">Keep Editing</button>
+        <button id="confirm-discard" class="btn btn-primary"
+          style="flex: 1; background: var(--danger); border-color: var(--danger);">Yes, Discard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox-modal" class="modal-backdrop" style="display: none; padding: 2rem;">
+    <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+      <button id="close-lightbox" class="close-btn"
+        style="position: absolute; top: -1.5rem; right: -1.5rem; font-size: 2rem; color: var(--text-primary);">×</button>
+      <img id="lightbox-img" src="" alt="Full Receipt"
+        style="width: 100%; height: 100%; object-fit: contain; border-radius: 1rem; box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+    </div>
+  </div>
+
+  <!-- Transaction Detail View -->
+  <div id="detail-view" class="container" style="display: none; padding: 0;">
+    <header class="header" style="justify-content: center; position: relative;">
+      <button id="close-detail" class="close-btn" style="position: absolute; left: 1rem;">×</button>
+      <span style="font-weight: 700;">Transaction Summary</span>
+    </header>
+
+    <div class="form-content" style="padding-bottom: 2rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div class="modal-icon"
+          style="background: rgba(34, 197, 94, 0.1); color: #22c55e; margin-bottom: 0.5rem; width: 56px; height: 56px;">
+          <i data-lucide="check-circle-2"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; color: var(--text-primary);">Transaction Saved!</h2>
+        <p style="color: var(--text-secondary); font-size: 0.8125rem;">Your financial record has been securely logged.
+        </p>
+      </div>
+
+      <div class="preview-card"
+        style="width: 100%; padding: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; margin-bottom: 1.5rem;">
+        <div
+          style="text-align: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
+          <span id="detail-item-name" style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">-</span>
+          <div id="detail-total"
+            style="font-size: 2.25rem; font-weight: 800; color: var(--accent); margin-top: 0.25rem;">Rp 0.00</div>
+
+          <div id="receipt-summary"
+            style="margin-top: 1.5rem; border-top: 1px dashed var(--border); padding-top: 1.25rem; font-size: 0.8125rem; display: flex; flex-direction: column; gap: 0.5rem; text-align: left;">
+            <!-- Dynamic lines like Price x Qty, Discount, Fee -->
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">CATEGORY</label>
+            <div id="detail-category"
+              style="display: flex; align-items: center; gap: 0.5rem; font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">MERCHANT</label>
+            <div id="detail-merchant" style="font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">ACCOUNT</label>
+            <div id="detail-account" style="font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">CLEARED
+              STATUS</label>
+            <div id="detail-status" style="font-weight: 500; font-size: 0.875rem;">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.5rem;">TAGS</label>
+            <div id="detail-tags-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">-</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.5rem;">PROJECTS</label>
+            <div id="detail-projects-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">-</div>
+          </div>
+          <div style="grid-column: span 2; border-top: 1px solid var(--border); padding-top: 1rem; text-align: center;">
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.25rem;">DATE & TIME</label>
+            <div id="detail-date" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem;">
+        <button id="btn-done" class="btn btn-primary" style="flex: 1;">Done</button>
+        <button id="btn-share" class="btn btn-secondary" style="padding: 0.75rem 1rem;">
+          <i data-lucide="share-2" style="width: 18px;"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Menu Modal -->
+  <div id="share-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card" style="max-width: 320px;">
+      <div class="modal-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--accent);">
+        <i data-lucide="share-2"></i>
+      </div>
+      <h3 class="modal-title">Share Transaction</h3>
+      <p class="modal-text" style="margin-bottom: 1.5rem;">Choose a platform to share the transaction screenshot summary.</p>
+      
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        <button class="share-opt-btn" onclick="showToast('Sharing to WhatsApp...', 'success', 'message-circle')" style="all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #25D366; color: white; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="message-circle"></i>
+          </div>
+          <span style="font-size: 0.75rem;">WhatsApp</span>
+        </button>
+        <button class="share-opt-btn" onclick="showToast('Sharing to Instagram...', 'success', 'instagram')" style="all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="instagram"></i>
+          </div>
+          <span style="font-size: 0.75rem;">Instagram</span>
+        </button>
+        <button class="share-opt-btn" onclick="showToast('Sharing to Telegram...', 'success', 'send')" style="all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #0088cc; color: white; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="send"></i>
+          </div>
+          <span style="font-size: 0.75rem;">Telegram</span>
+        </button>
+        <button class="share-opt-btn" onclick="showToast('Link copied to clipboard!', 'success', 'copy')" style="all: unset; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary); display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="copy"></i>
+          </div>
+          <span style="font-size: 0.75rem;">Copy Link</span>
+        </button>
+      </div>
+
+      <button id="close-share" class="btn btn-secondary btn-full">Cancel</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

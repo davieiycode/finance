@@ -4,6 +4,13 @@ lucide.createIcons();
 // State management
 let currentStep = 1;
 const totalSteps = 6;
+let editId = null;
+let mode = null;
+
+// URL Parameter Handling
+const urlParams = new URLSearchParams(window.location.search);
+mode = urlParams.get('mode');
+editId = urlParams.get('id');
 
 // Select elements
 const tabs = document.querySelectorAll('.tab');
@@ -141,8 +148,49 @@ typeButtons.forEach(btn => {
   });
 });
 
-// Initial load
+// Initial load & Prefill
 updateCategories('Expense');
+
+if (editId) {
+  const db = JSON.parse(localStorage.getItem('transactions') || '[]');
+  const tx = db.find(t => t.id == editId);
+  if (tx) {
+    if (document.getElementById('transaction-date')) document.getElementById('transaction-date').value = tx.date;
+    if (document.getElementById('transaction-time')) document.getElementById('transaction-time').value = tx.time;
+    if (document.getElementById('merchant-input')) document.getElementById('merchant-input').value = tx.merchant || '';
+    if (document.getElementById('item-input')) document.getElementById('item-input').value = tx.name || '';
+    if (document.getElementById('category-input')) {
+        document.getElementById('category-input').value = tx.category;
+        updateCategoryIcon(tx.category);
+    }
+    
+    // Type Select
+    typeButtons.forEach(btn => {
+      if (btn.dataset.type === tx.type) {
+        btn.click();
+      }
+    });
+
+    // Amount & Details
+    if (document.getElementById('amount-input')) document.getElementById('amount-input').value = tx.amount;
+    
+    // Cleared status
+    const clearedBtns = document.querySelectorAll('#cleared-selector .type-btn');
+    clearedBtns.forEach(btn => {
+      const isYes = btn.dataset.cleared === 'yes';
+      if ((tx.cleared && isYes) || (!tx.cleared && !isYes)) {
+        btn.click();
+      }
+    });
+
+    if (mode === 'edit') {
+      document.querySelector('.header-title span').innerText = 'Edit Transaction';
+    } else {
+      editId = null; // Don't update original if duplicating
+      document.querySelector('.header-title span').innerText = 'Duplicate Transaction';
+    }
+  }
+}
 
 // Handle Cleared Status (Button Group)
 const clearedButtons = document.querySelectorAll('#cleared-selector .type-btn');
@@ -309,7 +357,10 @@ function handleFormExit(actionLabel) {
     confirmModal.style.display = 'flex';
     lucide.createIcons();
   } else {
-    showToast(`${actionLabel} successfully.`, 'warning', 'check-circle');
+    showToast(`${actionLabel} successfully.`, 'warning', 'info');
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 800);
   }
 }
 
@@ -331,8 +382,9 @@ if (confirmDiscardBtn) {
   confirmDiscardBtn.addEventListener('click', () => {
     confirmModal.style.display = 'none';
     showToast('Changes discarded.', 'warning', 'trash-2');
-    // Optionally: reset form or reload
-    // location.reload(); 
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 800);
   });
 }
 
@@ -400,17 +452,17 @@ function showTransactionDetail() {
   const dateVal = document.getElementById('transaction-date')?.value || '';
   const timeVal = document.getElementById('transaction-time')?.value || '';
   const statusActive = document.querySelector('#cleared-selector .type-btn.active')?.dataset.type || 'Cleared';
-
-  // Receipt Breakdown HTML Generation
+  // Receipt Breakdown HTML Generation (Thermal Print Aesthetic)
   const subtotal = quantity * amountVal;
   const format = (num) => 'Rp ' + num.toLocaleString('en-US', { minimumFractionDigits: 2 });
+  const rowStyle = 'display: flex; justify-content: space-between; font-family: "DM Mono", monospace; font-size: 0.75rem;';
   
   let receiptHTML = `
-    <div style="display: flex; justify-content: space-between; opacity: 0.7;">
-      <span>${itemName} <span style="font-size: 0.75rem;">(x${quantity}${scale})</span></span>
+    <div style="${rowStyle} opacity: 0.8; margin-bottom: 0.25rem;">
+      <span>${itemName} [x${quantity}${scale}]</span>
       <span>${format(amountVal)}</span>
     </div>
-    <div style="display: flex; justify-content: space-between; font-weight: 600;">
+    <div style="${rowStyle} font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.25rem; margin-bottom: 0.25rem;">
       <span>Subtotal</span>
       <span>${format(subtotal)}</span>
     </div>
@@ -418,7 +470,7 @@ function showTransactionDetail() {
 
   if (discountVal > 0) {
     receiptHTML += `
-      <div style="display: flex; justify-content: space-between; color: #ef4444;">
+      <div style="${rowStyle} color: #ef4444;">
         <span>Promo Discount</span>
         <span>- ${format(discountVal)}</span>
       </div>
@@ -427,7 +479,7 @@ function showTransactionDetail() {
 
   if (feeVal > 0) {
     receiptHTML += `
-      <div style="display: flex; justify-content: space-between; color: #f59e0b;">
+      <div style="${rowStyle} color: #f59e0b;">
         <span>Additional Fee</span>
         <span>+ ${format(feeVal)}</span>
       </div>
@@ -435,16 +487,16 @@ function showTransactionDetail() {
   }
 
   receiptHTML += `
-    <div style="margin-top: 0.5rem; border-top: 1px dashed var(--border); padding-top: 0.5rem; display: flex; justify-content: space-between; font-weight: 800; color: var(--accent); font-size: 1rem;">
-      <span>Grand Total</span>
+    <div style="margin-top: 0.75rem; border-top: 1px dashed var(--border); padding-top: 0.75rem; display: flex; justify-content: space-between; font-weight: 800; color: var(--accent); font-size: 1.125rem; font-family: 'DM Mono', monospace;">
+      <span>Total Paid</span>
       <span>${totalDisplay}</span>
     </div>
   `;
 
   const getChips = (wrapperId) => {
-    const chips = Array.from(document.querySelectorAll(`#${wrapperId} .chip span`)).map(s => s.innerText);
-    if (chips.length === 0) return `<span style="color: var(--text-secondary); font-size: 0.8125rem;">-</span>`;
-    return chips.map(tag => `<div class="chip" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">${tag}</div>`).join('');
+    const chipsArr = Array.from(document.querySelectorAll(`#${wrapperId} .chip span`)).map(s => s.innerText);
+    if (chipsArr.length === 0) return `<span style="color: var(--text-secondary); font-size: 0.8125rem;">-</span>`;
+    return chipsArr.map(tag => `<div class="chip" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">${tag}</div>`).join('');
   };
 
   // Date/Time
@@ -463,8 +515,8 @@ function showTransactionDetail() {
   document.getElementById('detail-account').innerText = receivedAcc !== '-' ? `${paymentAcc} → ${receivedAcc}` : paymentAcc;
   document.getElementById('detail-date').innerText = dateFinal;
   document.getElementById('detail-status').innerHTML = statusActive === 'Cleared' 
-    ? `<span style="color: #22c55e; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="check-circle" style="width:14px;"></i> Cleared</span>` 
-    : `<span style="color: #ef4444; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="alert-circle" style="width:14px;"></i> Uncleared</span>`;
+    ? `<span style="color: #32D74B; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="check-circle" style="width:14px;"></i> Cleared</span>` 
+    : `<span style="color: #FF453A; display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="alert-circle" style="width:14px;"></i> Uncleared</span>`;
   document.getElementById('detail-tags-list').innerHTML = getChips('tags-wrapper');
   document.getElementById('detail-projects-list').innerHTML = getChips('projects-wrapper');
 
@@ -473,23 +525,21 @@ function showTransactionDetail() {
   detailView.style.display = 'flex';
   lucide.createIcons();
 
-  // Share Actions logic
+  // Share Actions logic (Custom Modal)
   const shareBtn = document.getElementById('btn-share');
+  const shareModal = document.getElementById('share-modal');
+  const closeShare = document.getElementById('close-share');
+
   if (shareBtn) {
-    shareBtn.onclick = async () => {
-      const shareData = {
-        title: 'Transaction Details',
-        text: `Transaction saved: ${itemName} for ${totalDisplay} at ${merchant}!`,
-        url: window.location.href
-      };
-      
-      try {
-        if (navigator.share) {
-          await navigator.share(shareData);
-        } else {
-          showToast('Share options: WhatsApp, Instagram, or Copy Link', 'warning', 'share-2');
-        }
-      } catch (err) {}
+    shareBtn.onclick = () => {
+      shareModal.style.display = 'flex';
+      lucide.createIcons();
+    };
+  }
+
+  if (closeShare) {
+    closeShare.onclick = () => {
+      shareModal.style.display = 'none';
     };
   }
 }
@@ -497,8 +547,8 @@ function showTransactionDetail() {
 // Detail View Actions
 const btnDoneView = document.getElementById('btn-done');
 const btnCloseDetailView = document.getElementById('close-detail');
-if (btnDoneView) btnDoneView.onclick = () => location.reload();
-if (btnCloseDetailView) btnCloseDetailView.onclick = () => location.reload();
+if (btnDoneView) btnDoneView.onclick = () => window.location.href = 'index.html';
+if (btnCloseDetailView) btnCloseDetailView.onclick = () => window.location.href = 'index.html';
 
 nextBtn.addEventListener('click', (e) => {
   e.preventDefault();
@@ -527,6 +577,28 @@ nextBtn.addEventListener('click', (e) => {
     const successMsg = `${quantity} ${scale} ${itemName} has been successfully saved in the ${merchant} at ${dateStr}!`;
     showToast(successMsg);
     
+    // SAVE TO LOCAL STORAGE
+    const isCleared = document.querySelector('#cleared-selector .type-btn.active')?.dataset.cleared === 'yes';
+    const tx = {
+      id: mode === 'edit' ? parseInt(editId) : Date.now(),
+      name: itemName,
+      merchant: merchant,
+      amount: parseFloat((totalDisplay?.innerText || '0').replace(/[^0-9.-]+/g, "")) || 0,
+      category: categoryInput?.value || 'Misc',
+      type: document.querySelector('#type-selector .type-btn.active')?.dataset.type || 'Expense',
+      date: date || new Date().toISOString().split('T')[0],
+      time: time || '00:00',
+      cleared: isCleared
+    };
+
+    let db = JSON.parse(localStorage.getItem('transactions') || '[]');
+    if (mode === 'edit') {
+       db = db.map(t => t.id == editId ? tx : t);
+    } else {
+       db.push(tx);
+    }
+    localStorage.setItem('transactions', JSON.stringify(db));
+
     // Show Summary Detail View
     setTimeout(showTransactionDetail, 1200);
   }

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaction History - Finance</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="theme.js"></script>
+  <style>
+    .search-bar { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 0.875rem 1rem 0.875rem 2.75rem; color: var(--text-primary); outline: none; font-size: 0.9375rem; transition: all 0.3s; }
+    .search-bar:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.08); box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1); }
+    
+    .transaction-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .transaction-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 1rem; cursor: pointer; transition: all 0.2s; }
+    .transaction-item:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--accent); transform: translateY(-2px); }
+    .item-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .item-info { flex: 1; }
+    .item-name { font-weight: 600; font-size: 0.9375rem; color: var(--text-primary); }
+    .item-meta { font-size: 0.75rem; color: var(--text-secondary); }
+    .item-amount { text-align: right; font-weight: 700; font-size: 0.9375rem; }
+
+    .back-btn { width: 40px; height: 40px; border-radius: 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    
+    .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-card { background: rgba(25, 25, 30, 0.8); border: 1px solid var(--border); border-radius: 1.5rem; width: 100%; max-width: 400px; overflow: hidden; }
+    .action-h-btn { display: flex; align-items: center; justify-content: center; padding: 0.75rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 2rem; cursor: pointer; transition: all 0.3s; overflow: hidden; font-weight: 600; font-size: 0.8125rem; }
+    .action-h-label { width: 0; opacity: 0; transition: all 0.3s; overflow: hidden; white-space: nowrap; }
+    .action-h-btn:hover { gap: 0.5rem; padding: 0.75rem 1.25rem; border-color: var(--btn-color); }
+    .action-h-btn:hover .action-h-label { width: auto; opacity: 1; }
+    .close-btn { background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; }
+    .filter-panel { padding: 1.25rem; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem; margin-top: 1rem; display: none; flex-direction: column; gap: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 600px; padding: 1.5rem;">
+    <header class="header" style="margin-bottom: 2rem;">
+      <button class="back-btn" onclick="window.location.href='index.html'">
+        <i data-lucide="chevron-left"></i>
+      </button>
+      <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">History</h1>
+      <button id="filter-toggle" class="back-btn" style="border-radius: 12px; height: 36px; padding: 0 0.75rem; width: auto; font-size: 0.75rem; font-weight: 600; gap: 0.4rem;">
+        <i data-lucide="filter" style="width: 16px;"></i> Filter
+      </button>
+    </header>
+
+    <div style="position: relative; margin-bottom: 1.5rem;">
+      <i data-lucide="search" style="position: absolute; left: 1rem; top: 1rem; width: 18px; color: var(--text-secondary);"></i>
+      <input type="text" id="master-search" class="search-bar" placeholder="Search merchant, item, or category...">
+    </div>
+
+    <div id="filter-panel" class="filter-panel">
+       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+             <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; display: block;">Date From</label>
+             <input type="date" class="f-input" style="width: 100%; font-size: 0.8125rem;">
+          </div>
+          <div>
+             <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; display: block;">Date To</label>
+             <input type="date" class="f-input" style="width: 100%; font-size: 0.8125rem;">
+          </div>
+       </div>
+       <button id="apply-filter" class="btn btn-primary btn-full">Apply Filter</button>
+    </div>
+
+    <div id="results-count" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 500;">Showing 0 transactions</div>
+
+    <div id="transaction-list" class="transaction-list">
+      <!-- Dynamic list -->
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detail-modal" class="modal-backdrop" style="display: none; padding: 1.5rem;">
+    <div class="modal-card">
+      <header class="header" style="justify-content: center; position: relative; padding: 1rem;">
+        <button id="close-modal-btn" class="close-btn" style="position: absolute; left: 1rem;">×</button>
+        <span style="font-weight: 700;">Transaction Detail</span>
+      </header>
+      
+      <div style="padding: 1.5rem; max-height: 80vh; overflow-y: auto;">
+        <div style="text-align: center; margin-bottom: 1.25rem;">
+           <span id="m-item-name" style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">-</span>
+           <div id="m-total" style="font-size: 2rem; font-weight: 800; color: var(--accent); margin-top: 0.25rem;">Rp 0</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+           <div>
+             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">CATEGORY</label>
+             <div id="m-category" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+           </div>
+           <div>
+             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">MERCHANT</label>
+             <div id="m-merchant" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+           </div>
+           <div style="grid-column: span 2;">
+             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">DATETIME</label>
+             <div id="m-date" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+           </div>
+           <div style="grid-column: span 2;">
+             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">PAYMENT STATUS</label>
+             <div id="m-status" style="font-weight: 600; font-size: 0.8125rem;">-</div>
+           </div>
+        </div>
+        
+        <div class="action-bar" style="display: flex; gap: 0.5rem; justify-content: center; border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem;">
+           <button id="m-duplicate" class="action-h-btn" style="--btn-color: #a78bfa; color: #a78bfa;"><i data-lucide="copy"></i><span class="action-h-label">Duplicate</span></button>
+           <button id="m-edit" class="action-h-btn" style="--btn-color: var(--accent); color: var(--accent);"><i data-lucide="edit-3"></i><span class="action-h-label">Edit</span></button>
+           <button id="m-delete" class="action-h-btn" style="--btn-color: var(--danger); color: var(--danger);"><i data-lucide="trash-2"></i><span class="action-h-label">Delete</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    const transactionList = document.getElementById('transaction-list');
+    const resultsCount = document.getElementById('results-count');
+    const searchInput = document.getElementById('master-search');
+    const detailModal = document.getElementById('detail-modal');
+    let activeTx = null;
+    let mainTxs = [];
+
+    function refreshHistory() {
+      mainTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      if (mainTxs.length === 0) {
+        mainTxs = [
+          { id: 1, type: 'Expense', category: 'Food & Beverage', merchant: 'Indomaret', name: 'Groceries', amount: 24400, date: '2024-03-24', time: '13:26', cleared: true },
+          { id: 2, type: 'Expense', category: 'Transport', merchant: 'Pertamina', name: 'Fuel', amount: 50000, date: '2024-03-23', time: '09:15', cleared: true },
+          { id: 3, type: 'Expense', category: 'Lifestyle', merchant: 'Starbucks', name: 'Coffee', amount: 65000, date: '2024-03-22', time: '15:40', cleared: false }
+        ];
+      }
+      renderList(mainTxs);
+    }
+
+    function renderList(list) {
+      transactionList.innerHTML = '';
+      list.sort((a,b) => b.id - a.id).forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'transaction-item';
+        const isExp = t.type === 'Expense';
+        item.innerHTML = `
+          <div class="item-icon" style="background: ${isExp ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; color: ${isExp ? '#ef4444' : '#10b981'};">
+            <i data-lucide="${isExp ? 'shopping-cart' : 'banknote'}"></i>
+          </div>
+          <div class="item-info">
+            <div class="item-name">${t.merchant || t.name}</div>
+            <div class="item-meta">${t.category} • ${t.date}</div>
+          </div>
+          <div class="item-amount" style="color: ${isExp ? '#ef4444' : '#10b981'};">
+            ${isExp ? '-' : '+'}Rp ${t.amount.toLocaleString('id-ID')}
+          </div>
+        `;
+        item.onclick = () => showDetail(t);
+        transactionList.appendChild(item);
+      });
+      lucide.createIcons();
+      resultsCount.innerText = `Showing ${list.length} transactions`;
+    }
+
+    function showDetail(t) {
+      activeTx = t;
+      document.getElementById('m-item-name').innerText = t.name;
+      document.getElementById('m-total').innerText = (t.type === 'Expense' ? '-Rp ' : '+Rp ') + t.amount.toLocaleString('id-ID');
+      document.getElementById('m-category').innerText = t.category;
+      document.getElementById('m-merchant').innerText = t.merchant || '-';
+      document.getElementById('m-date').innerText = `${t.date} ${t.time || ''}`;
+      
+      const statusEl = document.getElementById('m-status');
+      const isCleared = t.cleared !== false;
+      statusEl.innerText = isCleared ? 'Cleared' : 'Uncleared';
+      statusEl.style.color = isCleared ? '#10b981' : '#f59e0b';
+      
+      detailModal.style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    document.getElementById('close-modal-btn').onclick = () => detailModal.style.display = 'none';
+
+    document.getElementById('m-delete').onclick = () => {
+      if (!activeTx || !activeTx.id) { detailModal.style.display = 'none'; return; }
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      txs = txs.filter(t => t.id !== activeTx.id);
+      localStorage.setItem('transactions', JSON.stringify(txs));
+      detailModal.style.display = 'none';
+      refreshHistory();
+    };
+
+    document.getElementById('m-duplicate').onclick = () => {
+      window.location.href = `transaction.html?mode=duplicate&id=${activeTx.id}`;
+    };
+
+    document.getElementById('m-edit').onclick = () => {
+      window.location.href = `transaction.html?mode=edit&id=${activeTx.id}`;
+    };
+
+    searchInput.oninput = (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = mainTxs.filter(t => t.name.toLowerCase().includes(term) || t.category.toLowerCase().includes(term) || (t.merchant && t.merchant.toLowerCase().includes(term)));
+      renderList(filtered);
+    };
+
+    document.getElementById('filter-toggle').onclick = () => {
+       const panel = document.getElementById('filter-panel');
+       panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+    };
+
+    window.onclick = (e) => { if (e.target === detailModal) detailModal.style.display = 'none'; };
+
+    refreshHistory();
+  </script>
+</body>
+</html>
