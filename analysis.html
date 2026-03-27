@@ -9,12 +9,13 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="theme.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
     .chart-container { background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.5rem; margin-bottom: 2rem; }
     .back-btn { width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: none; color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .tab-btn { min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .tab-btn.active { background: var(--border) !important; color: var(--text-primary) !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-    .stat-card { background: var(--glass); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
-    #sankeyChart { min-height: 400px; }
+    .stat-card { background: var(--glass); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; }
   </style>
 </head>
 <body>
@@ -37,11 +38,11 @@
     </div>
 
     <div class="tabs-container" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 0.35rem; display: flex; gap: 0.35rem; margin-bottom: 1.5rem; overflow-x: auto; scrollbar-width: none;">
-      <button class="tab-btn active" data-tab="flow" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-primary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Cash Flow</button>
-      <button class="tab-btn" data-tab="spending" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Spending</button>
-      <button class="tab-btn" data-tab="income" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Income</button>
-      <button class="tab-btn" data-tab="tags" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Tags</button>
-      <button class="tab-btn" data-tab="projects" style="min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Projects</button>
+      <button class="tab-btn active" data-tab="flow">Cash Flow</button>
+      <button class="tab-btn" data-tab="spending">Spending</button>
+      <button class="tab-btn" data-tab="income">Income</button>
+      <button class="tab-btn" data-tab="tags">Tags</button>
+      <button class="tab-btn" data-tab="projects">Projects</button>
     </div>
 
     <div id="tab-flow" class="tab-content">
@@ -65,239 +66,205 @@
       </div>
       <div class="chart-container" style="height: 500px; padding: 1.5rem; background: rgba(255,255,255,0.015);">
         <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 0.5rem;">Cash Flow Analysis</h3>
-        <p id="curr-date-range" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.5rem;">Live Performance Data</p>
+        <p style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.5rem;">Live Performance Data</p>
         <div id="sankeyChart" style="width: 100%; height: 400px;"></div>
       </div>
     </div>
 
     <div id="tab-spending" class="tab-content" style="display: none;">
-      <div id="spending-bc" style="display: none; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.25rem; font-weight: 600;">
-        <span onclick="shLvl(1)" style="cursor: pointer; color: var(--accent);">Spending</span>
-        <i data-lucide="chevron-right" style="width:12px;"></i>
-        <span id="bc-p" onclick="shLvl(2)" style="cursor: pointer;">-</span>
-        <span id="bc-s-arr" style="display:none;"><i data-lucide="chevron-right" style="width:12px;"></i></span>
-        <span id="bc-s" style="display:none; color: var(--text-primary);">-</span>
-      </div>
-      <div id="sp-l1">
-        <div class="chart-container" style="height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
-          <canvas id="spendingDoughnutChart"></canvas>
-          <div style="position: absolute; text-align: center;">
-            <div id="spend-total-val" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Rp 0</div>
-            <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">TOTAL SPENT</div>
-          </div>
+      <div class="chart-container" style="height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
+        <canvas id="spendingDoughnutChart"></canvas>
+        <div style="position: absolute; text-align: center;">
+          <div id="spend-total-val" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Rp 0</div>
+          <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">TOTAL SPENT</div>
         </div>
-        <div id="spending-parent-list" style="display: grid; gap: 0.75rem;"></div>
       </div>
-      <div id="sp-l2" style="display: none;"><h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Items</h3><div id="sub-list" style="display: grid; gap: 0.75rem;"></div></div>
-      <div id="sp-l3" style="display: none;"><h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Transactions</h3><div id="trans-list" style="display: grid; gap: 0.75rem;"></div></div>
+      <div id="spending-parent-list"></div>
     </div>
 
     <div id="tab-income" class="tab-content" style="display: none;">
-      <div id="income-bc" style="display: none; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.25rem; font-weight: 600;">
-        <span onclick="shLvlIn(1)" style="cursor: pointer; color: var(--accent);">Income Stream</span>
-        <i data-lucide="chevron-right" style="width:12px;"></i>
-        <span id="bc-in-p" onclick="shLvlIn(2)" style="cursor: pointer;">-</span>
-        <span id="bc-in-s-arr" style="display:none;"><i data-lucide="chevron-right" style="width:12px;"></i></span>
-        <span id="bc-in-s" style="display:none; color: var(--text-primary);">-</span>
-      </div>
-      <div id="in-l1">
-        <div class="chart-container" style="height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
-          <canvas id="incomeDoughnutChart"></canvas>
-          <div style="position: absolute; text-align: center;">
-            <div id="income-total-val" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Rp 0</div>
-            <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">TOTAL INCOME</div>
-          </div>
+      <div class="chart-container" style="height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
+        <canvas id="incomeDoughnutChart"></canvas>
+        <div style="position: absolute; text-align: center;">
+          <div id="income-total-val" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Rp 0</div>
+          <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">TOTAL INCOME</div>
         </div>
-        <div id="income-parent-list" style="display: grid; gap: 0.75rem;"></div>
       </div>
-      <div id="in-l2" style="display: none;"><h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Sources</h3><div id="sub-in-list" style="display: grid; gap: 0.75rem;"></div></div>
-      <div id="in-l3" style="display: none;"><h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 1rem;">Transactions</h3><div id="trans-in-list" style="display: grid; gap: 0.75rem;"></div></div>
+      <div id="income-parent-list"></div>
     </div>
 
     <div id="tab-tags" class="tab-content" style="display: none;">
       <div class="chart-container">
         <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 1.5rem;">Tags Breakdown</h3>
-        <canvas id="tagsChart" style="max-height: 250px;"></canvas>
+        <div style="height: 250px;"><canvas id="tagsChart"></canvas></div>
       </div>
-      <div id="tags-list" style="display: grid; gap: 0.75rem;"></div>
+      <div id="tags-list"></div>
     </div>
 
     <div id="tab-projects" class="tab-content" style="display: none;">
       <div class="chart-container">
         <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 1.5rem;">Project Analysis</h3>
-        <canvas id="projectsChart" style="max-height: 250px;"></canvas>
+        <div style="height: 250px;"><canvas id="projectsChart"></canvas></div>
       </div>
-      <div id="projects-list" style="display: grid; gap: 0.75rem;"></div>
+      <div id="projects-list"></div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <script>
     lucide.createIcons();
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     let sankeyChartInstance = null;
     let spendChart = null, incomeChart = null;
-    let activeDate = new Date(2026, 2, 1); // March 2026
+    let tagChartInst = null, projChartInst = null;
+    let activeDate = new Date(2026, 2, 1); 
 
     tabBtns.forEach(btn => {
       btn.onclick = () => {
-        tabBtns.forEach(b => { b.classList.remove('active'); b.style.color = 'var(--text-secondary)'; });
+        tabBtns.forEach(b => { 
+           b.classList.remove('active'); 
+           b.style.color = 'var(--text-secondary)'; 
+           b.style.background = 'none'; 
+        });
         tabContents.forEach(c => c.style.display = 'none');
-        btn.classList.add('active'); btn.style.color = 'var(--text-primary)';
-        document.getElementById(`tab-${btn.dataset.tab}`).style.display = 'block';
+        btn.classList.add('active'); 
+        btn.style.color = 'var(--text-primary)';
+        btn.style.background = 'var(--border)';
+        const target = document.getElementById(`tab-${btn.dataset.tab}`);
+        if (target) target.style.display = 'block';
         if (btn.dataset.tab === 'flow' && sankeyChartInstance) setTimeout(() => sankeyChartInstance.resize(), 100);
       };
     });
 
     const colors = ['#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#0ea5e9', '#06b6d4', '#6366f1', '#fb923c', '#facc15'];
-    let allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
     
-    // Auto-detect latest month from transactions
-    if (allTxs.length > 0) {
-      const latest = [...allTxs].sort((a,b) => (b.date || "").localeCompare(a.date || ""))[0];
-      if (latest && latest.date) {
-        const d = new Date(latest.date);
-        if (!isNaN(d.getTime())) activeDate = new Date(d.getFullYear(), d.getMonth(), 1);
-      }
-    }
-
-    if (allTxs.length === 0) {
-      allTxs = [
-        { type: 'Expense', category: 'Food & Beverage', merchant: 'Supermarket', name: 'Weekly Groceries', amount: 1450000, date: '2026-03-24' },
-        { type: 'Expense', category: 'Transport & Fuel', merchant: 'Pertamina', name: 'Fuel', amount: 800000, date: '2026-03-23' },
-        { type: 'Income', category: 'Salary & Wages', merchant: 'Company', name: 'Monthly Salary', amount: 10000000, date: '2026-03-01' },
-        { type: 'Income', category: 'Side Business', merchant: 'Freelance', name: 'Project', amount: 2450000, date: '2026-03-15' }
-      ];
-    }
-
     function initData() {
+      let allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      
+      // Auto-detect latest month if we haven't manually changed it
+      if (allTxs.length > 0) {
+        const sorted = [...allTxs].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+        const latest = sorted[0];
+        if (latest && latest.date && !window.hasManuallyChangedMonth) {
+          const d = new Date(latest.date);
+          if (!isNaN(d.getTime())) activeDate = new Date(d.getFullYear(), d.getMonth(), 1);
+        }
+      }
+
       const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
       document.getElementById('display-month').innerText = `${months[activeDate.getMonth()]} ${activeDate.getFullYear()}`;
       
       const filterStr = `${activeDate.getFullYear()}-${String(activeDate.getMonth() + 1).padStart(2,'0')}`;
-      const txs = allTxs.filter(t => t.date.startsWith(filterStr));
+      const txs = allTxs.filter(t => (t.date || "").startsWith(filterStr));
 
-      function getAgg(type) {
+      const donutBase = {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '75%',
+        plugins: { legend: { display: false } }
+      };
+
+      const getAgg = (dataList, type) => {
         const map = {};
-        txs.filter(t => t.type === type).forEach(t => map[t.category] = (map[t.category] || 0) + t.amount);
+        dataList.filter(t => t.type === type).forEach(t => {
+           const amt = typeof t.amount === 'number' ? t.amount : parseFloat((t.amount || '0').toString().replace(/[^0-9.-]+/g, "")) || 0;
+           map[t.category] = (map[t.category] || 0) + amt;
+        });
         return Object.entries(map).map(([name, value]) => ({ name, value }));
-      }
+      };
 
-      const spendAgg = getAgg('Expense');
-      const incomeAgg = getAgg('Income');
+      const spendAgg = getAgg(txs, 'Expense');
+      const incomeAgg = getAgg(txs, 'Income');
       const totalInc = incomeAgg.reduce((s, a) => s + a.value, 0);
       const totalExp = spendAgg.reduce((s, a) => s + a.value, 0);
       const net = totalInc - totalExp;
       const rate = totalInc > 0 ? (net / totalInc) * 100 : 0;
-      const fmt = (v) => 'Rp ' + v.toLocaleString('id-ID');
+      const fmt = (v) => 'Rp ' + Math.floor(v).toLocaleString('id-ID');
 
-      const labels = document.querySelectorAll('#tab-flow .stat-card span:first-child');
-      labels[0].innerText = fmt(totalInc); labels[1].innerText = fmt(totalExp);
-      labels[2].innerText = fmt(net); labels[3].innerText = (rate > 0 ? rate.toFixed(1) : '0') + '%';
-      document.getElementById('spend-total-val').innerText = fmt(totalExp);
-      document.getElementById('income-total-val').innerText = fmt(totalInc);
+      const statValues = document.querySelectorAll('#tab-flow .stat-card span:first-child');
+      if (statValues.length >= 4) {
+        statValues[0].innerText = fmt(totalInc);
+        statValues[1].innerText = fmt(totalExp);
+        statValues[2].innerText = fmt(net);
+        statValues[3].innerText = (totalInc > 0 ? rate.toFixed(1) : '0') + '%';
+      }
+      
+      const spTotalEl = document.getElementById('spend-total-val');
+      const inTotalEl = document.getElementById('income-total-val');
+      if (spTotalEl) spTotalEl.innerText = fmt(totalExp);
+      if (inTotalEl) inTotalEl.innerText = fmt(totalInc);
 
-      // Render Lists
-      const renderL = (data, cid, fn) => {
+      const renderL = (data, cid) => {
         const l = document.getElementById(cid);
-        l.innerHTML = data.map((item, i) => `
-          <div class="stat-card" style="cursor:pointer;" onclick="${fn}(2, '${item.name}')">
+        if (!l) return;
+        l.innerHTML = data.length ? data.map((item, i) => `
+          <div class="stat-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <div style="width: 10px; height: 10px; border-radius: 50%; background: ${colors[i % colors.length]};"></div>
                 <span style="font-size: 0.8125rem; font-weight: 600;">${item.name}</span>
               </div>
-              <span style="font-size: 0.8125rem; font-weight: 700;">Rp ${item.value.toLocaleString('id-ID')}</span>
+              <span style="font-size: 0.8125rem; font-weight: 700;">${fmt(item.value)}</span>
             </div>
-          </div>`).join('');
+          </div>`).join('') : '<p style="text-align:center; opacity:0.5; padding:2rem; font-size:0.8rem;">No entries found</p>';
       };
-      renderL(spendAgg, 'spending-parent-list', 'shLvl');
-      renderL(incomeAgg, 'income-parent-list', 'shLvlIn');
+      renderL(spendAgg, 'spending-parent-list');
+      renderL(incomeAgg, 'income-parent-list');
 
       // Update Sankey
       if (!sankeyChartInstance) sankeyChartInstance = echarts.init(document.getElementById('sankeyChart'), 'dark');
-      const nodes = [{ name: 'Income', itemStyle: { color: '#0284c7' } }, { name: 'Savings', itemStyle: { color: '#22c55e' } }];
-      incomeAgg.forEach(i => nodes.push({ name: i.name, itemStyle: { color: '#10b981' } }));
+      const nodes = [{ name: 'Income', itemStyle: { color: '#22c55e' } }, { name: 'Savings', itemStyle: { color: '#3b82f6' } }];
+      incomeAgg.forEach(i => nodes.push({ name: i.name }));
       spendAgg.forEach(s => nodes.push({ name: s.name }));
       const links = [];
-      incomeAgg.forEach(i => links.push({ source: i.name, target: 'Income', value: i.value }));
-      spendAgg.forEach(s => links.push({ source: 'Income', target: s.name, value: s.value }));
+      incomeAgg.forEach(i => links.push({ source: i.name, target: 'Income', value: i.value || 0.1 }));
+      spendAgg.forEach(s => links.push({ source: 'Income', target: s.name, value: s.value || 0.1 }));
       if (net > 0) links.push({ source: 'Income', target: 'Savings', value: net });
-      sankeyChartInstance.setOption({ backgroundColor: 'transparent', tooltip: { trigger: 'item' }, series: [{ type: 'sankey', layout: 'none', data: nodes.length > 2 ? nodes : [{name:'No Data'}], links: links.length ? links : [{source:'A',target:'B',value:0.1}], label: { color: '#eee', fontSize: 10 } }] });
-
-      // Update Doughnuts
-      if (incomeChart) incomeChart.destroy();
-      incomeChart = new Chart(document.getElementById('incomeDoughnutChart'), { type: 'doughnut', data: { labels: incomeAgg.map(i => i.name), datasets: [{ data: incomeAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
-
-      // Tags & Projects Extraction (Fixed for separate fields & all markers)
-      const tagMap = {}, projMap = {};
-      txs.forEach(t => {
-         (t.tags || []).forEach(tg => {
-            const clean = (tg || "").toString().trim();
-            if (clean) tagMap[clean] = (tagMap[clean] || 0) + (t.amount || 0);
-         });
-         (t.projects || []).forEach(pj => {
-            const clean = (pj || "").toString().trim();
-            if (clean) projMap[clean] = (projMap[clean] || 0) + (t.amount || 0);
-         });
+      sankeyChartInstance.setOption({ 
+        backgroundColor: 'transparent',
+        series: [{ type: 'sankey', layout: 'none', data: nodes.length > 2 ? nodes : [{name:'No Data'}], links: links.length ? links : [{source:'Income',target:'No Data',value:0.1}], label: { color: '#eee', fontSize: 10 } }] 
       });
 
+      // Doughnuts
+      if (incomeChart) incomeChart.destroy();
+      const inCtx = document.getElementById('incomeDoughnutChart');
+      if (inCtx) incomeChart = new Chart(inCtx, { type: 'doughnut', data: { labels: incomeAgg.map(i => i.name), datasets: [{ data: incomeAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
+
+      if (spendChart) spendChart.destroy();
+      const spCtx = document.getElementById('spendingDoughnutChart');
+      if (spCtx) spendChart = new Chart(spCtx, { type: 'doughnut', data: { labels: spendAgg.map(i => i.name), datasets: [{ data: spendAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
+
+      // Tags & Projects
+      const tagMap = {}, projMap = {};
+      allTxs.forEach(t => {
+         const amt = typeof t.amount === 'number' ? t.amount : parseFloat((t.amount || '0').toString().replace(/[^0-9.-]+/g, "")) || 0;
+         (t.tags || []).forEach(tg => { if (tg) tagMap[tg] = (tagMap[tg] || 0) + amt; });
+         (t.projects || []).forEach(pj => { if (pj) projMap[pj] = (projMap[pj] || 0) + amt; });
+      });
       const tagData = Object.entries(tagMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
       const projData = Object.entries(projMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
 
       const barOpt = (labels, data, color) => ({
          type: 'bar',
-         data: { labels, datasets: [{ data, backgroundColor: color, borderRadius: 8, barThickness: 20 }] },
-         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false }, ticks: { color: '#888', font: { size: 10 } } } } }
+         data: { labels, datasets: [{ data, backgroundColor: color, borderRadius: 8, barThickness: 15 }] },
+         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } } } }
       });
 
-      if (window.tagChartInst) window.tagChartInst.destroy();
-      window.tagChartInst = new Chart(document.getElementById('tagsChart'), barOpt(tagData.map(d => d.name), tagData.map(d => d.value), '#8b5cf6'));
-      
-      if (window.projChartInst) window.projChartInst.destroy();
-      window.projChartInst = new Chart(document.getElementById('projectsChart'), barOpt(projData.map(d => d.name), projData.map(d => d.value), '#0ea5e9'));
+      if (tagChartInst) tagChartInst.destroy();
+      const tc = document.getElementById('tagsChart');
+      if (tc) tagChartInst = new Chart(tc, barOpt(tagData.map(d => d.name), tagData.map(d => d.value), '#8b5cf6'));
 
-      document.getElementById('tags-list').innerHTML = tagData.map(d => `<div class="stat-card"><div style="display:flex; justify-content:space-between;"><span>${d.name}</span><b>Rp ${d.value.toLocaleString('id-ID')}</b></div></div>`).join('');
-      document.getElementById('projects-list').innerHTML = projData.map(d => `<div class="stat-card"><div style="display:flex; justify-content:space-between;"><span>${d.name}</span><b>Rp ${d.value.toLocaleString('id-ID')}</b></div></div>`).join('');
-      
-      // Drilling logic needs local txs context
-      window.shLvl = (lvl, val) => {
-        const l1 = document.getElementById('sp-l1'), l2 = document.getElementById('sp-l2'), l3 = document.getElementById('sp-l3');
-        const bcp = document.getElementById('bc-p'), bcs = document.getElementById('bc-s'), bcsArr = document.getElementById('bc-s-arr');
-        [l1, l2, l3].forEach(el => el.style.display = 'none');
-        document.getElementById('spending-bc').style.display = (lvl === 1) ? 'none' : 'flex';
-        if (lvl === 1) l1.style.display = 'block';
-        else if (lvl === 2) {
-          l2.style.display = 'block'; bcp.innerText = val; bcs.style.display = bcsArr.style.display = 'none';
-          document.getElementById('sub-list').innerHTML = txs.filter(t => t.type === 'Expense' && t.category === val).map(t => `<div class="stat-card" style="cursor:pointer;" onclick="shLvl(3, '${t.name}')"><div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 0.8125rem; font-weight: 600;">${t.name}</span><span style="font-size: 0.8125rem; font-weight: 700;">Rp ${t.amount.toLocaleString('id-ID')}</span></div></div>`).join('');
-        } else if (lvl === 3) {
-          l3.style.display = 'block'; bcs.innerText = val; bcs.style.display = bcsArr.style.display = 'inline-flex';
-          document.getElementById('trans-list').innerHTML = txs.filter(t => t.name === val).map(t => `<div class="stat-card"><div style="display: flex; justify-content: space-between; align-items: center;"><div><div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary);">${t.merchant || 'Merchant'}</div><div style="font-size: 0.7rem; color: var(--text-secondary);">${t.date}</div></div><span style="font-size: 0.8125rem; font-weight: 700; color: #ef4444;">-Rp ${t.amount.toLocaleString('id-ID')}</span></div></div>`).join('');
-        }
-        lucide.createIcons();
-      };
-      
-      window.shLvlIn = (lvl, val) => {
-        const l1 = document.getElementById('in-l1'), l2 = document.getElementById('in-l2'), l3 = document.getElementById('in-l3');
-        const bcp = document.getElementById('bc-in-p'), bcs = document.getElementById('bc-in-s'), bcsArr = document.getElementById('bc-in-s-arr');
-        [l1, l2, l3].forEach(el => el.style.display = 'none');
-        document.getElementById('income-bc').style.display = (lvl === 1) ? 'none' : 'flex';
-        if (lvl === 1) l1.style.display = 'block';
-        else if (lvl === 2) {
-          l2.style.display = 'block'; bcp.innerText = val; bcs.style.display = bcsArr.style.display = 'none';
-          document.getElementById('sub-in-list').innerHTML = txs.filter(t => t.type === 'Income' && t.category === val).map(t => `<div class="stat-card" style="cursor:pointer;" onclick="shLvlIn(3, '${t.name}')"><div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 0.8125rem; font-weight: 600;">${t.name}</span><span style="font-size: 0.8125rem; font-weight: 700; color: #10b981;">Rp ${t.amount.toLocaleString('id-ID')}</span></div></div>`).join('');
-        } else if (lvl === 3) {
-          l3.style.display = 'block'; bcs.innerText = val; bcs.style.display = bcsArr.style.display = 'inline-flex';
-          document.getElementById('trans-in-list').innerHTML = txs.filter(t => t.name === val).map(t => `<div class="stat-card"><div style="display: flex; justify-content: space-between; align-items: center;"><div><div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary);">${t.merchant || 'Source'}</div><div style="font-size: 0.7rem; color: var(--text-secondary);">${t.date}</div></div><span style="font-size: 0.8125rem; font-weight: 700; color: #10b981;">+Rp ${t.amount.toLocaleString('id-ID')}</span></div></div>`).join('');
-        }
-        lucide.createIcons();
-      };
+      if (projChartInst) projChartInst.destroy();
+      const pc = document.getElementById('projectsChart');
+      if (pc) projChartInst = new Chart(pc, barOpt(projData.map(d => d.name), projData.map(d => d.value), '#10b981'));
+
+      renderL(tagData, 'tags-list');
+      renderL(projData, 'projects-list');
     }
 
-    document.getElementById('prev-month').onclick = () => { activeDate.setMonth(activeDate.getMonth() - 1); initData(); };
-    document.getElementById('next-month').onclick = () => { activeDate.setMonth(activeDate.getMonth() + 1); initData(); };
-    window.addEventListener('resize', () => sankeyChartInstance && sankeyChartInstance.resize());
+    document.getElementById('prev-month').onclick = () => { window.hasManuallyChangedMonth = true; activeDate.setMonth(activeDate.getMonth() - 1); initData(); };
+    document.getElementById('next-month').onclick = () => { window.hasManuallyChangedMonth = true; activeDate.setMonth(activeDate.getMonth() + 1); initData(); };
+    
     initData();
   </script>
 </body>

@@ -1374,15 +1374,7 @@ function doPost(e) {
     let activeTx = null;
     function refreshDashboard(query = '') {
       let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      if (txs.length === 0) {
-        txs = [
-          { id: 1, type: 'Expense', category: 'Food & Beverage', merchant: 'Indomaret', name: 'Groceries', amount: 24400, qty: 2, scale: 'kg', price: 12200, date: '2024-03-24', time: '13:26', cleared: true, tags: ['daily'], projects: ['family'], author: 'Alex', receipt: '/Users/rafieiy/.gemini/antigravity/brain/8433b4ab-9906-4905-b9b7-e56872277bf6/receipt_thumbnail_mockup_1774474517929.png' },
-          { id: 2, type: 'Expense', category: 'Transport', merchant: 'Pertamina', name: 'Fuel', amount: 50000, qty: 5, scale: 'L', price: 10000, date: '2024-03-23', time: '09:15', cleared: true, tags: ['car'], author: 'Alex' },
-          { id: 3, type: 'Expense', category: 'Lifestyle', merchant: 'Starbucks', name: 'Coffee', amount: 65000, qty: 1, scale: 'cup', price: 65000, date: '2024-03-22', time: '15:40', cleared: false, tags: ['work'], author: 'Alex' }
-        ];
-        localStorage.setItem('transactions', JSON.stringify(txs));
-      }
-
+      
       const q = query.toLowerCase();
       const filtered = txs.filter(t => {
         if (!q) return true;
