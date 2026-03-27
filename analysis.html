@@ -152,6 +152,16 @@
 
     const colors = ['#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#0ea5e9', '#06b6d4', '#6366f1', '#fb923c', '#facc15'];
     let allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+    
+    // Auto-detect latest month from transactions
+    if (allTxs.length > 0) {
+      const latest = [...allTxs].sort((a,b) => (b.date || "").localeCompare(a.date || ""))[0];
+      if (latest && latest.date) {
+        const d = new Date(latest.date);
+        if (!isNaN(d.getTime())) activeDate = new Date(d.getFullYear(), d.getMonth(), 1);
+      }
+    }
+
     if (allTxs.length === 0) {
       allTxs = [
         { type: 'Expense', category: 'Food & Beverage', merchant: 'Supermarket', name: 'Weekly Groceries', amount: 1450000, date: '2026-03-24' },
@@ -220,12 +230,16 @@
       if (incomeChart) incomeChart.destroy();
       incomeChart = new Chart(document.getElementById('incomeDoughnutChart'), { type: 'doughnut', data: { labels: incomeAgg.map(i => i.name), datasets: [{ data: incomeAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
 
-      // Tags & Projects Extraction
+      // Tags & Projects Extraction (Fixed for separate fields & all markers)
       const tagMap = {}, projMap = {};
       txs.forEach(t => {
          (t.tags || []).forEach(tg => {
-            if (tg.startsWith('#')) tagMap[tg] = (tagMap[tg] || 0) + t.amount;
-            if (tg.startsWith('[') && tg.endsWith(']')) projMap[tg] = (projMap[tg] || 0) + t.amount;
+            const clean = (tg || "").toString().trim();
+            if (clean) tagMap[clean] = (tagMap[clean] || 0) + (t.amount || 0);
+         });
+         (t.projects || []).forEach(pj => {
+            const clean = (pj || "").toString().trim();
+            if (clean) projMap[clean] = (projMap[clean] || 0) + (t.amount || 0);
          });
       });
 

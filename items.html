@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="theme.js"></script>
   <style>
     :root {
@@ -84,6 +85,20 @@
       gap: 0.25rem;
       animation: fadeIn 0.3s ease-out;
     }
+
+    .modal-import-card {
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      width: 100%;
+      max-width: 450px;
+      padding: 1.5rem;
+      margin: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 <body>
@@ -97,7 +112,26 @@
     <header class="header" style="margin-bottom: 1.5rem;">
       <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
       <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Item Catalog</h1>
-      <button class="btn-violet" onclick="openModal(null, 'form')">+ New</button>
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn-cancel" style="padding: 0.5rem 0.75rem;" title="Export Items" onclick="toggleExportMenu()">
+          <i data-lucide="download" style="width:18px;"></i>
+        </button>
+        <button class="btn-cancel" style="padding: 0.5rem 0.75rem;" title="Import Items" onclick="document.getElementById('file-import').click()">
+          <i data-lucide="file-up" style="width:18px;"></i>
+        </button>
+        <button class="btn-violet" onclick="openModal(null, 'form')">+ New</button>
+      </div>
+
+      <!-- Export Popover -->
+      <div id="export-popover" style="display:none; position:absolute; top:4.5rem; right:4.5rem; background:var(--bg-darker); border:1px solid var(--border); border-radius:1rem; padding:0.5rem; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <button class="modal-tab" onclick="exportItems('xlsx')" style="display:flex; align-items:center; gap:0.5rem; width:100%; text-align:left; padding:0.75rem 1rem;">
+          <i data-lucide="file-spreadsheet" style="width:16px; color:#16a34a;"></i> Export to Excel
+        </button>
+        <button class="modal-tab" onclick="exportItems('csv')" style="display:flex; align-items:center; gap:0.5rem; width:100%; text-align:left; padding:0.75rem 1rem;">
+          <i data-lucide="file-code-2" style="width:16px; color:var(--text-secondary);"></i> Export to CSV
+        </button>
+      </div>
+      <input type="file" id="file-import" style="display:none;" accept=".csv,.xlsx,.xls" onchange="handleImportItems(this)">
     </header>
 
     <div class="search-container">
@@ -294,6 +328,28 @@
         <div class="form-group"><label class="form-label">Notes</label><textarea id="f-notes" class="f-input" style="min-height: 80px;" oninput="autoSave()"></textarea></div>
         <div class="form-group"><label class="form-label">Status<span>*</span></label><div class="status-toggle"><button class="st-btn inactive" data-status="Inactive" onclick="setStatus('Inactive')">Inactive</button><button class="st-btn active active-st" data-status="Active" onclick="setStatus('Active')">Active</button></div></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Import Mapping Modal -->
+  <div id="import-mapping-modal" class="modal-backdrop" style="display: none; align-items: center; justify-content: center;">
+    <div class="modal-import-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-weight: 800; color: var(--text-primary);">Map Item Columns</h3>
+        <button class="btn-cancel" style="padding: 0.4rem; border-radius: 50%; width: 32px; height: 32px;" onclick="closeImport()">&times;</button>
+      </div>
+      
+      <div style="background:rgba(139,92,246,0.05); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; font-size:0.7rem; color:var(--text-secondary);">
+        Choose which columns from your file match the item fields below.
+      </div>
+
+      <div id="mapping-fields-items" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 400px; overflow-y: auto; padding-right: 0.4rem;">
+        <!-- Dynamic Mapping Rows -->
+      </div>
+
+      <button class="btn-violet" style="width: 100%; padding: 1rem;" onclick="executeImportItems()">
+        CONFIRM IMPORT
+      </button>
     </div>
   </div>
 
@@ -565,6 +621,164 @@
       }
       localStorage.setItem('items', JSON.stringify(items));
     }
+
+    let importRawData = [];
+    let importHeaders = [];
+
+    function handleImportItems(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.SheetNames[0];
+        const raw = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+        if (raw.length === 0) { alert('No data found in file.'); return; }
+
+        importRawData = raw;
+        importHeaders = Object.keys(raw[0]);
+        
+        showImportMapping();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function showImportMapping() {
+      const fields = [
+        { id: 'mi-name', label: 'Item Name', terms: ['name', 'nama', 'barang', 'item', 'produk', 'product'] },
+        { id: 'mi-category', label: 'Category', terms: ['category', 'kategori', 'jenis'] },
+        { id: 'mi-price', label: 'Unit Price', terms: ['price', 'harga', 'cost', 'unit price'] },
+        { id: 'mi-unit', label: 'Unit / Scale', terms: ['unit', 'scale', 'satuan', 'pcs'] },
+        { id: 'mi-sku', label: 'SKU / Barcode', terms: ['sku', 'barcode', 'kode'] },
+        { id: 'mi-manu', label: 'Manufacturer', terms: ['manu', 'brand', 'merk'] }
+      ];
+
+      const container = document.getElementById('mapping-fields-items');
+      container.innerHTML = '';
+
+      fields.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.innerHTML = `
+          <label class="form-label" style="font-size:0.65rem;">${f.label}</label>
+          <div class="select-wrapper">
+             <select id="${f.id}" class="f-input" style="width:100%; appearance:none;">
+               <option value="">-- Ignore --</option>
+               ${importHeaders.map(h => `<option value="${h}">${h}</option>`).join('')}
+             </select>
+          </div>
+        `;
+        container.appendChild(div);
+
+        const select = div.querySelector('select');
+        const match = importHeaders.find(h => f.terms.some(t => h.toLowerCase().includes(t)));
+        if (match) select.value = match;
+      });
+
+      document.getElementById('import-mapping-modal').style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function closeImport() {
+      document.getElementById('import-mapping-modal').style.display = 'none';
+      document.getElementById('file-import').value = '';
+    }
+
+    function executeImportItems() {
+      const mapping = {
+        name: document.getElementById('mi-name').value,
+        category: document.getElementById('mi-category').value,
+        price: document.getElementById('mi-price').value,
+        unit: document.getElementById('mi-unit').value,
+        sku: document.getElementById('mi-sku').value,
+        manu: document.getElementById('mi-manu').value
+      };
+
+      if (!mapping.name) { alert('Item Name mapping is required.'); return; }
+
+      const imported = importRawData.map(row => {
+        let price = row[mapping.price] || 0;
+        if (typeof price === 'string') price = parseInt(price.replace(/[^0-9]/g, '')) || 0;
+        
+        return {
+          id: Date.now() + Math.random(),
+          name: row[mapping.name] || 'Imported ' + Date.now(),
+          category: row[mapping.category] || 'Miscellaneous',
+          price: parseInt(price),
+          unit: row[mapping.unit] || 'pcs',
+          sku: row[mapping.sku] || '',
+          manu: row[mapping.manu] || '',
+          status: 'Active',
+          image: ''
+        };
+      });
+
+      // Simple merge: avoid exact name duplicates
+      imported.forEach(ni => {
+        if (!items.find(i => i.name.toLowerCase() === ni.name.toLowerCase())) {
+          items.push(ni);
+        }
+      });
+
+      localStorage.setItem('items', JSON.stringify(items));
+      alert(`Successfully imported items! Found ${imported.length} rows.`);
+      closeImport();
+      renderItems();
+    }
+
+    function toggleExportMenu() {
+      const p = document.getElementById('export-popover');
+      p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function exportItems(type) {
+      if (items.length === 0) { alert('No items to export.'); return; }
+      
+      const fileName = `Item_Catalog_${new Date().toISOString().slice(0, 10)}.${type}`;
+      
+      // Select fields for export
+      const exportData = items.map(i => ({
+        'Item Name': i.name,
+        'Category': i.category,
+        'Price': i.price,
+        'Unit': i.unit,
+        'Currency': i.currency || 'IDR',
+        'Manufacturer': i.manu || '',
+        'Model': i.model || '',
+        'SKU': i.sku || '',
+        'Status': i.status
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      if (type === 'xlsx') {
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Items");
+        XLSX.writeFile(workbook, fileName);
+      } else {
+        const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
+        const blob = new Blob([csvOutput], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      toggleExportMenu();
+    }
+
+    // Close popover on click outside
+    document.addEventListener('click', (e) => {
+      const p = document.getElementById('export-popover');
+      const btn = document.querySelector('[title="Export Items"]');
+      if (p.style.display === 'block' && !p.contains(e.target) && !btn.contains(e.target)) {
+        p.style.display = 'none';
+      }
+    });
 
     renderFilterChips();
     renderItems();

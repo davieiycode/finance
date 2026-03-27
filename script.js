@@ -918,6 +918,16 @@ if (nextBtn) {
       }
       localStorage.setItem('transactions', JSON.stringify(db));
   
+      // CLOUD AUTO-SAVE
+      const cloudUrl = localStorage.getItem('cloud_sheet_url');
+      if (cloudUrl) {
+         console.log(`Auto-saving ${db.length} transactions to cloud...`);
+         fetch(cloudUrl, {
+            method: 'POST',
+            body: JSON.stringify({ transactions: db })
+         }).catch(err => console.error('Auto-save failed', err));
+      }
+  
       // Show Summary Detail View
       setTimeout(showTransactionDetail, 1200);
     }

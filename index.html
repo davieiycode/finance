@@ -217,6 +217,47 @@
       background: rgba(255, 255, 255, 0.08);
       border-color: var(--accent);
     }
+
+    .toggle-chip {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-chip input {
+      display: none;
+    }
+
+    .toggle-chip .chip-content {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 0.8rem;
+      padding: 0.7rem 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toggle-chip input:checked+.chip-content {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: var(--accent);
+      color: var(--text-primary);
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
+    }
+
+    .toggle-chip .chip-content i {
+      width: 16px;
+      opacity: 0.7;
+      transition: 0.3s;
+    }
+
+    .toggle-chip input:checked+.chip-content i {
+      opacity: 1;
+      color: var(--accent);
+    }
   </style>
 </head>
 
@@ -582,7 +623,7 @@
             style="color:var(--accent);"></i>
           <div style="flex:1;">
             <h6>Export Center</h6>
-            <p style="font-size:0.7rem; color:var(--text-secondary);">Custom PDF Statement</p>
+            <p style="font-size:0.7rem; color:var(--text-secondary);">Export data to XLSX/CSV/PDF</p>
           </div>
         </div>
         <div class="p-menu-item" onclick="showPView('import', 'Import Hub')"><i data-lucide="file-up"
@@ -942,15 +983,15 @@
 
         <div
           style="background:var(--bg-input); border:1px solid var(--border); border-radius:1.25rem; padding:1.25rem;">
-          <label class="label" style="font-size:0.75rem; color:var(--accent);">SYNC STRATEGY</label>
+          <label class="label" style="font-size:0.75rem; color:var(--accent);">METODE SINKRONISASI</label>
           <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
             <label class="p-menu-item" id="sync-merge" style="margin-bottom:0; justify-content:flex-start;">
               <input type="radio" name="sync_strategy" value="merge" checked onchange="setSyncMode('merge')"
                 style="display:none;">
               <i data-lucide="merge"></i>
               <div style="flex:1;">
-                <div style="font-size:0.875rem; font-weight:700;">Merge Records</div>
-                <p style="font-size:0.6rem; color:var(--text-secondary);">Combine cloud & local data safely</p>
+                <div style="font-size:0.875rem; font-weight:700;">Gabungkan Data</div>
+                <p style="font-size:0.6rem; color:var(--text-secondary);">Tambahkan data cloud ke data HP Anda</p>
               </div>
             </label>
             <label class="p-menu-item" id="sync-overwrite" style="margin-bottom:0; justify-content:flex-start;">
@@ -958,8 +999,8 @@
                 style="display:none;">
               <i data-lucide="refresh-cw"></i>
               <div style="flex:1;">
-                <div style="font-size:0.875rem; font-weight:700;">Overwrite Local</div>
-                <p style="font-size:0.6rem; color:var(--text-secondary);">Replace local with cloud master data</p>
+                <div style="font-size:0.875rem; font-weight:700;">Ganti Data HP</div>
+                <p style="font-size:0.6rem; color:var(--text-secondary);">Gunakan data cloud sebagai data utama</p>
               </div>
             </label>
           </div>
@@ -967,11 +1008,13 @@
 
         <div style="display:flex; gap:0.75rem;">
           <button onclick="syncCloud('pull')"
-            style="flex:1; background:var(--glass); border:1px solid var(--border); color:white; padding:1rem; border-radius:1rem; font-weight:700;">Pull
-            Data</button>
+            style="flex:1; background:var(--glass); border:1px solid var(--border); color:white; padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <i data-lucide="arrow-down-circle" style="width:18px;"></i> Ambil dari Cloud
+          </button>
           <button onclick="syncCloud('push')"
-            style="flex:1; background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700;">Push
-            Cloud</button>
+            style="flex:1; background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <i data-lucide="arrow-up-circle" style="width:18px;"></i> Simpan ke Cloud
+          </button>
         </div>
 
         <div style="font-size:0.6rem; color:var(--text-secondary); line-height:1.5;">
@@ -995,18 +1038,86 @@
           <pre id="as-code"
             style="background:#000; color:#0f0; padding:1.25rem; border-radius:1rem; font-size:0.65rem; overflow-x:auto; user-select:all; line-height:1.4; border:1px solid #333; text-align:left;">
 function doGet(e) {
-  const store = PropertiesService.getScriptProperties();
-  const txs = store.getProperty('transactions') || '[]';
-  return ContentService.createTextOutput(JSON.stringify({ transactions: JSON.parse(txs) }))
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('transaction');
+  if (!sheet) return ContentService.createTextOutput(JSON.stringify({ transactions: [] })).setMimeType(ContentService.MimeType.JSON);
+  
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return ContentService.createTextOutput(JSON.stringify({ transactions: [] })).setMimeType(ContentService.MimeType.JSON);
+  
+  const headers = data.shift();
+  const transactions = data.map(row => {
+    let t = {};
+    headers.forEach((h, i) => {
+      let v = row[i];
+      if (v instanceof Date) v = v.toISOString().split('T')[0];
+      
+      if (h === 'Transaction ID') t.id = v;
+      else if (h === 'Date') t.date = v;
+      else if (h === 'Time') t.time = v;
+      else if (h === 'Category') t.category = v;
+      else if (h === 'Merchant') t.merchant = v;
+      else if (h === 'Item Name') t.name = v;
+      else if (h === 'Description') t.description = v;
+      else if (h === 'Amount') t.price = v;
+      else if (h === 'Total') t.amount = v;
+      else if (h === 'Quantity') t.qty = v;
+      else if (h === 'Scale') t.scale = v;
+      else if (h === 'Currency') t.currency = v;
+      else if (h === 'Exchange Rate') t.exchangeRate = v;
+      else if (h === 'Type') t.type = v;
+      else if (h === 'Cleared') t.cleared = (v === 'Yes');
+      else if (h === 'Payment Account') t.accountPayment = v;
+      else if (h === 'Received Account') t.accountReceived = v;
+      else if (h === 'Receipt') t.receipt = v;
+      else if (h === 'Author') t.author = v;
+      else if (h === 'Discount') t.discount = v;
+      else if (h === 'Additional Fee') t.fee = v;
+      else if (h === 'Tags') t.tags = v ? v.split(', ') : [];
+      else if (h === 'Project') t.projects = v ? v.split(', ') : [];
+    });
+    return t;
+  });
+  
+  return ContentService.createTextOutput(JSON.stringify({ transactions: transactions }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
-  const data = JSON.parse(e.postData.contents);
-  const store = PropertiesService.getScriptProperties();
-  store.setProperty('transactions', JSON.stringify(data.transactions));
-  return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
-    .setMimeType(ContentService.MimeType.JSON);
+  const contents = JSON.parse(e.postData.contents);
+  const transactions = contents.transactions;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('transaction');
+  if (!sheet) { sheet = ss.insertSheet('transaction'); } else { sheet.clear(); }
+  
+  const headers = [
+    'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
+    'Merchant', 'Item Name', 'Description', 'Amount', 'Currency', 
+    'Exchange Rate', 'Quantity', 'Scale', 'Type', 'Cleared', 
+    'Payment Account', 'Received Account', 'Receipt', 'Tags', 'Project', 
+    'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 
+    'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
+  ];
+  sheet.appendRow(headers);
+  
+  if (transactions.length > 0) {
+    const rows = transactions.map(t => {
+      const d = new Date(t.date);
+      return [
+        t.id, t.date, t.time || '', t.category, '', t.merchant, t.name, t.description || '',
+        t.price || 0, t.currency || 'IDR', t.exchangeRate || 1, t.qty || 1, t.scale || 'pcs',
+        t.type, t.cleared ? 'Yes' : 'No', t.accountPayment || '', t.accountReceived || '',
+        t.receipt || '', (t.tags || []).join(', '), (t.projects || []).join(', '), t.author || '',
+        t.discount || 0, t.fee || 0, t.amount || 0, 0, 'Monthly', 
+        t.type === 'Income' ? 'In' : 'Out', d.getFullYear(), d.getMonth() + 1, new Date().toISOString(), 0
+      ];
+    });
+    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f3f3f3');
+    sheet.setFrozenRows(1);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+}SON);
 }
             </pre>
           <button onclick="copyScriptCode()"
@@ -1039,25 +1150,48 @@ function doPost(e) {
         </div>
 
         <div>
-          <label class="label" style="font-size:0.75rem;">COLUMNS TO INCLUDE</label>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.5rem;">
-            <label style="font-size:0.7rem; display:flex; align-items:center; gap:0.3rem;"><input type="checkbox"
-                id="col-date" checked> Date</label>
-            <label style="font-size:0.7rem; display:flex; align-items:center; gap:0.3rem;"><input type="checkbox"
-                id="col-merch" checked> Merchant</label>
-            <label style="font-size:0.7rem; display:flex; align-items:center; gap:0.3rem;"><input type="checkbox"
-                id="col-item" checked> Item Name</label>
-            <label style="font-size:0.7rem; display:flex; align-items:center; gap:0.3rem;"><input type="checkbox"
-                id="col-cat" checked> Category</label>
-            <label style="font-size:0.7rem; display:flex; align-items:center; gap:0.3rem;"><input type="checkbox"
-                id="col-total" checked> Amount</label>
+          <label class="label"
+            style="font-size:0.75rem; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">COLUMNS
+            TO INCLUDE</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-top:0.6rem;">
+            <label class="toggle-chip">
+              <input type="checkbox" id="col-date" checked>
+              <div class="chip-content"><i data-lucide="calendar"></i> Date</div>
+            </label>
+            <label class="toggle-chip">
+              <input type="checkbox" id="col-merch" checked>
+              <div class="chip-content"><i data-lucide="building-2"></i> Merchant</div>
+            </label>
+            <label class="toggle-chip">
+              <input type="checkbox" id="col-item" checked>
+              <div class="chip-content"><i data-lucide="package"></i> Item Name</div>
+            </label>
+            <label class="toggle-chip">
+              <input type="checkbox" id="col-cat" checked>
+              <div class="chip-content"><i data-lucide="tag"></i> Category</div>
+            </label>
+            <label class="toggle-chip" style="grid-column: span 2;">
+              <input type="checkbox" id="col-total" checked>
+              <div class="chip-content" style="justify-content:center;"><i data-lucide="banknote"></i> Transaction
+                Amount</div>
+            </label>
           </div>
         </div>
 
-        <button onclick="exportToPDF()"
-          style="background:var(--accent); color:white; border:none; padding:1rem; border-radius:1.25rem; font-weight:800; margin-top:1rem; box-shadow:0 10px 30px rgba(139,92,246,0.3);">
-          <i data-lucide="download" style="width:18px;"></i> GENERATE PDF
-        </button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-top:1rem;">
+          <button onclick="exportToPDF()"
+            style="grid-column: span 2; background:var(--accent); color:white; border:none; padding:1.1rem; border-radius:1.25rem; font-weight:800; box-shadow:0 10px 30px rgba(139,92,246,0.3); display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <i data-lucide="file-text" style="width:18px;"></i> GENERATE PDF
+          </button>
+          <button onclick="exportToDataFormat('xlsx')"
+            style="background:rgba(22,163,74,0.1); color:#16a34a; border:1px solid #16a34a; padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <i data-lucide="file-spreadsheet" style="width:18px;"></i> EXCEL
+          </button>
+          <button onclick="exportToDataFormat('csv')"
+            style="background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border); padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <i data-lucide="file-code-2" style="width:18px;"></i> CSV
+          </button>
+        </div>
       </div>
 
       <!-- Import View -->
@@ -1076,15 +1210,15 @@ function doPost(e) {
         </div>
         <div
           style="background:var(--bg-input); border:1px solid var(--border); border-radius:1.25rem; padding:1.25rem;">
-          <label class="label" style="font-size:0.75rem; color:var(--accent);">IMPORT STRATEGY</label>
+          <label class="label" style="font-size:0.75rem; color:var(--accent);">PILIHAN IMPOR</label>
           <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
             <label class="p-menu-item" id="import-merge" style="margin-bottom:0; justify-content:flex-start;">
               <input type="radio" name="import_strategy" value="merge" checked onchange="setImportMode('merge')"
                 style="display:none;">
               <i data-lucide="merge"></i>
               <div style="flex:1;">
-                <div style="font-size:0.875rem; font-weight:700;">Merge Records</div>
-                <p style="font-size:0.6rem; color:var(--text-secondary);">Add to existing transactions</p>
+                <div style="font-size:0.875rem; font-weight:700;">Tambahkan Data</div>
+                <p style="font-size:0.6rem; color:var(--text-secondary);">Sisipkan data baru ke catatan sekarang</p>
               </div>
             </label>
             <label class="p-menu-item" id="import-overwrite" style="margin-bottom:0; justify-content:flex-start;">
@@ -1092,8 +1226,8 @@ function doPost(e) {
                 style="display:none;">
               <i data-lucide="refresh-cw"></i>
               <div style="flex:1;">
-                <div style="font-size:0.875rem; font-weight:700;">Overwrite Local</div>
-                <p style="font-size:0.6rem; color:var(--text-secondary);">Replace all local data with file content</p>
+                <div style="font-size:0.875rem; font-weight:700;">Timpa Data Lama</div>
+                <p style="font-size:0.6rem; color:var(--text-secondary);">Ganti semua data lama dengan isi berkas</p>
               </div>
             </label>
           </div>
@@ -1109,6 +1243,24 @@ function doPost(e) {
         <div style="font-size:0.65rem; padding:0.5rem; opacity:0.6; line-height:1.4;">
           <b>Expected Columns:</b> Date, Merchant, Item, Category, Amount.
         </div>
+      </div>
+
+      <!-- Import Mapping View -->
+      <div id="p-view-import-mapping" style="display:none; flex-direction:column; gap:1.25rem;">
+        <div
+          style="background:rgba(139,92,246,0.05); border:1px solid var(--border); border-radius:1rem; padding:1rem;">
+          <h6 style="font-weight:800; color:var(--accent); margin-bottom:0.4rem;">Column Mapping</h6>
+          <p style="font-size:0.65rem; color:var(--text-secondary);">Map your file columns to finance fields.</p>
+        </div>
+
+        <div id="mapping-fields" style="display:flex; flex-direction:column; gap:1rem;">
+          <!-- Dynamic Mapping Rows -->
+        </div>
+
+        <button onclick="executeImport()"
+          style="background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:800; margin-top:0.5rem; box-shadow:0 10px 30px rgba(139,92,246,0.3);">
+          CONFIRM & IMPORT
+        </button>
       </div>
       <div id="p-view-security" style="display:none; flex-direction:column; gap:1.25rem;">
         <div class="p-menu-item" style="margin-bottom:0.5rem; justify-content:space-between; cursor:default;">
@@ -1456,6 +1608,7 @@ function doPost(e) {
     window.exportToPDF = () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+      const tableStartY = 85;
       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
       const prefs = JSON.parse(localStorage.getItem('user_prefs') || '{}');
       const userName = prefs.name || 'User';
@@ -1511,6 +1664,52 @@ function doPost(e) {
       doc.save(`${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`);
     };
 
+    window.exportToDataFormat = (type) => {
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      if (txs.length === 0) { alert('No data to export.'); return; }
+
+      const reportTitle = document.getElementById('pdf-title').value || 'Finance_Ledger';
+      const fileName = `${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.${type}`;
+
+      // Column selection logic
+      const columns = [];
+      const labels = [];
+      if (document.getElementById('col-date').checked) { columns.push('date'); labels.push('Date'); }
+      if (document.getElementById('col-merch').checked) { columns.push('merchant'); labels.push('Merchant'); }
+      if (document.getElementById('col-item').checked) { columns.push('name'); labels.push('Item'); }
+      if (document.getElementById('col-cat').checked) { columns.push('category'); labels.push('Category'); }
+      if (document.getElementById('col-total').checked) { columns.push('amount'); labels.push('Amount'); }
+
+      const exportData = txs.map(t => {
+        const item = {};
+        columns.forEach((col, idx) => {
+          item[labels[idx]] = t[col];
+        });
+        return item;
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      if (type === 'xlsx') {
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Ledger");
+        XLSX.writeFile(workbook, fileName);
+      } else {
+        const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
+        const blob = new Blob([csvOutput], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    };
+
+    let importRawData = [];
+    let importHeaders = [];
+
     window.handleImport = (input) => {
       const file = input.files[0];
       if (!file) return;
@@ -1523,31 +1722,91 @@ function doPost(e) {
 
         if (raw.length === 0) { alert('No data found in file.'); return; }
 
-        const currentTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+        importRawData = raw;
+        importHeaders = Object.keys(raw[0]);
 
-        const imported = raw.map(row => ({
-          id: 'TX-IMP-' + Date.now() + Math.random().toString(36).substr(2, 5),
-          date: row.Date || row.date || new Date().toISOString().split('T')[0],
-          merchant: row.Merchant || row.merchant || '-',
-          name: row.Item || row.item || row.Name || row.name || 'Imported Transaction',
-          amount: parseInt(row.Amount || row.amount || 0),
-          category: row.Category || row.category || 'Uncategorized',
-          type: row.Type || row.type || (parseInt(row.Amount || 0) < 0 ? 'Expense' : 'Income'),
-          status: 'cleared',
-          explain: 'Imported from external ledger'
-        }));
-
-        let finalData = [];
-        if (currentImportMode === 'merge') {
-          finalData = [...imported, ...currentTxs];
-        } else {
-          finalData = imported;
-        }
-        localStorage.setItem('transactions', JSON.stringify(finalData));
-        alert(`Success! Imported ${imported.length} transactions (${currentImportMode}).`);
-        location.reload();
+        showImportMapping();
       };
       reader.readAsArrayBuffer(file);
+    };
+
+    function showImportMapping() {
+      const fields = [
+        { id: 'm-date', label: 'Date', terms: ['date', 'tanggal', 'waktu'] },
+        { id: 'm-merchant', label: 'Merchant', terms: ['merchant', 'toko', 'vendor', 'payee'] },
+        { id: 'm-item', label: 'Item / Name', terms: ['item', 'name', 'nama', 'barang', 'keterangan'] },
+        { id: 'm-category', label: 'Category', terms: ['category', 'kategori', 'jenis'] },
+        { id: 'm-amount', label: 'Amount', terms: ['amount', 'total', 'jumlah', 'harga', 'price', 'value'] }
+      ];
+
+      const container = document.getElementById('mapping-fields');
+      container.innerHTML = '';
+
+      fields.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.innerHTML = `
+          <label class="label" style="font-size:0.7rem; opacity:0.6; margin-bottom:0.3rem; display:block;">${f.label.toUpperCase()}</label>
+          <div class="select-wrapper">
+            <select id="${f.id}" class="f-input" style="width:100%; appearance:none; background:var(--bg-input); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; color:white;">
+              <option value="">-- Ignore Field --</option>
+              ${importHeaders.map(h => `<option value="${h}">${h}</option>`).join('')}
+            </select>
+          </div>
+        `;
+        container.appendChild(div);
+
+        // Auto-match
+        const select = div.querySelector('select');
+        const match = importHeaders.find(h => f.terms.some(t => h.toLowerCase().includes(t)));
+        if (match) select.value = match;
+      });
+
+      showPView('import-mapping', 'Map File Columns');
+    }
+
+    window.executeImport = () => {
+      const mapping = {
+        date: document.getElementById('m-date').value,
+        merchant: document.getElementById('m-merchant').value,
+        name: document.getElementById('m-item').value,
+        category: document.getElementById('m-category').value,
+        amount: document.getElementById('m-amount').value
+      };
+
+      const currentTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+
+      const imported = importRawData.map(row => {
+        const rawAmount = row[mapping.amount] || 0;
+        // Basic cleaning for amount (remove Rp, dots, commas if string)
+        let cleanAmount = rawAmount;
+        if (typeof cleanAmount === 'string') {
+          cleanAmount = cleanAmount.replace(/[^0-9.-]/g, '');
+        }
+        cleanAmount = parseInt(cleanAmount) || 0;
+
+        return {
+          id: 'TX-IMP-' + Date.now() + Math.random().toString(36).substr(2, 5),
+          date: row[mapping.date] || new Date().toISOString().split('T')[0],
+          merchant: row[mapping.merchant] || '-',
+          name: row[mapping.name] || 'Imported Transaction',
+          amount: Math.abs(cleanAmount),
+          category: row[mapping.category] || 'Uncategorized',
+          type: row.Type || row.type || (cleanAmount < 0 ? 'Expense' : 'Income'),
+          cleared: true,
+          explain: 'Imported from external ledger'
+        };
+      });
+
+      let finalData = [];
+      if (currentImportMode === 'merge') {
+        finalData = [...imported, ...currentTxs];
+      } else {
+        finalData = imported;
+      }
+      localStorage.setItem('transactions', JSON.stringify(finalData));
+      alert(`Success! Imported ${imported.length} transactions (${currentImportMode}).`);
+      location.reload();
     };
 
     let currentSyncMode = 'merge';
@@ -1566,21 +1825,39 @@ function doPost(e) {
 
     window.syncCloud = async (action) => {
       const url = document.getElementById('cloud-url').value;
-      if (!url) { alert('Please enter your Script URL'); return; }
+      if (!url) { alert('Harap masukkan URL Script Google Anda'); return; }
+      localStorage.setItem('cloud_sheet_url', url);
 
       try {
         if (action === 'push') {
-          const txs = localStorage.getItem('transactions') || '[]';
-          const res = await fetch(url, {
+          const txsRaw = localStorage.getItem('transactions') || '[]';
+          const txs = JSON.parse(txsRaw);
+          
+          if (txs.length === 0) {
+            alert('Tidak ada data transaksi untuk dikirim.');
+            return;
+          }
+
+          console.log(`Mengirim ${txs.length} transaksi ke Cloud...`);
+          
+          await fetch(url, {
             method: 'POST',
-            body: JSON.stringify({ transactions: JSON.parse(txs) })
+            body: JSON.stringify({ transactions: txs })
           });
-          alert('Cloud Sync: Data pushed successfully!');
+          
+          alert(`Berhasil! ${txs.length} data Anda telah disimpan ke Cloud Ledger.`);
         } else {
+          console.log('Mengambil data dari Cloud...');
           const res = await fetch(url + '?get=data');
           const data = await res.json();
-          const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+          
+          if (!data.transactions || data.transactions.length === 0) {
+            alert('Cloud masih kosong. Belum ada data untuk diambil.');
+            return;
+          }
 
+          const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+          
           let finalData = [];
           if (currentSyncMode === 'merge') {
             const cloudIds = new Set(data.transactions.map(t => t.id));
@@ -1591,11 +1868,11 @@ function doPost(e) {
           }
 
           localStorage.setItem('transactions', JSON.stringify(finalData));
-          alert(`Cloud Sync: ${finalData.length} records synchronized.`);
+          alert(`Singkronisasi Berhasil! ${data.transactions.length} catatan diambil dari Cloud.`);
           location.reload();
         }
       } catch (e) {
-        alert('Sync Failed: Check URL or AppScript visibility (Deployment must be "Anyone").');
+        alert('Gagal Terhubung: Periksa URL atau pastikan Deployment diatur ke "Anyone".');
       }
     };
 
@@ -1611,6 +1888,7 @@ function doPost(e) {
       document.getElementById('p-view-pin-setup').style.display = (vId === 'pin-setup') ? 'flex' : 'none';
       document.getElementById('p-view-report').style.display = (vId === 'report') ? 'flex' : 'none';
       document.getElementById('p-view-import').style.display = (vId === 'import') ? 'flex' : 'none';
+      document.getElementById('p-view-import-mapping').style.display = (vId === 'import-mapping') ? 'flex' : 'none';
       document.getElementById('p-view-cloud').style.display = (vId === 'cloud') ? 'flex' : 'none';
       document.getElementById('p-view-tutorial').style.display = (vId === 'tutorial') ? 'flex' : 'none';
       pTitle.innerText = title;
@@ -1798,6 +2076,10 @@ function doPost(e) {
     pModal.onclick = (e) => { if (e.target === pModal) pModal.style.display = 'none'; };
 
     initPrefs();
+    const savedUrl = localStorage.getItem('cloud_sheet_url');
+    if (savedUrl && document.getElementById('cloud-url')) {
+      document.getElementById('cloud-url').value = savedUrl;
+    }
   </script>
 </body>
 
