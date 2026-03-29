@@ -217,7 +217,7 @@
       const filtered = accounts.filter(acc => 
         (acc.name || '').toLowerCase().includes(q) || 
         (acc.number || '').toLowerCase().includes(q)
-      );
+      ).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       
       list.innerHTML = filtered.map(acc => `
         <div class="account-card" onclick="openModal(${acc.id}, 'analysis')">

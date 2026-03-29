@@ -482,7 +482,7 @@
                           (i.model || '').toLowerCase().includes(s) ||
                           (i.manu || '').toLowerCase().includes(s);
         return matchCat && matchSearch;
-      });
+      }).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
       
       if (filtered.length === 0) {
         list.style.display = 'none';
