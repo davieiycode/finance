@@ -29,17 +29,42 @@
 </head>
 <body>
   <div class="container" style="max-width: 600px; padding: 1.5rem;">
-    <header class="header" style="margin-bottom: 2rem; border-bottom: none;">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <button onclick="window.location.href='index.html'" style="background: none; border: none; color: var(--text-primary); cursor: pointer; display: flex; align-items: center;">
-          <i data-lucide="chevron-left"></i>
-        </button>
-        <h1 style="font-size: 1.5rem; font-weight: 800;">My Goals</h1>
+    <div class="sticky-nav">
+      <header class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button onclick="window.location.href='index.html'" class="back-btn"><i data-lucide="chevron-left"></i></button>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">My Goals</h1>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="toggleSearch()" class="back-btn"><i data-lucide="search"></i></button>
+          <button onclick="showModal()" class="back-btn" style="background: #0ea5e9; border-color: #0ea5e9; color: white;"><i data-lucide="plus"></i></button>
+        </div>
+      </header>
+
+      <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideInSearch 0.3s ease-out;">
+        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
+        <input type="text" id="master-search" class="f-input" placeholder="Search goals..." style="padding-left: 2.75rem;" oninput="refreshList(this.value)">
       </div>
-      <button onclick="showModal()" style="background: #0ea5e9; border: none; width: 40px; height: 40px; border-radius: 12px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-        <i data-lucide="plus"></i>
-      </button>
-    </header>
+    </div>
+
+    <style>
+      @keyframes slideInSearch { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
+    </style>
+
+    <script>
+      window.toggleSearch = () => {
+        const s = document.getElementById('search-container');
+        const inp = document.getElementById('master-search');
+        if (s.style.display === 'none') {
+          s.style.display = 'block';
+          inp.focus();
+        } else {
+          s.style.display = 'none';
+          inp.value = '';
+          refreshList('');
+        }
+      };
+    </script>
 
     <div id="goals-list">
       <!-- Dynamic Goals -->
@@ -96,19 +121,25 @@
     lucide.createIcons();
     let goals = JSON.parse(localStorage.getItem('goals') || '[]');
 
-    function refreshList() {
+    function refreshList(query = '') {
       const list = document.getElementById('goals-list');
       const empty = document.getElementById('empty-state');
+      const q = query.toLowerCase();
       list.innerHTML = '';
       
-      if (goals.length === 0) {
+      const filtered = goals.filter(g => 
+        g.name.toLowerCase().includes(q) || 
+        (g.note || "").toLowerCase().includes(q)
+      );
+
+      if (filtered.length === 0) {
         empty.style.display = 'block';
         return;
       } else {
         empty.style.display = 'none';
       }
 
-      goals.forEach((g, idx) => {
+      filtered.forEach((g, idx) => {
         const perc = Math.min((g.saved / g.target) * 100, 100);
         const card = document.createElement('div');
         card.className = 'goal-card';
@@ -154,6 +185,7 @@
     function closeModal() { document.getElementById('goal-modal').style.display = 'none'; }
 
     function saveGoal() {
+      const name = document.getElementById('f-name').value;
       const target = parseInt(document.getElementById('f-target').value);
       const saved = parseInt(document.getElementById('f-saved').value) || 0;
       const dueDate = document.getElementById('f-due').value;
@@ -176,10 +208,20 @@
     }
 
     function deleteGoal(idx) {
-      if (!confirm('Cancel this goal?')) return;
-      goals.splice(idx, 1);
-      localStorage.setItem('goals', JSON.stringify(goals));
-      refreshList();
+      if(typeof showConfirm === 'function') {
+        showConfirm('Cancel this goal?', () => {
+          goals.splice(idx, 1);
+          localStorage.setItem('goals', JSON.stringify(goals));
+          refreshList();
+          if(typeof showToast === 'function') showToast('Goal deleted successfully!', 'success', 'trash-2');
+        });
+      } else {
+        if (!confirm('Cancel this goal?')) return;
+        goals.splice(idx, 1);
+        localStorage.setItem('goals', JSON.stringify(goals));
+        refreshList();
+        if(typeof showToast === 'function') showToast('Goal deleted successfully!', 'success', 'trash-2');
+      }
     }
 
     refreshList();

@@ -42,12 +42,15 @@
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; z-index: 1000; padding: 1rem; }
     .modal-container { width: 100%; max-width: 500px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 2rem; margin: 2rem auto; overflow: hidden; position: relative; }
     .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .modal-tabs { display: flex; padding: 0.5rem 1.5rem; gap: 1.5rem; border-bottom: 1px solid var(--border); }
-    .modal-tab { padding: 0.75rem 0; background: none; border: none; color: var(--text-secondary); font-weight: 700; font-size: 0.875rem; cursor: pointer; position: relative; }
-    .modal-tab.active { color: white; }
-    .modal-tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--accent); }
-    .view-content { display: none; padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
-    .view-content.active { display: block; }
+    .modal-tabs { display: flex; background: var(--glass); padding: 0.25rem; border-radius: 0.75rem; margin: 1rem 1.5rem; gap: 0.25rem; }
+    .modal-tab { flex: 1; padding: 0.6rem; border-radius: 0.6rem; border: none; background: none; color: var(--text-secondary); font-weight: 600; font-size: 0.8125rem; cursor: pointer; }
+    .modal-tab.active { 
+       background: var(--accent); 
+       color: white; 
+       box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+    .view-content { padding: 1.5rem; display: none; flex-direction: column; gap: 1.5rem; max-height: 70vh; overflow-y: auto; }
+    .view-content.active { display: flex; }
 
     .form-group { margin-bottom: 1.5rem; }
     .form-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem; }
@@ -67,26 +70,69 @@
 </head>
 <body>
   <div class="container">
-    <header class="header">
-      <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
-      <h1 style="font-size: 1.25rem; font-weight: 800;">Managed Merchants</h1>
-      <button class="btn-violet" onclick="openModal(null, 'form')">+ New</button>
-    </header>
+    <div class="sticky-nav">
+      <header class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Managed Merchants</h1>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="toggleSearch()" class="back-btn" style="border-radius: 50%;">
+            <i data-lucide="search" style="width: 18px;"></i>
+          </button>
+          <button class="back-btn" onclick="openModal(null, 'form')" style="background: var(--accent); border-color: var(--accent); color: white;">
+            <i data-lucide="plus"></i>
+          </button>
+        </div>
+      </header>
 
-    <div class="search-container">
-       <i data-lucide="search" class="search-icon"></i>
-       <input type="text" id="m-search" class="search-input" placeholder="Search merchants..." oninput="handleFilter()">
+      <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
+        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
+        <input type="text" id="m-search" class="f-input" placeholder="Search merchants..." style="padding-left: 2.75rem;" oninput="handleFilter(this.value)">
+      </div>
     </div>
+
+    <style>
+      @keyframes slideDown { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
+      .sticky-nav { margin: -1.5rem -1.5rem 1.5rem -1.5rem; }
+    </style>
+
+    <script>
+      window.toggleSearch = () => {
+        const s = document.getElementById('search-container');
+        const inp = document.getElementById('m-search');
+        if (s.style.display === 'none') {
+          s.style.display = 'block';
+          inp.focus();
+        } else {
+          s.style.display = 'none';
+          inp.value = '';
+          handleFilter('');
+        }
+      };
+    </script>
+
+
 
     <div class="filter-scroll" id="m-filter-chips"></div>
 
     <div id="merchant-list"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" style="display:none; text-align:center; padding: 4rem 2rem;">
+       <div style="width: 80px; height: 80px; background: rgba(139, 92, 246, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+          <i data-lucide="store" style="width: 40px; height: 40px; color: var(--accent);"></i>
+       </div>
+       <h3 style="font-weight: 700; margin-bottom: 0.5rem;">No Merchants</h3>
+       <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">You haven't added any merchants yet. They will appear here once you record transactions or add them manually.</p>
+    </div>
   </div>
 
   <div id="merchant-modal" class="modal-backdrop">
     <div class="modal-container">
       <header class="modal-header">
         <div style="display: flex; align-items: center; gap: 1rem;">
+          <button style="background:none; border:none; color:var(--text-primary); cursor:pointer;" onclick="closeModal()"><i data-lucide="x"></i></button>
           <span id="m-title" style="font-weight: 700; font-size: 1.125rem; color: var(--text-primary);">Details</span>
         </div>
         <div id="header-actions" style="display: flex; gap: 0.5rem;"></div>
@@ -98,16 +144,19 @@
       </div>
 
       <div id="view-analysis" class="view-content active">
-         <div class="ana-card">
+         <div class="ana-card" style="margin-bottom: 0;">
             <div class="ana-lbl">Merchant Location</div>
             <div id="ana-address" style="font-size: 0.8125rem; color: var(--text-primary); margin-bottom: 0.75rem; font-weight: 600;">Jl. Yosodipuro No.52D, Surakarta</div>
             <div class="map-box" id="map-container"></div>
          </div>
          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-            <div class="ana-card"><div class="ana-lbl">Total Spent</div><div id="ana-total" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">Rp 0</div></div>
-            <div class="ana-card"><div class="ana-lbl">Transactions</div><div id="ana-count" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">0 Times</div></div>
+            <div class="ana-card" style="margin-bottom: 0;"><div class="ana-lbl">Total Spent</div><div id="ana-total" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">Rp 0</div></div>
+            <div class="ana-card" style="margin-bottom: 0;"><div class="ana-lbl">Transactions</div><div id="ana-count" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">0 Times</div></div>
          </div>
-         <div id="ana-tx-list" style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1rem;"></div>
+         <section>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">Recent History</h3>
+            <div id="ana-tx-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+         </section>
       </div>
 
       <div id="view-form" class="view-content">
@@ -190,8 +239,8 @@
   </div>
 
   <script>
-    let merchants = JSON.parse(localStorage.getItem('merchants') || '[]');
-    if (merchants.length === 0) {
+    let merchants = JSON.parse(localStorage.getItem('merchants'));
+    if (!merchants || merchants.length === 0) {
       merchants = [
         { id: 1, name: 'Abata Donuts & Coffee Yosodipuro', type: 'Cafe', address: 'Jl. Yosodipuro No.52D, Surakarta', map: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3955.127410497042!2d110.8205463745672!3d-7.55594199245138!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a16828221881b%3A0x117420216654202!2sAbata%20Donuts%20%26%20Coffee%20Yosodipuro!5e0!3m2!1sen!2sid!4v1701000000000!5m2!1sen!2sid' },
         { id: 2, name: 'Pertashop Sambiroto', type: 'Gas Station', address: 'Sambiroto, Semarang', map: '' },
@@ -199,12 +248,15 @@
       ];
       localStorage.setItem('merchants', JSON.stringify(merchants));
     }
-
+    
     const types = ['All', 'Supermarket', 'Convenience Store', 'Restaurant', 'Cafe', 'Gas Station', 'Online', 'Pharmacy', 'Other'];
     let activeType = 'All';
     let searchTerm = '';
 
-    function handleFilter() { searchTerm = document.getElementById('m-search').value.toLowerCase(); renderMerchants(); }
+    function handleFilter(query) { 
+      searchTerm = (query !== undefined ? query : document.getElementById('m-search').value).toLowerCase(); 
+      renderMerchants(); 
+    }
     function setType(t) { activeType = t; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.innerText === t)); renderMerchants(); }
 
     function renderFilterChips() {
@@ -214,17 +266,26 @@
 
     function renderMerchants() {
       const filtered = merchants.filter(m => (activeType === 'All' || m.type === activeType) && m.name.toLowerCase().includes(searchTerm));
-      document.getElementById('merchant-list').innerHTML = filtered.map(m => `
-        <div class="merchant-card" onclick="openModal(${m.id}, 'analysis')">
-          <div style="display:flex; align-items:center; gap:1rem;">
-            <div class="m-icon">${m.name[0].toUpperCase()}</div>
-            <div style="flex:1;">
-              <div style="font-weight:700; color:white;">${m.name}</div>
-              <div style="font-size:0.75rem; color:var(--text-secondary);">${m.type}</div>
+      const list = document.getElementById('merchant-list');
+      const empty = document.getElementById('empty-state');
+
+      if (filtered.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+      } else {
+        list.style.display = 'block';
+        empty.style.display = 'none';
+        list.innerHTML = filtered.map(m => `
+          <div class="merchant-card" onclick="openModal(${m.id}, 'analysis')">
+            <div style="display:flex; align-items:center; gap:1rem;">
+              <div class="m-icon">${m.name[0].toUpperCase()}</div>
+              <div style="flex:1;">
+                <div style="font-weight:700; color:white;">${m.name}</div>
+                <div style="font-size:0.75rem; color:var(--text-secondary);">${m.type}</div>
+              </div>
             </div>
-            <i data-lucide="chevron-right" style="color:var(--text-secondary); width:18px;"></i>
-          </div>
-        </div>`).join('');
+          </div>`).join('');
+      }
       lucide.createIcons();
     }
 
@@ -314,8 +375,10 @@
       const actions = document.getElementById('header-actions');
       
       let h = '';
-      if (currentEditId) h += `<button class="btn-violet" style="background:none; border:1px solid rgba(239,68,68,0.3); color:#ef4444; padding:0 0.5rem;" onclick="deleteMerchant()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
-      h += `<button class="btn-violet" onclick="closeModal()">Done</button>`;
+      if (view === 'form') {
+        if (currentEditId) h += `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteMerchant()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+        h += `<button class="btn-violet" onclick="closeModal()">Save</button>`;
+      }
       actions.innerHTML = h;
       lucide.createIcons();
     }
@@ -324,10 +387,20 @@
     function closeModal() { modal.style.display = 'none'; renderMerchants(); }
 
     function deleteMerchant() {
-      if (!confirm('Delete this merchant?')) return;
-      merchants = merchants.filter(m => m.id !== currentEditId);
-      localStorage.setItem('merchants', JSON.stringify(merchants));
-      closeModal();
+      if(typeof showConfirm === 'function') {
+        showConfirm('Delete this merchant?', () => {
+          merchants = merchants.filter(m => m.id !== currentEditId);
+          localStorage.setItem('merchants', JSON.stringify(merchants));
+          closeModal();
+          if(typeof showToast === 'function') showToast('Merchant deleted successfully!', 'success', 'trash-2');
+        });
+      } else {
+        if (!confirm('Delete this merchant?')) return;
+        merchants = merchants.filter(m => m.id !== currentEditId);
+        localStorage.setItem('merchants', JSON.stringify(merchants));
+        closeModal();
+        if(typeof showToast === 'function') showToast('Merchant deleted successfully!', 'success', 'trash-2');
+      }
     }
 
     function autoSave() {

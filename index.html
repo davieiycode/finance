@@ -11,6 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/tesseract.js@v5.0.3/dist/tesseract.min.js"></script>
   <script src="theme.js"></script>
   <style>
     .dashboard-grid {
@@ -263,16 +264,53 @@
 
 <body>
   <div class="container" style="max-width: 600px; padding: 1.5rem;">
-    <header class="header" style="margin-bottom: 2rem;">
-      <div>
-        <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">Finance</h1>
-        <p style="font-size: 0.8125rem; color: var(--text-secondary);">Welcome back, March 2026</p>
+    <div class="sticky-nav">
+      <header class="header">
+        <div>
+          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">Finance</h1>
+          <p style="font-size: 0.8125rem; color: var(--text-secondary);">Welcome back, March 2026</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <div onclick="toggleDashboardSearch()" class="profile-icon"
+            style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i data-lucide="search" style="width: 20px;"></i>
+          </div>
+          <div id="profile-trigger" class="profile-icon"
+            style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i data-lucide="user" style="width: 20px;"></i>
+          </div>
+        </div>
+      </header>
+      
+      <div id="dashboard-search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
+        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 16px; color: var(--text-secondary);"></i>
+        <input type="text" id="dashboard-search" class="search-bar" placeholder="Search transactions..." 
+          style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; color: var(--text-primary); outline: none; font-size: 0.875rem;"
+          oninput="refreshDashboard(this.value)">
       </div>
-      <div id="profile-trigger" class="profile-icon"
-        style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-        <i data-lucide="user" style="width: 20px;"></i>
-      </div>
-    </header>
+    </div>
+
+    <style>
+      @keyframes slideDown {
+        from { opacity: 0; transform: scaleY(0); }
+        to { opacity: 1; transform: scaleY(1); }
+      }
+    </style>
+
+    <script>
+      window.toggleDashboardSearch = () => {
+        const s = document.getElementById('dashboard-search-container');
+        const inp = document.getElementById('dashboard-search');
+        if (s.style.display === 'none') {
+          s.style.display = 'block';
+          inp.focus();
+        } else {
+          s.style.display = 'none';
+          inp.value = '';
+          refreshDashboard('');
+        }
+      };
+    </script>
 
     <div class="dashboard-grid" style="grid-template-columns: repeat(2, 1fr);">
       <div class="stat-card" onclick="window.location.href='accounts.html'">
@@ -303,6 +341,7 @@
         <a href="history.html"
           style="font-size: 0.75rem; color: var(--accent); font-weight: 600; text-decoration: none;">See All</a>
       </div>
+      <div id="merge-center" style="margin-bottom: 1.5rem;"></div>
       <div id="recent-list" class="transaction-list">
         <!-- Dynamic list -->
       </div>
@@ -468,9 +507,13 @@
             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">MERCHANT</label>
             <div id="m-merchant" style="font-weight: 500; font-size: 0.8125rem;">-</div>
           </div>
-          <div style="grid-column: span 2;">
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">ACCOUNTS</label>
-            <div id="m-accounts" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+          <div style="grid-column: span 2;" id="m-payment-group">
+            <label class="label" style="font-size: 0.65rem; opacity: 0.5;" id="m-payment-label">PAYMENT SOURCE ACCOUNT</label>
+            <div id="m-payment-account" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+          </div>
+          <div style="grid-column: span 2; display:none;" id="m-beneficiary-group">
+            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">BENEFICIARY ACCOUNT</label>
+            <div id="m-beneficiary-account" style="font-weight: 500; font-size: 0.8125rem;">-</div>
           </div>
           <div>
             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">AUTHOR</label>
@@ -641,7 +684,7 @@
           </div>
         </div>
         <div class="p-menu-item" style="border-color: rgba(239,68,68,0.2);"
-          onclick="if(confirm('Clear all data?')) { localStorage.clear(); location.reload(); }"><i data-lucide="trash-2"
+          onclick="if(typeof showConfirm === 'function') { showConfirm('Clear all data?', () => { localStorage.clear(); if(typeof showToast === 'function') showToast('All data cleared!', 'success', 'trash-2'); setTimeout(() => location.reload(), 1000); }); } else { if(confirm('Clear all data?')) { localStorage.clear(); if(typeof showToast === 'function') showToast('All data cleared!', 'success', 'trash-2'); setTimeout(() => location.reload(), 1000); } }"><i data-lucide="trash-2"
             style="color:#ef4444;"></i>
           <div style="flex:1;">
             <h6 style="color:#ef4444;">Clear All Data</h6>
@@ -865,6 +908,7 @@
             height: 4px;
             border-radius: 2px;
             -webkit-appearance: none;
+            appearance: none;
             background: var(--border);
             outline: none;
             margin: 1.5rem 0;
@@ -872,6 +916,7 @@
 
           .radius-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
+            appearance: none;
             width: 18px;
             height: 18px;
             border-radius: 9px;
@@ -1039,85 +1084,129 @@
             style="background:#000; color:#0f0; padding:1.25rem; border-radius:1rem; font-size:0.65rem; overflow-x:auto; user-select:all; line-height:1.4; border:1px solid #333; text-align:left;">
 function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName('transaction');
-  if (!sheet) return ContentService.createTextOutput(JSON.stringify({ transactions: [] })).setMimeType(ContentService.MimeType.JSON);
-  
-  const data = sheet.getDataRange().getValues();
-  if (data.length < 2) return ContentService.createTextOutput(JSON.stringify({ transactions: [] })).setMimeType(ContentService.MimeType.JSON);
+  const timezone = ss.getSpreadsheetTimeZone();
+  const sheets = ss.getSheets();
+  let sheet = null;
+  for (let s of sheets) {
+    if (s.getName().toLowerCase() === 'transaction') { sheet = s; break; }
+  }
+
+  if (!sheet) return ContentService.createTextOutput(JSON.stringify({ status: 'error', transactions: [] })).setMimeType(ContentService.MimeType.JSON);
+  const data = sheet.getDataRange().getValues(); 
+  if (data.length < 2) return ContentService.createTextOutput(JSON.stringify({ status: 'success', transactions: [] })).setMimeType(ContentService.MimeType.JSON);
   
   const headers = data.shift();
   const transactions = data.map(row => {
     let t = {};
     headers.forEach((h, i) => {
       let v = row[i];
-      if (v instanceof Date) v = v.toISOString().split('T')[0];
+      let hName = h.toString().trim().toLowerCase();
       
-      if (h === 'Transaction ID') t.id = v;
-      else if (h === 'Date') t.date = v;
-      else if (h === 'Time') t.time = v;
-      else if (h === 'Category') t.category = v;
-      else if (h === 'Merchant') t.merchant = v;
-      else if (h === 'Item Name') t.name = v;
-      else if (h === 'Description') t.description = v;
-      else if (h === 'Amount') t.price = v;
-      else if (h === 'Total') t.amount = v;
-      else if (h === 'Quantity') t.qty = v;
-      else if (h === 'Scale') t.scale = v;
-      else if (h === 'Currency') t.currency = v;
-      else if (h === 'Exchange Rate') t.exchangeRate = v;
-      else if (h === 'Type') t.type = v;
-      else if (h === 'Cleared') t.cleared = (v === 'Yes');
-      else if (h === 'Payment Account') t.accountPayment = v;
-      else if (h === 'Received Account') t.accountReceived = v;
-      else if (h === 'Receipt') t.receipt = v;
-      else if (h === 'Author') t.author = v;
-      else if (h === 'Discount') t.discount = v;
-      else if (h === 'Additional Fee') t.fee = v;
-      else if (h === 'Tags') t.tags = v ? v.split(', ') : [];
-      else if (h === 'Project') t.projects = v ? v.split(', ') : [];
+      // LOGIKA ANTI 1899 UNTUK TANGGAL
+      if (hName === 'date') {
+        if (v instanceof Date) {
+          // Jika tahun di bawah 1920, berarti ini data Jam yang "nyasar" ke kolom Tanggal
+          if (v.getFullYear() < 1920) {
+            v = Utilities.formatDate(new Date(), timezone, "yyyy-MM-dd"); 
+          } else {
+            v = Utilities.formatDate(v, timezone, "yyyy-MM-dd");
+          }
+        }
+        t.date = v;
+      }
+      else if (hName === 'time') {
+        if (v instanceof Date) v = Utilities.formatDate(v, timezone, "HH:mm");
+        t.time = v ? v.toString() : '';
+      }
+      
+      // DATA UTAMA (Author, Description, Receipt, dll)
+      else if (hName === 'transaction id') t.id = v;
+      else if (hName === 'merchant') t.merchant = v;
+      else if (hName === 'item name' || hName === 'name') t.name = v;
+      else if (hName === 'category') t.category = v;
+      else if (hName === 'category group') t.categoryGroup = v;
+      else if (hName === 'type') t.type = v;
+      else if (hName === 'description') t.description = v;
+      else if (hName === 'author') t.author = v;
+      else if (hName === 'receipt') t.receipt = v;
+      else if (hName === 'cleared') t.cleared = (v === 'Yes');
+      
+      // ANALISIS (Tags & Project)
+      else if (hName === 'analytics tags' || hName === 'tags') t.tags = v ? v.toString().split(', ') : [];
+      else if (hName === 'associated project' || hName === 'project') t.projects = v ? v.toString().split(', ') : [];
+      
+      // ANGKA & AKUN (Dipisah dengan benar)
+      else if (hName === 'amount (per unit)' || hName === 'amount') {
+        t.amount = parseFloat(v.toString().replace(/[^0-9.-]/g, '')) || 0;
+      }
+      else if (hName === 'total') {
+        t.total = parseFloat(v.toString().replace(/[^0-9.-]/g, '')) || 0;
+      }
+      else if (hName === 'discount') t.discount = parseFloat(v) || 0;
+      else if (hName === 'additional fee') t.fee = parseFloat(v) || 0;
+      else if (hName === 'payment source account' || hName === 'payment account') t.accountPayment = v;
+      else if (hName === 'beneficiary account' || hName === 'received account') t.accountReceived = v;
+      
+      // LAINNYA
+      else if (hName === 'currency') t.currency = v;
+      else if (hName === 'quantity') t.qty = parseFloat(v) || 1;
+      else if (hName === 'unit scale' || hName === 'scale') t.scale = v;
+      else if (hName === 'exchange rate') t.exchangeRate = parseFloat(v) || 1;
+      
+      // METADATA
+      else if (hName === 'budget amount') t.budgetAmount = v;
+      else if (hName === 'budget period') t.budgetPeriod = v;
+      else if (hName === 'flow') t.flow = v;
+      else if (hName === 'year') t.year = v;
+      else if (hName === 'month') t.month = v;
+      else if (hName === 'update time') t.updateTime = v;
+      else if (hName === 'xp') t.xp = v;
     });
     return t;
   });
   
-  return ContentService.createTextOutput(JSON.stringify({ transactions: transactions }))
+  return ContentService.createTextOutput(JSON.stringify({ status: 'success', transactions: transactions }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
-  const contents = JSON.parse(e.postData.contents);
-  const transactions = contents.transactions;
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName('transaction');
-  if (!sheet) { sheet = ss.insertSheet('transaction'); } else { sheet.clear(); }
-  
-  const headers = [
-    'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
-    'Merchant', 'Item Name', 'Description', 'Amount', 'Currency', 
-    'Exchange Rate', 'Quantity', 'Scale', 'Type', 'Cleared', 
-    'Payment Account', 'Received Account', 'Receipt', 'Tags', 'Project', 
-    'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 
-    'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
-  ];
-  sheet.appendRow(headers);
-  
-  if (transactions.length > 0) {
-    const rows = transactions.map(t => {
-      const d = new Date(t.date);
-      return [
-        t.id, t.date, t.time || '', t.category, '', t.merchant, t.name, t.description || '',
-        t.price || 0, t.currency || 'IDR', t.exchangeRate || 1, t.qty || 1, t.scale || 'pcs',
-        t.type, t.cleared ? 'Yes' : 'No', t.accountPayment || '', t.accountReceived || '',
-        t.receipt || '', (t.tags || []).join(', '), (t.projects || []).join(', '), t.author || '',
-        t.discount || 0, t.fee || 0, t.amount || 0, 0, 'Monthly', 
-        t.type === 'Income' ? 'In' : 'Out', d.getFullYear(), d.getMonth() + 1, new Date().toISOString(), 0
-      ];
-    });
-    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f3f3f3');
-    sheet.setFrozenRows(1);
+  try {
+    const contents = JSON.parse(e.postData.contents);
+    const transactions = contents.transactions || [];
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName('transaction');
+    if (!sheet) { sheet = ss.insertSheet('transaction'); } else { sheet.clear(); }
+    
+    const headers = [
+      'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
+      'Merchant', 'Item Name', 'Description', 'Amount (per Unit)', 'Currency', 
+      'Exchange Rate', 'Quantity', 'Unit Scale', 'Type', 'Cleared', 
+      'Payment Source Account', 'Beneficiary Account', 'Receipt', 'Analytics Tags', 'Associated Project', 
+      'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 
+      'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
+    ];
+    sheet.appendRow(headers);
+    
+    if (transactions.length > 0) {
+      const rows = transactions.map(t => {
+        const d = new Date(t.date || new Date());
+        return [
+          t.id, t.date, t.time || '', t.category, t.categoryGroup || '', t.merchant, t.name, t.description || '',
+          t.amount || 0, t.currency || 'IDR', t.exchangeRate || 1, t.qty || 1, t.scale || 'pcs',
+          t.type, t.cleared ? 'Yes' : 'No', t.accountPayment || '', t.accountReceived || '',
+          t.receipt || '', (t.tags || []).join(', '), (t.projects || []).join(', '), t.author || '',
+          t.discount || 0, t.fee || 0, t.total || 0, t.budgetAmount || 0, t.budgetPeriod || 'Monthly', 
+          t.flow || (t.type === 'Income' ? 'In' : 'Out'), t.year || d.getFullYear(), t.month || (d.getMonth() + 1), t.updateTime || new Date().toISOString(), t.xp || 0
+        ];
+      });
+      sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+      sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f3f3f3');
+      sheet.setFrozenRows(1);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
   }
-  return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
-}SON);
 }
             </pre>
           <button onclick="copyScriptCode()"
@@ -1241,7 +1330,7 @@ function doPost(e) {
         </div>
 
         <div style="font-size:0.65rem; padding:0.5rem; opacity:0.6; line-height:1.4;">
-          <b>Expected Columns:</b> Date, Merchant, Item, Category, Amount.
+          <b>Expected Columns:</b> Date, Merchant, Item, Category, Amount (Price), Qty, Discount, Fee.
         </div>
       </div>
 
@@ -1375,23 +1464,33 @@ function doPost(e) {
     function refreshDashboard(query = '') {
       let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
       
+      // Migration: Convert old structure (amount=Total, price=UnitPrice) to new (total=Total, amount=UnitPrice)
+      txs = txs.map(t => {
+        if (t.total === undefined && t.amount !== undefined) {
+          t.total = t.amount;
+          t.amount = t.price || (t.total / (t.qty || 1));
+        }
+        return t;
+      });
+      
       const q = query.toLowerCase();
       const filtered = txs.filter(t => {
         if (!q) return true;
         const searchPool = [
           t.name, t.merchant, t.category, t.type, t.description, t.author, t.currency, t.scale, t.accountPayment, t.accountReceived,
           ...(t.tags || []), ...(t.projects || []),
-          t.amount.toString(), (t.cleared ? 'cleared' : 'uncleared')
+          t.total.toString(), (t.cleared ? 'cleared' : 'uncleared')
         ].map(s => (s || '').toLowerCase());
         return searchPool.some(s => s.includes(q));
       });
 
       // Stats based on ALL filtered (or just relevant) - usually stats show total ledger
-      const spent = txs.filter(t => t.type === 'Expense').reduce((s, t) => s + t.amount, 0);
-      const income = txs.filter(t => t.type === 'Income').reduce((s, t) => s + t.amount, 0);
+      const spent = txs.filter(t => t.type === 'Expense').reduce((s, t) => s + t.total, 0);
+      const income = txs.filter(t => t.type === 'Income').reduce((s, t) => s + t.total, 0);
       const uncleared = txs.filter(t => t.cleared === false).length;
 
-      document.getElementById('stat-balance').innerText = 'Rp ' + (12450000 + income - spent).toLocaleString('id-ID');
+      const baseBalance = parseFloat(localStorage.getItem('base_balance') || '0');
+      document.getElementById('stat-balance').innerText = 'Rp ' + (baseBalance + income - spent).toLocaleString('id-ID');
       document.getElementById('stat-spent').innerText = 'Rp ' + spent.toLocaleString('id-ID');
 
       // Budgets & Goals logic
@@ -1434,7 +1533,7 @@ function doPost(e) {
             <div class="item-meta">${t.merchant ? t.merchant + ' • ' : ''}${t.category} • ${t.date}</div>
           </div>
           <div class="item-amount" style="color: ${isExp ? '#ef4444' : '#10b981'};">
-            ${isExp ? '-' : '+'}Rp ${t.amount.toLocaleString('id-ID')}
+            ${isExp ? '-' : '+'}Rp ${t.total.toLocaleString('id-ID')}
           </div>
         `;
         item.onclick = () => showDetail(t);
@@ -1443,15 +1542,57 @@ function doPost(e) {
       lucide.createIcons();
     }
 
+    // Helper for form parsing
+     function parseFormNum(val) {
+      if (val === undefined || val === null || val === '') return 0;
+      if (typeof val === 'number') return val;
+      let clean = val.toString().replace(/Rp/g, '').trim();
+      if (!clean) return 0;
+      const dots = (clean.match(/\./g) || []).length;
+      const commas = (clean.match(/,/g) || []).length;
+      if (dots > 1) { 
+        clean = clean.replace(/\./g, '').replace(/,/g, '.');
+      } else if (commas > 1) {
+        clean = clean.replace(/,/g, '');
+      } else if (dots === 1 && commas === 1) {
+        if (clean.indexOf('.') < clean.indexOf(',')) clean = clean.replace(/\./g, '').replace(/,/g, '.');
+        else clean = clean.replace(/,/g, '');
+      } else if (dots === 1) {
+        if (clean.split('.')[1].length === 3) clean = clean.replace(/\./g, '');
+      } else if (commas === 1) {
+        clean = clean.replace(/,/g, '.');
+      }
+      return parseFloat(clean.replace(/[^0-9.-]+/g, "")) || 0;
+    }
+
     function showDetail(t) {
       activeTx = t;
       document.getElementById('m-item-name').innerText = t.name;
-      document.getElementById('m-total').innerText = (t.type === 'Expense' ? '-Rp ' : '+Rp ') + t.amount.toLocaleString('id-ID');
+      document.getElementById('m-total').innerText = (t.type === 'Expense' ? '-Rp ' : '+Rp ') + t.total.toLocaleString('id-ID');
       document.getElementById('m-category').innerText = t.category;
       document.getElementById('m-merchant').innerText = t.merchant || '-';
       document.getElementById('m-date').innerText = `${t.date} ${t.time || ''}`;
       document.getElementById('m-author').innerText = t.author || '-';
-      document.getElementById('m-accounts').innerText = t.accountReceived ? `${t.accountPayment} → ${t.accountReceived}` : (t.accountPayment || '-');
+      const txType = (t.type || 'Expense').toLowerCase();
+      const multiAccount = ['transfer', 'savings', 'investment'].includes(txType);
+      
+      const pGroup = document.getElementById('m-payment-group');
+      const bGroup = document.getElementById('m-beneficiary-group');
+
+      if (txType === 'income') {
+        pGroup.style.display = 'none';
+        bGroup.style.display = 'block';
+        document.getElementById('m-beneficiary-account').innerText = t.accountReceived || t.accountPayment || '-';
+      } else if (multiAccount) {
+        pGroup.style.display = 'block';
+        document.getElementById('m-payment-account').innerText = t.accountPayment || '-';
+        bGroup.style.display = 'block';
+        document.getElementById('m-beneficiary-account').innerText = t.accountReceived || '-';
+      } else {
+        pGroup.style.display = 'block';
+        document.getElementById('m-payment-account').innerText = t.accountPayment || '-';
+        bGroup.style.display = 'none';
+      }
 
       const statusEl = document.getElementById('m-status');
       const isCleared = t.cleared !== false;
@@ -1461,9 +1602,10 @@ function doPost(e) {
       const calcEl = document.getElementById('m-calculation');
       if (t.qty && t.qty > 0) {
         calcEl.style.display = 'block';
-        let formula = `(${t.qty} ${t.scale || 'pcs'} x Rp ${t.price?.toLocaleString('id-ID') || (t.amount / t.qty).toLocaleString('id-ID')})`;
+        let formula = `(${t.qty} x Rp ${t.amount.toLocaleString('id-ID')})`;
         if (t.discount > 0) formula += ` - Rp ${t.discount.toLocaleString('id-ID')}`;
         if (t.fee > 0) formula += ` + Rp ${t.fee.toLocaleString('id-ID')}`;
+        formula += ` = Rp ${t.total.toLocaleString('id-ID')}`;
         calcEl.innerText = formula;
       } else {
         calcEl.style.display = 'none';
@@ -1507,13 +1649,24 @@ function doPost(e) {
 
     document.getElementById('m-delete').onclick = () => {
       if (!activeTx || !activeTx.id) { detailModal.style.display = 'none'; return; }
-      if (!confirm('Are you sure you want to delete this transaction?')) return;
-      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      txs = txs.filter(t => t.id !== activeTx.id);
-      localStorage.setItem('transactions', JSON.stringify(txs));
-      detailModal.style.display = 'none';
-      if (typeof showToast === 'function') showToast('Transaction deleted successfully', 'success', 'trash-2');
-      refreshDashboard();
+      if(typeof showConfirm === 'function') {
+        showConfirm('Are you sure you want to delete this transaction?', () => {
+          let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+          txs = txs.filter(t => t.id !== activeTx.id);
+          localStorage.setItem('transactions', JSON.stringify(txs));
+          detailModal.style.display = 'none';
+          if(typeof showToast === 'function') showToast('Transaction deleted successfully!', 'success', 'trash-2');
+          refreshDashboard();
+        });
+      } else {
+        if (!confirm('Are you sure you want to delete this transaction?')) return;
+        let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+        txs = txs.filter(t => t.id !== activeTx.id);
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        detailModal.style.display = 'none';
+        if(typeof showToast === 'function') showToast('Transaction deleted successfully!', 'success', 'trash-2');
+        refreshDashboard();
+      }
     };
 
     document.getElementById('m-duplicate').onclick = () => {
@@ -1541,25 +1694,72 @@ function doPost(e) {
           document.getElementById('scan-preview').src = dataUrl;
           document.getElementById('scanning-overlay').style.display = 'flex';
 
-          // Simulation of AI Processing
-          setTimeout(() => {
+          Tesseract.recognize(
+            dataUrl,
+            'eng+ind',
+            { logger: m => console.log(m) }
+          ).then(({ data: { text } }) => {
+            document.getElementById('scanning-overlay').style.display = 'none';
+            const result = parseReceiptText(text);
+            showReviewModal(dataUrl, result);
+          }).catch(err => {
+            console.error(err);
             document.getElementById('scanning-overlay').style.display = 'none';
             showReviewModal(dataUrl);
-          }, 2500);
+          });
         };
         reader.readAsDataURL(input.files[0]);
       }
     };
 
-    function showReviewModal(imgData) {
-      document.getElementById('review-receipt-img').src = imgData;
-      // Mock OCR result
-      const merchants = ['Starbucks', 'Indomaret', 'Alfamart', 'Pertamina', 'Grab', 'Traveloka'];
-      const categories = ['Entertainment', 'Food & Beverage', 'Transport', 'Lifestyle'];
+    function parseReceiptText(text) {
+      const result = { merchant: '', amount: 0, date: new Date().toISOString().split('T')[0] };
+      const lines = text.split('\n');
+      
+      const knownMerchants = ['INDOMARET', 'ALFAMART', 'PERTAMINA', 'STARBUCKS', 'GRAB', 'GOJEK', 'TOKOPEDIA', 'SHOPEE', 'TRAVELOKA', 'MCDONALDS', 'KFC', 'PIZZA HUT'];
+      for (const m of knownMerchants) {
+        if (text.toUpperCase().includes(m)) {
+          result.merchant = m.charAt(0) + m.slice(1).toLowerCase();
+          break;
+        }
+      }
+      
+      if (!result.merchant && lines.length > 0) {
+        result.merchant = lines[0].trim().substring(0, 30);
+      }
+      
+      const dateMatch = text.match(/(\d{2}[/-]\d{2}[/-]\d{4})|(\d{4}[/-]\d{2}[/-]\d{2})/);
+      if (dateMatch) {
+        result.date = dateMatch[0].replace(/\//g, '-');
+        const parts = result.date.split('-');
+        if (parts[0].length === 2) result.date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      
+      const cleanedText = text.replace(/,/g, '');
+      const totalMatch = cleanedText.match(/(?:TOTAL|Rp|Amount).?\s*:?.?\s*([\d\.]+)/i);
+      if (totalMatch) {
+         result.amount = parseFloat(totalMatch[1]) || 0;
+      } else {
+         const numbers = cleanedText.match(/\d+(\.\d+)?/g) || [];
+         const prices = numbers.map(n => parseFloat(n)).filter(n => n > 1000 && n < 10000000);
+         if (prices.length > 0) result.amount = Math.max(...prices);
+      }
+      return result;
+    }
 
-      document.getElementById('r-merchant').value = merchants[Math.floor(Math.random() * merchants.length)];
-      document.getElementById('r-amount').value = Math.floor(Math.random() * 200000) + 15000;
-      document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
+    function showReviewModal(imgData, result) {
+      document.getElementById('review-receipt-img').src = imgData;
+      
+      if (result) {
+        document.getElementById('r-merchant').value = result.merchant || 'Unknown';
+        document.getElementById('r-amount').value = result.amount || 0;
+        document.getElementById('r-date').value = result.date;
+      } else {
+        const merchants = ['Starbucks', 'Indomaret', 'Alfamart', 'Pertamina', 'Grab', 'Traveloka'];
+        document.getElementById('r-merchant').value = merchants[Math.floor(Math.random() * merchants.length)];
+        document.getElementById('r-amount').value = Math.floor(Math.random() * 200000) + 15000;
+        document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
+      }
 
       document.getElementById('review-modal').style.display = 'flex';
     }
@@ -1569,7 +1769,9 @@ function doPost(e) {
       const newTx = {
         id: 'TX-' + Date.now(),
         merchant: document.getElementById('r-merchant').value,
-        amount: parseInt(document.getElementById('r-amount').value),
+        amount: parseFormNum(document.getElementById('r-amount').value),
+        total: parseFormNum(document.getElementById('r-amount').value),
+        qty: 1,
         date: document.getElementById('r-date').value,
         category: 'Others', // Auto-mapped or default
         type: 'Expense',
@@ -1638,7 +1840,7 @@ function doPost(e) {
 
       const tableData = txs.map(t => {
         const row = [];
-        t.amountDisplay = t.type === 'Expense' ? `-Rp ${t.amount.toLocaleString('id-ID')}` : `+Rp ${t.amount.toLocaleString('id-ID')}`;
+        t.amountDisplay = t.type === 'Expense' ? `-Rp ${t.total.toLocaleString('id-ID')}` : `+Rp ${t.total.toLocaleString('id-ID')}`;
         columns.forEach(col => row.push(t[col] || '-'));
         return row;
       });
@@ -1656,9 +1858,9 @@ function doPost(e) {
       doc.save(`${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`);
     };
 
-    window.exportToDataFormat = (type) => {
+      window.exportToDataFormat = (type) => {
       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      if (txs.length === 0) { alert('No data to export.'); return; }
+      if (txs.length === 0) { showToast('No data to export.', 'error', 'alert-circle'); return; }
 
       const reportTitle = document.getElementById('pdf-title').value || 'Finance_Ledger';
       const fileName = `${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.${type}`;
@@ -1670,7 +1872,7 @@ function doPost(e) {
       if (document.getElementById('col-merch').checked) { columns.push('merchant'); labels.push('Merchant'); }
       if (document.getElementById('col-item').checked) { columns.push('name'); labels.push('Item'); }
       if (document.getElementById('col-cat').checked) { columns.push('category'); labels.push('Category'); }
-      if (document.getElementById('col-total').checked) { columns.push('amount'); labels.push('Amount'); }
+      if (document.getElementById('col-total').checked) { columns.push('total'); labels.push('Amount'); }
 
       const exportData = txs.map(t => {
         const item = {};
@@ -1728,7 +1930,11 @@ function doPost(e) {
         { id: 'm-merchant', label: 'Merchant', terms: ['merchant', 'toko', 'vendor', 'payee'] },
         { id: 'm-item', label: 'Item / Name', terms: ['item', 'name', 'nama', 'barang', 'keterangan'] },
         { id: 'm-category', label: 'Category', terms: ['category', 'kategori', 'jenis'] },
-        { id: 'm-amount', label: 'Amount', terms: ['amount', 'total', 'jumlah', 'harga', 'price', 'value'] }
+        { id: 'm-amount', label: 'Unit Price', terms: ['price', 'harga', 'amount', 'unit'] },
+        { id: 'm-qty', label: 'Quantity', terms: ['qty', 'jumlah', 'quantity', 'volume'] },
+        { id: 'm-payment', label: 'Payment Source Account', terms: ['payment', 'source', 'akun', 'bank', 'sumber'] },
+        { id: 'm-received', label: 'Beneficiary Account', terms: ['received', 'beneficiary', 'tujuan', 'penerima'] },
+        { id: 'm-id', label: 'Transaction ID (Unique)', terms: ['id', 'uuid', 'transaction id', 'no'] }
       ];
 
       const container = document.getElementById('mapping-fields');
@@ -1763,42 +1969,71 @@ function doPost(e) {
         merchant: document.getElementById('m-merchant').value,
         name: document.getElementById('m-item').value,
         category: document.getElementById('m-category').value,
-        amount: document.getElementById('m-amount').value
+        amount: document.getElementById('m-amount').value,
+        qty: document.getElementById('m-qty').value,
+        payment: document.getElementById('m-payment').value,
+        received: document.getElementById('m-received').value,
+        txId: document.getElementById('m-id').value
       };
 
       const currentTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
 
       const imported = importRawData.map(row => {
-        const rawAmount = row[mapping.amount] || 0;
-        // Basic cleaning for amount (remove Rp, dots, commas if string)
-        let cleanAmount = rawAmount;
-        if (typeof cleanAmount === 'string') {
-          cleanAmount = cleanAmount.replace(/[^0-9.-]/g, '');
-        }
-        cleanAmount = parseInt(cleanAmount) || 0;
+        const parseRowVal = (key) => {
+          let val = row[mapping[key]];
+          if (val === undefined || val === null || val === '') return 0;
+          if (typeof val === 'number') return val;
+          
+          let clean = val.toString().replace(/Rp/g, '').trim();
+          if (clean.includes(',') && !clean.includes('.')) {
+              clean = clean.replace(/,/g, '.');
+          } else if (clean.includes('.')) {
+              clean = clean.replace(/\./g, '').replace(/,/g, '.');
+          } else {
+              clean = clean.replace(/[^0-9.-]+/g, "");
+          }
+          return parseFloat(clean) || 0;
+        };
+
+        const unitPrice = Math.abs(parseRowVal('amount'));
+        const quantity = parseRowVal('qty') || 1;
+        const discount = parseRowVal('discount') || 0;
+        const fee = parseRowVal('fee') || 0;
+        
+        // Formula: (quantity x amount) - discount + additional fee = total
+        const total = (quantity * unitPrice) - discount + fee;
+
+        // Generate a unique hash based on content if no ID is provided to prevent duplicates
+        const rowId = row[mapping.txId] || ('IMP-' + btoa(unescape(encodeURIComponent( (row[mapping.date]||'') + (row[mapping.name]||'') + (row[mapping.merchant]||'') + total ))).substring(0, 16));
 
         return {
-          id: 'TX-IMP-' + Date.now() + Math.random().toString(36).substr(2, 5),
-          date: row[mapping.date] || new Date().toISOString().split('T')[0],
+          id: rowId,
+          date: (row[mapping.date] || new Date().toISOString().split('T')[0]).toString().split('T')[0],
           merchant: row[mapping.merchant] || '-',
           name: row[mapping.name] || 'Imported Transaction',
-          amount: Math.abs(cleanAmount),
+          amount: unitPrice,
+          total: total,
+          qty: quantity,
           category: row[mapping.category] || 'Uncategorized',
-          type: row.Type || row.type || (cleanAmount < 0 ? 'Expense' : 'Income'),
+          accountPayment: row[mapping.payment] || '',
+          accountReceived: row[mapping.received] || '',
+          type: row.Type || row.type || (total < 0 ? 'Income' : 'Expense'),
           cleared: true,
-          explain: 'Imported from external ledger'
+          author: 'System (Import)'
         };
       });
 
       let finalData = [];
       if (currentImportMode === 'merge') {
-        finalData = [...imported, ...currentTxs];
+        const existingIds = new Set(currentTxs.map(t => t.id));
+        const filteredNew = imported.filter(t => !existingIds.has(t.id));
+        finalData = [...filteredNew, ...currentTxs];
       } else {
         finalData = imported;
       }
       localStorage.setItem('transactions', JSON.stringify(finalData));
-      alert(`Success! Imported ${imported.length} transactions (${currentImportMode}).`);
-      location.reload();
+      showToast(`Success! Imported ${imported.length} transactions (${currentImportMode}).`, 'success', 'file-check');
+      setTimeout(() => location.reload(), 1500);
     };
 
     let currentSyncMode = 'merge';
@@ -1817,7 +2052,7 @@ function doPost(e) {
 
     window.syncCloud = async (action) => {
       const url = document.getElementById('cloud-url').value;
-      if (!url) { alert('Harap masukkan URL Script Google Anda'); return; }
+      if (!url) { showToast('Please enter your Google Script URL', 'warning', 'link-2'); return; }
       localStorage.setItem('cloud_sheet_url', url);
 
       try {
@@ -1837,34 +2072,76 @@ function doPost(e) {
             body: JSON.stringify({ transactions: txs })
           });
           
-          alert(`Berhasil! ${txs.length} data Anda telah disimpan ke Cloud Ledger.`);
+          showToast(`Success! ${txs.length} transactions saved to Cloud Ledger.`, 'success', 'cloud-upload');
         } else {
           console.log('Mengambil data dari Cloud...');
           const res = await fetch(url + '?get=data');
           const data = await res.json();
           
           if (!data.transactions || data.transactions.length === 0) {
-            alert('Cloud masih kosong. Belum ada data untuk diambil.');
+            showToast('Cloud is empty. No data to retrieve.', 'warning', 'database');
             return;
           }
+
+          const remoteTxs = data.transactions.map(t => {
+            const q = parseFloat(t.qty) || 1;
+            const d = parseFloat(t.discount) || 0;
+            const f = parseFloat(t.fee) || 0;
+            const ex = parseFloat(t.exchangeRate) || 1;
+            const unitPrice = parseFloat(t.amount || 0);
+
+            // Force ID to string for accurate comparison with local storage
+            t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now();
+            
+            // Map specifically for the user's header names if not already mapped by doGet
+            t.accountPayment = t.accountPayment || t['Payment Source Account'] || t.accountPayment || '';
+            t.accountReceived = t.accountReceived || t['Beneficiary Account'] || t.accountReceived || '';
+            t.categoryGroup = t.categoryGroup || t['Category Group'] || '';
+            
+            // Trust the calculated total or fallback to spreadsheet total
+            const calcTotal = ((q * unitPrice) - d + f) * ex;
+            t.total = (t.total !== undefined && t.total !== null) ? parseFloat(t.total) : calcTotal;
+            t.amount = unitPrice;
+            
+            // Metadata parsing ensuring undefined doesn't override local fallbacks
+            t.budgetAmount = t.budgetAmount || t['Budget Amount'] || 0;
+            t.budgetPeriod = t.budgetPeriod || t['Budget Period'] || 'Monthly';
+            t.flow = t.flow || t['Flow'] || (t.type === 'Income' ? 'In' : 'Out');
+            t.year = t.year || t['Year'] || new Date(t.date).getFullYear();
+            t.month = t.month || t['Month'] || new Date(t.date).getMonth() + 1;
+            t.updateTime = t.updateTime || t['Update Time'] || new Date().toISOString();
+            t.xp = t.xp || t['XP'] || 0;
+
+            return t;
+          });
 
           const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
           
           let finalData = [];
           if (currentSyncMode === 'merge') {
-            const cloudIds = new Set(data.transactions.map(t => t.id));
-            const uniqueLocal = localTxs.filter(t => !cloudIds.has(t.id));
-            finalData = [...data.transactions, ...uniqueLocal];
+            const cloudIds = new Set(remoteTxs.map(t => t.id.toString()));
+            const uniqueLocals = localTxs.filter(t => !cloudIds.has(t.id.toString()));
+            finalData = [...remoteTxs, ...uniqueLocals];
           } else {
-            finalData = data.transactions;
+            finalData = remoteTxs;
           }
 
           localStorage.setItem('transactions', JSON.stringify(finalData));
-          alert(`Singkronisasi Berhasil! ${data.transactions.length} catatan diambil dari Cloud.`);
-          location.reload();
+          
+          // Sync Metadata (Manageable Merchants, Items, Accounts)
+          if (typeof rebuildMetadataFromTransactions === 'function') {
+            rebuildMetadataFromTransactions(finalData, currentSyncMode);
+          }
+
+          // Debugging info in toast
+          const distinctM = new Set(finalData.map(t => t.merchant || t['Merchant Name'])).size;
+          const distinctI = new Set(finalData.map(t => t.name || t['Item Name'])).size;
+          showToast(`Success! Pulled ${data.transactions.length} records. Metadata synced.`, 'success', 'cloud-download');
+          
+          setTimeout(() => location.reload(), 2000);
         }
       } catch (e) {
-        alert('Gagal Terhubung: Periksa URL atau pastikan Deployment diatur ke "Anyone".');
+        showToast('Connection Failed: Check URL or ensure Script Deployment is "Anyone".', 'error', 'wifi-off');
       }
     };
 
@@ -2046,7 +2323,11 @@ function doPost(e) {
       if (!isAvailable) { alert('Biometric authentication is not supported or requires HTTPS.'); return; }
       const enabled = localStorage.getItem('bio_enabled') === 'true';
       if (enabled) {
-        if (confirm('Disable Biometric Lock?')) { localStorage.setItem('bio_enabled', 'false'); updateBioUI(false); }
+        if(typeof showConfirm === 'function') {
+          showConfirm('Disable Biometric Lock?', () => { localStorage.setItem('bio_enabled', 'false'); updateBioUI(false); });
+        } else {
+          if (confirm('Disable Biometric Lock?')) { localStorage.setItem('bio_enabled', 'false'); updateBioUI(false); }
+        }
       } else {
         alert('Activating device biometrics... (Security prompt will appear on hosted HTTPS domains)');
         localStorage.setItem('bio_enabled', 'true'); updateBioUI(true);
@@ -2073,6 +2354,9 @@ function doPost(e) {
       document.getElementById('cloud-url').value = savedUrl;
     }
   </script>
+  <div id="toast-container"
+    style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; align-items: center; width: 100%; max-width: 400px; padding: 0 1rem; pointer-events: none;">
+  </div>
 </body>
 
 </html>

@@ -44,20 +44,43 @@
 </head>
 <body>
   <div class="container" style="max-width: 600px; padding: 1.5rem;">
-    <header class="header" style="margin-bottom: 2rem; border-bottom: none;">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <button onclick="window.location.href='index.html'" style="background: none; border: none; color: var(--text-primary); cursor: pointer; display: flex; align-items: center;">
-          <i data-lucide="chevron-left"></i>
-        </button>
-        <h1 style="font-size: 1.5rem; font-weight: 800;">Receipt Vault</h1>
-      </div>
-      <div id="receipt-count" style="font-size: 0.75rem; background: rgba(139, 92, 246, 0.1); color: var(--accent); padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 700;">0 Files</div>
-    </header>
+    <div class="sticky-nav">
+      <header class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button onclick="window.location.href='index.html'" class="back-btn"><i data-lucide="chevron-left"></i></button>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Receipt Vault</h1>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="toggleSearch()" class="back-btn"><i data-lucide="search"></i></button>
+          <div id="receipt-count" style="font-size: 0.75rem; background: rgba(139, 92, 246, 0.1); color: var(--accent); padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 700;">0 Files</div>
+        </div>
+      </header>
 
-    <div class="search-box" style="margin-bottom: 1.5rem; position: relative;">
-      <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-secondary);"></i>
-      <input type="text" id="r-search" placeholder="Search by merchant or item..." style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1rem 1rem 2.8rem; color: var(--text-primary); outline: none;">
+      <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideInSearch 0.3s ease-out;">
+        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
+        <input type="text" id="r-search" class="f-input" placeholder="Search by merchant or item..." style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.8rem; color: var(--text-primary); outline: none;">
+      </div>
     </div>
+
+    <style>
+      @keyframes slideInSearch { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
+    </style>
+
+    <script>
+      window.toggleSearch = () => {
+        const s = document.getElementById('search-container');
+        const inp = document.getElementById('r-search');
+        if (s.style.display === 'none') {
+          s.style.display = 'block';
+          inp.focus();
+        } else {
+          s.style.display = 'none';
+          inp.value = '';
+          const event = new Event('input', { bubbles: true });
+          inp.dispatchEvent(event);
+        }
+      };
+    </script>
 
     <div id="receipt-list" class="receipt-grid">
       <!-- Dynamic Receipts -->
@@ -74,8 +97,9 @@
   </div>
 
   <!-- Fullscreen Viewer -->
-  <div id="viewer-modal" onclick="this.style.display='none'">
-     <div style="position: absolute; top: 1.5rem; right: 1.5rem; color: white; cursor: pointer;"><i data-lucide="x"></i></div>
+  <div id="viewer-modal" onclick="if(event.target.id === 'viewer-modal') this.style.display='none'">
+     <div style="position: absolute; top: 1.5rem; left: 1.5rem; color: #ef4444; cursor: pointer; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="deleteReceipt()"><i data-lucide="trash-2" style="width: 20px;"></i></div>
+     <div style="position: absolute; top: 1.5rem; right: 1.5rem; color: white; cursor: pointer; background: rgba(255, 255, 255, 0.1); padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center;" onclick="document.getElementById('viewer-modal').style.display='none'"><i data-lucide="x" style="width: 20px;"></i></div>
      <img id="viewer-img" src="" onclick="event.stopPropagation()">
      <div id="viewer-meta" style="position: absolute; bottom: 3rem; text-align: center; color: white;">
         <h4 id="v-title" style="font-weight: 800; font-size: 1.25rem;">Indomaret</h4>
@@ -117,12 +141,31 @@
       lucide.createIcons();
     }
 
+    let currentReceiptTx = null;
+
     function showViewer(t) {
+      currentReceiptTx = t;
       document.getElementById('viewer-img').src = t.receipt;
       document.getElementById('v-title').innerText = t.merchant || t.name;
       document.getElementById('v-sub').innerText = `${t.date} • ${t.category}`;
       document.getElementById('viewer-modal').style.display = 'flex';
       lucide.createIcons();
+    }
+
+    function deleteReceipt() {
+      if(typeof showConfirm === 'function') {
+        showConfirm('Remove this receipt from transaction?', () => {
+          const allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+          const idx = allTxs.findIndex(x => x.id === currentReceiptTx.id);
+          if (idx >= 0) {
+            allTxs[idx].receipt = null;
+            localStorage.setItem('transactions', JSON.stringify(allTxs));
+          }
+          document.getElementById('viewer-modal').style.display='none';
+          if(typeof showToast === 'function') showToast('Receipt deleted successfully!', 'success', 'trash-2');
+          location.reload();
+        });
+      }
     }
 
     document.getElementById('r-search').oninput = (e) => {

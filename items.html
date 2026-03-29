@@ -109,46 +109,87 @@
   </div>
 
   <div class="container" style="max-width: 630px; padding: 1.5rem;">
-    <header class="header" style="margin-bottom: 1.5rem;">
-      <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
-      <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Item Catalog</h1>
-      <div style="display: flex; gap: 0.5rem;">
-        <button class="btn-cancel" style="padding: 0.5rem 0.75rem;" title="Export Items" onclick="toggleExportMenu()">
-          <i data-lucide="download" style="width:18px;"></i>
-        </button>
-        <button class="btn-cancel" style="padding: 0.5rem 0.75rem;" title="Import Items" onclick="document.getElementById('file-import').click()">
-          <i data-lucide="file-up" style="width:18px;"></i>
-        </button>
-        <button class="btn-violet" onclick="openModal(null, 'form')">+ New</button>
-      </div>
+    <div class="sticky-nav">
+      <header class="header" style="margin-bottom: 0; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Item Catalog</h1>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="toggleSearch()" class="back-btn">
+            <i data-lucide="search" style="width: 18px;"></i>
+          </button>
+          <button class="back-btn" title="Export Items" onclick="toggleExportMenu()">
+            <i data-lucide="download" style="width:18px;"></i>
+          </button>
+          <button class="back-btn" title="Import Items" onclick="document.getElementById('file-import').click()">
+            <i data-lucide="file-up" style="width:18px;"></i>
+          </button>
+          <button class="back-btn" onclick="openModal(null, 'form')" style="background: var(--violet); border-color: var(--violet); color: white;">
+            <i data-lucide="plus"></i>
+          </button>
+        </div>
 
-      <!-- Export Popover -->
-      <div id="export-popover" style="display:none; position:absolute; top:4.5rem; right:4.5rem; background:var(--bg-darker); border:1px solid var(--border); border-radius:1rem; padding:0.5rem; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-        <button class="modal-tab" onclick="exportItems('xlsx')" style="display:flex; align-items:center; gap:0.5rem; width:100%; text-align:left; padding:0.75rem 1rem;">
-          <i data-lucide="file-spreadsheet" style="width:16px; color:#16a34a;"></i> Export to Excel
-        </button>
-        <button class="modal-tab" onclick="exportItems('csv')" style="display:flex; align-items:center; gap:0.5rem; width:100%; text-align:left; padding:0.75rem 1rem;">
-          <i data-lucide="file-code-2" style="width:16px; color:var(--text-secondary);"></i> Export to CSV
-        </button>
-      </div>
-      <input type="file" id="file-import" style="display:none;" accept=".csv,.xlsx,.xls" onchange="handleImportItems(this)">
-    </header>
+        <!-- Export Popover -->
+        <div id="export-popover" style="display:none; position:absolute; top:4.5rem; right:4.5rem; background:var(--bg-darker); border:1px solid var(--border); border-radius:1rem; padding:0.5rem; z-index:100; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+          <button class="modal-tab" onclick="exportItems('xlsx')" style="display:flex; align-items:center; gap:0.5rem; width:100%; text-align:left; padding:0.75rem 1rem;">
+            <i data-lucide="file-spreadsheet" style="width:16px; color:#16a34a;"></i> Export to Excel
+          </button>
+          <button class="modal-tab" onclick="exportItems('csv')" style="display:flex; align-items:center; gap:0.5rem; width:100%; text-align:left; padding:0.75rem 1rem;">
+            <i data-lucide="file-code-2" style="width:16px; color:var(--text-secondary);"></i> Export to CSV
+          </button>
+        </div>
+        <input type="file" id="file-import" style="display:none;" accept=".csv,.xlsx,.xls" onchange="handleImportItems(this)">
+      </header>
 
-    <div class="search-container">
-       <i data-lucide="search" class="search-icon"></i>
-       <input type="text" id="i-search" class="search-input" placeholder="Search items..." oninput="handleFilter()">
+      <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
+        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
+        <input type="text" id="i-search" class="f-input" placeholder="Search items..." style="padding-left: 2.75rem;" oninput="handleFilter(this.value)">
+      </div>
     </div>
+
+    <style>
+      @keyframes slideDown { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
+      .sticky-nav { margin: -1.5rem -1.5rem 1.5rem -1.5rem; }
+    </style>
+
+    <script>
+      window.toggleSearch = () => {
+        const s = document.getElementById('search-container');
+        const inp = document.getElementById('i-search');
+        if (s.style.display === 'none') {
+          s.style.display = 'block';
+          inp.focus();
+        } else {
+          s.style.display = 'none';
+          inp.value = '';
+          handleFilter('');
+        }
+      };
+    </script>
+
+
 
     <div class="filter-scroll" id="i-filter-chips"></div>
 
     <div id="item-list"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" style="display:none; text-align:center; padding: 4rem 2rem;">
+       <div style="width: 80px; height: 80px; background: rgba(139, 92, 246, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+          <i data-lucide="package" style="width: 40px; height: 40px; color: var(--accent);"></i>
+       </div>
+       <h3 style="font-weight: 700; margin-bottom: 0.5rem;">Catalog Empty</h3>
+       <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">Your item catalog is currently empty. Start by adding a new item or syncing with your transactions.</p>
+    </div>
   </div>
 
   <div id="item-modal" class="modal-backdrop">
     <div class="modal-container">
       <header class="modal-header">
         <div style="display: flex; align-items: center; gap: 1rem;">
-          <span id="modal-title-text" style="font-weight: 700; font-size: 1.125rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">Details</span>
+          <button style="background:none; border:none; color:var(--text-primary); cursor:pointer;" onclick="closeModal()"><i data-lucide="x"></i></button>
+          <span id="modal-title-text" style="font-weight: 700; font-size: 1.125rem; color: var(--text-primary);">New Item</span>
         </div>
         <div id="header-actions" style="display: flex; gap: 0.5rem;"></div>
       </header>
@@ -356,8 +397,8 @@
   <script>
     lucide.createIcons();
     const categories = ['All', 'Food & Groceries', 'Dining Out', 'Transportation', 'Personal Care', 'Clothing & Apparel', 'Housing', 'Utilities', 'Internet & Phone', 'Subscriptions', 'Insurance', 'Entertainment', 'Hobbies', 'Travel & Holidays', 'Sports & Fitness', 'Debt Repayment', 'Education & Self-Development', 'Medical & Dental', 'Health Insurance', 'Wellness', 'Donations', 'Family Support', 'Office Supplies', 'Professional Services', 'Marketing & Advertising', 'Business Travel', 'Unexpected Expenses', 'Miscellaneous'];
-    let items = JSON.parse(localStorage.getItem('items') || '[]');
-    if (items.length === 0) {
+    let items = JSON.parse(localStorage.getItem('items'));
+    if (!items || items.length === 0) {
       items = [
         { id: 1, name: '3 Ayam Mie Telur Kuning 200 g', category: 'Food & Groceries', status: 'Active', price: 5300, unit: 'pcs', sku: 'SKU-001', manu: 'Manufacturer', model: 'Model X', image: '' },
         { id: 2, name: 'Pertamax', category: 'Transportation', status: 'Active', price: 13500, unit: 'L', image: '' },
@@ -418,7 +459,10 @@
     let activeCat = 'All';
     let searchTerm = '';
 
-    function handleFilter() { searchTerm = document.getElementById('i-search').value.toLowerCase(); renderItems(); }
+    function handleFilter(query) { 
+      searchTerm = (query !== undefined ? query : document.getElementById('i-search').value).toLowerCase(); 
+      renderItems(); 
+    }
     function setCategory(cat) { activeCat = cat; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.innerText === cat)); renderItems(); }
 
     function renderFilterChips() {
@@ -427,29 +471,39 @@
     }
 
     function renderItems() {
+      const list = document.getElementById('item-list');
+      const empty = document.getElementById('empty-state');
+      const s = searchTerm.toLowerCase();
+      
       const filtered = items.filter(i => {
         const matchCat = activeCat === 'All' || i.category === activeCat;
-        const s = searchTerm.toLowerCase();
         const matchSearch = i.name.toLowerCase().includes(s) || 
                           (i.sku || '').toLowerCase().includes(s) ||
                           (i.model || '').toLowerCase().includes(s) ||
-                          (i.manu || '').toLowerCase().includes(s) ||
-                          (i.notes || '').toLowerCase().includes(s);
+                          (i.manu || '').toLowerCase().includes(s);
         return matchCat && matchSearch;
       });
-      document.getElementById('item-list').innerHTML = filtered.map(i => `
+      
+      if (filtered.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+      } else {
+        list.style.display = 'block';
+        empty.style.display = 'none';
+        list.className = '';
+        list.innerHTML = filtered.map(i => `
         <div class="item-card" onclick="openModal(${i.id}, 'activity')">
-          <div style="display:flex; align-items:center; gap:1rem;">
-            <div class="i-icon" style="background:${i.image ? 'none' : 'rgba(139,92,246,0.1)'}; color:var(--violet); overflow:hidden;">
+          <div style="display:flex; align-items:center; gap:1rem; flex:1;">
+            <div class="i-icon" style="background:${i.image ? 'none' : 'rgba(139,92,246,0.1)'}; color:var(--accent); overflow:hidden; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                ${i.image ? `<img src="${i.image}" style="width:100%; height:100%; object-fit:cover;">` : (i.name || 'I')[0].toUpperCase()}
             </div>
             <div>
-              <div style="font-weight:700; color:white;">${i.name}</div>
-              <div style="font-size:0.7rem; color:var(--text-secondary);">${i.category} • Rp ${i.price.toLocaleString('id-ID')} / ${i.unit}</div>
+              <div style="font-weight:700; color:white; font-size:0.9375rem;">${i.name}</div>
+              <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">${i.category} • Rp ${i.price.toLocaleString('id-ID')} / ${i.unit}</div>
             </div>
           </div>
-          <i data-lucide="chevron-right" style="color:var(--text-secondary); width:18px;"></i>
         </div>`).join('');
+      }
       lucide.createIcons();
     }
 
@@ -518,8 +572,10 @@
       const actions = document.getElementById('header-actions');
       
       let h = '';
-      if (currentEditId) h += `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteItem()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
-      h += `<button class="btn-violet" onclick="closeModal()">Done</button>`;
+      if (view === 'form') {
+        if (currentEditId) h += `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteItem()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+        h += `<button class="btn-violet" onclick="closeModal()">Save</button>`;
+      }
       actions.innerHTML = h;
       lucide.createIcons();
     }
@@ -545,10 +601,20 @@
     function closeModal() { modal.style.display = 'none'; renderItems(); }
 
     function deleteItem() {
-      if (!confirm('Delete this item?')) return;
-      items = items.filter(i => i.id !== currentEditId);
-      localStorage.setItem('items', JSON.stringify(items));
-      closeModal();
+      if(typeof showConfirm === 'function') {
+        showConfirm('Delete this item?', () => {
+          items = items.filter(i => i.id !== currentEditId);
+          localStorage.setItem('items', JSON.stringify(items));
+          closeModal();
+          if(typeof showToast === 'function') showToast('Item deleted successfully!', 'success', 'trash-2');
+        });
+      } else {
+        if (!confirm('Delete this item?')) return;
+        items = items.filter(i => i.id !== currentEditId);
+        localStorage.setItem('items', JSON.stringify(items));
+        closeModal();
+        if(typeof showToast === 'function') showToast('Item deleted successfully!', 'success', 'trash-2');
+      }
     }
 
     function handleItemInput() {
@@ -723,7 +789,7 @@
       });
 
       localStorage.setItem('items', JSON.stringify(items));
-      alert(`Successfully imported items! Found ${imported.length} rows.`);
+      if(typeof showToast === 'function') showToast(`Successfully imported ${imported.length} items!`, 'success', 'check-circle');
       closeImport();
       renderItems();
     }

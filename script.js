@@ -25,8 +25,50 @@ const typeButtons = document.querySelectorAll('#type-selector .type-btn');
 
 // Numerical Helpers
 const parseNum = (val) => {
-  if (!val) return 0;
-  return parseFloat(val.toString().replace(/[^0-9.-]+/g, "")) || 0;
+  if (val === undefined || val === null || val === '') return 0;
+  if (typeof val === 'number') return val;
+  
+  let clean = val.toString().replace(/Rp/g, '').trim();
+  if (!clean) return 0;
+
+  // Indonesian format: 1.000.000,00 (dots=thousands, comma=decimal)
+  // US/International: 1,000,000.00 (commas=thousands, dot=decimal)
+  
+  // Count counts
+  const dots = (clean.match(/\./g) || []).length;
+  const commas = (clean.match(/,/g) || []).length;
+
+  if (dots > 1) { 
+    // Multiple dots -> dots are definitely thousand separators
+    clean = clean.replace(/\./g, '').replace(/,/g, '.');
+  } else if (commas > 1) {
+    // Multiple commas -> commas are definitely thousand separators
+    clean = clean.replace(/,/g, '');
+  } else if (dots === 1 && commas === 1) {
+    // Both exist. Usually thousand.decimal
+    const dotPos = clean.indexOf('.');
+    const commaPos = clean.indexOf(',');
+    if (dotPos < commaPos) { // 1.000,00
+      clean = clean.replace(/\./g, '').replace(/,/g, '.');
+    } else { // 1,000.00
+      clean = clean.replace(/,/g, '');
+    }
+  } else if (dots === 1) {
+    // Only one dot. Is it a thousand separator (1.000) or decimal (1.00)?
+    const parts = clean.split('.');
+    if (parts[1].length === 3) { // likely thousand
+      clean = clean.replace(/\./g, '');
+    } else { // likely decimal
+      // keep it as is for parseFloat
+    }
+  } else if (commas === 1) {
+    // Only one comma. Replace with dot for parseFloat
+    clean = clean.replace(/,/g, '.');
+  }
+
+  // Final fallback to clean non-numeric junk but keep signs and decimals
+  clean = clean.replace(/[^0-9.-]+/g, "");
+  return parseFloat(clean) || 0;
 };
 
 const totalFormatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 });
@@ -63,6 +105,164 @@ window.addChip = (wrapperId, val) => {
   if (list) list.appendChild(chip);
 };
 
+// Input Formatting (Live Thousand Separators)
+function formatInputLocale(e) {
+  let cursor = e.target.selectionStart;
+  let oldLen = e.target.value.length;
+  
+  // Clean all but numbers
+  let val = e.target.value.replace(/[^0-9]/g, "");
+  if (!val) {
+    e.target.value = "";
+    calculateTotal();
+    return;
+  }
+  
+  // Format as ID locale (dot thousands)
+  let formatted = new Intl.NumberFormat('id-ID').format(val);
+  e.target.value = formatted;
+  
+  // Adjust cursor position
+  let newLen = e.target.value.length;
+  e.target.setSelectionRange(cursor + (newLen - oldLen), cursor + (newLen - oldLen));
+  
+  calculateTotal();
+}
+
+// Rebuild/Sync Metadata (Accounts, Merchants, Items) from Transactions
+function rebuildMetadataFromTransactions(txs, mode = 'merge') {
+  if (!txs || txs.length === 0) return;
+
+  const currentAccounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+  const currentMerchants = JSON.parse(localStorage.getItem('merchants') || '[]');
+  const currentItems = JSON.parse(localStorage.getItem('items') || '[]');
+
+  const accSet = new Set();
+  const merSet = new Set();
+  const itemSet = new Set();
+
+  const newAccounts = mode === 'merge' ? [...currentAccounts] : [];
+  const newMerchants = mode === 'merge' ? [...currentMerchants] : [];
+  const newItems = mode === 'merge' ? [...currentItems] : [];
+
+  // Track existing names for easy lookup
+  newAccounts.forEach(a => accSet.add(a.name.toLowerCase()));
+  newMerchants.forEach(m => merSet.add(m.name.toLowerCase()));
+  newItems.forEach(i => itemSet.add(i.name.toLowerCase()));
+
+  txs.forEach(t => {
+    // 1. Extraction of Accounts
+    const accNames = [
+      t.accountPayment || t['Payment Source Account'],
+      t.accountReceived || t['Beneficiary Account']
+    ].filter(a => a && a.trim() && a !== '-');
+    
+    accNames.forEach(name => {
+      const cleanName = name.trim();
+      if (!accSet.has(cleanName.toLowerCase())) {
+        newAccounts.push({
+          id: Date.now() + Math.random(),
+          name: cleanName,
+          type: 'Auto-extracted',
+          balance: 0,
+          number: '-',
+          status: 'Active',
+          color: '#8b5cf6'
+        });
+        accSet.add(cleanName.toLowerCase());
+      }
+    });
+
+    // 2. Extraction of Merchants
+    const merchantName = t.merchant || t['Merchant Name'] || t['Merchant'];
+    if (merchantName && merchantName.trim() && merchantName !== '-') {
+      const cleanM = merchantName.trim();
+      if (!merSet.has(cleanM.toLowerCase())) {
+        newMerchants.push({
+          id: Date.now() + Math.random(),
+          name: cleanM,
+          type: t.categoryGroup || 'Other',
+          address: '',
+          map: ''
+        });
+        merSet.add(cleanM.toLowerCase());
+      }
+    }
+
+    // 3. Extraction of Items
+    const itemName = t.name || t['Item Name'] || t['Item'];
+    if (itemName && itemName.trim() && itemName !== '-') {
+      const cleanI = itemName.trim();
+      if (!itemSet.has(cleanI.toLowerCase())) {
+        newItems.push({
+          id: Date.now() + Math.random(),
+          name: cleanI,
+          category: t.category || 'General',
+          price: t.amount || 0,
+          unit: t.qtyScale || 'pcs',
+          status: 'Active',
+          image: ''
+        });
+        itemSet.add(cleanI.toLowerCase());
+      }
+    }
+  });
+
+  localStorage.setItem('accounts', JSON.stringify(newAccounts));
+  localStorage.setItem('merchants', JSON.stringify(newMerchants));
+  localStorage.setItem('items', JSON.stringify(newItems));
+  console.log(`Metadata rebuilt: ${newAccounts.length} Acc, ${newMerchants.length} Mer, ${newItems.length} Items.`);
+}
+
+function populateDatalists() {
+  const db = JSON.parse(localStorage.getItem('transactions') || '[]');
+  console.log(`Populating datalists from ${db.length} transactions...`);
+  
+  const sets = {
+    merchants: new Set(),
+    items: new Set(),
+    categories: new Set(['Food & Beverage', 'Transportation', 'Shopping', 'Bills & Utilities', 'Entertainment', 'Health', 'Education', 'Investment', 'Other']),
+    accounts: new Set(),
+    authors: new Set(['User']),
+    tags: new Set(['Monthly', 'Priority']),
+    projects: new Set(['General'])
+  };
+
+  db.forEach(t => {
+    // Aggressive extraction from all possible key variations
+    const m = t.merchant || t.Merchant || t['Merchant']; if (m) sets.merchants.add(m.toString().trim());
+    const n = t.name || t.Name || t.Item || t['Item Name']; if (n) sets.items.add(n.toString().trim());
+    const c = t.category || t.Category || t['Category']; if (c) sets.categories.add(c.toString().trim());
+    const ap = t.accountPayment || t['Payment Source Account'] || t.account; if (ap) sets.accounts.add(ap.toString().trim());
+    const ar = t.accountReceived || t['Beneficiary Account']; if (ar) sets.accounts.add(ar.toString().trim());
+    const au = t.author || t.Author || t['Author']; if (au) sets.authors.add(au.toString().trim());
+    
+    if (t.tags && Array.isArray(t.tags)) t.tags.forEach(tg => sets.tags.add(tg.toString().trim()));
+    if (t.projects && Array.isArray(t.projects)) t.projects.forEach(pj => sets.projects.add(pj.toString().trim()));
+  });
+
+  // If sync yielded accounts, use them exclusively to avoid default confusion
+  if (sets.accounts.size === 0) {
+    ['Cash', 'Bank Account', 'Credit Card', 'E-Wallet'].forEach(a => sets.accounts.add(a));
+  }
+
+  const fill = (id, items) => {
+    const dl = document.getElementById(id);
+    if (dl) {
+      dl.innerHTML = Array.from(items).sort().map(i => `<option value="${i}">`).join('');
+    }
+  };
+
+  fill('merchant-list', sets.merchants);
+  fill('item-list', sets.items);
+  fill('category-list', sets.categories);
+  fill('payment-list', sets.accounts);
+  fill('received-list', sets.accounts);
+  fill('author-list', sets.authors);
+  fill('tag-suggestions', sets.tags);
+  fill('project-suggestions', sets.projects);
+}
+
 window.updateReceiptPreview = (val) => {
   if (!receiptPreview) return;
   const card = receiptPreview.querySelector('.preview-card');
@@ -91,30 +291,83 @@ const initForm = () => {
         document.getElementById('merchant-input').value = tx.merchant || '';
         document.getElementById('category-input').value = tx.category || '';
         document.getElementById('transaction-description').value = tx.description || '';
-        document.getElementById('sku-input').value = tx.sku || '';
         
-        if (amountInput) amountInput.value = tx.price || 0;
+        if (amountInput) {
+          // Migration: In old structure, tx.amount was Total and tx.price was Unit Price
+          // In new structure, tx.amount is Unit Price and tx.total is Total
+          if (tx.total === undefined && tx.amount !== undefined) {
+             amountInput.value = tx.price || (tx.amount / (tx.qty || 1));
+          } else {
+             amountInput.value = tx.amount || 0;
+          }
+        }
         if (quantityInput) quantityInput.value = tx.qty || 1;
         if (discountInput) discountInput.value = tx.discount || 0;
         if (feeInput) feeInput.value = tx.fee || 0;
         if (currencyInput) currencyInput.value = tx.currency || 'IDR';
         
+        const rateInput = document.getElementById('exchange-rate-input');
+        if (rateInput) rateInput.value = tx.exchangeRate || 1.00;
+
+        const pAcc = document.getElementById('payment-account');
+        if (pAcc) pAcc.value = tx.accountPayment || '';
+        const rAcc = document.getElementById('received-account');
+        if (rAcc) rAcc.value = tx.accountReceived || '';
+        
         const txType = (tx.type || 'Expense').toLowerCase();
-        const typeBtn = Array.from(typeButtons).find(b => (b.dataset.type || '').toLowerCase() === txType);
-        if (typeBtn) typeBtn.click();
+        typeButtons.forEach(btn => {
+          if ((btn.dataset.type || '').toLowerCase() === txType) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        const clearedBtns = document.querySelectorAll('#cleared-selector .type-btn');
+        const isCleared = tx.cleared !== false;
+        clearedBtns.forEach(btn => {
+          if (btn.dataset.cleared === (isCleared ? 'yes' : 'no')) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
         
         if (tx.tags) (Array.isArray(tx.tags) ? tx.tags : []).forEach(tg => addChip('tags-wrapper', tg));
         if (tx.projects) (Array.isArray(tx.projects) ? tx.projects : []).forEach(pj => addChip('projects-wrapper', pj));
         
         calculateTotal();
+
+        // Update account groups visibility for edit mode
+        const pGroup = document.getElementById('payment-account-group');
+        const rGroup = document.getElementById('received-account-group');
+        const txTypeLower = txType.toLowerCase();
+        const multiAccount = ['transfer', 'savings', 'investment'].includes(txTypeLower);
+        
+        if (txTypeLower === 'income') {
+          if (pGroup) pGroup.style.display = 'none';
+          if (rGroup) rGroup.style.display = 'block';
+        } else if (multiAccount) {
+          if (pGroup) pGroup.style.display = 'block';
+          if (rGroup) rGroup.style.display = 'block';
+        } else {
+          if (pGroup) pGroup.style.display = 'block';
+          if (rGroup) rGroup.style.display = 'none';
+        }
       }
     }
   } catch (e) { console.error(e); }
 };
 
-// Listeners for inputs
-const nInputs = ['amount-input', 'quantity-input', 'exchange-rate-input', 'discount-input', 'fee-input'];
-nInputs.forEach(id => {
+// Listeners for inputs (With live formatting for currency/qty)
+const locInputs = ['amount-input', 'quantity-input', 'discount-input', 'fee-input'];
+locInputs.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.oninput = formatInputLocale;
+});
+
+const rawInputs = ['exchange-rate-input'];
+rawInputs.forEach(id => {
   const el = document.getElementById(id);
   if (el) el.oninput = calculateTotal;
 });
@@ -131,12 +384,17 @@ if (nextBtn) {
       merchant: document.getElementById('merchant-input').value,
       type: document.querySelector('#type-selector .type-btn.active')?.dataset.type || 'Expense',
       category: document.getElementById('category-input').value,
-      amount: parseNum(document.getElementById('total-display')?.innerText),
-      price: parseNum(document.getElementById('amount-input')?.value),
+      amount: parseNum(document.getElementById('amount-input')?.value), // amount is unit price
       qty: parseNum(document.getElementById('quantity-input')?.value),
+      discount: parseNum(document.getElementById('discount-input')?.value),
+      fee: parseNum(document.getElementById('fee-input')?.value),
+      total: parseNum(document.getElementById('total-display')?.innerText), // total is final result
+      exchangeRate: parseNum(document.getElementById('exchange-rate-input')?.value) || 1.00,
       scale: document.getElementById('item-scale')?.value,
       currency: document.getElementById('currency-input')?.value,
       author: document.getElementById('author-input').value,
+      accountPayment: document.getElementById('payment-account')?.value,
+      accountReceived: document.getElementById('received-account')?.value,
       tags: Array.from(document.querySelectorAll('#tags-wrapper .chip span:first-child')).map(s => s.innerText),
       projects: Array.from(document.querySelectorAll('#projects-wrapper .chip span:first-child')).map(s => s.innerText),
       description: document.getElementById('transaction-description').value,
@@ -153,11 +411,15 @@ if (nextBtn) {
     }
     localStorage.setItem('transactions', JSON.stringify(db));
     
+    showToast(mode === 'edit' ? 'Transaction updated successfully' : 'Transaction saved successfully', 'success', 'check-circle');
+    
     // Auto-cloud sync
     const curl = localStorage.getItem('cloud_sheet_url');
     if (curl) fetch(curl, { method: 'POST', body: JSON.stringify({ transactions: db }) }).catch(e => console.error(e));
     
-    window.location.href = 'index.html';
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1000);
   };
 }
 
@@ -169,8 +431,64 @@ if (cancelBtn) cancelBtn.onclick = () => window.location.href = 'index.html';
 
 // Initial Load
 window.onload = () => {
+  populateDatalists();
   initForm();
+  
   // Ensure all steps are shown for scrolling
   document.querySelectorAll('.step-content').forEach(el => el.style.display = 'flex');
+
+  // Interactive selectors
+  typeButtons.forEach(btn => {
+    btn.onclick = () => {
+      typeButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Interactive Account Display based on Type
+      const pGroup = document.getElementById('payment-account-group');
+      const rGroup = document.getElementById('received-account-group');
+      const type = btn.dataset.type.toLowerCase();
+      const multiAccount = ['transfer', 'savings', 'investment'].includes(type);
+
+      if (multiAccount) {
+        if (pGroup) pGroup.style.display = 'block';
+        if (rGroup) rGroup.style.display = 'block';
+      } else if (type === 'income') {
+        if (pGroup) pGroup.style.display = 'none';
+        if (rGroup) rGroup.style.display = 'block';
+      } else {
+        if (pGroup) pGroup.style.display = 'block';
+        if (rGroup) rGroup.style.display = 'none';
+      }
+    };
+  });
+
+  const clearedBtns = document.querySelectorAll('#cleared-selector .type-btn');
+  clearedBtns.forEach(btn => {
+    btn.onclick = () => {
+      clearedBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+  });
+
+  // Chip input handlers
+  const setupChipInput = (wrapperId) => {
+    const wrapper = document.getElementById(wrapperId);
+    if (!wrapper) return;
+    const input = wrapper.querySelector('input');
+    if (!input) return;
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const val = input.value.trim();
+        if (val) {
+          addChip(wrapperId, val);
+          input.value = '';
+        }
+      }
+    };
+  };
+  setupChipInput('tags-wrapper');
+  setupChipInput('projects-wrapper');
+
   lucide.createIcons();
 };

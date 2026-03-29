@@ -86,13 +86,48 @@
 </head>
 <body>
   <div class="container" style="max-width: 600px; padding: 1.5rem;">
-    <header class="header" style="margin-bottom: 2rem;">
-      <button class="back-btn" onclick="window.location.href='index.html'">
-        <i data-lucide="chevron-left"></i>
-      </button>
-      <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Accounts</h1>
-      <button class="btn-violet" onclick="openModal(null, 'form')" style="font-size: 0.8125rem;">+ New</button>
-    </header>
+    <div class="sticky-nav">
+      <header class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button class="back-btn" onclick="window.location.href='index.html'">
+            <i data-lucide="chevron-left"></i>
+          </button>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Accounts</h1>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="toggleSearch()" class="back-btn">
+            <i data-lucide="search" style="width: 18px;"></i>
+          </button>
+          <button class="back-btn" onclick="openModal(null, 'form')" style="background: var(--violet); border-color: var(--violet); color: white;">
+            <i data-lucide="plus"></i>
+          </button>
+        </div>
+      </header>
+
+      <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
+        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
+        <input type="text" id="master-search" class="f-input" placeholder="Search accounts..." style="padding-left: 2.75rem;" oninput="renderAccounts(this.value)">
+      </div>
+    </div>
+
+    <style>
+      @keyframes slideDown { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
+    </style>
+
+    <script>
+      window.toggleSearch = () => {
+        const s = document.getElementById('search-container');
+        const inp = document.getElementById('master-search');
+        if (s.style.display === 'none') {
+          s.style.display = 'block';
+          inp.focus();
+        } else {
+          s.style.display = 'none';
+          inp.value = '';
+          renderAccounts('');
+        }
+      };
+    </script>
 
     <div id="account-list"></div>
   </div>
@@ -166,15 +201,25 @@
 
   <script>
     lucide.createIcons();
-    let accounts = [
-      { id: 1, name: 'BNI Bisnis', type: 'Bank', balance: 12450000, number: '172-661-6712', status: 'Active', color: '#8B5CF6' },
-      { id: 2, name: 'Pocket Money', type: 'Cash', balance: 1500000, number: 'Wallet', status: 'Active', color: '#10b981' },
-      { id: 3, name: 'Gopay', type: 'E-Wallet', balance: 500000, number: '0812-****', status: 'Frozen', color: '#f59e0b' }
-    ];
+    let accounts = JSON.parse(localStorage.getItem('accounts'));
+    if (!accounts || accounts.length === 0) {
+      accounts = [
+        { id: 1, name: 'Bank Mandiri', type: 'Savings', balance: 25750800, number: '124-00-****', status: 'Active', color: '#0ea5e9' },
+        { id: 2, name: 'Bank Central Asia', type: 'Savings', balance: 12400500, number: '802-11-****', status: 'Active', color: '#10b981' },
+        { id: 3, name: 'Gopay', type: 'E-Wallet', balance: 500000, number: '0812-****', status: 'Frozen', color: '#f59e0b' }
+      ];
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+    }
 
-    function renderAccounts() {
+    function renderAccounts(query = '') {
       const list = document.getElementById('account-list');
-      list.innerHTML = accounts.map(acc => `
+      const q = query.toLowerCase();
+      const filtered = accounts.filter(acc => 
+        acc.name.toLowerCase().includes(q) || 
+        acc.number.toLowerCase().includes(q)
+      );
+      
+      list.innerHTML = filtered.map(acc => `
         <div class="account-card" onclick="openModal(${acc.id}, 'analysis')">
           <div class="acc-info">
             <div class="acc-icon" style="background:${acc.color}">${acc.name.substring(0,2)}</div>
@@ -207,7 +252,14 @@
       if (activeAcc) {
          // Populate Analysis
          document.getElementById('ana-balance').innerText = 'Rp ' + activeAcc.balance.toLocaleString('id-ID');
-         const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+         const txsRaw = JSON.parse(localStorage.getItem('transactions') || '[]');
+         const txs = txsRaw.map(t => {
+           if (t.total === undefined && t.amount !== undefined) {
+             t.total = t.amount;
+             t.amount = t.price || (t.total / (t.qty || 1));
+           }
+           return t;
+         });
          // Filter txs (mock account linking for now since transactions don't have accountId yet)
          const filtered = txs.slice(0, 5); // Show first 5 as placeholder
          document.getElementById('ana-tx-list').innerHTML = filtered.map(t => `
@@ -240,16 +292,30 @@
       
       const actions = document.getElementById('header-actions');
       if (view === 'form') {
-         actions.innerHTML = `<button class="btn-violet" onclick="save()">Save</button>`;
+         actions.innerHTML = `
+           ${activeAcc ? `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteAccount()"><i data-lucide="trash-2" style="width:18px;"></i></button>` : ''}
+           <button class="btn-violet" onclick="save()">Save</button>
+         `;
       } else {
          actions.innerHTML = '';
       }
+      lucide.createIcons();
     }
 
     tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
 
     function closeModal() { modal.style.display = 'none'; document.body.style.overflow = 'auto'; }
     function save() { alert('Account updated successfully!'); closeModal(); }
+    
+    function deleteAccount() {
+      showConfirm('Delete this account for good?', () => {
+        accounts = accounts.filter(a => a.id !== activeAcc.id);
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+        closeModal();
+        renderAccounts('');
+        if(typeof showToast === 'function') showToast('Account deleted successfully!', 'success', 'trash-2');
+      });
+    }
 
     document.querySelectorAll('.status-btn').forEach(btn => {
       btn.onclick = () => {

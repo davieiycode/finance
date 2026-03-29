@@ -21,10 +21,12 @@
 <body>
   <div class="container" style="max-width: 600px; padding: 1.5rem;">
     <header class="header" style="margin-bottom: 2rem;">
-      <button class="back-btn" onclick="window.location.href='index.html'">
-        <i data-lucide="chevron-left"></i>
-      </button>
-      <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Analysis</h1>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button class="back-btn" onclick="window.location.href='index.html'">
+          <i data-lucide="chevron-left"></i>
+        </button>
+        <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Analysis</h1>
+      </div>
       <div style="width: 40px;"></div>
     </header>
 
@@ -141,6 +143,15 @@
     function initData() {
       let allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
       
+      // Migration: Convert old structure (amount=Total) to new (total=Total, amount=UnitPrice)
+      allTxs = allTxs.map(t => {
+        if (t.total === undefined && t.amount !== undefined) {
+          t.total = t.amount;
+          t.amount = t.price || (t.total / (t.qty || 1));
+        }
+        return t;
+      });
+      
       // Auto-detect latest month if we haven't manually changed it
       if (allTxs.length > 0) {
         const sorted = [...allTxs].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
@@ -167,7 +178,7 @@
       const getAgg = (dataList, type) => {
         const map = {};
         dataList.filter(t => t.type === type).forEach(t => {
-           const amt = typeof t.amount === 'number' ? t.amount : parseFloat((t.amount || '0').toString().replace(/[^0-9.-]+/g, "")) || 0;
+           const amt = typeof t.total === 'number' ? t.total : parseFloat((t.total || '0').toString().replace(/[^0-9.-]+/g, "")) || 0;
            map[t.category] = (map[t.category] || 0) + amt;
         });
         return Object.entries(map).map(([name, value]) => ({ name, value }));
@@ -237,7 +248,7 @@
       // Tags & Projects
       const tagMap = {}, projMap = {};
       allTxs.forEach(t => {
-         const amt = typeof t.amount === 'number' ? t.amount : parseFloat((t.amount || '0').toString().replace(/[^0-9.-]+/g, "")) || 0;
+         const amt = typeof t.total === 'number' ? t.total : parseFloat((t.total || '0').toString().replace(/[^0-9.-]+/g, "")) || 0;
          (t.tags || []).forEach(tg => { if (tg) tagMap[tg] = (tagMap[tg] || 0) + amt; });
          (t.projects || []).forEach(pj => { if (pj) projMap[pj] = (projMap[pj] || 0) + amt; });
       });

@@ -53,38 +53,64 @@
 </head>
 <body>
   <div class="container" style="max-width: 600px; padding: 1.5rem;">
-    <header class="header" style="margin-bottom: 2rem;">
-      <button class="back-btn" onclick="window.location.href='index.html'">
-        <i data-lucide="chevron-left"></i>
-      </button>
-      <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">History</h1>
-      <button id="filter-toggle" class="back-btn" style="border-radius: 12px; height: 36px; padding: 0 0.75rem; width: auto; font-size: 0.75rem; font-weight: 600; gap: 0.4rem;">
-        <i data-lucide="filter" style="width: 16px;"></i> Filter
-      </button>
-    </header>
+    <div class="sticky-nav">
+      <header class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">History</h1>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button onclick="toggleHistorySearch()" class="back-btn" style="border-radius: 50%;">
+            <i data-lucide="search" style="width: 18px;"></i>
+          </button>
+          <button id="filter-toggle" class="back-btn" style="border-radius: 12px; height: 36px; padding: 0 0.75rem; width: auto; font-size: 0.75rem; font-weight: 600; gap: 0.4rem;">
+            <i data-lucide="filter" style="width: 16px;"></i> Filter
+          </button>
+        </div>
+      </header>
 
-    <div style="position: relative; margin-bottom: 1.5rem;">
-      <i data-lucide="search" style="position: absolute; left: 1rem; top: 1rem; width: 18px; color: var(--text-secondary);"></i>
-      <input type="text" id="master-search" class="search-bar" placeholder="Search merchant, item, or category...">
+      <div id="filter-panel" class="filter-panel" style="padding: 1.25rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1.25rem; margin-top: 1rem; display: none; flex-direction: column; gap: 1rem;">
+         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; display: block; letter-spacing: 0.05em;">From</label>
+               <input type="date" class="search-bar" id="filter-date-from" style="padding: 0.65rem 0.8rem; font-size: 0.8125rem; width: 100%;" onclick="this.showPicker()">
+            </div>
+            <div>
+               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; display: block; letter-spacing: 0.05em;">To</label>
+               <input type="date" class="search-bar" id="filter-date-to" style="padding: 0.65rem 0.8rem; font-size: 0.8125rem; width: 100%;" onclick="this.showPicker()">
+            </div>
+         </div>
+         <button id="apply-filter" class="btn btn-primary" style="padding: 0.75rem; font-weight: 700; border-radius: 0.75rem; width: 100%; background: var(--accent); color: white; border: none; cursor: pointer;">Apply Filter</button>
+      </div>
+
+      <div id="history-search-container" style="position: relative; display: none; transform-origin: top; animation: slideInSearch 0.3s ease-out; margin-top: 1rem;">
+        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
+        <input type="text" id="master-search" class="search-bar" placeholder="Search merchant, item, or category..." style="padding-top: 0.75rem; padding-bottom: 0.75rem;">
+      </div>
     </div>
 
-    <div id="filter-panel" class="filter-panel" style="padding: 1.5rem; background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; margin-bottom: 1.5rem; display: none; flex-direction: column; gap: 1.25rem;">
-       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-          <div>
-             <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block; letter-spacing: 0.05em;">Date From</label>
-             <div style="position: relative;">
-               <input type="date" class="search-bar" id="filter-date-from" style="padding: 0.75rem 0.8rem; font-size: 0.8125rem;" onclick="this.showPicker()">
-             </div>
-          </div>
-          <div>
-             <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; display: block; letter-spacing: 0.05em;">Date To</label>
-             <div style="position: relative;">
-               <input type="date" class="search-bar" id="filter-date-to" style="padding: 0.75rem 0.8rem; font-size: 0.8125rem;" onclick="this.showPicker()">
-             </div>
-          </div>
-       </div>
-       <button id="apply-filter" class="btn btn-primary btn-full" style="padding: 0.875rem; font-weight: 700; border-radius: 1rem;">Apply Filter</button>
-    </div>
+    <style>
+      @keyframes slideInSearch {
+        from { opacity: 0; transform: scaleY(0); }
+        to { opacity: 1; transform: scaleY(1); }
+      }
+    </style>
+
+    <script>
+      window.toggleHistorySearch = () => {
+        const s = document.getElementById('history-search-container');
+        const inp = document.getElementById('master-search');
+        if (s.style.display === 'none') {
+          s.style.display = 'block';
+          inp.focus();
+        } else {
+          s.style.display = 'none';
+          inp.value = '';
+          const event = new Event('input', { bubbles: true });
+          inp.dispatchEvent(event);
+        }
+      }
+    </script>
 
     <div id="results-count" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 500;">Showing 0 transactions</div>
 
@@ -117,10 +143,14 @@
              <label class="label" style="font-size: 0.65rem; opacity: 0.5;">MERCHANT</label>
              <div id="m-merchant" style="font-weight: 500; font-size: 0.8125rem;">-</div>
            </div>
-           <div style="grid-column: span 2;">
-              <label class="label" style="font-size: 0.65rem; opacity: 0.5;">ACCOUNTS</label>
-              <div id="m-accounts" style="font-weight: 500; font-size: 0.8125rem;">-</div>
-           </div>
+            <div style="grid-column: span 2;" id="m-payment-group">
+               <label class="label" style="font-size: 0.65rem; opacity: 0.5;">PAYMENT SOURCE ACCOUNT</label>
+               <div id="m-payment-account" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+            </div>
+            <div style="grid-column: span 2; display:none;" id="m-beneficiary-group">
+               <label class="label" style="font-size: 0.65rem; opacity: 0.5;">BENEFICIARY ACCOUNT</label>
+               <div id="m-beneficiary-account" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+            </div>
            <div>
              <label class="label" style="font-size: 0.65rem; opacity: 0.5;">AUTHOR</label>
              <div id="m-author" style="font-weight: 500; font-size: 0.8125rem;">-</div>
@@ -168,15 +198,26 @@
     let mainTxs = [];
 
     function refreshHistory() {
-      mainTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      if (mainTxs.length === 0) {
-        mainTxs = [
-          { id: 1, type: 'Expense', category: 'Food & Beverage', merchant: 'Indomaret', name: 'Groceries', amount: 24400, qty: 2, scale: 'kg', price: 12200, date: '2024-03-24', time: '13:26', cleared: true, tags: ['daily'], projects: ['family'], author: 'Alex' },
-          { id: 2, type: 'Expense', category: 'Transport', merchant: 'Pertamina', name: 'Fuel', amount: 50000, qty: 5, scale: 'L', price: 10000, date: '2024-03-23', time: '09:15', cleared: true, tags: ['car'], author: 'Alex' },
-          { id: 3, type: 'Expense', category: 'Lifestyle', merchant: 'Starbucks', name: 'Coffee', amount: 65000, qty: 1, scale: 'cup', price: 65000, date: '2024-03-22', time: '15:40', cleared: false, tags: ['work'], author: 'Alex' }
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      
+      if (txs.length === 0) {
+        txs = [
+          { id: 1, type: 'Expense', category: 'Food & Beverage', merchant: 'Indomaret', name: 'Groceries', amount: 12200, qty: 2, date: '2024-03-24', time: '13:26', cleared: true, tags: ['daily'], projects: ['family'], author: 'Alex', total: 24400 },
+          { id: 2, type: 'Expense', category: 'Transport', merchant: 'Pertamina', name: 'Fuel', amount: 10000, qty: 5, date: '2024-03-23', time: '09:15', cleared: true, tags: ['car'], author: 'Alex', total: 50000 },
+          { id: 3, type: 'Expense', category: 'Lifestyle', merchant: 'Starbucks', name: 'Coffee', amount: 65000, qty: 1, date: '2024-03-22', time: '15:40', cleared: false, tags: ['work'], author: 'Alex', total: 65000 }
         ];
-        localStorage.setItem('transactions', JSON.stringify(mainTxs));
+        localStorage.setItem('transactions', JSON.stringify(txs));
       }
+
+      // Migration: Convert old structure (amount=Total, price=UnitPrice) to new (total=Total, amount=UnitPrice)
+      mainTxs = txs.map(t => {
+        if (t.total === undefined && t.amount !== undefined) {
+          t.total = t.amount;
+          t.amount = t.price || (t.total / (t.qty || 1));
+        }
+        return t;
+      });
+      
       renderList(mainTxs);
     }
 
@@ -228,7 +269,7 @@
             <div class="item-meta">${t.merchant ? t.merchant + ' • ' : ''}${t.category} • ${t.time || '00:00'}</div>
           </div>
           <div class="item-amount" style="color: ${isExp ? '#ef4444' : '#10b981'};">
-            ${isExp ? '-' : '+'}Rp ${t.amount.toLocaleString('id-ID')}
+            ${isExp ? '-' : '+'}Rp ${t.total.toLocaleString('id-ID')}
           </div>
         `;
         item.onclick = () => showDetail(t);
@@ -241,12 +282,31 @@
     function showDetail(t) {
       activeTx = t;
       document.getElementById('m-item-name').innerText = t.name;
-      document.getElementById('m-total').innerText = (t.type === 'Expense' ? '-Rp ' : '+Rp ') + t.amount.toLocaleString('id-ID');
+      document.getElementById('m-total').innerText = (t.type === 'Expense' ? '-Rp ' : '+Rp ') + t.total.toLocaleString('id-ID');
       document.getElementById('m-category').innerText = t.category;
       document.getElementById('m-merchant').innerText = t.merchant || '-';
       document.getElementById('m-date').innerText = `${t.date} ${t.time || ''}`;
       document.getElementById('m-author').innerText = t.author || '-';
-      document.getElementById('m-accounts').innerText = t.accountReceived ? `${t.accountPayment} → ${t.accountReceived}` : (t.accountPayment || '-');
+      const txType = (t.type || 'Expense').toLowerCase();
+      const multiAccount = ['transfer', 'savings', 'investment'].includes(txType);
+      
+      const pGroup = document.getElementById('m-payment-group');
+      const bGroup = document.getElementById('m-beneficiary-group');
+
+      if (txType === 'income') {
+        pGroup.style.display = 'none';
+        bGroup.style.display = 'block';
+        document.getElementById('m-beneficiary-account').innerText = t.accountReceived || t.accountPayment || '-';
+      } else if (multiAccount) {
+        pGroup.style.display = 'block';
+        document.getElementById('m-payment-account').innerText = t.accountPayment || '-';
+        bGroup.style.display = 'block';
+        document.getElementById('m-beneficiary-account').innerText = t.accountReceived || '-';
+      } else {
+        pGroup.style.display = 'block';
+        document.getElementById('m-payment-account').innerText = t.accountPayment || '-';
+        bGroup.style.display = 'none';
+      }
       
       const statusEl = document.getElementById('m-status');
       const isCleared = t.cleared !== false;
@@ -256,9 +316,10 @@
       const calcEl = document.getElementById('m-calculation');
       if (t.qty && t.qty > 0) {
         calcEl.style.display = 'block';
-        let formula = `(${t.qty} ${t.scale || 'pcs'} x Rp ${t.price?.toLocaleString('id-ID') || (t.amount/t.qty).toLocaleString('id-ID')})`;
+        let formula = `(${t.qty} x Rp ${t.amount.toLocaleString('id-ID')})`;
         if (t.discount > 0) formula += ` - Rp ${t.discount.toLocaleString('id-ID')}`;
         if (t.fee > 0) formula += ` + Rp ${t.fee.toLocaleString('id-ID')}`;
+        formula += ` = Rp ${t.total.toLocaleString('id-ID')}`;
         calcEl.innerText = formula;
       } else {
         calcEl.style.display = 'none';
@@ -302,13 +363,24 @@
 
     document.getElementById('m-delete').onclick = () => {
       if (!activeTx || !activeTx.id) { detailModal.style.display = 'none'; return; }
-      if (!confirm('Are you sure you want to delete this transaction?')) return;
-      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      txs = txs.filter(t => t.id !== activeTx.id);
-      localStorage.setItem('transactions', JSON.stringify(txs));
-      detailModal.style.display = 'none';
-      if (typeof showToast === 'function') showToast('Transaction deleted successfully', 'success', 'trash-2');
-      refreshHistory();
+      if(typeof showConfirm === 'function') {
+        showConfirm('Are you sure you want to delete this transaction?', () => {
+          let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+          txs = txs.filter(t => t.id !== activeTx.id);
+          localStorage.setItem('transactions', JSON.stringify(txs));
+          detailModal.style.display = 'none';
+          if (typeof showToast === 'function') showToast('Transaction deleted successfully', 'success', 'trash-2');
+          refreshHistory();
+        });
+      } else {
+        if (!confirm('Are you sure you want to delete this transaction?')) return;
+        let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+        txs = txs.filter(t => t.id !== activeTx.id);
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        detailModal.style.display = 'none';
+        if (typeof showToast === 'function') showToast('Transaction deleted successfully', 'success', 'trash-2');
+        refreshHistory();
+      }
     };
 
     document.getElementById('m-duplicate').onclick = () => {
