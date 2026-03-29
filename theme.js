@@ -30,9 +30,22 @@
 
   // Run on load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initGlobalTheme);
+    document.addEventListener('DOMContentLoaded', () => {
+      initGlobalTheme();
+      checkAuthWall();
+    });
   } else {
     initGlobalTheme();
+    checkAuthWall();
+  }
+
+  function checkAuthWall() {
+    const isConnectPage = window.location.pathname.includes('connect.html');
+    const cloudUrl = localStorage.getItem('cloud_sheet_url');
+    
+    if (!cloudUrl && !isConnectPage) {
+      window.location.href = 'connect.html';
+    }
   }
 
   function showToast(message, type = 'success', icon = 'check-circle') {
@@ -146,6 +159,58 @@
     const intersect = new Set([...w1].filter(x => w2.has(x)));
     return intersect.size / Math.max(w1.size, w2.size);
   }
+
+  // Cloud Sync Engine
+  const CloudSync = {
+    pull: async (url, mode = 'overwrite') => {
+      try {
+        const res = await fetch(url + '?get=data');
+        const data = await res.json();
+
+        if (!data.transactions) throw new Error('No transactions found');
+
+        const remoteTxs = data.transactions.map(t => {
+          const q = parseFloat(t.qty) || 1;
+          const d = parseFloat(t.discount) || 0;
+          const f = parseFloat(t.fee) || 0;
+          const ex = parseFloat(t.exchangeRate) || 1;
+          const unitPrice = parseFloat(t.amount || 0);
+
+          t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now();
+          t.accountPayment = t.accountPayment || t['Payment Source Account'] || '';
+          t.accountReceived = t.accountReceived || t['Beneficiary Account'] || '';
+          
+          const calcTotal = ((q * unitPrice) - d + f) * ex;
+          t.total = (t.total !== undefined) ? parseFloat(t.total) : calcTotal;
+          t.amount = unitPrice;
+          
+          return t;
+        });
+
+        if (mode === 'overwrite') {
+          localStorage.setItem('transactions', JSON.stringify(remoteTxs));
+        } else {
+          const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+          const localIds = new Set(localTxs.map(t => t.id));
+          const onlyNew = remoteTxs.filter(t => !localIds.has(t.id));
+          localStorage.setItem('transactions', JSON.stringify([...onlyNew, ...localTxs]));
+        }
+        return remoteTxs.length;
+      } catch (err) {
+        console.error('Cloud Sync Error:', err);
+        throw err;
+      }
+    },
+    push: async (url) => {
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      if (txs.length === 0) return 0;
+      await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ transactions: txs })
+      });
+      return txs.length;
+    }
+  };
 
   function syncMasterData() {
     if (window.requestIdleCallback) {
@@ -563,4 +628,5 @@
   window.showToast = showToast;
   window.showConfirm = showConfirm;
   window.syncMasterData = syncMasterData;
+  window.CloudSync = CloudSync;
 })();
