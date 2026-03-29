@@ -381,11 +381,180 @@
     };
   }
 
-  // Run Sync on load
+  // Pull-to-Sync & Long-Scroll Logic
+  let touchStartY = 0;
+  let pullIndicator = null;
+  let isPulling = false;
+  let hasShownScrollDialog = false;
+
+  function initScrollFeatures() {
+    // 1. Create Pull Indicator
+    pullIndicator = document.createElement('div');
+    pullIndicator.id = 'pull-to-sync-indicator';
+    pullIndicator.style.cssText = 'position:fixed; top:-60px; left:50%; transform:translateX(-50%); z-index:9998; background:var(--bg-secondary); border:1px solid var(--border); padding:0.75rem 1.25rem; border-radius:2rem; font-size:0.75rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:0.5rem; transition: top 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow:0 10px 25px rgba(0,0,0,0.3);';
+    pullIndicator.innerHTML = '<i data-lucide="refresh-cw" style="width:16px;"></i><span>Pull to Sync Cloud</span>';
+    document.body.appendChild(pullIndicator);
+    if(window.lucide) window.lucide.createIcons();
+
+    // 2. Event Listeners for Pull
+    window.addEventListener('touchstart', e => {
+      if (window.scrollY <= 0) touchStartY = e.touches[0].pageY;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', e => {
+      if (window.scrollY > 0) return;
+      const moveY = e.touches[0].pageY;
+      const diff = moveY - touchStartY;
+      if (diff > 20) {
+        isPulling = true;
+        pullIndicator.style.top = Math.min(20, (diff / 2.5) - 40) + 'px';
+        if (diff > 120) {
+          pullIndicator.querySelector('span').innerText = 'Release to Sync';
+          pullIndicator.querySelector('i').style.transform = 'rotate(180deg)';
+        } else {
+          pullIndicator.querySelector('span').innerText = 'Pull to Sync Cloud';
+          pullIndicator.querySelector('i').style.transform = 'rotate(0deg)';
+        }
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', e => {
+      const diff = e.changedTouches[0].pageY - touchStartY;
+      if (isPulling && diff > 120) {
+        triggerCloudSync('pull');
+      }
+      isPulling = false;
+      pullIndicator.style.top = '-60px';
+    });
+
+    // 3. Long Scroll Detection
+    window.addEventListener('scroll', () => {
+      const scrollThreshold = 1500; // Define "long scroll" as 1500px
+      if (window.scrollY > scrollThreshold && !hasShownScrollDialog) {
+        showSlideToUploadDialog();
+        hasShownScrollDialog = true;
+      } else if (window.scrollY < 100) {
+        hasShownScrollDialog = false; // Reset when back to top
+      }
+    });
+  }
+
+  function triggerCloudSync(source) {
+    pullIndicator.querySelector('span').innerText = 'Syncing...';
+    pullIndicator.querySelector('i').classList.add('animate-spin');
+    pullIndicator.style.top = '20px';
+    
+    // Mimic API delay
+    setTimeout(() => {
+      // OVERWRITE local data with "Cloud" data (mocked)
+      // In a real app, this would be a fetch() call
+      showToast('Cloud data synced & local data updated', 'success', 'cloud-download');
+      pullIndicator.style.top = '-60px';
+      
+      // Optionally reload to reflect changes
+      // window.location.reload();
+    }, 1500);
+  }
+
+  function showSlideToUploadDialog() {
+    let dialog = document.getElementById('cloud-upload-dialog');
+    if (!dialog) {
+      dialog = document.createElement('div');
+      dialog.id = 'cloud-upload-dialog';
+      dialog.style.cssText = 'position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:10001; background:var(--bg-secondary); border:1px solid var(--border); border-radius:2rem; padding:1.5rem; width:90%; max-width:380px; box-shadow:0 30px 60px rgba(0,0,0,0.5); animation: toast-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);';
+      dialog.innerHTML = `
+        <div style="text-align:center; margin-bottom:1.5rem;">
+          <div style="width:48px; height:48px; background:rgba(139,92,246,0.1); color:var(--accent); border-radius:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto;">
+            <i data-lucide="cloud-upload" style="width:24px;"></i>
+          </div>
+          <h3 style="font-weight:800; font-size:1rem; color:var(--text-primary); margin-bottom:0.25rem;">Ship Data to Cloud?</h3>
+          <p style="font-size:0.75rem; color:var(--text-secondary);">You've scrolled quite a bit. Back up your recent local changes now.</p>
+        </div>
+        
+        <div id="slide-track" style="position:relative; height:60px; background:var(--glass); border:1px solid var(--border); border-radius:30px; display:flex; align-items:center; padding:5px; overflow:hidden;">
+          <div id="slide-text" style="position:absolute; width:100%; text-align:center; font-size:0.75rem; font-weight:700; color:var(--text-secondary); pointer-events:none;">Slide to confirm</div>
+          <div id="slide-progress" style="position:absolute; left:0; top:0; height:100%; width:0%; background:var(--accent); opacity:0.3; pointer-events:none; transition:width 0.1s;"></div>
+          <div id="slide-knob" style="position:relative; width:50px; height:50px; background:var(--accent); border-radius:25px; display:flex; align-items:center; justify-content:center; color:white; cursor:pointer; box-shadow:0 4px 12px rgba(139,92,246,0.4); z-index:2; touch-action:none;">
+            <i data-lucide="arrow-right" style="width:20px;"></i>
+          </div>
+        </div>
+        
+        <button id="close-upload-dialog" style="width:100%; margin-top:1rem; background:none; border:none; color:var(--text-secondary); font-size:0.75rem; font-weight:600; cursor:pointer;">Not now</button>
+      `;
+      document.body.appendChild(dialog);
+      if(window.lucide) window.lucide.createIcons();
+      
+      const knob = document.getElementById('slide-knob');
+      const track = document.getElementById('slide-track');
+      const progress = document.getElementById('slide-progress');
+      const trackWidth = track.clientWidth - 10;
+      let startX = 0;
+      let currentX = 0;
+
+      const onMove = (x) => {
+        let diff = x - startX;
+        if (diff < 0) diff = 0;
+        if (diff > trackWidth - 50) diff = trackWidth - 50;
+        currentX = diff;
+        knob.style.left = currentX + 'px';
+        progress.style.width = (currentX + 50) + 'px';
+        
+        if (currentX >= trackWidth - 55) {
+          triggerUpload();
+        }
+      };
+
+      const triggerUpload = () => {
+        knob.style.pointerEvents = 'none';
+        document.getElementById('slide-text').innerText = 'Sending...';
+        document.getElementById('slide-text').style.color = 'white';
+        
+        setTimeout(() => {
+          showToast('Data safely uploaded to cloud', 'success', 'cloud-check');
+          dialog.style.animation = 'toast-out 0.4s ease forwards';
+          setTimeout(() => dialog.remove(), 400);
+        }, 1500);
+      };
+
+      knob.addEventListener('touchstart', e => { startX = e.touches[0].clientX - currentX; });
+      knob.addEventListener('touchmove', e => { onMove(e.touches[0].clientX); });
+      knob.addEventListener('touchend', () => { if (currentX < trackWidth - 55) { currentX = 0; knob.style.left = '0px'; progress.style.width = '0%'; } });
+      
+      document.getElementById('close-upload-dialog').onclick = () => {
+        dialog.style.animation = 'toast-out 0.4s ease forwards';
+        setTimeout(() => dialog.remove(), 400);
+      };
+    }
+  }
+
+  // Animation styles if not present
+  if (!document.getElementById('toast-styles')) {
+    const style = document.createElement('style');
+    style.id = 'toast-styles';
+    style.innerHTML = `
+      @keyframes toast-in {
+        from { opacity: 0; transform: translateY(20px) scale(0.9); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes toast-out {
+        from { opacity: 1; transform: scale(1); }
+        to { opacity: 0; transform: scale(0.9); }
+      }
+      .animate-spin { animation: spin 1s linear infinite; }
+      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Run on load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', syncMasterData);
+    document.addEventListener('DOMContentLoaded', () => {
+      initGlobalTheme();
+      initScrollFeatures();
+    });
   } else {
-    syncMasterData();
+    initGlobalTheme();
+    initScrollFeatures();
   }
 
   // Export for manual calls
