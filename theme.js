@@ -152,14 +152,15 @@
   }
 
   function getSimilarity(s1, s2) {
-    s1 = s1.toLowerCase().trim();
-    s2 = s2.toLowerCase().trim();
+    s1 = s1.toLowerCase().trim().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
+    s2 = s2.toLowerCase().trim().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
     if (s1 === s2) return 1.0;
-    if (s1.includes(s2) || s2.includes(s1)) return 0.7;
-    const w1 = new Set(s1.split(/\s+/));
-    const w2 = new Set(s2.split(/\s+/));
-    const intersect = new Set([...w1].filter(x => w2.has(x)));
-    return intersect.size / Math.max(w1.size, w2.size);
+    if (s1.includes(s2) || s2.includes(s1)) return 0.8;
+    const w1 = s1.split(/\s+/).filter(w => w.length > 2);
+    const w2 = s2.split(/\s+/).filter(w => w.length > 2);
+    const intersect = w1.filter(x => w2.includes(x));
+    if (intersect.length > 0) return 0.6 + (0.4 * intersect.length / Math.max(w1.length, w2.length));
+    return 0;
   }
 
   // Cloud Sync Engine
@@ -252,7 +253,7 @@
           if (similar) {
              showMergeCard('merchant', t.merchant, similar);
              suggestionCount++;
-          } else if (suggestionCount < MAX_SUGGESTIONS || !isDashboard) {
+          } else if (!isDashboard || suggestionCount < MAX_SUGGESTIONS) {
              merchants.push({ id: Date.now() + Math.random(), name: t.merchant, type: t.category || 'Other' });
              merMap.set(mLower, { name: t.merchant });
              updated = true;
@@ -269,8 +270,8 @@
           if (similar) {
              showMergeCard('account', name, similar);
              suggestionCount++;
-          } else if (suggestionCount < MAX_SUGGESTIONS || !isDashboard) {
-             accounts.push({ id: Date.now() + Math.random(), name: name, type: 'Auto-extracted', balance: 0, status: 'Active', color: '#8b5cf6' });
+          } else if (!isDashboard || suggestionCount < MAX_SUGGESTIONS) {
+             accounts.push({ id: Date.now() + Math.random(), name: name, type: 'Vault/Savings', balance: 0, status: 'Active', color: '#8b5cf6' });
              accMap.set(aLower, { name: name });
              updated = true;
           }
@@ -336,32 +337,29 @@
 
     const card = document.createElement('div');
     card.id = syncId;
-    card.style.cssText = 'background:var(--bg-secondary); border:1px solid rgba(139, 92, 246, 0.2); border-left: 2px solid var(--accent); border-radius:1.25rem; padding:1.25rem; margin-bottom:1rem; display:flex; flex-direction:column; gap:0.2rem; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); cursor: default; transition: 0.3s;';
+    card.style.cssText = 'background:var(--bg-secondary); border:1px solid rgba(139, 92, 246, 0.3); border-left: 4px solid var(--accent); border-radius:1.5rem; padding:1.5rem; margin-bottom:1.25rem; display:flex; flex-direction:column; gap:0.5rem; box-shadow:0 15px 35px rgba(0,0,0,0.2); animation: toast-in 0.4s ease-out;';
     
-    let icon = 'git-merge';
-    let label = 'Clean Data';
-    let detail = '';
-    
-    if (type === 'item') { icon = 'package'; label = 'Item Sync'; detail = `Auto-merge "<b>${source}</b>" to catalog.`; }
-    else if (type === 'merchant') { icon = 'building-2'; label = 'New Vendor'; detail = `Merge vendor "<b>${source}</b>" to list.`; }
-    else if (type === 'account') { icon = 'landmark'; label = 'Account Sync'; detail = `Link "<b>${source}</b>" to your account.`; }
-    else if (type === 'transaction') { icon = 'copy'; label = 'Duplicate!'; detail = `${source.merchant} (Rp ${source.amount.toLocaleString()}) detected twice.`; }
+    let icon = 'git-merge', label = 'Clean Data', detail = '';
+    if (type === 'item') { icon = 'package'; label = 'Item Matching'; detail = `Merge "<b>${source}</b>" into <b>${target.name}</b>?`; }
+    else if (type === 'merchant') { icon = 'building-2'; label = 'Merchant Matching'; detail = `Merge <b>${source}</b> as <b>${target.name}</b>?`; }
+    else if (type === 'account') { icon = 'landmark'; label = 'Account/Vault Matching'; detail = `Is <b>${source}</b> same as <b>${target.name}</b>?`; }
+    else if (type === 'transaction') { icon = 'copy'; label = 'Duplicate Detected'; detail = `Potential duplicate transaction found in ${source.merchant}.`; }
 
     const previewId = `preview-${syncId}`;
     card.innerHTML = `
       <div style="display:flex; align-items:center; gap:1.25rem;">
-        <div style="width:48px; height:48px; border-radius:12px; background:rgba(139, 92, 246, 0.1); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          <i data-lucide="${icon}" style="width:24px;"></i>
+        <div style="width:52px; height:52px; border-radius:14px; background:rgba(139, 92, 246, 0.1); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i data-lucide="${icon}" style="width:28px;"></i>
         </div>
         <div style="flex:1; min-width:0;">
-          <div style="font-size:0.875rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+          <div style="font-size:0.9rem; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem; letter-spacing:-0.01em;">
             ${label}
-            <span style="font-size:0.65rem; background:rgba(139,92,246,0.15); color:var(--accent); padding:2px 6px; border-radius:4px;">PRO</span>
+            <span style="font-size:0.6rem; background:var(--accent); color:white; padding:2px 6px; border-radius:10px; text-transform:uppercase; font-weight:900;">PRO</span>
           </div>
-          <div style="font-size:0.75rem; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">${detail}</div>
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:3px; line-height:1.4;">${detail}</div>
         </div>
-        <button class="preview-toggle" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:4px;" title="View Data">
-          <i data-lucide="chevron-down" style="width:20px;"></i>
+        <button class="preview-toggle" style="background:var(--bg-input); border:1px solid var(--border); color:var(--text-secondary); cursor:pointer; width:32px; height:32px; border-radius:16px; display:flex; align-items:center; justify-content:center;">
+          <i data-lucide="chevron-down" style="width:16px;"></i>
         </button>
       </div>
       
@@ -637,10 +635,14 @@
     document.addEventListener('DOMContentLoaded', () => {
       initGlobalTheme();
       initScrollFeatures();
+      checkAuthWall();
+      syncMasterData();
     });
   } else {
     initGlobalTheme();
     initScrollFeatures();
+    checkAuthWall();
+    syncMasterData();
   }
 
   // Export for manual calls
