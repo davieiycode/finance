@@ -112,6 +112,23 @@
     </div>
   </div>
 
+  </div>
+  
+  <div id="ana-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 2rem;">
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 1.5rem; max-width: 500px; margin: auto; height: 80vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+      <div style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+        <div>
+          <h2 id="modal-title" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Transactions</h2>
+          <div id="modal-subtitle" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.2rem;">Details Tracking</div>
+        </div>
+        <button onclick="document.getElementById('ana-modal').style.display='none'" style="width: 32px; height: 32px; border-radius: 16px; background: rgba(255,255,255,0.05); border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+          <i data-lucide="x" style="width: 18px;"></i>
+        </button>
+      </div>
+      <div id="modal-tx-list" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;"></div>
+    </div>
+  </div>
+
   <script>
     lucide.createIcons();
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -143,7 +160,6 @@
     function initData() {
       let allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
       
-      // Migration: Convert old structure (amount=Total) to new (total=Total, amount=UnitPrice)
       allTxs = allTxs.map(t => {
         if (t.total === undefined && t.amount !== undefined) {
           t.total = t.amount;
@@ -152,7 +168,6 @@
         return t;
       });
       
-      // Auto-detect latest month if we haven't manually changed it
       if (allTxs.length > 0) {
         const sorted = [...allTxs].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
         const latest = sorted[0];
@@ -168,17 +183,10 @@
       const filterStr = `${activeDate.getFullYear()}-${String(activeDate.getMonth() + 1).padStart(2,'0')}`;
       const txs = allTxs.filter(t => (t.date || "").startsWith(filterStr));
 
-      const donutBase = {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '75%',
-        plugins: { legend: { display: false } }
-      };
-
       const getAgg = (dataList, type) => {
         const map = {};
         dataList.filter(t => t.type === type).forEach(t => {
-           const amt = typeof t.total === 'number' ? t.total : parseFloat((t.total || '0').toString().replace(/[^0-9.-]+/g, "")) || 0;
+           const amt = t.total || 0;
            map[t.category] = (map[t.category] || 0) + amt;
         });
         return Object.entries(map).map(([name, value]) => ({ name, value }));
@@ -192,24 +200,21 @@
       const rate = totalInc > 0 ? (net / totalInc) * 100 : 0;
       const fmt = (v) => 'Rp ' + Math.floor(v).toLocaleString('id-ID');
 
-      const statValues = document.querySelectorAll('#tab-flow .stat-card span:first-child');
-      if (statValues.length >= 4) {
-        statValues[0].innerText = fmt(totalInc);
-        statValues[1].innerText = fmt(totalExp);
-        statValues[2].innerText = fmt(net);
-        statValues[3].innerText = (totalInc > 0 ? rate.toFixed(1) : '0') + '%';
-      }
+      document.querySelectorAll('#tab-flow .stat-card span:first-child').forEach((el, i) => {
+        if(i===0) el.innerText = fmt(totalInc);
+        if(i===1) el.innerText = fmt(totalExp);
+        if(i===2) el.innerText = fmt(net);
+        if(i===3) el.innerText = (totalInc > 0 ? rate.toFixed(1) : '0') + '%';
+      });
       
-      const spTotalEl = document.getElementById('spend-total-val');
-      const inTotalEl = document.getElementById('income-total-val');
-      if (spTotalEl) spTotalEl.innerText = fmt(totalExp);
-      if (inTotalEl) inTotalEl.innerText = fmt(totalInc);
+      if (document.getElementById('spend-total-val')) document.getElementById('spend-total-val').innerText = fmt(totalExp);
+      if (document.getElementById('income-total-val')) document.getElementById('income-total-val').innerText = fmt(totalInc);
 
-      const renderL = (data, cid) => {
+      const renderL = (data, cid, contextType) => {
         const l = document.getElementById(cid);
         if (!l) return;
         l.innerHTML = data.length ? data.map((item, i) => `
-          <div class="stat-card">
+          <div class="stat-card" style="cursor: pointer; transition: transform 0.1s;" onclick="showCatDetails('${item.name}', '${contextType}')" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <div style="width: 10px; height: 10px; border-radius: 50%; background: ${colors[i % colors.length]};"></div>
@@ -219,10 +224,24 @@
             </div>
           </div>`).join('') : '<p style="text-align:center; opacity:0.5; padding:2rem; font-size:0.8rem;">No entries found</p>';
       };
-      renderL(spendAgg, 'spending-parent-list');
-      renderL(incomeAgg, 'income-parent-list');
 
-      // Update Sankey
+      renderL(spendAgg, 'spending-parent-list', 'Expense');
+      renderL(incomeAgg, 'income-parent-list', 'Income');
+
+      // Tags & Projects
+      const tagMap = {}, projMap = {};
+      allTxs.forEach(t => {
+         const amt = t.total || 0;
+         (t.tags || []).forEach(tg => { if (tg) tagMap[tg] = (tagMap[tg] || 0) + amt; });
+         (t.projects || []).forEach(pj => { if (pj) projMap[pj] = (projMap[pj] || 0) + amt; });
+      });
+      const tagData = Object.entries(tagMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
+      const projData = Object.entries(projMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
+
+      renderL(tagData, 'tags-list', 'Tag');
+      renderL(projData, 'projects-list', 'Project');
+
+      // Charts update
       if (!sankeyChartInstance) sankeyChartInstance = echarts.init(document.getElementById('sankeyChart'), 'dark');
       const nodes = [{ name: 'Income', itemStyle: { color: '#22c55e' } }, { name: 'Savings', itemStyle: { color: '#3b82f6' } }];
       incomeAgg.forEach(i => nodes.push({ name: i.name }));
@@ -236,41 +255,51 @@
         series: [{ type: 'sankey', layout: 'none', data: nodes.length > 2 ? nodes : [{name:'No Data'}], links: links.length ? links : [{source:'Income',target:'No Data',value:0.1}], label: { color: '#eee', fontSize: 10 } }] 
       });
 
-      // Doughnuts
+      const donutBase = { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } };
       if (incomeChart) incomeChart.destroy();
-      const inCtx = document.getElementById('incomeDoughnutChart');
-      if (inCtx) incomeChart = new Chart(inCtx, { type: 'doughnut', data: { labels: incomeAgg.map(i => i.name), datasets: [{ data: incomeAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
-
+      incomeChart = new Chart(document.getElementById('incomeDoughnutChart'), { type: 'doughnut', data: { labels: incomeAgg.map(i => i.name), datasets: [{ data: incomeAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
       if (spendChart) spendChart.destroy();
-      const spCtx = document.getElementById('spendingDoughnutChart');
-      if (spCtx) spendChart = new Chart(spCtx, { type: 'doughnut', data: { labels: spendAgg.map(i => i.name), datasets: [{ data: spendAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
+      spendChart = new Chart(document.getElementById('spendingDoughnutChart'), { type: 'doughnut', data: { labels: spendAgg.map(i => i.name), datasets: [{ data: spendAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
 
-      // Tags & Projects
-      const tagMap = {}, projMap = {};
-      allTxs.forEach(t => {
-         const amt = typeof t.total === 'number' ? t.total : parseFloat((t.total || '0').toString().replace(/[^0-9.-]+/g, "")) || 0;
-         (t.tags || []).forEach(tg => { if (tg) tagMap[tg] = (tagMap[tg] || 0) + amt; });
-         (t.projects || []).forEach(pj => { if (pj) projMap[pj] = (projMap[pj] || 0) + amt; });
-      });
-      const tagData = Object.entries(tagMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
-      const projData = Object.entries(projMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
-
-      const barOpt = (labels, data, color) => ({
-         type: 'bar',
-         data: { labels, datasets: [{ data, backgroundColor: color, borderRadius: 8, barThickness: 15 }] },
-         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } } } }
-      });
-
+      const barOpt = (labels, data, color) => ({ type: 'bar', data: { labels, datasets: [{ data, backgroundColor: color, borderRadius: 8, barThickness: 15 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } } } } });
       if (tagChartInst) tagChartInst.destroy();
-      const tc = document.getElementById('tagsChart');
-      if (tc) tagChartInst = new Chart(tc, barOpt(tagData.map(d => d.name), tagData.map(d => d.value), '#8b5cf6'));
-
+      tagChartInst = new Chart(document.getElementById('tagsChart'), barOpt(tagData.map(d => d.name), tagData.map(d => d.value), '#8b5cf6'));
       if (projChartInst) projChartInst.destroy();
-      const pc = document.getElementById('projectsChart');
-      if (pc) projChartInst = new Chart(pc, barOpt(projData.map(d => d.name), projData.map(d => d.value), '#10b981'));
+      projChartInst = new Chart(document.getElementById('projectsChart'), barOpt(projData.map(d => d.name), projData.map(d => d.value), '#10b981'));
+    }
 
-      renderL(tagData, 'tags-list');
-      renderL(projData, 'projects-list');
+    window.showCatDetails = (name, type) => {
+      const allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      let filtered = [];
+      if (type === 'Tag') {
+        filtered = allTxs.filter(t => (t.tags || []).includes(name));
+      } else if (type === 'Project') {
+        filtered = allTxs.filter(t => (t.projects || []).includes(name));
+      } else {
+        filtered = allTxs.filter(t => t.type === type && t.category === name);
+      }
+      
+      // Sort by amount descending
+      filtered.sort((a,b) => (b.total || b.amount || 0) - (a.total || a.amount || 0));
+      
+      document.getElementById('modal-title').innerText = name;
+      document.getElementById('modal-subtitle').innerText = `${filtered.length} Transactions Found`;
+      document.getElementById('modal-tx-list').innerHTML = filtered.map(t => `
+        <div class="stat-card" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="font-weight: 700; color: white; font-size: 0.875rem;">${t.merchant || t.name || 'General'}</div>
+              <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.1rem;">${t.date}</div>
+            </div>
+            <div style="font-weight: 800; color: ${t.type === 'Expense' ? '#ef4444' : '#10b981'}; font-size: 0.875rem;">
+              ${t.type === 'Expense' ? '-' : '+'} Rp ${(t.total || t.amount).toLocaleString('id-ID')}
+            </div>
+          </div>
+        </div>
+      `).join('') || '<p style="text-align:center; opacity:0.5; padding:2rem;">No details</p>';
+      
+      document.getElementById('ana-modal').style.display = 'block';
+      lucide.createIcons();
     }
 
     document.getElementById('prev-month').onclick = () => { window.hasManuallyChangedMonth = true; activeDate.setMonth(activeDate.getMonth() - 1); initData(); };
@@ -278,5 +307,7 @@
     
     initData();
   </script>
+</body>
+</html>
 </body>
 </html>

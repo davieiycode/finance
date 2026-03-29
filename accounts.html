@@ -362,7 +362,37 @@
     }
 
     function closeModal() { modal.style.display = 'none'; document.body.style.overflow = 'auto'; }
-    function save() { alert('Account updated successfully!'); closeModal(); }
+    
+    function save() {
+      const name = document.getElementById('acc-name-input').value;
+      if (!name) { 
+        if(typeof showToast === 'function') showToast('Account name is required', 'error');
+        return; 
+      }
+      
+      const newAcc = {
+        id: activeAcc ? activeAcc.id : Date.now(),
+        name: name,
+        type: document.getElementById('acc-type').value,
+        number: document.getElementById('acc-id').value,
+        balance: parseFloat(document.getElementById('acc-balance-init').value) || 0,
+        status: document.querySelector('.status-btn.active').dataset.status,
+        color: activeAcc ? activeAcc.color : '#8b5cf6'
+      };
+
+      if (activeAcc) {
+        const idx = accounts.findIndex(a => a.id === activeAcc.id);
+        accounts[idx] = newAcc;
+      } else {
+        accounts.push(newAcc);
+      }
+      
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+      
+      if(typeof showToast === 'function') showToast('Account saved successfully!', 'success');
+      closeModal();
+      renderAccounts('');
+    }
     
     function deleteAccount() {
       showConfirm('Delete this account for good?', () => {
