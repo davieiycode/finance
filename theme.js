@@ -167,38 +167,74 @@
   const CloudSync = {
     pull: async (url, mode = 'overwrite') => {
       try {
-        const res = await fetch(url + '?get=data');
+        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'get=data');
         const data = await res.json();
 
-        if (!data.transactions) throw new Error('No transactions found');
-
-        const remoteTxs = data.transactions.map(t => {
-          const q = parseFloat(t.qty) || 1;
-          const d = parseFloat(t.discount) || 0;
-          const f = parseFloat(t.fee) || 0;
-          const ex = parseFloat(t.exchangeRate) || 1;
-          const unitPrice = parseFloat(t.amount || 0);
-
-          t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now();
-          t.accountPayment = t.accountPayment || t['Payment Source Account'] || '';
-          t.accountReceived = t.accountReceived || t['Beneficiary Account'] || '';
-          
-          const calcTotal = ((q * unitPrice) - d + f) * ex;
-          t.total = (t.total !== undefined) ? parseFloat(t.total) : calcTotal;
-          t.amount = unitPrice;
-          
-          return t;
-        });
-
+        let count = 0;
+        const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals'];
+        
         if (mode === 'overwrite') {
-          localStorage.setItem('transactions', JSON.stringify(remoteTxs));
+          if (data.status === 'success') {
+            // Comprehensive Overwrite Logic - User wants everything replaced
+            keys.forEach(key => {
+              if (data[key]) {
+                let remoteData = data[key];
+                if (key === 'transactions') {
+                  remoteData = remoteData.map(t => {
+                    const q = parseFloat(t.qty) || 1;
+                    const d = parseFloat(t.discount) || 0;
+                    const f = parseFloat(t.fee) || 0;
+                    const ex = parseFloat(t.exchangeRate) || 1;
+                    const unitPrice = parseFloat(t.amount || 0);
+                    t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
+                    const calcTotal = ((q * unitPrice) - d + f) * ex;
+                    t.total = (t.total !== undefined) ? parseFloat(t.total) : calcTotal;
+                    t.total = isNaN(t.total) ? 0 : t.total;
+                    t.amount = unitPrice;
+                    return t;
+                  });
+                  count = remoteData.length;
+                }
+                localStorage.setItem(key, JSON.stringify(remoteData));
+              } else if (['transactions', 'accounts', 'merchants', 'items', 'vault'].includes(key)) {
+                localStorage.removeItem(key);
+              }
+            });
+          } else {
+            throw new Error('Cloud returned an error or invalid status');
+          }
         } else {
-          const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
-          const localIds = new Set(localTxs.map(t => t.id));
-          const onlyNew = remoteTxs.filter(t => !localIds.has(t.id));
-          localStorage.setItem('transactions', JSON.stringify([...onlyNew, ...localTxs]));
+          // Merge Logic (Default)
+          if (data.transactions) {
+            const remoteTxs = data.transactions.map(t => {
+              const q = parseFloat(t.qty) || 1;
+              const d = parseFloat(t.discount) || 0;
+              const f = parseFloat(t.fee) || 0;
+              const ex = parseFloat(t.exchangeRate) || 1;
+              const unitPrice = parseFloat(t.amount || 0);
+
+              t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
+              const calcTotal = ((q * unitPrice) - d + f) * ex;
+              t.total = (t.total !== undefined) ? parseFloat(t.total) : calcTotal;
+              t.total = isNaN(t.total) ? 0 : t.total;
+              t.amount = unitPrice;
+              return t;
+            });
+
+            const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+            const localIds = new Set(localTxs.map(t => t.id.toString()));
+            const onlyNew = remoteTxs.filter(t => !localIds.has(t.id.toString()));
+            localStorage.setItem('transactions', JSON.stringify([...onlyNew, ...localTxs]));
+            count = remoteTxs.length;
+          }
         }
-        return remoteTxs.length;
+
+        // Trigger Metadata Rebuild if only transactions were provided (or always, for safety)
+        if (!data.accounts && !data.merchants && !data.items && typeof window.syncMasterData === 'function') {
+          window.syncMasterData();
+        }
+
+        return count;
       } catch (err) {
         console.error('Cloud Sync Error:', err);
         throw err;

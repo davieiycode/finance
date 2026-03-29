@@ -200,7 +200,31 @@
     const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
 
     async function onScanSuccess(decodedText) {
-      const scriptUrl = decodedText.trim();
+      decodedText = decodedText.trim();
+
+      // Check if it's direct JSON Ledger Data
+      if (decodedText.startsWith('{') && (decodedText.includes('transactions') || decodedText.includes('items'))) {
+        try {
+          const data = JSON.parse(decodedText);
+          const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'cloud_sheet_url'];
+          
+          keys.forEach(k => {
+            if (data[k]) localStorage.setItem(k, (typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k])));
+          });
+
+          syncOverlay.style.display = 'flex';
+          if (typeof showToast === 'function') showToast(`Ledger restored!`, 'success', 'database-backup');
+          
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1500);
+          return;
+        } catch (e) {
+          console.error("Direct JSON parse failed, treating as URL...", e);
+        }
+      }
+
+      const scriptUrl = decodedText;
       if (!scriptUrl.startsWith('http')) {
         if (typeof showToast === 'function') showToast('Invalid QR Code content.', 'error', 'alert-circle');
         return;
@@ -214,6 +238,7 @@
 
       // 3. Save URL
       localStorage.setItem('cloud_sheet_url', scriptUrl);
+
 
       try {
         // 4. Pull data from cloud using global engine (Overwrite on first connect)
