@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,15 +30,22 @@
       width: 90%;
       max-width: 400px;
       text-align: center;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
       position: relative;
       z-index: 10;
       animation: cardIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     @keyframes cardIn {
-      from { opacity: 0; transform: translateY(40px) scale(0.9); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.9);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     .qr-container {
@@ -63,7 +71,7 @@
     .sync-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0, 0, 0, 0.9);
       backdrop-filter: blur(10px);
       display: none;
       flex-direction: column;
@@ -84,7 +92,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .glow {
@@ -99,16 +109,19 @@
     }
   </style>
 </head>
+
 <body>
   <div class="glow" style="top: -100px; left: -100px;"></div>
   <div class="glow" style="bottom: -100px; right: -100px;"></div>
 
   <div class="connect-card">
-    <div style="width: 64px; height: 64px; background: rgba(139,92,246,0.1); color: var(--accent); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+    <div
+      style="width: 64px; height: 64px; background: rgba(139,92,246,0.1); color: var(--accent); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
       <i data-lucide="cloud-lightning" style="width: 32px; height: 32px;"></i>
     </div>
     <h1 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">Connect Cloud</h1>
-    <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">Scan your Google Apps Script QR code to link your ledger and start tracking.</p>
+    <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">Scan your ledger code to start
+      tracking.</p>
 
     <div class="qr-container">
       <div id="reader"></div>
@@ -118,15 +131,17 @@
       </div>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--glass); border-radius: 1rem; border: 1px solid var(--border);">
+    <div
+      style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--glass); border-radius: 1rem; border: 1px solid var(--border);">
       <i data-lucide="info" style="width: 16px; color: var(--text-secondary);"></i>
-      <p style="font-size: 0.7rem; color: var(--text-secondary); text-align: left;">Your device will automatically pull all records from the cloud after scanning.</p>
+      <p style="font-size: 0.7rem; color: var(--text-secondary); text-align: left;">Your device will automatically pull
+        all records from the cloud after scanning.</p>
     </div>
   </div>
 
   <script>
     lucide.createIcons();
-    
+
     const html5QrCode = new Html5Qrcode("reader");
     const syncOverlay = document.getElementById('sync-overlay');
 
@@ -138,20 +153,20 @@
 
       // 1. Stop scanning
       await html5QrCode.stop();
-      
+
       // 2. Visual feedback
       syncOverlay.style.display = 'flex';
-      
+
       // 3. Save URL
       localStorage.setItem('cloud_sheet_url', scriptUrl);
-      
+
       try {
         // 4. Pull data from cloud using global engine (Overwrite on first connect)
         const count = await window.CloudSync.pull(scriptUrl, 'overwrite');
-        
+
         if (count >= 0) {
           if (typeof showToast === 'function') showToast(`Linked! Retrieved ${count} records.`, 'success', 'cloud-check');
-          
+
           setTimeout(() => {
             window.location.href = 'index.html';
           }, 1500);
@@ -166,4 +181,5 @@
     html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess);
   </script>
 </body>
+
 </html>
