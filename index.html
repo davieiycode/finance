@@ -2116,16 +2116,31 @@ function doPost(e) {
       });
 
       let finalData = [];
+      let skippedCount = 0;
       if (currentImportMode === 'merge') {
         const existingIds = new Set(currentTxs.map(t => t.id));
-        const filteredNew = imported.filter(t => !existingIds.has(t.id));
+        const filteredNew = imported.filter(t => {
+          if (existingIds.has(t.id)) {
+            skippedCount++;
+            return false;
+          }
+          return true;
+        });
         finalData = [...filteredNew, ...currentTxs];
       } else {
         finalData = imported;
       }
       localStorage.setItem('transactions', JSON.stringify(finalData));
-      showToast(`Success! Imported ${imported.length} transactions (${currentImportMode}).`, 'success', 'file-check');
-      setTimeout(() => location.reload(), 1500);
+      
+      // Auto-extract metadata from imported data
+      let extractMsg = '';
+      if (typeof rebuildMetadataFromTransactions === 'function') {
+        const stats = rebuildMetadataFromTransactions(finalData, currentImportMode);
+        extractMsg = ` | Extracted: ${stats.merchants} Mer, ${stats.items} Items`;
+      }
+
+      showToast(`Success! Imported ${imported.length} tx (${currentImportMode}). Skipped ${skippedCount} duplicates.${extractMsg}`, 'success', 'file-check');
+      setTimeout(() => location.reload(), 2000);
     };
 
     let currentSyncMode = 'merge';
@@ -2210,9 +2225,16 @@ function doPost(e) {
           const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
 
           let finalData = [];
+          let skippedCount = 0;
           if (currentSyncMode === 'merge') {
             const cloudIds = new Set(remoteTxs.map(t => t.id.toString()));
-            const uniqueLocals = localTxs.filter(t => !cloudIds.has(t.id.toString()));
+            const uniqueLocals = localTxs.filter(t => {
+              if (cloudIds.has(t.id.toString())) {
+                skippedCount++;
+                return false;
+              }
+              return true;
+            });
             finalData = [...remoteTxs, ...uniqueLocals];
           } else {
             finalData = remoteTxs;
@@ -2221,14 +2243,14 @@ function doPost(e) {
           localStorage.setItem('transactions', JSON.stringify(finalData));
 
           // Sync Metadata (Manageable Merchants, Items, Accounts)
+          let extractMsg = '';
           if (typeof rebuildMetadataFromTransactions === 'function') {
-            rebuildMetadataFromTransactions(finalData, currentSyncMode);
+            const stats = rebuildMetadataFromTransactions(finalData, currentSyncMode);
+            extractMsg = ` | New Metadata: ${stats.merchants} Mer, ${stats.items} Items`;
           }
 
           // Debugging info in toast
-          const distinctM = new Set(finalData.map(t => t.merchant || t['Merchant Name'])).size;
-          const distinctI = new Set(finalData.map(t => t.name || t['Item Name'])).size;
-          showToast(`Success! Pulled ${data.transactions.length} records. Metadata synced.`, 'success', 'cloud-download');
+          showToast(`Cloud Sync Success! Pulled ${data.transactions.length} records. Duplicates: ${skippedCount}${extractMsg}`, 'success', 'cloud-download');
 
           setTimeout(() => location.reload(), 2000);
         }

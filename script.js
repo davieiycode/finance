@@ -131,7 +131,7 @@ function formatInputLocale(e) {
 
 // Rebuild/Sync Metadata (Accounts, Merchants, Items) from Transactions
 function rebuildMetadataFromTransactions(txs, mode = 'merge') {
-  if (!txs || txs.length === 0) return;
+  if (!txs || txs.length === 0) return { accounts: 0, merchants: 0, items: 0, skipped: 0 };
 
   const currentAccounts = JSON.parse(localStorage.getItem('accounts') || '[]');
   const currentMerchants = JSON.parse(localStorage.getItem('merchants') || '[]');
@@ -145,6 +145,14 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
   const newMerchants = mode === 'merge' ? [...currentMerchants] : [];
   const newItems = mode === 'merge' ? [...currentItems] : [];
 
+  // Stats for reporting
+  const stats = {
+    accounts: 0,
+    merchants: 0,
+    items: 0,
+    skipped: 0
+  };
+
   // Track existing names for easy lookup
   newAccounts.forEach(a => accSet.add(a.name.toLowerCase()));
   newMerchants.forEach(m => merSet.add(m.name.toLowerCase()));
@@ -153,7 +161,7 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
   txs.forEach(t => {
     // 1. Extraction of Accounts
     const accNames = [
-      t.accountPayment || t['Payment Source Account'],
+      t.accountPayment || t['Payment Source Account'] || t.account,
       t.accountReceived || t['Beneficiary Account']
     ].filter(a => a && a.trim() && a !== '-');
     
@@ -170,28 +178,34 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
           color: '#8b5cf6'
         });
         accSet.add(cleanName.toLowerCase());
+        stats.accounts++;
+      } else {
+        stats.skipped++;
       }
     });
 
     // 2. Extraction of Merchants
-    const merchantName = t.merchant || t['Merchant Name'] || t['Merchant'];
+    const merchantName = t.merchant || t.Merchant || t['Merchant Name'] || t['Merchant'];
     if (merchantName && merchantName.trim() && merchantName !== '-') {
       const cleanM = merchantName.trim();
       if (!merSet.has(cleanM.toLowerCase())) {
         newMerchants.push({
           id: Date.now() + Math.random(),
           name: cleanM,
-          type: t.categoryGroup || 'Other',
+          type: t.categoryGroup || t.category || 'Other',
           address: '',
           map: ''
         });
         merSet.add(cleanM.toLowerCase());
+        stats.merchants++;
+      } else {
+        stats.skipped++;
       }
     }
 
     // 3. Extraction of Items
-    const itemName = t.name || t['Item Name'] || t['Item'];
-    if (itemName && itemName.trim() && itemName !== '-') {
+    const itemName = t.name || t.Name || t['Item Name'] || t['Item'] || t.item;
+    if (itemName && itemName.trim() && itemName !== '-' && itemName !== 'Imported Transaction') {
       const cleanI = itemName.trim();
       if (!itemSet.has(cleanI.toLowerCase())) {
         newItems.push({
@@ -204,6 +218,9 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
           image: ''
         });
         itemSet.add(cleanI.toLowerCase());
+        stats.items++;
+      } else {
+        stats.skipped++;
       }
     }
   });
@@ -211,7 +228,10 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
   localStorage.setItem('accounts', JSON.stringify(newAccounts));
   localStorage.setItem('merchants', JSON.stringify(newMerchants));
   localStorage.setItem('items', JSON.stringify(newItems));
-  console.log(`Metadata rebuilt: ${newAccounts.length} Acc, ${newMerchants.length} Mer, ${newItems.length} Items.`);
+  
+  const msg = `Auto-extraction: ${stats.accounts} Acc, ${stats.merchants} Mer, ${stats.items} Items. Duplicates: ${stats.skipped}`;
+  console.log(msg);
+  return stats;
 }
 
 function populateDatalists() {
@@ -230,12 +250,23 @@ function populateDatalists() {
 
   db.forEach(t => {
     // Aggressive extraction from all possible key variations
-    const m = t.merchant || t.Merchant || t['Merchant']; if (m) sets.merchants.add(m.toString().trim());
-    const n = t.name || t.Name || t.Item || t['Item Name']; if (n) sets.items.add(n.toString().trim());
-    const c = t.category || t.Category || t['Category']; if (c) sets.categories.add(c.toString().trim());
-    const ap = t.accountPayment || t['Payment Source Account'] || t.account; if (ap) sets.accounts.add(ap.toString().trim());
-    const ar = t.accountReceived || t['Beneficiary Account']; if (ar) sets.accounts.add(ar.toString().trim());
-    const au = t.author || t.Author || t['Author']; if (au) sets.authors.add(au.toString().trim());
+    const m = t.merchant || t.Merchant || t['Merchant Name'] || t['Merchant'];
+    if (m && m !== '-') sets.merchants.add(m.toString().trim());
+
+    const n = t.name || t.Name || t['Item Name'] || t['Item'] || t.item;
+    if (n && n !== '-' && n !== 'Imported Transaction') sets.items.add(n.toString().trim());
+
+    const c = t.category || t.Category || t['Category'];
+    if (c && c !== '-') sets.categories.add(c.toString().trim());
+
+    const ap = t.accountPayment || t['Payment Source Account'] || t.account;
+    if (ap && ap !== '-') sets.accounts.add(ap.toString().trim());
+
+    const ar = t.accountReceived || t['Beneficiary Account'];
+    if (ar && ar !== '-') sets.accounts.add(ar.toString().trim());
+
+    const au = t.author || t.Author || t['Author'];
+    if (au && au !== '-') sets.authors.add(au.toString().trim());
     
     if (t.tags && Array.isArray(t.tags)) t.tags.forEach(tg => sets.tags.add(tg.toString().trim()));
     if (t.projects && Array.isArray(t.projects)) t.projects.forEach(pj => sets.projects.add(pj.toString().trim()));
