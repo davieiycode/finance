@@ -172,10 +172,20 @@
     </style>
 
     <div
-      style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--glass); border-radius: 1rem; border: 1px solid var(--border);">
-      <i data-lucide="info" style="width: 16px; color: var(--text-secondary);"></i>
-      <p style="font-size: 0.7rem; color: var(--text-secondary); text-align: left;">Your device will automatically pull
-        all records from the cloud after scanning.</p>
+      style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
+      <div
+        style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--glass); border-radius: 1rem; border: 1px solid var(--border);">
+        <i data-lucide="info" style="width: 16px; color: var(--text-secondary);"></i>
+        <p style="font-size: 0.7rem; color: var(--text-secondary); text-align: left;">Your device will automatically pull
+          all records from the cloud after scanning.</p>
+      </div>
+
+      <button id="gallery-btn"
+        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; color: var(--text-primary); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: 0.3s;">
+        <i data-lucide="image" style="width: 18px;"></i>
+        <span>Scan dari Galeri Foto</span>
+      </button>
+      <input type="file" id="qr-file-input" accept="image/*" style="display: none;">
     </div>
   </div>
 
@@ -184,15 +194,20 @@
 
     const html5QrCode = new Html5Qrcode("reader");
     const syncOverlay = document.getElementById('sync-overlay');
+    const qrFileInput = document.getElementById('qr-file-input');
+    const galleryBtn = document.getElementById('gallery-btn');
 
     const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
 
     async function onScanSuccess(decodedText) {
       const scriptUrl = decodedText.trim();
-      if (!scriptUrl.startsWith('http')) return;
+      if (!scriptUrl.startsWith('http')) {
+        if (typeof showToast === 'function') showToast('Invalid QR Code content.', 'error', 'alert-circle');
+        return;
+      }
 
-      // 1. Stop scanning
-      await html5QrCode.stop();
+      // 1. Stop scanning if active
+      try { await html5QrCode.stop(); } catch (e) { }
 
       // 2. Visual feedback
       syncOverlay.style.display = 'flex';
@@ -218,7 +233,29 @@
       }
     }
 
-    html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess);
+    // Camera Start
+    html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
+      .catch(err => {
+        console.warn("Camera start failed, probably waiting for user to pick file or permission denied.");
+      });
+
+    // Gallery Scan Logic
+    galleryBtn.addEventListener('click', () => qrFileInput.click());
+
+    qrFileInput.addEventListener('change', async (e) => {
+      if (e.target.files.length === 0) return;
+
+      const file = e.target.files[0];
+      try {
+        if (typeof showToast === 'function') showToast('Menganalisa gambar...', 'info', 'loader-2');
+        
+        const decodedText = await html5QrCode.scanFile(file, true);
+        onScanSuccess(decodedText);
+      } catch (err) {
+        console.error("QR Scan Error:", err);
+        if (typeof showToast === 'function') showToast('Gagal mendeteksi QR code dari gambar.', 'error', 'alert-circle');
+      }
+    });
   </script>
 </body>
 
