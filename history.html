@@ -120,73 +120,82 @@
   </div>
 
   <!-- Detail Modal -->
-  <div id="detail-modal" class="modal-backdrop" style="display: none; padding: 1.5rem;">
-    <div class="modal-card">
-      <header class="header" style="justify-content: center; position: relative; padding: 1rem;">
-        <button id="close-modal-btn" class="close-btn" style="position: absolute; left: 1rem;">×</button>
-        <span style="font-weight: 700;">Transaction Detail</span>
+  <div id="detail-modal" class="modal-backdrop" style="display: none; padding: 0;">
+    <div class="modal-card" style="max-width: 100%; width: 100%; height: 100%; border-radius: 0; display: flex; flex-direction: column; background: var(--bg-primary);">
+      <header class="header" style="justify-content: space-between; padding: 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg-secondary);">
+        <button id="close-modal-btn" class="back-btn" style="border-radius: 50%;"><i data-lucide="x"></i></button>
+        <span style="font-weight: 800; font-size: 1rem; color: var(--text-primary);">Transaction Details</span>
+        <div style="width: 40px;"></div>
       </header>
       
-      <div style="padding: 1.5rem; max-height: 80vh; overflow-y: auto;">
-        <div style="text-align: center; margin-bottom: 1.25rem;">
-           <span id="m-item-name" style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">-</span>
-           <div id="m-total" style="font-size: 2rem; font-weight: 800; color: var(--accent); margin-top: 0.25rem;">Rp 0</div>
-           <div id="m-calculation" style="font-size:0.7rem; color:var(--text-secondary); margin-top:0.5rem; background:var(--bg-input); padding:0.4rem; border-radius:0.5rem; display:none; font-family:monospace;">-</div>
+      <div style="flex: 1; padding: 2rem; overflow-y: auto;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+           <span id="m-item-name" style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">-</span>
+           <div id="m-total" style="font-size: 2.5rem; font-weight: 800; color: var(--accent); margin-top: 0.5rem;">Rp 0</div>
+           <div id="m-calculation" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.75rem; background: var(--bg-input); padding: 0.6rem 1rem; border-radius: 0.75rem; display: inline-block; font-family: monospace; border: 1px solid var(--border);">
+             -
+           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; border-top: 1px solid var(--border); padding-top: 2rem;">
            <div>
-             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">CATEGORY</label>
-             <div id="m-category" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+             <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Category</label>
+             <div id="m-category" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
            </div>
            <div>
-             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">MERCHANT</label>
-             <div id="m-merchant" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+             <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Merchant</label>
+             <div id="m-merchant" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
            </div>
-            <div style="grid-column: span 2;" id="m-payment-group">
-               <label class="label" style="font-size: 0.65rem; opacity: 0.5;">PAYMENT SOURCE ACCOUNT</label>
-               <div id="m-payment-account" style="font-weight: 500; font-size: 0.8125rem;">-</div>
-            </div>
-            <div style="grid-column: span 2; display:none;" id="m-beneficiary-group">
-               <label class="label" style="font-size: 0.65rem; opacity: 0.5;">BENEFICIARY ACCOUNT</label>
-               <div id="m-beneficiary-account" style="font-weight: 500; font-size: 0.8125rem;">-</div>
-            </div>
-           <div>
-             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">AUTHOR</label>
-             <div id="m-author" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+           <div style="grid-column: span 2;" id="m-payment-group">
+               <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Payment Account</label>
+               <div id="m-payment-account" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
+           </div>
+           <div style="grid-column: span 2; display:none;" id="m-beneficiary-group">
+               <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Beneficiary Account</label>
+               <div id="m-beneficiary-account" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
            </div>
            <div>
-             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">STATUS</label>
-             <div id="m-status" style="font-weight: 600; font-size: 0.8125rem;">-</div>
+             <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Status</label>
+             <div id="m-status" style="font-weight: 800; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
+           </div>
+           <div>
+             <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Author</label>
+             <div id="m-author" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
            </div>
            <div style="grid-column: span 2;">
-              <label class="label" style="font-size: 0.65rem; opacity: 0.5;">TAGS & PROJECTS</label>
-              <div id="m-chips" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.25rem;"></div>
+              <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Date & Time</label>
+              <div id="m-date" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
            </div>
            <div style="grid-column: span 2;">
-             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">DATETIME</label>
-             <div id="m-date" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+              <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Classification</label>
+              <div id="m-chips" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.5rem;"></div>
            </div>
            <div style="grid-column: span 2; display:none;" id="m-desc-box">
-             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">DESCRIPTION</label>
-             <div id="m-description" style="font-size: 0.75rem; color:var(--text-secondary); line-height:1.4; margin-top:0.25rem;">-</div>
+             <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Notes</label>
+             <div id="m-description" style="font-size: 0.8125rem; color: var(--text-primary); line-height: 1.6; margin-top: 0.4rem; padding: 1rem; background: var(--bg-input); border-radius: 0.75rem; border: 1px solid var(--border);">-</div>
            </div>
            <div style="grid-column: span 2; display:none; margin-top: 1rem;" id="m-receipt-box">
-             <label class="label" style="font-size: 0.65rem; opacity: 0.5;">RECEIPT</label>
-             <div style="margin-top: 0.5rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 4/3; background: var(--bg-input);">
+             <label class="label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Cloud Receipt</label>
+             <div style="margin-top: 0.75rem; border-radius: 1.25rem; overflow: hidden; border: 2px solid var(--border); aspect-ratio: 16/9; background: var(--bg-input); box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
                <img id="m-receipt-img" src="" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;">
              </div>
            </div>
         </div>
-        
-        <div class="action-bar" style="display: flex; gap: 0.5rem; justify-content: center; border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem;">
-           <button id="m-duplicate" class="action-h-btn" style="--btn-color: #a78bfa; color: #a78bfa;"><i data-lucide="copy"></i><span class="action-h-label">Duplicate</span></button>
-           <button id="m-edit" class="action-h-btn" style="--btn-color: var(--accent); color: var(--accent);"><i data-lucide="edit-3"></i><span class="action-h-label">Edit</span></button>
-           <button id="m-delete" class="action-h-btn" style="--btn-color: var(--danger); color: var(--danger);"><i data-lucide="trash-2"></i><span class="action-h-label">Delete</span></button>
-        </div>
+      </div>
+      
+      <div class="action-bar" style="padding: 1.5rem 1.5rem 3rem 1.5rem; background: var(--bg-secondary); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem;">
+         <button id="m-clear-btn" class="btn" style="width: 100%; padding: 1.125rem; border-radius: 1rem; border: none; background: #10b981; color: white; font-weight: 800; font-size: 1rem; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">
+           <i data-lucide="check-circle"></i> Clear Transaction
+         </button>
+         <div style="display: flex; gap: 0.75rem;">
+           <button id="m-edit" class="action-h-btn" style="flex: 1; --btn-color: var(--accent); color: var(--accent);"><i data-lucide="edit-3"></i><span class="action-h-label">Edit</span></button>
+           <button id="m-duplicate" class="action-h-btn" style="flex: 1; --btn-color: #a78bfa; color: #a78bfa;"><i data-lucide="copy"></i><span class="action-h-label">Dup</span></button>
+           <button id="m-delete" class="action-h-btn" style="flex: 1; --btn-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.05);"><i data-lucide="trash-2"></i><span class="action-h-label">Del</span></button>
+         </div>
       </div>
     </div>
   </div>
+
 
   <script>
     lucide.createIcons();
@@ -313,6 +322,12 @@
       statusEl.innerText = isCleared ? 'Cleared' : 'Uncleared';
       statusEl.style.color = isCleared ? '#10b981' : '#f59e0b';
 
+      const clearBtn = document.getElementById('m-clear-btn');
+      if (clearBtn) {
+        clearBtn.style.display = isCleared ? 'none' : 'flex';
+        clearBtn.onclick = () => confirmClear();
+      }
+
       const calcEl = document.getElementById('m-calculation');
       if (t.qty && t.qty > 0) {
         calcEl.style.display = 'block';
@@ -360,6 +375,19 @@
     }
 
     document.getElementById('close-modal-btn').onclick = () => detailModal.style.display = 'none';
+
+    function confirmClear() {
+      if (!activeTx) return;
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const idx = txs.findIndex(t => t.id === activeTx.id);
+      if (idx !== -1) {
+        txs[idx].cleared = true;
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        if (typeof showToast === 'function') showToast('Transaction marked as Cleared!', 'success', 'check-circle');
+        detailModal.style.display = 'none';
+        refreshHistory();
+      }
+    }
 
     document.getElementById('m-delete').onclick = () => {
       if (!activeTx || !activeTx.id) { detailModal.style.display = 'none'; return; }

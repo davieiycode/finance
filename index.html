@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Finance Dashboard - Liquid Glass</title>
+  <title>Finance Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -268,7 +268,7 @@
       <header class="header">
         <div>
           <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">Finance</h1>
-          <p style="font-size: 0.8125rem; color: var(--text-secondary);">Welcome back, March 2026</p>
+          <p id="welcome-msg" style="font-size: 0.8125rem; color: var(--text-secondary);">Welcome back, User</p>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
           <div onclick="toggleDashboardSearch()" class="profile-icon"
@@ -281,10 +281,12 @@
           </div>
         </div>
       </header>
-      
-      <div id="dashboard-search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
-        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 16px; color: var(--text-secondary);"></i>
-        <input type="text" id="dashboard-search" class="search-bar" placeholder="Search transactions..." 
+
+      <div id="dashboard-search-container"
+        style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
+        <i data-lucide="search"
+          style="position: absolute; left: 1rem; top: 0.8rem; width: 16px; color: var(--text-secondary);"></i>
+        <input type="text" id="dashboard-search" class="search-bar" placeholder="Search transactions..."
           style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; color: var(--text-primary); outline: none; font-size: 0.875rem;"
           oninput="refreshDashboard(this.value)">
       </div>
@@ -292,8 +294,15 @@
 
     <style>
       @keyframes slideDown {
-        from { opacity: 0; transform: scaleY(0); }
-        to { opacity: 1; transform: scaleY(1); }
+        from {
+          opacity: 0;
+          transform: scaleY(0);
+        }
+
+        to {
+          opacity: 1;
+          transform: scaleY(1);
+        }
       }
     </style>
 
@@ -480,83 +489,111 @@
   </div>
 
   <!-- Detail Modal -->
-  <div id="detail-modal" class="modal-backdrop" style="display: none; padding: 1.5rem;">
-    <div class="modal-card">
-      <header class="header" style="justify-content: center; position: relative; padding: 1rem;">
-        <button id="close-modal-btn" class="close-btn" style="position: absolute; left: 1rem;">×</button>
-        <span style="font-weight: 700;">Transaction Detail</span>
+  <div id="detail-modal" class="modal-backdrop" style="display: none; padding: 0;">
+    <div class="modal-card"
+      style="max-width: 100%; width: 100%; height: 100%; border-radius: 0; display: flex; flex-direction: column; background: var(--bg-primary);">
+      <header class="header"
+        style="justify-content: space-between; padding: 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg-secondary); margin-bottom: 0;">
+        <button id="close-modal-btn" class="close-btn"
+          style="width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;"><i
+            data-lucide="x" style="width: 20px;"></i></button>
+        <span style="font-weight: 800; font-size: 1rem; color: var(--text-primary);">Transaction Details</span>
+        <div style="width: 40px;"></div>
       </header>
 
-      <div style="padding: 1.5rem; max-height: 80vh; overflow-y: auto;">
-        <div style="text-align: center; margin-bottom: 1.25rem;">
-          <span id="m-item-name" style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">-</span>
-          <div id="m-total" style="font-size: 2rem; font-weight: 800; color: var(--accent); margin-top: 0.25rem;">Rp 0
+      <div style="flex: 1; padding: 2rem; overflow-y: auto;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <span id="m-item-name"
+            style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); text-transform: capitalize;">-</span>
+          <div id="m-total" style="font-size: 2.5rem; font-weight: 800; color: var(--accent); margin-top: 0.5rem;">Rp 0
           </div>
           <div id="m-calculation"
-            style="font-size:0.7rem; color:var(--text-secondary); margin-top:0.5rem; background:var(--bg-input); padding:0.4rem; border-radius:0.5rem; display:none; font-family:monospace;">
+            style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.75rem; background: var(--bg-input); padding: 0.6rem 1rem; border-radius: 0.75rem; display: inline-block; font-family: monospace; border: 1px solid var(--border);">
             -</div>
         </div>
 
         <div
-          style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+          style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; border-top: 1px solid var(--border); padding-top: 2rem;">
           <div>
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">CATEGORY</label>
-            <div id="m-category" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Category</label>
+            <div id="m-category" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
           </div>
           <div>
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">MERCHANT</label>
-            <div id="m-merchant" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Merchant</label>
+            <div id="m-merchant" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
           </div>
           <div style="grid-column: span 2;" id="m-payment-group">
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;" id="m-payment-label">PAYMENT SOURCE ACCOUNT</label>
-            <div id="m-payment-account" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;"
+              id="m-payment-label">Payment Account</label>
+            <div id="m-payment-account" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
           </div>
           <div style="grid-column: span 2; display:none;" id="m-beneficiary-group">
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">BENEFICIARY ACCOUNT</label>
-            <div id="m-beneficiary-account" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Beneficiary
+              Account</label>
+            <div id="m-beneficiary-account" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
           </div>
           <div>
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">AUTHOR</label>
-            <div id="m-author" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Status</label>
+            <div id="m-status" style="font-weight: 800; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
           </div>
           <div>
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">STATUS</label>
-            <div id="m-status" style="font-weight: 600; font-size: 0.8125rem;">-</div>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Author</label>
+            <div id="m-author" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
           </div>
           <div style="grid-column: span 2;">
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">TAGS & PROJECTS</label>
-            <div id="m-chips" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.25rem;"></div>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Classification</label>
+            <div id="m-chips" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.5rem;"></div>
           </div>
           <div style="grid-column: span 2;">
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">DATETIME</label>
-            <div id="m-date" style="font-weight: 500; font-size: 0.8125rem;">-</div>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">DateTime</label>
+            <div id="m-date" style="font-weight: 600; font-size: 0.9375rem; margin-top: 0.25rem;">-</div>
           </div>
           <div style="grid-column: span 2; display:none;" id="m-desc-box">
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">DESCRIPTION</label>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Notes</label>
             <div id="m-description"
-              style="font-size: 0.75rem; color:var(--text-secondary); line-height:1.4; margin-top:0.25rem;">-</div>
+              style="font-size: 0.8125rem; color: var(--text-primary); line-height: 1.6; margin-top: 0.4rem; padding: 1.25rem; background: var(--bg-input); border-radius: 1rem; border: 1px solid var(--border);">
+              -</div>
           </div>
           <div style="grid-column: span 2; display:none; margin-top: 1rem;" id="m-receipt-box">
-            <label class="label" style="font-size: 0.65rem; opacity: 0.5;">RECEIPT</label>
+            <label class="label"
+              style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Cloud
+              Receipt</label>
             <div
-              style="margin-top: 0.5rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 4/3; background: var(--bg-input);">
+              style="margin-top: 0.75rem; border-radius: 1.25rem; overflow: hidden; border: 2px solid var(--border); aspect-ratio: 16/9; background: var(--bg-input); box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
               <img id="m-receipt-img" src="" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;">
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="action-bar"
-          style="display: flex; gap: 0.5rem; justify-content: center; border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem;">
-          <button id="m-duplicate" class="action-h-btn" style="--btn-color: #a78bfa; color: #a78bfa;"><i
-              data-lucide="copy"></i><span class="action-h-label">Duplicate</span></button>
-          <button id="m-edit" class="action-h-btn" style="--btn-color: var(--accent); color: var(--accent);"><i
+      <div class="action-bar"
+        style="padding: 1.5rem 1.5rem 3.5rem 1.5rem; background: var(--bg-secondary); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem;">
+        <button id="m-clear-btn" class="btn"
+          style="width: 100%; padding: 1.125rem; border-radius: 1rem; border: none; background: #10b981; color: white; font-weight: 800; font-size: 1rem; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">
+          <i data-lucide="check-circle"></i> Clear Transaction
+        </button>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="m-edit" class="action-h-btn" style="flex: 1; --btn-color: var(--accent); color: var(--accent);"><i
               data-lucide="edit-3"></i><span class="action-h-label">Edit</span></button>
-          <button id="m-delete" class="action-h-btn" style="--btn-color: var(--danger); color: var(--danger);"><i
-              data-lucide="trash-2"></i><span class="action-h-label">Delete</span></button>
+          <button id="m-duplicate" class="action-h-btn" style="flex: 1; --btn-color: #a78bfa; color: #a78bfa;"><i
+              data-lucide="copy"></i><span class="action-h-label">Dup</span></button>
+          <button id="m-delete" class="action-h-btn"
+            style="flex: 1; --btn-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.05);"><i
+              data-lucide="trash-2"></i><span class="action-h-label">Del</span></button>
         </div>
       </div>
     </div>
   </div>
+
 
   <div id="p-modal" class="modal-backdrop" style="display:none;">
     <div class="modal-card" style="padding: 1.5rem; min-height: 480px;">
@@ -684,8 +721,8 @@
           </div>
         </div>
         <div class="p-menu-item" style="border-color: rgba(239,68,68,0.2);"
-          onclick="if(typeof showConfirm === 'function') { showConfirm('Clear all data?', () => { localStorage.clear(); if(typeof showToast === 'function') showToast('All data cleared!', 'success', 'trash-2'); setTimeout(() => location.reload(), 1000); }); } else { if(confirm('Clear all data?')) { localStorage.clear(); if(typeof showToast === 'function') showToast('All data cleared!', 'success', 'trash-2'); setTimeout(() => location.reload(), 1000); } }"><i data-lucide="trash-2"
-            style="color:#ef4444;"></i>
+          onclick="if(typeof showConfirm === 'function') { showConfirm('Clear all data?', () => { localStorage.clear(); if(typeof showToast === 'function') showToast('All data cleared!', 'success', 'trash-2'); setTimeout(() => location.reload(), 1000); }); } else { if(confirm('Clear all data?')) { localStorage.clear(); if(typeof showToast === 'function') showToast('All data cleared!', 'success', 'trash-2'); setTimeout(() => location.reload(), 1000); } }">
+          <i data-lucide="trash-2" style="color:#ef4444;"></i>
           <div style="flex:1;">
             <h6 style="color:#ef4444;">Clear All Data</h6>
             <p style="font-size:0.7rem; color:var(--text-secondary);">Reset entire application</p>
@@ -1463,7 +1500,7 @@ function doPost(e) {
     let activeTx = null;
     function refreshDashboard(query = '') {
       let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      
+
       // Migration: Convert old structure (amount=Total, price=UnitPrice) to new (total=Total, amount=UnitPrice)
       txs = txs.map(t => {
         if (t.total === undefined && t.amount !== undefined) {
@@ -1472,7 +1509,7 @@ function doPost(e) {
         }
         return t;
       });
-      
+
       const q = query.toLowerCase();
       const filtered = txs.filter(t => {
         if (!q) return true;
@@ -1543,14 +1580,14 @@ function doPost(e) {
     }
 
     // Helper for form parsing
-     function parseFormNum(val) {
+    function parseFormNum(val) {
       if (val === undefined || val === null || val === '') return 0;
       if (typeof val === 'number') return val;
       let clean = val.toString().replace(/Rp/g, '').trim();
       if (!clean) return 0;
       const dots = (clean.match(/\./g) || []).length;
       const commas = (clean.match(/,/g) || []).length;
-      if (dots > 1) { 
+      if (dots > 1) {
         clean = clean.replace(/\./g, '').replace(/,/g, '.');
       } else if (commas > 1) {
         clean = clean.replace(/,/g, '');
@@ -1575,7 +1612,7 @@ function doPost(e) {
       document.getElementById('m-author').innerText = t.author || '-';
       const txType = (t.type || 'Expense').toLowerCase();
       const multiAccount = ['transfer', 'savings', 'investment'].includes(txType);
-      
+
       const pGroup = document.getElementById('m-payment-group');
       const bGroup = document.getElementById('m-beneficiary-group');
 
@@ -1598,6 +1635,12 @@ function doPost(e) {
       const isCleared = t.cleared !== false;
       statusEl.innerText = isCleared ? 'Cleared' : 'Uncleared';
       statusEl.style.color = isCleared ? '#10b981' : '#f59e0b';
+
+      const clearBtn = document.getElementById('m-clear-btn');
+      if (clearBtn) {
+        clearBtn.style.display = isCleared ? 'none' : 'flex';
+        clearBtn.onclick = () => confirmClear();
+      }
 
       const calcEl = document.getElementById('m-calculation');
       if (t.qty && t.qty > 0) {
@@ -1647,15 +1690,28 @@ function doPost(e) {
 
     document.getElementById('close-modal-btn').onclick = () => detailModal.style.display = 'none';
 
+    function confirmClear() {
+      if (!activeTx) return;
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const idx = txs.findIndex(t => t.id === activeTx.id);
+      if (idx !== -1) {
+        txs[idx].cleared = true;
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        if (typeof showToast === 'function') showToast('Transaction marked as Cleared!', 'success', 'check-circle');
+        detailModal.style.display = 'none';
+        refreshDashboard();
+      }
+    }
+
     document.getElementById('m-delete').onclick = () => {
       if (!activeTx || !activeTx.id) { detailModal.style.display = 'none'; return; }
-      if(typeof showConfirm === 'function') {
+      if (typeof showConfirm === 'function') {
         showConfirm('Are you sure you want to delete this transaction?', () => {
           let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
           txs = txs.filter(t => t.id !== activeTx.id);
           localStorage.setItem('transactions', JSON.stringify(txs));
           detailModal.style.display = 'none';
-          if(typeof showToast === 'function') showToast('Transaction deleted successfully!', 'success', 'trash-2');
+          if (typeof showToast === 'function') showToast('Transaction deleted successfully!', 'success', 'trash-2');
           refreshDashboard();
         });
       } else {
@@ -1664,7 +1720,7 @@ function doPost(e) {
         txs = txs.filter(t => t.id !== activeTx.id);
         localStorage.setItem('transactions', JSON.stringify(txs));
         detailModal.style.display = 'none';
-        if(typeof showToast === 'function') showToast('Transaction deleted successfully!', 'success', 'trash-2');
+        if (typeof showToast === 'function') showToast('Transaction deleted successfully!', 'success', 'trash-2');
         refreshDashboard();
       }
     };
@@ -1715,7 +1771,7 @@ function doPost(e) {
     function parseReceiptText(text) {
       const result = { merchant: '', amount: 0, date: new Date().toISOString().split('T')[0] };
       const lines = text.split('\n');
-      
+
       const knownMerchants = ['INDOMARET', 'ALFAMART', 'PERTAMINA', 'STARBUCKS', 'GRAB', 'GOJEK', 'TOKOPEDIA', 'SHOPEE', 'TRAVELOKA', 'MCDONALDS', 'KFC', 'PIZZA HUT'];
       for (const m of knownMerchants) {
         if (text.toUpperCase().includes(m)) {
@@ -1723,33 +1779,33 @@ function doPost(e) {
           break;
         }
       }
-      
+
       if (!result.merchant && lines.length > 0) {
         result.merchant = lines[0].trim().substring(0, 30);
       }
-      
+
       const dateMatch = text.match(/(\d{2}[/-]\d{2}[/-]\d{4})|(\d{4}[/-]\d{2}[/-]\d{2})/);
       if (dateMatch) {
         result.date = dateMatch[0].replace(/\//g, '-');
         const parts = result.date.split('-');
         if (parts[0].length === 2) result.date = `${parts[2]}-${parts[1]}-${parts[0]}`;
       }
-      
+
       const cleanedText = text.replace(/,/g, '');
       const totalMatch = cleanedText.match(/(?:TOTAL|Rp|Amount).?\s*:?.?\s*([\d\.]+)/i);
       if (totalMatch) {
-         result.amount = parseFloat(totalMatch[1]) || 0;
+        result.amount = parseFloat(totalMatch[1]) || 0;
       } else {
-         const numbers = cleanedText.match(/\d+(\.\d+)?/g) || [];
-         const prices = numbers.map(n => parseFloat(n)).filter(n => n > 1000 && n < 10000000);
-         if (prices.length > 0) result.amount = Math.max(...prices);
+        const numbers = cleanedText.match(/\d+(\.\d+)?/g) || [];
+        const prices = numbers.map(n => parseFloat(n)).filter(n => n > 1000 && n < 10000000);
+        if (prices.length > 0) result.amount = Math.max(...prices);
       }
       return result;
     }
 
     function showReviewModal(imgData, result) {
       document.getElementById('review-receipt-img').src = imgData;
-      
+
       if (result) {
         document.getElementById('r-merchant').value = result.merchant || 'Unknown';
         document.getElementById('r-amount').value = result.amount || 0;
@@ -1858,7 +1914,7 @@ function doPost(e) {
       doc.save(`${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`);
     };
 
-      window.exportToDataFormat = (type) => {
+    window.exportToDataFormat = (type) => {
       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
       if (txs.length === 0) { showToast('No data to export.', 'error', 'alert-circle'); return; }
 
@@ -1983,14 +2039,14 @@ function doPost(e) {
           let val = row[mapping[key]];
           if (val === undefined || val === null || val === '') return 0;
           if (typeof val === 'number') return val;
-          
+
           let clean = val.toString().replace(/Rp/g, '').trim();
           if (clean.includes(',') && !clean.includes('.')) {
-              clean = clean.replace(/,/g, '.');
+            clean = clean.replace(/,/g, '.');
           } else if (clean.includes('.')) {
-              clean = clean.replace(/\./g, '').replace(/,/g, '.');
+            clean = clean.replace(/\./g, '').replace(/,/g, '.');
           } else {
-              clean = clean.replace(/[^0-9.-]+/g, "");
+            clean = clean.replace(/[^0-9.-]+/g, "");
           }
           return parseFloat(clean) || 0;
         };
@@ -1999,12 +2055,12 @@ function doPost(e) {
         const quantity = parseRowVal('qty') || 1;
         const discount = parseRowVal('discount') || 0;
         const fee = parseRowVal('fee') || 0;
-        
+
         // Formula: (quantity x amount) - discount + additional fee = total
         const total = (quantity * unitPrice) - discount + fee;
 
         // Generate a unique hash based on content if no ID is provided to prevent duplicates
-        const rowId = row[mapping.txId] || ('IMP-' + btoa(unescape(encodeURIComponent( (row[mapping.date]||'') + (row[mapping.name]||'') + (row[mapping.merchant]||'') + total ))).substring(0, 16));
+        const rowId = row[mapping.txId] || ('IMP-' + btoa(unescape(encodeURIComponent((row[mapping.date] || '') + (row[mapping.name] || '') + (row[mapping.merchant] || '') + total))).substring(0, 16));
 
         return {
           id: rowId,
@@ -2059,25 +2115,25 @@ function doPost(e) {
         if (action === 'push') {
           const txsRaw = localStorage.getItem('transactions') || '[]';
           const txs = JSON.parse(txsRaw);
-          
+
           if (txs.length === 0) {
             alert('Tidak ada data transaksi untuk dikirim.');
             return;
           }
 
           console.log(`Mengirim ${txs.length} transaksi ke Cloud...`);
-          
+
           await fetch(url, {
             method: 'POST',
             body: JSON.stringify({ transactions: txs })
           });
-          
+
           showToast(`Success! ${txs.length} transactions saved to Cloud Ledger.`, 'success', 'cloud-upload');
         } else {
           console.log('Mengambil data dari Cloud...');
           const res = await fetch(url + '?get=data');
           const data = await res.json();
-          
+
           if (!data.transactions || data.transactions.length === 0) {
             showToast('Cloud is empty. No data to retrieve.', 'warning', 'database');
             return;
@@ -2092,17 +2148,17 @@ function doPost(e) {
 
             // Force ID to string for accurate comparison with local storage
             t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now();
-            
+
             // Map specifically for the user's header names if not already mapped by doGet
             t.accountPayment = t.accountPayment || t['Payment Source Account'] || t.accountPayment || '';
             t.accountReceived = t.accountReceived || t['Beneficiary Account'] || t.accountReceived || '';
             t.categoryGroup = t.categoryGroup || t['Category Group'] || '';
-            
+
             // Trust the calculated total or fallback to spreadsheet total
             const calcTotal = ((q * unitPrice) - d + f) * ex;
             t.total = (t.total !== undefined && t.total !== null) ? parseFloat(t.total) : calcTotal;
             t.amount = unitPrice;
-            
+
             // Metadata parsing ensuring undefined doesn't override local fallbacks
             t.budgetAmount = t.budgetAmount || t['Budget Amount'] || 0;
             t.budgetPeriod = t.budgetPeriod || t['Budget Period'] || 'Monthly';
@@ -2116,7 +2172,7 @@ function doPost(e) {
           });
 
           const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
-          
+
           let finalData = [];
           if (currentSyncMode === 'merge') {
             const cloudIds = new Set(remoteTxs.map(t => t.id.toString()));
@@ -2127,7 +2183,7 @@ function doPost(e) {
           }
 
           localStorage.setItem('transactions', JSON.stringify(finalData));
-          
+
           // Sync Metadata (Manageable Merchants, Items, Accounts)
           if (typeof rebuildMetadataFromTransactions === 'function') {
             rebuildMetadataFromTransactions(finalData, currentSyncMode);
@@ -2137,7 +2193,7 @@ function doPost(e) {
           const distinctM = new Set(finalData.map(t => t.merchant || t['Merchant Name'])).size;
           const distinctI = new Set(finalData.map(t => t.name || t['Item Name'])).size;
           showToast(`Success! Pulled ${data.transactions.length} records. Metadata synced.`, 'success', 'cloud-download');
-          
+
           setTimeout(() => location.reload(), 2000);
         }
       } catch (e) {
@@ -2278,9 +2334,11 @@ function doPost(e) {
 
     function initPrefs() {
       const ps = JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Alex Doe","theme":"dark","color":"#8b5cf6","radius":16}');
-      document.getElementById('pref-name').value = ps.name || 'Alex Doe';
+      const nameVal = ps.name || 'Alex Doe';
+      document.getElementById('pref-name').value = nameVal;
       document.getElementById('pref-email').value = ps.email || 'alex@example.com';
-      document.getElementById('p-sub-user').innerText = ps.name || 'Alex Doe';
+      document.getElementById('p-sub-user').innerText = nameVal;
+      document.getElementById('welcome-msg').innerText = 'Welcome back, ' + nameVal;
 
       if (ps.avatar) {
         selectedAvatar = ps.avatar;
@@ -2323,7 +2381,7 @@ function doPost(e) {
       if (!isAvailable) { alert('Biometric authentication is not supported or requires HTTPS.'); return; }
       const enabled = localStorage.getItem('bio_enabled') === 'true';
       if (enabled) {
-        if(typeof showConfirm === 'function') {
+        if (typeof showConfirm === 'function') {
           showConfirm('Disable Biometric Lock?', () => { localStorage.setItem('bio_enabled', 'false'); updateBioUI(false); });
         } else {
           if (confirm('Disable Biometric Lock?')) { localStorage.setItem('bio_enabled', 'false'); updateBioUI(false); }
