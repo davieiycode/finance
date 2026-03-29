@@ -33,10 +33,12 @@
     document.addEventListener('DOMContentLoaded', () => {
       initGlobalTheme();
       checkAuthWall();
+      if (typeof initScrollFeatures === 'function') initScrollFeatures();
     });
   } else {
     initGlobalTheme();
     checkAuthWall();
+    if (typeof initScrollFeatures === 'function') initScrollFeatures();
   }
 
   function checkAuthWall() {
@@ -451,17 +453,19 @@
   let pullIndicator = null;
   let isPulling = false;
   let hasShownScrollDialog = false;
-
   function initScrollFeatures() {
+    let touchStartY = 0;
+    let isPulling = false;
+    
     // 1. Create Pull Indicator
-    pullIndicator = document.createElement('div');
-    pullIndicator.id = 'pull-to-sync-indicator';
-    pullIndicator.style.cssText = 'position:fixed; top:-60px; left:50%; transform:translateX(-50%); z-index:9998; background:var(--bg-secondary); border:1px solid var(--border); padding:0.75rem 1.25rem; border-radius:2rem; font-size:0.75rem; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:0.5rem; transition: top 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow:0 10px 25px rgba(0,0,0,0.3);';
+    const pullIndicator = document.createElement('div');
+    pullIndicator.id = 'pull-indicator';
+    pullIndicator.style.cssText = 'position:fixed; top:-60px; left:50%; transform:translateX(-50%); z-index:9998; background:var(--accent); color:white; padding:0.6rem 1rem; border-radius:2rem; font-size:0.75rem; font-weight:800; display:flex; align-items:center; gap:0.5rem; transition: top 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow:0 10px 25px rgba(0,0,0,0.3);';
     pullIndicator.innerHTML = '<i data-lucide="refresh-cw" style="width:16px;"></i><span>Pull to Sync Cloud</span>';
     document.body.appendChild(pullIndicator);
     if(window.lucide) window.lucide.createIcons();
 
-    // 2. Event Listeners for Pull
+    // 2. Gesture Logic (Scroll Down/Pull at Top)
     window.addEventListener('touchstart', e => {
       if (window.scrollY <= 0) touchStartY = e.touches[0].pageY;
     }, { passive: true });
@@ -470,6 +474,7 @@
       if (window.scrollY > 0) return;
       const moveY = e.touches[0].pageY;
       const diff = moveY - touchStartY;
+      
       if (diff > 20) {
         isPulling = true;
         pullIndicator.style.top = Math.min(20, (diff / 2.5) - 40) + 'px';
@@ -477,7 +482,7 @@
           pullIndicator.querySelector('span').innerText = 'Release to Sync';
           pullIndicator.querySelector('i').style.transform = 'rotate(180deg)';
         } else {
-          pullIndicator.querySelector('span').innerText = 'Pull to Sync Cloud';
+          pullIndicator.querySelector('span').innerText = 'Pull to Sync';
           pullIndicator.querySelector('i').style.transform = 'rotate(0deg)';
         }
       }
@@ -486,39 +491,55 @@
     window.addEventListener('touchend', e => {
       const diff = e.changedTouches[0].pageY - touchStartY;
       if (isPulling && diff > 120) {
-        triggerCloudSync('pull');
+        triggerCloudSync();
       }
       isPulling = false;
       pullIndicator.style.top = '-60px';
     });
 
-    // 3. Long Scroll Detection
+    // 3. Long Scroll Detection (Local -> Cloud Dialog)
     window.addEventListener('scroll', () => {
-      const scrollThreshold = 1500; // Define "long scroll" as 1500px
-      if (window.scrollY > scrollThreshold && !hasShownScrollDialog) {
+      const currentScroll = window.scrollY;
+      const scrollThreshold = 1500;
+      if (currentScroll > scrollThreshold && !hasShownScrollDialog) {
         showSlideToUploadDialog();
         hasShownScrollDialog = true;
-      } else if (window.scrollY < 100) {
-        hasShownScrollDialog = false; // Reset when back to top
+      } else if (currentScroll < 100) {
+        hasShownScrollDialog = false;
       }
     });
   }
 
-  function triggerCloudSync(source) {
-    pullIndicator.querySelector('span').innerText = 'Syncing...';
-    pullIndicator.querySelector('i').classList.add('animate-spin');
-    pullIndicator.style.top = '20px';
-    
-    // Mimic API delay
-    setTimeout(() => {
-      // OVERWRITE local data with "Cloud" data (mocked)
-      // In a real app, this would be a fetch() call
-      showToast('Cloud data synced & local data updated', 'success', 'cloud-download');
-      pullIndicator.style.top = '-60px';
+  async function triggerCloudSync() {
+    const url = localStorage.getItem('cloud_sheet_url');
+    if (!url) return;
+
+    const pullIndicator = document.getElementById('pull-indicator');
+    if (pullIndicator) {
+      pullIndicator.querySelector('span').innerText = 'Syncing...';
+      pullIndicator.querySelector('i').classList.add('animate-spin');
+      pullIndicator.style.top = '20px';
+    }
+
+    try {
+      const count = await window.CloudSync.pull(url, 'overwrite');
+      if (pullIndicator) {
+        pullIndicator.style.background = '#10b981';
+        pullIndicator.innerHTML = `<i data-lucide="check" style="width:16px;"></i><span>Cloud Synced (${count})</span>`;
+      }
+      if(window.lucide) window.lucide.createIcons();
       
-      // Optionally reload to reflect changes
-      // window.location.reload();
-    }, 1500);
+      setTimeout(() => {
+        if (pullIndicator) pullIndicator.style.top = '-60px';
+        setTimeout(() => location.reload(), 500);
+      }, 1500);
+    } catch (err) {
+      if (pullIndicator) {
+        pullIndicator.style.background = '#ef4444';
+        pullIndicator.innerHTML = `<i data-lucide="alert-circle" style="width:16px;"></i><span>Sync Failed</span>`;
+        setTimeout(() => { pullIndicator.style.top = '-60px'; }, 2000);
+      }
+    }
   }
 
   function showSlideToUploadDialog() {
