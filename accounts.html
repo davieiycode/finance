@@ -215,8 +215,8 @@
       const list = document.getElementById('account-list');
       const q = query.toLowerCase();
       const filtered = accounts.filter(acc => 
-        acc.name.toLowerCase().includes(q) || 
-        acc.number.toLowerCase().includes(q)
+        (acc.name || '').toLowerCase().includes(q) || 
+        (acc.number || '').toLowerCase().includes(q)
       );
       
       list.innerHTML = filtered.map(acc => `
