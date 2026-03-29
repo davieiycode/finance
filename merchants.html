@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Managed Merchants - Finance App</title>
+  <title>Merchants - Finance App</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,85 +17,337 @@
       --text-primary: #ffffff;
       --text-secondary: #a1a1aa;
       --accent: #8b5cf6;
-      --border: rgba(255,255,255,0.08);
-      --glass: rgba(255,255,255,0.03);
+      --border: rgba(255, 255, 255, 0.08);
+      --glass: rgba(255, 255, 255, 0.03);
     }
-    body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Inter', sans-serif; overflow-x: hidden; }
-    .container { max-width: 630px; margin: 0 auto; padding: 1.5rem; }
-    
-    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
-    .back-btn { width: 44px; height: 44px; border-radius: 22px; background: var(--glass); border: 1px solid var(--border); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    
-    .search-container { position: relative; margin-bottom: 1.5rem; }
-    .search-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem 1rem 1rem 3rem; color: white; font-size: 0.9375rem; transition: 0.3s; }
-    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(139,92,246,0.1); }
-    .search-icon { position: absolute; left: 1.125rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); width: 18px; }
 
-    .filter-scroll { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.5rem; scrollbar-width: none; }
-    .filter-chip { padding: 0.5rem 1.25rem; border-radius: 2rem; background: var(--glass); border: 1px solid var(--border); color: var(--text-secondary); white-space: nowrap; cursor: pointer; font-size: 0.8125rem; font-weight: 600; transition: 0.3s; }
-    .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-    .merchant-card { background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; cursor: pointer; transition: 0.3s; }
-    .merchant-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.05); }
-    
-    .m-icon { width: 48px; height: 48px; border-radius: 1.25rem; background: rgba(139,92,246,0.1); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.25rem; }
-
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: none; z-index: 1000; padding: 1rem; }
-    .modal-container { width: 100%; max-width: 500px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 2rem; margin: 2rem auto; overflow: hidden; position: relative; }
-    .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .modal-tabs { display: flex; background: var(--glass); padding: 0.25rem; border-radius: 0.75rem; margin: 1rem 1.5rem; gap: 0.25rem; }
-    .modal-tab { flex: 1; padding: 0.6rem; border-radius: 0.6rem; border: none; background: none; color: var(--text-secondary); font-weight: 600; font-size: 0.8125rem; cursor: pointer; }
-    .modal-tab.active { 
-       background: var(--accent); 
-       color: white; 
-       box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
     }
-    .view-content { padding: 1.5rem; display: none; flex-direction: column; gap: 1.5rem; max-height: 70vh; overflow-y: auto; }
-    .view-content.active { display: flex; }
 
-    .form-group { margin-bottom: 1.5rem; }
-    .form-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem; }
-    .f-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 0.8125rem; padding: 1rem; color: white; font-size: 0.9375rem; outline: none; transition: 0.3s; }
-    .f-input:focus { border-color: var(--accent); }
-    .cat-desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 0.5rem; }
+    .container {
+      max-width: 630px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
 
-    .ana-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem; }
-    .ana-lbl { font-size: 0.65rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem; }
-    .map-box { width: 100%; height: 160px; background: #111; border-radius: 0.75rem; margin-top: 1rem; overflow: hidden; }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
 
-    .btn-violet { background: var(--accent); color: white; border: none; font-weight: 700; padding: 0.75rem 1.5rem; border-radius: 0.8125rem; cursor: pointer; transition: 0.3s; }
-    .btn-violet:hover { opacity: 0.9; transform: scale(0.98); }
-    
-    .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 0.875rem; }
+    .back-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .search-container {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1rem 1rem 1rem 3rem;
+      color: white;
+      font-size: 0.9375rem;
+      transition: 0.3s;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.125rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      width: 18px;
+    }
+
+    .filter-scroll {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      scrollbar-width: none;
+    }
+
+    .filter-chip {
+      padding: 0.5rem 1.25rem;
+      border-radius: 2rem;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .merchant-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .merchant-card:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .m-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 1.25rem;
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-container {
+      width: 100%;
+      max-width: 500px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      margin: 2rem auto;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-tabs {
+      display: flex;
+      background: var(--glass);
+      padding: 0.25rem;
+      border-radius: 0.75rem;
+      margin: 1rem 1.5rem;
+      gap: 0.25rem;
+    }
+
+    .modal-tab {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 0.6rem;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.8125rem;
+      cursor: pointer;
+    }
+
+    .modal-tab.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .view-content {
+      padding: 1.5rem;
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .view-content.active {
+      display: flex;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .f-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 0.8125rem;
+      padding: 1rem;
+      color: white;
+      font-size: 0.9375rem;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .f-input:focus {
+      border-color: var(--accent);
+    }
+
+    .cat-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 0.5rem;
+    }
+
+    .ana-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .ana-lbl {
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .map-box {
+      width: 100%;
+      height: 160px;
+      background: #111;
+      border-radius: 0.75rem;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+
+    .btn-violet {
+      background: var(--accent);
+      color: white;
+      border: none;
+      font-weight: 700;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.8125rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-violet:hover {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+
+    .tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 0.875rem;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="sticky-nav">
       <header class="header">
         <div style="display: flex; align-items: center; gap: 1rem;">
-          <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
-          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Managed Merchants</h1>
+          <button class="back-btn" onclick="window.location.href='index.html'"><i
+              data-lucide="chevron-left"></i></button>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Merchants</h1>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
           <button onclick="toggleSearch()" class="back-btn" style="border-radius: 50%;">
             <i data-lucide="search" style="width: 18px;"></i>
           </button>
-          <button class="back-btn" onclick="openModal(null, 'form')" style="background: var(--accent); border-color: var(--accent); color: white;">
+          <button class="back-btn" onclick="openModal(null, 'form')"
+            style="background: var(--accent); border-color: var(--accent); color: white;">
             <i data-lucide="plus"></i>
           </button>
         </div>
       </header>
 
-      <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
-        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
-        <input type="text" id="m-search" class="f-input" placeholder="Search merchants..." style="padding-left: 2.75rem;" oninput="handleFilter(this.value)">
+      <div id="search-container"
+        style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
+        <i data-lucide="search"
+          style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
+        <input type="text" id="m-search" class="f-input" placeholder="Search merchants..."
+          style="padding-left: 2.75rem;" oninput="handleFilter(this.value)">
       </div>
     </div>
 
     <style>
-      @keyframes slideDown { from { opacity: 0; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
-      .sticky-nav { margin: -1.5rem -1.5rem 1.5rem -1.5rem; }
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: scaleY(0);
+        }
+
+        to {
+          opacity: 1;
+          transform: scaleY(1);
+        }
+      }
+
+      .sticky-nav {
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+      }
     </style>
 
     <script>
@@ -120,11 +373,13 @@
 
     <!-- Empty State -->
     <div id="empty-state" style="display:none; text-align:center; padding: 4rem 2rem;">
-       <div style="width: 80px; height: 80px; background: rgba(139, 92, 246, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
-          <i data-lucide="store" style="width: 40px; height: 40px; color: var(--accent);"></i>
-       </div>
-       <h3 style="font-weight: 700; margin-bottom: 0.5rem;">No Merchants</h3>
-       <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">You haven't added any merchants yet. They will appear here once you record transactions or add them manually.</p>
+      <div
+        style="width: 80px; height: 80px; background: rgba(139, 92, 246, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+        <i data-lucide="store" style="width: 40px; height: 40px; color: var(--accent);"></i>
+      </div>
+      <h3 style="font-weight: 700; margin-bottom: 0.5rem;">No Merchants</h3>
+      <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">You haven't added any merchants
+        yet. They will appear here once you record transactions or add them manually.</p>
     </div>
   </div>
 
@@ -132,108 +387,127 @@
     <div class="modal-container">
       <header class="modal-header">
         <div style="display: flex; align-items: center; gap: 1rem;">
-          <button style="background:none; border:none; color:var(--text-primary); cursor:pointer;" onclick="closeModal()"><i data-lucide="x"></i></button>
+          <button style="background:none; border:none; color:var(--text-primary); cursor:pointer;"
+            onclick="closeModal()"><i data-lucide="x"></i></button>
           <span id="m-title" style="font-weight: 700; font-size: 1.125rem; color: var(--text-primary);">Details</span>
         </div>
         <div id="header-actions" style="display: flex; gap: 0.5rem;"></div>
       </header>
 
       <div class="modal-tabs" id="modal-tabs">
-         <button class="modal-tab active" data-view="analysis">Activity</button>
-         <button class="modal-tab" data-view="form">Information</button>
+        <button class="modal-tab active" data-view="analysis">Activity</button>
+        <button class="modal-tab" data-view="form">Information</button>
       </div>
 
       <div id="view-analysis" class="view-content active">
-         <div class="ana-card" style="margin-bottom: 0;">
-            <div class="ana-lbl">Merchant Location</div>
-            <div id="ana-address" style="font-size: 0.8125rem; color: var(--text-primary); margin-bottom: 0.75rem; font-weight: 600;">Jl. Yosodipuro No.52D, Surakarta</div>
-            <div class="map-box" id="map-container"></div>
-         </div>
-         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-            <div class="ana-card" style="margin-bottom: 0;"><div class="ana-lbl">Total Spent</div><div id="ana-total" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">Rp 0</div></div>
-            <div class="ana-card" style="margin-bottom: 0;"><div class="ana-lbl">Transactions</div><div id="ana-count" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">0 Times</div></div>
-         </div>
-         <section>
-            <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">Recent History</h3>
-            <div id="ana-tx-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
-         </section>
+        <div class="ana-card" style="margin-bottom: 0;">
+          <div class="ana-lbl">Merchant Location</div>
+          <div id="ana-address"
+            style="font-size: 0.8125rem; color: var(--text-primary); margin-bottom: 0.75rem; font-weight: 600;">Jl.
+            Yosodipuro No.52D, Surakarta</div>
+          <div class="map-box" id="map-container"></div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+          <div class="ana-card" style="margin-bottom: 0;">
+            <div class="ana-lbl">Total Spent</div>
+            <div id="ana-total" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">Rp 0</div>
+          </div>
+          <div class="ana-card" style="margin-bottom: 0;">
+            <div class="ana-lbl">Transactions</div>
+            <div id="ana-count" style="font-weight:700; color: var(--text-primary); font-size: 1.125rem;">0 Times</div>
+          </div>
+        </div>
+        <section>
+          <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">Recent
+            History</h3>
+          <div id="ana-tx-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+        </section>
       </div>
 
       <div id="view-form" class="view-content">
-        <div class="form-group"><label class="form-label">Merchant Name<span>*</span></label><input type="text" id="f-name" class="f-input" placeholder="e.g. Starbucks Solo" oninput="autoSave()"></div>
+        <div class="form-group"><label class="form-label">Merchant Name<span>*</span></label><input type="text"
+            id="f-name" class="f-input" placeholder="e.g. Starbucks Solo" oninput="autoSave()"></div>
         <div class="form-group">
           <label class="form-label">Merchant Type<span>*</span></label>
           <div class="select-wrapper">
-             <input type="text" class="f-input" id="f-type" list="type-list" oninput="autoSave()">
-             <datalist id="type-list">
-               <option value="Supermarket">Large retailers like Indogrosir, Hypermart</option>
-               <option value="Convenience Store">Indomaret, Alfamart, Circle K</option>
-               <option value="Restaurant">Dining establishments</option>
-               <option value="Cafe">Coffee shops, patisseries</option>
-               <option value="Gas Station">Pertamina, Shell, Total</option>
-               <option value="Online">E-commerce like Tokopedia, Shopee</option>
-               <option value="Pharmacy">Health & medicine</option>
-               <option value="Other">Miscellaneous merchants</option>
-             </datalist>
+            <input type="text" class="f-input" id="f-type" list="type-list" oninput="autoSave()">
+            <datalist id="type-list">
+              <option value="Supermarket">Large retailers like Indogrosir, Hypermart</option>
+              <option value="Convenience Store">Indomaret, Alfamart, Circle K</option>
+              <option value="Restaurant">Dining establishments</option>
+              <option value="Cafe">Coffee shops, patisseries</option>
+              <option value="Gas Station">Pertamina, Shell, Total</option>
+              <option value="Online">E-commerce like Tokopedia, Shopee</option>
+              <option value="Pharmacy">Health & medicine</option>
+              <option value="Other">Miscellaneous merchants</option>
+            </datalist>
           </div>
         </div>
-        
+
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-           <div class="form-group"><label class="form-label">Primary Contact</label><input type="text" id="f-contact" class="f-input" oninput="autoSave()"></div>
-           <div class="form-group"><label class="form-label">Phone Number</label><input type="text" id="f-phone" class="f-input" oninput="autoSave()"></div>
-        </div>
-        
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-           <div class="form-group"><label class="form-label">Email Address</label><input type="email" id="f-email" class="f-input" oninput="autoSave()"></div>
-           <div class="form-group"><label class="form-label">Website / URL</label><input type="text" id="f-website" class="f-input" oninput="autoSave()"></div>
+          <div class="form-group"><label class="form-label">Primary Contact</label><input type="text" id="f-contact"
+              class="f-input" oninput="autoSave()"></div>
+          <div class="form-group"><label class="form-label">Phone Number</label><input type="text" id="f-phone"
+              class="f-input" oninput="autoSave()"></div>
         </div>
 
-        <div class="form-group"><label class="form-label">Physical Address</label><textarea id="f-address" class="f-input" style="min-height: 60px;" oninput="autoSave()"></textarea></div>
-        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+          <div class="form-group"><label class="form-label">Email Address</label><input type="email" id="f-email"
+              class="f-input" oninput="autoSave()"></div>
+          <div class="form-group"><label class="form-label">Website / URL</label><input type="text" id="f-website"
+              class="f-input" oninput="autoSave()"></div>
+        </div>
+
+        <div class="form-group"><label class="form-label">Physical Address</label><textarea id="f-address"
+            class="f-input" style="min-height: 60px;" oninput="autoSave()"></textarea></div>
+
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:0.75rem;">
-           <div class="form-group">
-              <label class="form-label">Country</label>
-              <div class="select-wrapper">
-                 <input type="text" id="f-country" class="f-input" list="country-list" placeholder="Country" oninput="autoSave()">
-                 <datalist id="country-list">
-                    <option value="Indonesia">Indonesia</option>
-                    <option value="Malaysia">Malaysia</option>
-                    <option value="Singapore">Singapore</option>
-                    <option value="Japan">Japan</option>
-                 </datalist>
-              </div>
-           </div>
-           <div class="form-group">
-              <label class="form-label">State/Prov</label>
-              <div class="select-wrapper">
-                 <input type="text" id="f-state" class="f-input" list="state-list" placeholder="State" oninput="autoSave()">
-                 <datalist id="state-list">
-                    <option value="Jawa Tengah">Jawa Tengah</option>
-                    <option value="DKI Jakarta">DKI Jakarta</option>
-                    <option value="Jawa Timur">Jawa Timur</option>
-                    <option value="Jawa Barat">Jawa Barat</option>
-                    <option value="Bali">Bali</option>
-                 </datalist>
-              </div>
-           </div>
-           <div class="form-group">
-              <label class="form-label">City</label>
-              <div class="select-wrapper">
-                 <input type="text" id="f-city" class="f-input" list="city-list" placeholder="City" oninput="autoSave()">
-                 <datalist id="city-list">
-                    <option value="Surakarta">Surakarta</option>
-                    <option value="Solo">Solo</option>
-                    <option value="Semarang">Semarang</option>
-                    <option value="Jakarta">Jakarta</option>
-                    <option value="Surabaya">Surabaya</option>
-                    <option value="Bandung">Bandung</option>
-                    <option value="Yogyakarta">Yogyakarta</option>
-                 </datalist>
-              </div>
-           </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <div class="select-wrapper">
+              <input type="text" id="f-country" class="f-input" list="country-list" placeholder="Country"
+                oninput="autoSave()">
+              <datalist id="country-list">
+                <option value="Indonesia">Indonesia</option>
+                <option value="Malaysia">Malaysia</option>
+                <option value="Singapore">Singapore</option>
+                <option value="Japan">Japan</option>
+              </datalist>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">State/Prov</label>
+            <div class="select-wrapper">
+              <input type="text" id="f-state" class="f-input" list="state-list" placeholder="State"
+                oninput="autoSave()">
+              <datalist id="state-list">
+                <option value="Jawa Tengah">Jawa Tengah</option>
+                <option value="DKI Jakarta">DKI Jakarta</option>
+                <option value="Jawa Timur">Jawa Timur</option>
+                <option value="Jawa Barat">Jawa Barat</option>
+                <option value="Bali">Bali</option>
+              </datalist>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <div class="select-wrapper">
+              <input type="text" id="f-city" class="f-input" list="city-list" placeholder="City" oninput="autoSave()">
+              <datalist id="city-list">
+                <option value="Surakarta">Surakarta</option>
+                <option value="Solo">Solo</option>
+                <option value="Semarang">Semarang</option>
+                <option value="Jakarta">Jakarta</option>
+                <option value="Surabaya">Surabaya</option>
+                <option value="Bandung">Bandung</option>
+                <option value="Yogyakarta">Yogyakarta</option>
+              </datalist>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group"><label class="form-label">Map Embed Link / URL</label><input type="text" id="f-map" class="f-input" placeholder="https://..." oninput="autoSave()"></div>
+        <div class="form-group"><label class="form-label">Map Embed Link / URL</label><input type="text" id="f-map"
+            class="f-input" placeholder="https://..." oninput="autoSave()"></div>
       </div>
     </div>
   </div>
@@ -248,25 +522,25 @@
       ];
       localStorage.setItem('merchants', JSON.stringify(merchants));
     }
-    
+
     const types = ['All', 'Supermarket', 'Convenience Store', 'Restaurant', 'Cafe', 'Gas Station', 'Online', 'Pharmacy', 'Other'];
     let activeType = 'All';
     let searchTerm = '';
 
-    function handleFilter(query) { 
-      searchTerm = (query !== undefined ? query : document.getElementById('m-search').value).toLowerCase(); 
-      renderMerchants(); 
+    function handleFilter(query) {
+      searchTerm = (query !== undefined ? query : document.getElementById('m-search').value).toLowerCase();
+      renderMerchants();
     }
     function setType(t) { activeType = t; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.innerText === t)); renderMerchants(); }
 
     function renderFilterChips() {
       const parent = document.getElementById('m-filter-chips');
-      parent.innerHTML = types.map(t => `<button class="filter-chip ${t===activeType?'active':''}" onclick="setType('${t}')">${t}</button>`).join('');
+      parent.innerHTML = types.map(t => `<button class="filter-chip ${t === activeType ? 'active' : ''}" onclick="setType('${t}')">${t}</button>`).join('');
     }
 
     function renderMerchants() {
       const filtered = merchants.filter(m => (activeType === 'All' || m.type === activeType) && (m.name || '').toLowerCase().includes(searchTerm))
-                                .sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       const list = document.getElementById('merchant-list');
       const empty = document.getElementById('empty-state');
 
@@ -296,13 +570,13 @@
     let currentEditId = null;
 
     function refreshMap(url) {
-       const container = document.getElementById('map-container');
-       if (url && url.includes('http')) {
-          container.innerHTML = `<iframe src="${url}" style="width:100%; height:100%; border:0;" allowfullscreen="" loading="lazy"></iframe>`;
-          container.style.display = 'block';
-       } else {
-          container.style.display = 'none';
-       }
+      const container = document.getElementById('map-container');
+      if (url && url.includes('http')) {
+        container.innerHTML = `<iframe src="${url}" style="width:100%; height:100%; border:0;" allowfullscreen="" loading="lazy"></iframe>`;
+        container.style.display = 'block';
+      } else {
+        container.style.display = 'none';
+      }
     }
 
     function openModal(id, view) {
@@ -313,58 +587,58 @@
       switchView(id ? view : 'form');
 
       if (m) {
-         document.getElementById('ana-address').innerText = m.address || 'No address provided';
-         const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-         const filtered = txs.filter(t => (t.merchant || '').toLowerCase() === m.name.toLowerCase());
-         
-         // Analytics: Top Items (Trends)
-         const itemCounts = {};
-         filtered.forEach(t => {
-            const itemName = t.name || 'General';
-            itemCounts[itemName] = (itemCounts[itemName] || 0) + 1;
-         });
-         const sortedItems = Object.entries(itemCounts).sort((a,b) => b[1] - a[1]).slice(0, 3);
-         
-         document.getElementById('ana-count').innerText = filtered.length + ' Times';
-         document.getElementById('ana-total').innerText = 'Rp ' + filtered.reduce((s,t)=>s+t.amount,0).toLocaleString('id-ID');
-         
-         let hTrend = '';
-         if (sortedItems.length > 0) {
-            hTrend = `<div style="margin-top:1rem;"><label class="ana-lbl">Top Purchase Trends</label><div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.4rem;">` + 
-               sortedItems.map(([name, count]) => `<div style="background:var(--accent); color:white; padding:0.4rem 0.8rem; border-radius:0.75rem; font-size:0.75rem; font-weight:700;">${name} (${count}x)</div>`).join('') + 
-               `</div></div>`;
-         }
+        document.getElementById('ana-address').innerText = m.address || 'No address provided';
+        const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+        const filtered = txs.filter(t => (t.merchant || '').toLowerCase() === m.name.toLowerCase());
 
-         document.getElementById('ana-tx-list').innerHTML = hTrend + `<div style="margin-top:1rem;"><label class="ana-lbl">Top Transactions (Price)</label><div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.4rem;">` + 
-            filtered.sort((a,b) => (b.amount || 0) - (a.amount || 0)).map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.name || 'General'}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('') + 
+        // Analytics: Top Items (Trends)
+        const itemCounts = {};
+        filtered.forEach(t => {
+          const itemName = t.name || 'General';
+          itemCounts[itemName] = (itemCounts[itemName] || 0) + 1;
+        });
+        const sortedItems = Object.entries(itemCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+        document.getElementById('ana-count').innerText = filtered.length + ' Times';
+        document.getElementById('ana-total').innerText = 'Rp ' + filtered.reduce((s, t) => s + t.amount, 0).toLocaleString('id-ID');
+
+        let hTrend = '';
+        if (sortedItems.length > 0) {
+          hTrend = `<div style="margin-top:1rem;"><label class="ana-lbl">Top Purchase Trends</label><div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.4rem;">` +
+            sortedItems.map(([name, count]) => `<div style="background:var(--accent); color:white; padding:0.4rem 0.8rem; border-radius:0.75rem; font-size:0.75rem; font-weight:700;">${name} (${count}x)</div>`).join('') +
             `</div></div>`;
-         
-         refreshMap(m.map);
+        }
 
-         document.getElementById('f-name').value = m.name;
-         document.getElementById('f-type').value = m.type;
-         document.getElementById('f-contact').value = m.contact || '';
-         document.getElementById('f-phone').value = m.phone || '';
-         document.getElementById('f-email').value = m.email || '';
-         document.getElementById('f-website').value = m.website || '';
-         document.getElementById('f-address').value = m.address || '';
-         document.getElementById('f-city').value = m.city || '';
-         document.getElementById('f-state').value = m.state || '';
-         document.getElementById('f-country').value = m.country || '';
-         document.getElementById('f-map').value = m.map || '';
+        document.getElementById('ana-tx-list').innerHTML = hTrend + `<div style="margin-top:1rem;"><label class="ana-lbl">Top Transactions (Price)</label><div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.4rem;">` +
+          filtered.sort((a, b) => (b.amount || 0) - (a.amount || 0)).map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.name || 'General'}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('') +
+          `</div></div>`;
+
+        refreshMap(m.map);
+
+        document.getElementById('f-name').value = m.name;
+        document.getElementById('f-type').value = m.type;
+        document.getElementById('f-contact').value = m.contact || '';
+        document.getElementById('f-phone').value = m.phone || '';
+        document.getElementById('f-email').value = m.email || '';
+        document.getElementById('f-website').value = m.website || '';
+        document.getElementById('f-address').value = m.address || '';
+        document.getElementById('f-city').value = m.city || '';
+        document.getElementById('f-state').value = m.state || '';
+        document.getElementById('f-country').value = m.country || '';
+        document.getElementById('f-map').value = m.map || '';
       } else {
-         document.getElementById('f-name').value = '';
-         document.getElementById('f-type').value = 'Supermarket';
-         document.getElementById('f-contact').value = '';
-         document.getElementById('f-phone').value = '';
-         document.getElementById('f-email').value = '';
-         document.getElementById('f-website').value = '';
-         document.getElementById('f-address').value = '';
-         document.getElementById('f-city').value = '';
-         document.getElementById('f-state').value = '';
-         document.getElementById('f-country').value = '';
-         document.getElementById('f-map').value = '';
-         refreshMap(null);
+        document.getElementById('f-name').value = '';
+        document.getElementById('f-type').value = 'Supermarket';
+        document.getElementById('f-contact').value = '';
+        document.getElementById('f-phone').value = '';
+        document.getElementById('f-email').value = '';
+        document.getElementById('f-website').value = '';
+        document.getElementById('f-address').value = '';
+        document.getElementById('f-city').value = '';
+        document.getElementById('f-state').value = '';
+        document.getElementById('f-country').value = '';
+        document.getElementById('f-map').value = '';
+        refreshMap(null);
       }
       modal.style.display = 'block';
       lucide.createIcons();
@@ -374,7 +648,7 @@
       tabs.forEach(t => t.classList.toggle('active', t.dataset.view === view));
       contents.forEach(c => c.classList.toggle('active', c.id === 'view-' + view));
       const actions = document.getElementById('header-actions');
-      
+
       let h = '';
       if (view === 'form') {
         if (currentEditId) {
@@ -393,21 +667,21 @@
     function showMergePicker() {
       const source = merchants.find(m => m.id === currentEditId);
       const others = merchants.filter(m => m.id !== currentEditId);
-      
+
       const targetName = prompt(`Merge "${source.name}" INTO which merchant?\nAvailable: ${others.slice(0, 5).map(m => m.name).join(', ')}...`);
       if (!targetName) return;
-      
+
       const target = merchants.find(m => m.name.toLowerCase() === targetName.toLowerCase() && m.id !== currentEditId);
       if (!target) { showToast('Merchant not found', 'error'); return; }
-      
+
       if (!confirm(`Merge all data from "${source.name}" INTO "${target.name}"?\nThis cannot be undone.`)) return;
-      
+
       let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
       txs.forEach(t => {
         if (t.merchant === source.name) t.merchant = target.name;
       });
       localStorage.setItem('transactions', JSON.stringify(txs));
-      
+
       merchants = merchants.filter(m => m.id !== currentEditId);
       localStorage.setItem('merchants', JSON.stringify(merchants));
       closeModal();
@@ -415,19 +689,19 @@
     }
 
     function deleteMerchant() {
-      if(typeof showConfirm === 'function') {
+      if (typeof showConfirm === 'function') {
         showConfirm('Delete this merchant?', () => {
           merchants = merchants.filter(m => m.id !== currentEditId);
           localStorage.setItem('merchants', JSON.stringify(merchants));
           closeModal();
-          if(typeof showToast === 'function') showToast('Merchant deleted successfully!', 'success', 'trash-2');
+          if (typeof showToast === 'function') showToast('Merchant deleted successfully!', 'success', 'trash-2');
         });
       } else {
         if (!confirm('Delete this merchant?')) return;
         merchants = merchants.filter(m => m.id !== currentEditId);
         localStorage.setItem('merchants', JSON.stringify(merchants));
         closeModal();
-        if(typeof showToast === 'function') showToast('Merchant deleted successfully!', 'success', 'trash-2');
+        if (typeof showToast === 'function') showToast('Merchant deleted successfully!', 'success', 'trash-2');
       }
     }
 
@@ -448,7 +722,7 @@
 
       // Auto-generate map from address
       if (address && !map && address.length > 5) {
-         map = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+        map = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
       }
 
       const obj = { id: currentEditId || Date.now(), name, type, contact, phone, email, website, address, city, state, country, map };
@@ -468,4 +742,5 @@
     renderMerchants();
   </script>
 </body>
+
 </html>
