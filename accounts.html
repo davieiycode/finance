@@ -261,7 +261,7 @@
            return t;
          });
          // Filter txs (mock account linking for now since transactions don't have accountId yet)
-         const filtered = txs.slice(0, 5); // Show first 5 as placeholder
+         const filtered = txs.sort((a,b) => (b.amount || 0) - (a.amount || 0)).slice(0, 10); // Show top 10 most expensive
          document.getElementById('ana-tx-list').innerHTML = filtered.map(t => `
             <div class="tx-item">
                <div>
@@ -293,6 +293,7 @@
       const actions = document.getElementById('header-actions');
       if (view === 'form') {
          actions.innerHTML = `
+           ${activeAcc ? `<button class="btn-cancel" style="color:var(--accent); border-color:rgba(139,92,246,0.2); background:none; padding:0 0.5rem;" onclick="showMergePicker()" title="Merge"><i data-lucide="git-merge" style="width:18px;"></i></button>` : ''}
            ${activeAcc ? `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteAccount()"><i data-lucide="trash-2" style="width:18px;"></i></button>` : ''}
            <button class="btn-violet" onclick="save()">Save</button>
          `;
@@ -303,6 +304,31 @@
     }
 
     tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
+
+    function showMergePicker() {
+      const others = accounts.filter(a => a.id !== activeAcc.id);
+      const targetName = prompt(`Merge "${activeAcc.name}" INTO which account?\nAvailable: ${others.map(a => a.name).join(', ')}`);
+      if (!targetName) return;
+      
+      const target = accounts.find(a => a.name.toLowerCase() === targetName.toLowerCase() && a.id !== activeAcc.id);
+      if (!target) { showToast('Account not found', 'error'); return; }
+      
+      if (!confirm(`Merge "${activeAcc.name}" INTO "${target.name}"?\nAll balance and transaction history will be moved.`)) return;
+      
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      txs.forEach(t => {
+        if (t.accountPayment === activeAcc.name) t.accountPayment = target.name;
+        if (t.accountReceived === activeAcc.name) t.accountReceived = target.name;
+      });
+      localStorage.setItem('transactions', JSON.stringify(txs));
+      
+      accounts = accounts.filter(a => a.id !== activeAcc.id);
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+      
+      closeModal();
+      renderAccounts('');
+      showToast('Accounts merged successfully!', 'success', 'git-merge');
+    }
 
     function closeModal() { modal.style.display = 'none'; document.body.style.overflow = 'auto'; }
     function save() { alert('Account updated successfully!'); closeModal(); }

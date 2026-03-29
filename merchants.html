@@ -335,8 +335,8 @@
                `</div></div>`;
          }
 
-         document.getElementById('ana-tx-list').innerHTML = hTrend + `<div style="margin-top:1rem;"><label class="ana-lbl">Recent Activity</label><div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.4rem;">` + 
-            filtered.map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.name || 'General'}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('') + 
+         document.getElementById('ana-tx-list').innerHTML = hTrend + `<div style="margin-top:1rem;"><label class="ana-lbl">Top Transactions (Price)</label><div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.4rem;">` + 
+            filtered.sort((a,b) => (b.amount || 0) - (a.amount || 0)).map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.name || 'General'}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('') + 
             `</div></div>`;
          
          refreshMap(m.map);
@@ -377,7 +377,10 @@
       
       let h = '';
       if (view === 'form') {
-        if (currentEditId) h += `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteMerchant()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+        if (currentEditId) {
+          h += `<button class="btn-cancel" style="color:var(--accent); border-color:rgba(139,92,246,0.2); background:none; padding:0 0.5rem;" onclick="showMergePicker()" title="Merge with another"><i data-lucide="git-merge" style="width:18px;"></i></button>`;
+          h += `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteMerchant()" title="Delete"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+        }
         h += `<button class="btn-violet" onclick="closeModal()">Save</button>`;
       }
       actions.innerHTML = h;
@@ -386,6 +389,30 @@
 
     tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
     function closeModal() { modal.style.display = 'none'; renderMerchants(); }
+
+    function showMergePicker() {
+      const source = merchants.find(m => m.id === currentEditId);
+      const others = merchants.filter(m => m.id !== currentEditId);
+      
+      const targetName = prompt(`Merge "${source.name}" INTO which merchant?\nAvailable: ${others.slice(0, 5).map(m => m.name).join(', ')}...`);
+      if (!targetName) return;
+      
+      const target = merchants.find(m => m.name.toLowerCase() === targetName.toLowerCase() && m.id !== currentEditId);
+      if (!target) { showToast('Merchant not found', 'error'); return; }
+      
+      if (!confirm(`Merge all data from "${source.name}" INTO "${target.name}"?\nThis cannot be undone.`)) return;
+      
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      txs.forEach(t => {
+        if (t.merchant === source.name) t.merchant = target.name;
+      });
+      localStorage.setItem('transactions', JSON.stringify(txs));
+      
+      merchants = merchants.filter(m => m.id !== currentEditId);
+      localStorage.setItem('merchants', JSON.stringify(merchants));
+      closeModal();
+      showToast('Merchants merged successfully!', 'success', 'git-merge');
+    }
 
     function deleteMerchant() {
       if(typeof showConfirm === 'function') {

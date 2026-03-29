@@ -527,7 +527,7 @@
          const filtered = txs.filter(t => (t.name || '').toLowerCase() === it.name.toLowerCase());
          document.getElementById('ana-count').innerText = filtered.length + ' Times';
          document.getElementById('ana-spent').innerText = 'Rp ' + filtered.reduce((s,t)=>s+t.amount,0).toLocaleString('id-ID');
-         document.getElementById('ana-tx-list').innerHTML = filtered.map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.merchant || 'General'}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('');
+         document.getElementById('ana-tx-list').innerHTML = filtered.sort((a,b) => (b.amount || 0) - (a.amount || 0)).map(t => `<div class="tx-item"><div><div style="font-weight:600; color:white; font-size:0.875rem;">${t.merchant || 'General'}</div><div style="font-size:0.65rem; color:var(--text-secondary);">${t.date}</div></div><div style="font-weight:700; color:#ef4444;">- Rp ${t.amount.toLocaleString('id-ID')}</div></div>`).join('');
          
          document.getElementById('f-name').value = it.name;
          document.getElementById('f-category').value = it.category;
@@ -573,7 +573,10 @@
       
       let h = '';
       if (view === 'form') {
-        if (currentEditId) h += `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteItem()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+        if (currentEditId) {
+          h += `<button class="btn-cancel" style="color:var(--accent); border-color:rgba(139,92,246,0.2); background:none; padding:0 0.5rem;" onclick="showMergePicker()" title="Merge"><i data-lucide="git-merge" style="width:18px;"></i></button>`;
+          h += `<button class="btn-cancel" style="color:#ef4444; border-color:rgba(239,68,68,0.2); background:none; padding:0 0.5rem;" onclick="deleteItem()"><i data-lucide="trash-2" style="width:18px;"></i></button>`;
+        }
         h += `<button class="btn-violet" onclick="closeModal()">Save</button>`;
       }
       actions.innerHTML = h;
@@ -615,6 +618,27 @@
         closeModal();
         if(typeof showToast === 'function') showToast('Item deleted successfully!', 'success', 'trash-2');
       }
+    }
+
+    function showMergePicker() {
+      const source = items.find(i => i.id === currentEditId);
+      const others = items.filter(i => i.id !== currentEditId);
+      const targetName = prompt(`Merge "${source.name}" INTO which item?\nAvailable: ${others.slice(0, 5).map(m => m.name).join(', ')}...`);
+      if (!targetName) return;
+      
+      const target = items.find(i => i.name.toLowerCase() === targetName.toLowerCase() && i.id !== currentEditId);
+      if (!target) { showToast('Item not found', 'error'); return; }
+      
+      if (!confirm(`Merge all data from "${source.name}" INTO "${target.name}"?\nThis will update all history.`)) return;
+      
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      txs.forEach(t => { if (t.name === source.name) t.name = target.name; });
+      localStorage.setItem('transactions', JSON.stringify(txs));
+      
+      items = items.filter(i => i.id !== currentEditId);
+      localStorage.setItem('items', JSON.stringify(items));
+      closeModal();
+      showToast('Items merged successfully!', 'success', 'git-merge');
     }
 
     function handleItemInput() {
