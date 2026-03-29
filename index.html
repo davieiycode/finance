@@ -2164,98 +2164,14 @@ function doPost(e) {
 
       try {
         if (action === 'push') {
-          const txsRaw = localStorage.getItem('transactions') || '[]';
-          const txs = JSON.parse(txsRaw);
-
-          if (txs.length === 0) {
-            alert('Tidak ada data transaksi untuk dikirim.');
-            return;
-          }
-
-          console.log(`Mengirim ${txs.length} transaksi ke Cloud...`);
-
-          await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({ transactions: txs })
-          });
-
-          showToast(`Success! ${txs.length} transactions saved to Cloud Ledger.`, 'success', 'cloud-upload');
+          await window.CloudSync.push(url);
         } else {
-          console.log('Mengambil data dari Cloud...');
-          const res = await fetch(url + '?get=data');
-          const data = await res.json();
-
-          if (!data.transactions || data.transactions.length === 0) {
-            showToast('Cloud is empty. No data to retrieve.', 'warning', 'database');
-            return;
-          }
-
-          const remoteTxs = data.transactions.map(t => {
-            const q = parseFloat(t.qty) || 1;
-            const d = parseFloat(t.discount) || 0;
-            const f = parseFloat(t.fee) || 0;
-            const ex = parseFloat(t.exchangeRate) || 1;
-            const unitPrice = parseFloat(t.amount || 0);
-
-            // Force ID to string for accurate comparison with local storage
-            t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now();
-
-            // Map specifically for the user's header names if not already mapped by doGet
-            t.accountPayment = t.accountPayment || t['Payment Source Account'] || t.accountPayment || '';
-            t.accountReceived = t.accountReceived || t['Beneficiary Account'] || t.accountReceived || '';
-            t.categoryGroup = t.categoryGroup || t['Category Group'] || '';
-
-            // Trust the calculated total or fallback to spreadsheet total
-            const calcTotal = ((q * unitPrice) - d + f) * ex;
-            t.total = (t.total !== undefined && t.total !== null) ? parseFloat(t.total) : calcTotal;
-            t.amount = unitPrice;
-
-            // Metadata parsing ensuring undefined doesn't override local fallbacks
-            t.budgetAmount = t.budgetAmount || t['Budget Amount'] || 0;
-            t.budgetPeriod = t.budgetPeriod || t['Budget Period'] || 'Monthly';
-            t.flow = t.flow || t['Flow'] || (t.type === 'Income' ? 'In' : 'Out');
-            t.year = t.year || t['Year'] || new Date(t.date).getFullYear();
-            t.month = t.month || t['Month'] || new Date(t.date).getMonth() + 1;
-            t.updateTime = t.updateTime || t['Update Time'] || new Date().toISOString();
-            t.xp = t.xp || t['XP'] || 0;
-
-            return t;
-          });
-
-          const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
-
-          let finalData = [];
-          let skippedCount = 0;
-          if (currentSyncMode === 'merge') {
-            const cloudIds = new Set(remoteTxs.map(t => t.id.toString()));
-            const uniqueLocals = localTxs.filter(t => {
-              if (cloudIds.has(t.id.toString())) {
-                skippedCount++;
-                return false;
-              }
-              return true;
-            });
-            finalData = [...remoteTxs, ...uniqueLocals];
-          } else {
-            finalData = remoteTxs;
-          }
-
-          localStorage.setItem('transactions', JSON.stringify(finalData));
-
-          // Sync Metadata (Manageable Merchants, Items, Accounts)
-          let extractMsg = '';
-          if (typeof rebuildMetadataFromTransactions === 'function') {
-            const stats = rebuildMetadataFromTransactions(finalData, currentSyncMode);
-            extractMsg = ` | New Metadata: ${stats.merchants} Mer, ${stats.items} Items`;
-          }
-
-          // Debugging info in toast
-          showToast(`Cloud Sync Success! Pulled ${data.transactions.length} records. Duplicates: ${skippedCount}${extractMsg}`, 'success', 'cloud-download');
-
+          await window.CloudSync.pull(url, currentSyncMode);
           setTimeout(() => location.reload(), 2000);
         }
       } catch (e) {
-        showToast('Connection Failed: Check URL or ensure Script Deployment is "Anyone".', 'error', 'wifi-off');
+        console.error(e);
+        showToast('Sync Failed: Check connection or script settings.', 'error', 'wifi-off');
       }
     };
 

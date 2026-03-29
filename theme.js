@@ -163,10 +163,73 @@
     return 0;
   }
 
+  // --- SyncHub: Premium Progress Hub ---
+  const SyncHub = {
+    el: null, progressBar: null, statusText: null, titleText: null, percentText: null,
+
+    init() {
+      if (this.el) return;
+      const hubHtml = `
+        <div id="sync-hub-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 999999; flex-direction: column; align-items: center; justify-content: center; color: white; opacity: 0; transition: all 0.4s ease;">
+          <div style="width: 100%; max-width: 320px; text-align: center; display: flex; flex-direction: column; gap: 1.5rem; padding: 2rem;">
+            <div style="position: relative; width: 84px; height: 84px; margin: 0 auto;">
+              <div style="width: 84px; height: 84px; border: 3px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent); border-radius: 50%; animation: hub-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
+              <div id="sync-hub-percent" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; color: var(--accent); font-family: 'JetBrains Mono', monospace;">0%</div>
+            </div>
+            <div>
+              <h3 id="sync-hub-title" style="font-weight: 800; font-size: 1.25rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Syncing</h3>
+              <p id="sync-hub-status" style="opacity: 0.6; font-size: 0.75rem; min-height: 1.25rem; font-weight: 500;">Initializing...</p>
+            </div>
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.02);">
+               <div id="sync-hub-progress" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #c084fc); transition: width 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);"></div>
+            </div>
+          </div>
+        </div>
+        <style> @keyframes hub-spin { to { transform: rotate(360deg); } } </style>
+      `;
+      const div = document.createElement('div');
+      div.id = 'sync-hub-root';
+      div.innerHTML = hubHtml;
+      document.body.appendChild(div);
+      this.el = document.getElementById('sync-hub-overlay');
+      this.progressBar = document.getElementById('sync-hub-progress');
+      this.statusText = document.getElementById('sync-hub-status');
+      this.titleText = document.getElementById('sync-hub-title');
+      this.percentText = document.getElementById('sync-hub-percent');
+    },
+
+    start(title, status) {
+      this.init();
+      this.titleText.innerText = title;
+      this.statusText.innerText = status;
+      this.update(0);
+      this.el.style.display = 'flex';
+      setTimeout(() => this.el.style.opacity = '1', 10);
+    },
+
+    update(percent, status) {
+      if (!this.el) return;
+      const p = Math.min(100, Math.max(0, percent));
+      this.progressBar.style.width = p + '%';
+      if (this.percentText) this.percentText.innerText = Math.round(p) + '%';
+      if (status) this.statusText.innerText = status;
+    },
+
+    finish(msg, success = true) {
+      this.update(100, msg || 'Done!');
+      setTimeout(() => {
+        this.el.style.opacity = '0';
+        setTimeout(() => this.el.style.display = 'none', 400);
+      }, 1000);
+    }
+  };
+
   // Cloud Sync Engine
   const CloudSync = {
     pull: async (url, mode = 'overwrite') => {
+      SyncHub.start('Cloud Pull', 'Connecting to secure server...');
       try {
+        SyncHub.update(15, 'Fetching remote ledger...');
         const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'get=data');
         const data = await res.json();
 
@@ -175,9 +238,15 @@
         
         if (mode === 'overwrite') {
           if (data.status === 'success') {
-            // Comprehensive Overwrite Logic - User wants everything replaced
+            SyncHub.update(40, 'Parsing cloud data entities...');
+            const totalKeys = keys.filter(k => data[k]).length || 1;
+            let processedKeys = 0;
+
             keys.forEach(key => {
               if (data[key]) {
+                const stepLoad = 40 + ((processedKeys / totalKeys) * 50);
+                SyncHub.update(stepLoad, `Processing ${key}...`);
+                
                 let remoteData = data[key];
                 if (key === 'transactions') {
                   remoteData = remoteData.map(t => {
@@ -196,6 +265,7 @@
                   count = remoteData.length;
                 }
                 localStorage.setItem(key, JSON.stringify(remoteData));
+                processedKeys++;
               } else if (['transactions', 'accounts', 'merchants', 'items', 'vault'].includes(key)) {
                 localStorage.removeItem(key);
               }
@@ -204,7 +274,8 @@
             throw new Error('Cloud returned an error or invalid status');
           }
         } else {
-          // Merge Logic (Default)
+          // Merge Logic (Default) - Cloud is Master
+          SyncHub.update(50, 'Merging local and remote entries...');
           if (data.transactions) {
             const remoteTxs = data.transactions.map(t => {
               const q = parseFloat(t.qty) || 1;
@@ -212,7 +283,6 @@
               const f = parseFloat(t.fee) || 0;
               const ex = parseFloat(t.exchangeRate) || 1;
               const unitPrice = parseFloat(t.amount || 0);
-
               t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
               const calcTotal = ((q * unitPrice) - d + f) * ex;
               t.total = (t.total !== undefined) ? parseFloat(t.total) : calcTotal;
@@ -222,44 +292,54 @@
             });
 
             const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
-            const localIds = new Set(localTxs.map(t => t.id.toString()));
-            const onlyNew = remoteTxs.filter(t => !localIds.has(t.id.toString()));
-            localStorage.setItem('transactions', JSON.stringify([...onlyNew, ...localTxs]));
+            const cloudIds = new Set(remoteTxs.map(t => t.id.toString()));
+            // Keep remote, add unique locals
+            const uniqueLocals = localTxs.filter(t => !cloudIds.has(t.id.toString()));
+            localStorage.setItem('transactions', JSON.stringify([...remoteTxs, ...uniqueLocals]));
             count = remoteTxs.length;
           }
         }
 
-        // Trigger Metadata Rebuild if only transactions were provided (or always, for safety)
+        SyncHub.update(95, 'Finalizing data extraction...');
         if (!data.accounts && !data.merchants && !data.items && typeof window.syncMasterData === 'function') {
-          window.syncMasterData();
+          await window.syncMasterData();
         }
 
+        SyncHub.finish(`Success! ${count} records processed.`);
         return count;
       } catch (err) {
+        SyncHub.finish('Pull failed. Check connection.', false);
         console.error('Cloud Sync Error:', err);
         throw err;
       }
     },
     push: async (url) => {
-      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      if (txs.length === 0) return 0;
-      await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({ transactions: txs })
-      });
-      return txs.length;
+      SyncHub.start('Cloud Push', 'Preparing local backup...');
+      try {
+        const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+        if (txs.length === 0) { SyncHub.finish('No data to push'); return 0; }
+        SyncHub.update(40, `Sending ${txs.length} entries...`);
+        await fetch(url, { method: 'POST', body: JSON.stringify({ transactions: txs }) });
+        SyncHub.finish(`Successfully uploaded ${txs.length} entries.`);
+        return txs.length;
+      } catch (e) {
+        SyncHub.finish('Push failed.');
+        throw e;
+      }
     }
   };
 
-  function syncMasterData() {
-    if (window.requestIdleCallback) {
-       window.requestIdleCallback(() => deferredSync());
-    } else {
-       setTimeout(deferredSync, 800);
-    }
+  async function syncMasterData() {
+    return new Promise((resolve) => {
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(() => resolve(deferredSync()));
+      } else {
+        setTimeout(() => resolve(deferredSync()), 400);
+      }
+    });
   }
 
-  function deferredSync() {
+  async function deferredSync() {
     const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
     if (txs.length === 0) return;
 
@@ -280,7 +360,12 @@
     const MAX_SUGGESTIONS = 3;
 
     // Process transactions
-    txs.forEach(t => {
+    for (let i = 0; i < txs.length; i++) {
+      const t = txs[i];
+      if (i % 100 === 0 && txs.length > 200) {
+        SyncHub.update(95 + (i / txs.length * 4), `Analyzing metadata (${i}/${txs.length})...`);
+      }
+
       // 1. Merchant Sync
       if (t.merchant && t.merchant !== '-') {
         const mLower = t.merchant.toLowerCase();
@@ -329,7 +414,7 @@
           }
         }
       }
-    });
+    }
 
     // 4. Duplicate Transaction Detection (Check only last 100 entries)
     if (isDashboard && suggestionCount < MAX_SUGGESTIONS) {
@@ -351,6 +436,7 @@
       localStorage.setItem('accounts', JSON.stringify(accounts));
       localStorage.setItem('merchants', JSON.stringify(merchants));
       localStorage.setItem('items', JSON.stringify(items));
+      if (isDashboard && typeof window.renderDashboard === 'function') window.renderDashboard();
     }
   }
 
@@ -484,22 +570,19 @@
 
   // Pull-to-Sync & Long-Scroll Logic
   let touchStartY = 0;
-  let pullIndicator = null;
   let isPulling = false;
-  let hasShownScrollDialog = false;
+  let pullIndicator = null;
+
   function initScrollFeatures() {
-    let touchStartY = 0;
-    let isPulling = false;
-    
     // 1. Create Pull Indicator
-    const pullIndicator = document.createElement('div');
+    pullIndicator = document.createElement('div');
     pullIndicator.id = 'pull-indicator';
-    pullIndicator.style.cssText = 'position:fixed; top:-60px; left:50%; transform:translateX(-50%); z-index:9998; background:var(--accent); color:white; padding:0.6rem 1rem; border-radius:2rem; font-size:0.75rem; font-weight:800; display:flex; align-items:center; gap:0.5rem; transition: top 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow:0 10px 25px rgba(0,0,0,0.3);';
-    pullIndicator.innerHTML = '<i data-lucide="refresh-cw" style="width:16px;"></i><span>Pull to Sync Cloud</span>';
+    pullIndicator.style.cssText = 'position:fixed; top:-60px; left:50%; transform:translateX(-50%); z-index:9998; background:var(--accent); color:white; padding:0.6rem 1rem; border-radius:2rem; font-size:0.75rem; font-weight:800; display:flex; align-items:center; gap:0.5rem; transition: top 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease; box-shadow:0 10px 25px rgba(0,0,0,0.3); white-space:nowrap;';
+    pullIndicator.innerHTML = '<i data-lucide="refresh-cw" style="width:16px;"></i><span>Pull to Sync</span>';
     document.body.appendChild(pullIndicator);
     if(window.lucide) window.lucide.createIcons();
 
-    // 2. Gesture Logic (Scroll Down/Pull at Top)
+    // 2. Gesture Logic (Multi-stage Pull to Refresh)
     window.addEventListener('touchstart', e => {
       if (window.scrollY <= 0) touchStartY = e.touches[0].pageY;
     }, { passive: true });
@@ -510,37 +593,48 @@
       const diff = moveY - touchStartY;
       
       if (diff > 20) {
-        isPulling = true;
-        pullIndicator.style.top = Math.min(20, (diff / 2.5) - 40) + 'px';
-        if (diff > 120) {
-          pullIndicator.querySelector('span').innerText = 'Release to Sync';
-          pullIndicator.querySelector('i').style.transform = 'rotate(180deg)';
+        if (!isPulling) isPulling = true;
+        
+        // Dynamic feedback based on depth
+        pullIndicator.style.top = Math.min(30, (diff / 2.5) - 40) + 'px';
+        
+        const label = pullIndicator.querySelector('span');
+        const icon = pullIndicator.querySelector('i');
+        
+        if (diff > 260) {
+          // Long Pull stage (Push)
+          label.innerText = 'Release to Push Backup ☁️';
+          pullIndicator.style.background = '#0ea5e9'; // Blue for cloud push
+          icon.style.transform = 'rotate(360deg) scale(1.2)';
+        } else if (diff > 120) {
+          // Normal pull stage (Pull)
+          label.innerText = 'Release to Sync Cloud';
+          pullIndicator.style.background = 'var(--accent)';
+          icon.style.transform = 'rotate(180deg)';
         } else {
-          pullIndicator.querySelector('span').innerText = 'Pull to Sync';
-          pullIndicator.querySelector('i').style.transform = 'rotate(0deg)';
+          label.innerText = 'Pull Down to Sync';
+          pullIndicator.style.background = 'var(--accent)';
+          icon.style.transform = 'rotate(0deg)';
         }
       }
     }, { passive: true });
 
     window.addEventListener('touchend', e => {
+      if (!isPulling) return;
       const diff = e.changedTouches[0].pageY - touchStartY;
-      if (isPulling && diff > 120) {
+      
+      if (diff > 260) {
+        triggerCloudPush();
+      } else if (diff > 120) {
         triggerCloudSync();
       }
+      
       isPulling = false;
-      pullIndicator.style.top = '-60px';
-    });
-
-    // 3. Long Scroll Detection (Local -> Cloud Dialog)
-    window.addEventListener('scroll', () => {
-      const currentScroll = window.scrollY;
-      const scrollThreshold = 1500;
-      if (currentScroll > scrollThreshold && !hasShownScrollDialog) {
-        showSlideToUploadDialog();
-        hasShownScrollDialog = true;
-      } else if (currentScroll < 100) {
-        hasShownScrollDialog = false;
-      }
+      setTimeout(() => {
+        if (!isPulling && pullIndicator.style.top !== '-60px' && !pullIndicator.innerText.includes('ing...')) {
+          pullIndicator.style.top = '-60px';
+        }
+      }, 300);
     });
   }
 
@@ -576,74 +670,34 @@
     }
   }
 
-  function showSlideToUploadDialog() {
-    let dialog = document.getElementById('cloud-upload-dialog');
-    if (!dialog) {
-      dialog = document.createElement('div');
-      dialog.id = 'cloud-upload-dialog';
-      dialog.style.cssText = 'position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:10001; background:var(--bg-secondary); border:1px solid var(--border); border-radius:2rem; padding:1.5rem; width:90%; max-width:380px; box-shadow:0 30px 60px rgba(0,0,0,0.5); animation: toast-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);';
-      dialog.innerHTML = `
-        <div style="text-align:center; margin-bottom:1.5rem;">
-          <div style="width:48px; height:48px; background:rgba(139,92,246,0.1); color:var(--accent); border-radius:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto;">
-            <i data-lucide="cloud-upload" style="width:24px;"></i>
-          </div>
-          <h3 style="font-weight:800; font-size:1rem; color:var(--text-primary); margin-bottom:0.25rem;">Ship Data to Cloud?</h3>
-          <p style="font-size:0.75rem; color:var(--text-secondary);">You've scrolled quite a bit. Back up your recent local changes now.</p>
-        </div>
-        
-        <div id="slide-track" style="position:relative; height:60px; background:var(--glass); border:1px solid var(--border); border-radius:30px; display:flex; align-items:center; padding:5px; overflow:hidden;">
-          <div id="slide-text" style="position:absolute; width:100%; text-align:center; font-size:0.75rem; font-weight:700; color:var(--text-secondary); pointer-events:none;">Slide to confirm</div>
-          <div id="slide-progress" style="position:absolute; left:0; top:0; height:100%; width:0%; background:var(--accent); opacity:0.3; pointer-events:none; transition:width 0.1s;"></div>
-          <div id="slide-knob" style="position:relative; width:50px; height:50px; background:var(--accent); border-radius:25px; display:flex; align-items:center; justify-content:center; color:white; cursor:pointer; box-shadow:0 4px 12px rgba(139,92,246,0.4); z-index:2; touch-action:none;">
-            <i data-lucide="arrow-right" style="width:20px;"></i>
-          </div>
-        </div>
-        
-        <button id="close-upload-dialog" style="width:100%; margin-top:1rem; background:none; border:none; color:var(--text-secondary); font-size:0.75rem; font-weight:600; cursor:pointer;">Not now</button>
-      `;
-      document.body.appendChild(dialog);
+  async function triggerCloudPush() {
+    const url = localStorage.getItem('cloud_sheet_url');
+    if (!url) return;
+
+    if (pullIndicator) {
+      pullIndicator.querySelector('span').innerText = 'Pushing Data...';
+      pullIndicator.querySelector('i').classList.add('animate-spin');
+      pullIndicator.style.top = '30px';
+      pullIndicator.style.background = '#0ea5e9';
+    }
+
+    try {
+      await window.CloudSync.push(url);
+      if (pullIndicator) {
+        pullIndicator.style.background = '#10b981';
+        pullIndicator.innerHTML = `<i data-lucide="check" style="width:16px;"></i><span>Cloud Updated!</span>`;
+      }
       if(window.lucide) window.lucide.createIcons();
       
-      const knob = document.getElementById('slide-knob');
-      const track = document.getElementById('slide-track');
-      const progress = document.getElementById('slide-progress');
-      const trackWidth = track.clientWidth - 10;
-      let startX = 0;
-      let currentX = 0;
-
-      const onMove = (x) => {
-        let diff = x - startX;
-        if (diff < 0) diff = 0;
-        if (diff > trackWidth - 50) diff = trackWidth - 50;
-        currentX = diff;
-        knob.style.left = currentX + 'px';
-        progress.style.width = (currentX + 50) + 'px';
-        
-        if (currentX >= trackWidth - 55) {
-          triggerUpload();
-        }
-      };
-
-      const triggerUpload = () => {
-        knob.style.pointerEvents = 'none';
-        document.getElementById('slide-text').innerText = 'Sending...';
-        document.getElementById('slide-text').style.color = 'white';
-        
-        setTimeout(() => {
-          showToast('Data safely uploaded to cloud', 'success', 'cloud-check');
-          dialog.style.animation = 'toast-out 0.4s ease forwards';
-          setTimeout(() => dialog.remove(), 400);
-        }, 1500);
-      };
-
-      knob.addEventListener('touchstart', e => { startX = e.touches[0].clientX - currentX; });
-      knob.addEventListener('touchmove', e => { onMove(e.touches[0].clientX); });
-      knob.addEventListener('touchend', () => { if (currentX < trackWidth - 55) { currentX = 0; knob.style.left = '0px'; progress.style.width = '0%'; } });
-      
-      document.getElementById('close-upload-dialog').onclick = () => {
-        dialog.style.animation = 'toast-out 0.4s ease forwards';
-        setTimeout(() => dialog.remove(), 400);
-      };
+      setTimeout(() => {
+        if (pullIndicator) pullIndicator.style.top = '-60px';
+      }, 1500);
+    } catch (err) {
+      if (pullIndicator) {
+        pullIndicator.style.background = '#ef4444';
+        pullIndicator.innerHTML = `<i data-lucide="alert-circle" style="width:16px;"></i><span>Upload Failed</span>`;
+        setTimeout(() => { if (pullIndicator) pullIndicator.style.top = '-60px'; }, 2000);
+      }
     }
   }
 
@@ -686,6 +740,7 @@
   window.applyAesthetics = applyAesthetics;
   window.showToast = showToast;
   window.showConfirm = showConfirm;
+  window.SyncHub = SyncHub;
   window.syncMasterData = syncMasterData;
   window.CloudSync = CloudSync;
 })();

@@ -135,10 +135,8 @@
         <div id="scan-laser" style="position: absolute; top: 10%; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, transparent, var(--accent), transparent); box-shadow: 0 0 15px var(--accent); animation: laserMove 2s ease-in-out infinite;"></div>
       </div>
 
-      <div id="sync-overlay" class="sync-overlay">
-        <div class="spinner"></div>
-        <p style="font-size: 0.75rem; font-weight: 700; color: var(--accent); letter-spacing: 0.05em;">LINKING DATA...</p>
-      </div>
+      <div id="sync-hub-placeholder"></div>
+
     </div>
 
     <style>
@@ -193,7 +191,7 @@
     lucide.createIcons();
 
     const html5QrCode = new Html5Qrcode("reader");
-    const syncOverlay = document.getElementById('sync-overlay');
+
     const qrFileInput = document.getElementById('qr-file-input');
     const galleryBtn = document.getElementById('gallery-btn');
 
@@ -212,7 +210,7 @@
             if (data[k]) localStorage.setItem(k, (typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k])));
           });
 
-          syncOverlay.style.display = 'flex';
+          if (window.SyncHub) window.SyncHub.start('Restoring Ledger', 'Extracting JSON data...');
           if (typeof showToast === 'function') showToast(`Ledger restored!`, 'success', 'database-backup');
           
           setTimeout(() => {
@@ -233,28 +231,22 @@
       // 1. Stop scanning if active
       try { await html5QrCode.stop(); } catch (e) { }
 
-      // 2. Visual feedback
-      syncOverlay.style.display = 'flex';
-
       // 3. Save URL
       localStorage.setItem('cloud_sheet_url', scriptUrl);
-
 
       try {
         // 4. Pull data from cloud using global engine (Overwrite on first connect)
         const count = await window.CloudSync.pull(scriptUrl, 'overwrite');
-
+        
         if (count >= 0) {
-          if (typeof showToast === 'function') showToast(`Linked! Retrieved ${count} records.`, 'success', 'cloud-check');
-
           setTimeout(() => {
             window.location.href = 'index.html';
-          }, 1500);
+          }, 800);
         }
       } catch (err) {
-        console.error(err);
-        alert('Authentication failed or invalid QR code. Please try again.');
-        location.reload();
+        console.error("Initial Sync Failed:", err);
+        if (typeof showToast === 'function') showToast('Sync Failed. Check URL or script settings.', 'error');
+        setTimeout(() => location.reload(), 2000);
       }
     }
 
