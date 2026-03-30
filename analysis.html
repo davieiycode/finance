@@ -35,11 +35,11 @@
       <button id="mode-yearly" class="tab-btn" style="flex: 1;" onclick="setAnalysisMode('yearly')">Yearly View</button>
     </div>
 
-    <div class="month-nav" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 0.75rem 1rem;">
+    <div id="period-navigator" class="month-nav" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 0.75rem 1rem;">
       <button id="prev-period" class="back-btn" style="width: 36px; height: 36px; background: rgba(255,255,255,0.05);"><i data-lucide="chevron-left" style="width: 18px;"></i></button>
       <div style="text-align: center;">
         <div id="display-period" style="font-weight: 800; color: var(--text-primary); font-size: 1.125rem;">March 2026</div>
-        <div id="display-label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; margin-top: 0.1rem;">Analytical Period</div>
+        <div id="display-label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; margin-top: 0.1rem;">Monthly Analysis</div>
       </div>
       <button id="next-period" class="back-btn" style="width: 36px; height: 36px; background: rgba(255,255,255,0.05);"><i data-lucide="chevron-right" style="width: 18px;"></i></button>
     </div>
@@ -148,7 +148,7 @@
       analysisMode = m;
       document.getElementById('mode-monthly').classList.toggle('active', m === 'monthly');
       document.getElementById('mode-yearly').classList.toggle('active', m === 'yearly');
-      document.querySelector('.month-nav').style.display = (m === 'monthly') ? 'flex' : 'none';
+      document.getElementById('period-navigator').style.display = (m === 'monthly') ? 'flex' : 'none';
       initData();
     };
 
@@ -348,7 +348,5 @@
     
     initData();
   </script>
-</body>
-</html>
 </body>
 </html>
