@@ -1682,14 +1682,22 @@ function doPost(e) {
         
         wrapper.innerHTML = `
           <div class="swipe-actions swipe-actions-left">
-            <button class="swipe-btn bg-cleared" onclick="swipeCleared(${t.id})"><i data-lucide="${t.cleared ? 'circle-dashed' : 'check-circle'}"></i><span>${t.cleared ? 'Undo' : 'Clear'}</span></button>
-            <button class="swipe-btn bg-merge" onclick="swipeMerge(${t.id})"><i data-lucide="git-merge"></i><span>Merge</span></button>
+            <button class="swipe-btn bg-cleared" onclick="showDetailById('${t.id}')">
+              <i data-lucide="eye"></i><span>Summary</span>
+            </button>
           </div>
           <div class="swipe-actions swipe-actions-right">
-            <button class="swipe-btn bg-edit" onclick="swipeEdit(${t.id})"><i data-lucide="edit-3"></i><span>Edit</span></button>
-            <button class="swipe-btn bg-duplicate" onclick="swipeDuplicate(${t.id})"><i data-lucide="copy"></i><span>Dup</span></button>
+            <button class="swipe-btn bg-merge" onclick="swipeMerge('${t.id}')">
+              <i data-lucide="git-merge"></i><span>Merge</span>
+            </button>
+            <button class="swipe-btn bg-duplicate" onclick="swipeDuplicate('${t.id}')">
+              <i data-lucide="copy"></i><span>Dup</span>
+            </button>
+            <button class="swipe-btn bg-edit" onclick="swipeEdit('${t.id}')">
+              <i data-lucide="edit-3"></i><span>Edit</span>
+            </button>
           </div>
-          <div class="transaction-item" onclick="if(this.dataset.swiping !== 'true') showDetail({id:${t.id}})">
+          <div class="transaction-item" onclick="if(this.dataset.swiping !== 'true') showDetailById('${t.id}')">
             <div class="item-icon" style="background: ${isExp ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; color: ${isExp ? '#ef4444' : '#10b981'};">
               <i data-lucide="${isExp ? 'shopping-cart' : 'banknote'}"></i>
             </div>
@@ -1730,6 +1738,12 @@ function doPost(e) {
       }
       return parseFloat(clean.replace(/[^0-9.-]+/g, "")) || 0;
     }
+
+    window.showDetailById = (id) => {
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const t = txs.find(tx => tx.id == id);
+      if (t) showDetail(t);
+    };
 
     function showDetail(t) {
       activeTx = t;
@@ -1898,8 +1912,8 @@ function doPost(e) {
         }
 
         if (isHorizontal) {
-           if (dx > 150) dx = 140 + (dx - 140) * 0.2;
-           if (dx < -150) dx = -140 + (dx + 140) * 0.2;
+           if (dx > 100) dx = 70 + (dx - 70) * 0.2;
+           if (dx < -250) dx = -210 + (dx + 210) * 0.2;
            currentItem.style.transform = `translateX(${dx}px)`;
         }
       };
@@ -1909,9 +1923,9 @@ function doPost(e) {
         currentItem.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
         
         if (dx < -60) {
-          currentItem.style.transform = 'translateX(-140px)';
+          currentItem.style.transform = 'translateX(-210px)';
         } else if (dx > 60) {
-          currentItem.style.transform = 'translateX(140px)';
+          currentItem.style.transform = 'translateX(70px)';
         } else {
           currentItem.style.transform = '';
         }

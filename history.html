@@ -49,6 +49,60 @@
       height: 1px;
       background: linear-gradient(to right, var(--border), transparent);
     }
+    
+    /* Swipe Gestures */
+    .transaction-swipe-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1rem;
+      margin-bottom: 0.75rem;
+      background: var(--bg-secondary);
+      touch-action: pan-y;
+    }
+
+    .swipe-actions {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      z-index: 1;
+      height: 100%;
+    }
+
+    .swipe-actions-left { left: 0; }
+    .swipe-actions-right { right: 0; }
+
+    .swipe-btn {
+      height: 100%;
+      min-width: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: white !important;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s;
+      text-decoration: none;
+    }
+
+    .swipe-btn i { width: 18px; height: 18px; }
+    .swipe-btn span { font-size: 0.55rem; font-weight: 800; text-transform: uppercase; }
+    
+    .bg-edit { background: var(--accent); }
+    .bg-duplicate { background: #3b82f6; }
+    .bg-cleared { background: #10b981; }
+    .bg-merge { background: #f59e0b; }
+
+    .transaction-item {
+      margin-bottom: 0 !important;
+      position: relative;
+      z-index: 2;
+      background: var(--bg-secondary) !important;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
   </style>
 </head>
 <body>
@@ -266,26 +320,120 @@
           lastDate = t.date;
         }
 
-        const item = document.createElement('div');
-        item.className = 'transaction-item';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'transaction-swipe-wrapper';
         const isExp = t.type === 'Expense';
-        item.innerHTML = `
-          <div class="item-icon" style="background: ${isExp ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; color: ${isExp ? '#ef4444' : '#10b981'};">
-            <i data-lucide="${isExp ? 'shopping-cart' : 'banknote'}"></i>
+        
+        wrapper.innerHTML = `
+          <div class="swipe-actions swipe-actions-left">
+            <button class="swipe-btn bg-cleared" onclick="showDetailById('${t.id}')">
+              <i data-lucide="eye"></i><span>Summary</span>
+            </button>
           </div>
-          <div class="item-info">
-            <div class="item-name">${t.name}</div>
-            <div class="item-meta">${t.merchant ? t.merchant + ' • ' : ''}${t.category} • ${t.time || '00:00'}</div>
+          <div class="swipe-actions swipe-actions-right">
+            <button class="swipe-btn bg-merge" onclick="swipeMerge('${t.id}')">
+              <i data-lucide="git-merge"></i><span>Merge</span>
+            </button>
+            <button class="swipe-btn bg-duplicate" onclick="swipeDuplicate('${t.id}')">
+              <i data-lucide="copy"></i><span>Dup</span>
+            </button>
+            <button class="swipe-btn bg-edit" onclick="swipeEdit('${t.id}')">
+              <i data-lucide="edit-3"></i><span>Edit</span>
+            </button>
           </div>
-          <div class="item-amount" style="color: ${isExp ? '#ef4444' : '#10b981'};">
-            ${isExp ? '-' : '+'}Rp ${t.total.toLocaleString('id-ID')}
+          <div class="transaction-item" onclick="if(this.dataset.swiping !== 'true') showDetailById('${t.id}')">
+            <div class="item-icon" style="background: ${isExp ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; color: ${isExp ? '#ef4444' : '#10b981'};">
+              <i data-lucide="${isExp ? 'shopping-cart' : 'banknote'}"></i>
+            </div>
+            <div class="item-info">
+              <div class="item-name">${t.name}</div>
+              <div class="item-meta">${t.merchant ? t.merchant + ' • ' : ''}${t.category} • ${t.time || '00:00'}</div>
+            </div>
+            <div class="item-amount" style="color: ${isExp ? '#ef4444' : '#10b981'};">
+              ${isExp ? '-' : '+'}Rp ${t.total.toLocaleString('id-ID')}
+            </div>
           </div>
         `;
-        item.onclick = () => showDetail(t);
-        transactionList.appendChild(item);
+        transactionList.appendChild(wrapper);
       });
       lucide.createIcons();
+      setupSwipeListeners();
       resultsCount.innerText = `Showing ${list.length} transactions`;
+    }
+
+    window.showDetailById = (id) => {
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const t = txs.find(tx => tx.id == id);
+      if (t) showDetail(t);
+    };
+
+    function setupSwipeListeners() {
+      const list = document.getElementById('transaction-list');
+      let startX, startY;
+      let currentItem = null;
+      let dx = 0;
+      let isHorizontal = false;
+
+      list.onmousedown = list.ontouchstart = (e) => {
+        const item = e.target.closest('.transaction-item');
+        if (!item) return;
+        currentItem = item;
+        startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        item.style.transition = 'none';
+        isHorizontal = false;
+        
+        document.querySelectorAll('.transaction-item').forEach(el => {
+           if(el !== item) el.style.transform = '';
+        });
+      };
+
+      list.onmousemove = list.ontouchmove = (e) => {
+        if (!currentItem) return;
+        const curX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const curY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        dx = curX - startX;
+        const dy = curY - startY;
+
+        if (!isHorizontal && Math.abs(dx) > Math.abs(dy)) {
+           isHorizontal = true;
+        }
+
+        if (isHorizontal) {
+           if (dx > 100) dx = 70 + (dx - 70) * 0.2;
+           if (dx < -250) dx = -210 + (dx + 210) * 0.2;
+           currentItem.style.transform = `translateX(${dx}px)`;
+        }
+      };
+
+      window.onmouseup = window.ontouchend = (e) => {
+        if (!currentItem) return;
+        currentItem.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+        
+        if (dx < -60) {
+          currentItem.style.transform = 'translateX(-210px)';
+        } else if (dx > 60) {
+          currentItem.style.transform = 'translateX(70px)';
+        } else {
+          currentItem.style.transform = '';
+        }
+        
+        if (Math.abs(dx) > 10) {
+           currentItem.dataset.swiping = 'true';
+           const it = currentItem;
+           setTimeout(() => { if(it) it.dataset.swiping = 'false'; }, 300);
+        }
+        
+        currentItem = null;
+        dx = 0;
+      };
+    }
+
+    function swipeDuplicate(id) { window.location.href = `transaction.html?mode=duplicate&id=${id}`; }
+    function swipeEdit(id) { window.location.href = `transaction.html?mode=edit&id=${id}`; }
+    function swipeMerge(id) { 
+       if(typeof showToast === 'function') showToast("Visit Merchant page to Merge.", "info", "git-merge");
+       else alert("Visit Merchant page to Merge.");
     }
 
     function showDetail(t) {
