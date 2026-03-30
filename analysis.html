@@ -30,13 +30,18 @@
       <div style="width: 40px;"></div>
     </header>
 
+    <div style="display: flex; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 0.35rem; gap: 0.35rem; margin-bottom: 1.5rem;">
+      <button id="mode-monthly" class="tab-btn active" style="flex: 1;" onclick="setAnalysisMode('monthly')">Monthly View</button>
+      <button id="mode-yearly" class="tab-btn" style="flex: 1;" onclick="setAnalysisMode('yearly')">Yearly View</button>
+    </div>
+
     <div class="month-nav" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 0.75rem 1rem;">
-      <button id="prev-month" class="back-btn" style="width: 36px; height: 36px; background: rgba(255,255,255,0.05);"><i data-lucide="chevron-left" style="width: 18px;"></i></button>
+      <button id="prev-period" class="back-btn" style="width: 36px; height: 36px; background: rgba(255,255,255,0.05);"><i data-lucide="chevron-left" style="width: 18px;"></i></button>
       <div style="text-align: center;">
-        <div id="display-month" style="font-weight: 800; color: var(--text-primary); font-size: 1.125rem;">March 2026</div>
-        <div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; margin-top: 0.1rem;">Analytical Period</div>
+        <div id="display-period" style="font-weight: 800; color: var(--text-primary); font-size: 1.125rem;">March 2026</div>
+        <div id="display-label" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; margin-top: 0.1rem;">Analytical Period</div>
       </div>
-      <button id="next-month" class="back-btn" style="width: 36px; height: 36px; background: rgba(255,255,255,0.05);"><i data-lucide="chevron-right" style="width: 18px;"></i></button>
+      <button id="next-period" class="back-btn" style="width: 36px; height: 36px; background: rgba(255,255,255,0.05);"><i data-lucide="chevron-right" style="width: 18px;"></i></button>
     </div>
 
     <div class="tabs-container" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 0.35rem; display: flex; gap: 0.35rem; margin-bottom: 1.5rem; overflow-x: auto; scrollbar-width: none;">
@@ -136,7 +141,15 @@
     let sankeyChartInstance = null;
     let spendChart = null, incomeChart = null;
     let tagChartInst = null, projChartInst = null;
-    let activeDate = new Date(2026, 2, 1); 
+    let activeDate = new Date(); 
+    let analysisMode = 'monthly';
+
+    window.setAnalysisMode = (m) => {
+      analysisMode = m;
+      document.getElementById('mode-monthly').classList.toggle('active', m === 'monthly');
+      document.getElementById('mode-yearly').classList.toggle('active', m === 'yearly');
+      initData();
+    };
 
     tabBtns.forEach(btn => {
       btn.onclick = () => {
@@ -178,9 +191,21 @@
       }
 
       const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-      document.getElementById('display-month').innerText = `${months[activeDate.getMonth()]} ${activeDate.getFullYear()}`;
+      const displayPeriod = document.getElementById('display-period');
+      const displayLabel = document.getElementById('display-label');
       
-      const filterStr = `${activeDate.getFullYear()}-${String(activeDate.getMonth() + 1).padStart(2,'0')}`;
+      if (analysisMode === 'monthly') {
+          displayPeriod.innerText = `${months[activeDate.getMonth()]} ${activeDate.getFullYear()}`;
+          displayLabel.innerText = 'Monthly Analysis';
+      } else {
+          displayPeriod.innerText = `${activeDate.getFullYear()}`;
+          displayLabel.innerText = 'Yearly Analysis';
+      }
+      
+      const filterStr = analysisMode === 'monthly' 
+        ? `${activeDate.getFullYear()}-${String(activeDate.getMonth() + 1).padStart(2,'0')}`
+        : `${activeDate.getFullYear()}`;
+        
       const txs = allTxs.filter(t => (t.date || "").startsWith(filterStr));
 
       const getAgg = (dataList, type) => {
@@ -230,7 +255,7 @@
 
       // Tags & Projects
       const tagMap = {}, projMap = {};
-      allTxs.forEach(t => {
+      txs.forEach(t => {
          const amt = t.total || 0;
          (t.tags || []).forEach(tg => { if (tg) tagMap[tg] = (tagMap[tg] || 0) + amt; });
          (t.projects || []).forEach(pj => { if (pj) projMap[pj] = (projMap[pj] || 0) + amt; });
@@ -302,8 +327,18 @@
       lucide.createIcons();
     }
 
-    document.getElementById('prev-month').onclick = () => { window.hasManuallyChangedMonth = true; activeDate.setMonth(activeDate.getMonth() - 1); initData(); };
-    document.getElementById('next-month').onclick = () => { window.hasManuallyChangedMonth = true; activeDate.setMonth(activeDate.getMonth() + 1); initData(); };
+    document.getElementById('prev-period').onclick = () => { 
+      window.hasManuallyChangedMonth = true; 
+      if (analysisMode === 'monthly') activeDate.setMonth(activeDate.getMonth() - 1);
+      else activeDate.setFullYear(activeDate.getFullYear() - 1);
+      initData(); 
+    };
+    document.getElementById('next-period').onclick = () => { 
+      window.hasManuallyChangedMonth = true; 
+      if (analysisMode === 'monthly') activeDate.setMonth(activeDate.getMonth() + 1);
+      else activeDate.setFullYear(activeDate.getFullYear() + 1);
+      initData(); 
+    };
     
     initData();
   </script>
