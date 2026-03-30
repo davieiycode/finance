@@ -1548,13 +1548,43 @@ function doPost(e) {
       });
 
       // Stats based on ALL filtered (or just relevant) - usually stats show total ledger
-      const spent = txs.filter(t => t.type === 'Expense').reduce((s, t) => s + t.total, 0);
-      const income = txs.filter(t => t.type === 'Income').reduce((s, t) => s + t.total, 0);
-      const uncleared = txs.filter(t => t.cleared === false).length;
+      const now = new Date();
+      const currentMonth = now.toISOString().slice(0, 7); // "YYYY-MM"
+      
+      // Monthly Spent (Current Month Expenses only)
+      const monthlySpent = txs.filter(t => t.type === 'Expense' && (t.date || '').startsWith(currentMonth))
+                              .reduce((s, t) => s + t.total, 0);
 
-      const baseBalance = parseFloat(localStorage.getItem('base_balance') || '0');
-      document.getElementById('stat-balance').innerText = 'Rp ' + (baseBalance + income - spent).toLocaleString('id-ID');
-      document.getElementById('stat-spent').innerText = 'Rp ' + spent.toLocaleString('id-ID');
+      // Lifetime Totals for Balance Calculation (Fallback)
+      const totalSpent = txs.filter(t => t.type === 'Expense').reduce((s, t) => s + t.total, 0);
+      const totalIncome = txs.filter(t => t.type === 'Income').reduce((s, t) => s + t.total, 0);
+      
+      let totalBalance = 0;
+      const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+      
+      if (accounts.length > 0) {
+        // More accurate: Sum of all account balances + their transaction flows
+        totalBalance = accounts.reduce((sum, acc) => {
+           const inSum = txs.filter(t => (t.accountReceived || '').toLowerCase() === acc.name.toLowerCase())
+                            .reduce((s, t) => s + (t.total || 0), 0);
+           const outSum = txs.filter(t => (t.accountPayment || '').toLowerCase() === acc.name.toLowerCase())
+                             .reduce((s, t) => s + (t.total || 0), 0);
+           return sum + (acc.balance || 0) + inSum - outSum;
+        }, 0);
+      } else {
+        // Fallback: Simple Lifetime Income - Expense
+        const baseBalance = parseFloat(localStorage.getItem('base_balance') || '0');
+        totalBalance = baseBalance + totalIncome - totalSpent;
+      }
+      
+      // Update UI
+      document.getElementById('stat-balance').innerText = 'Rp ' + totalBalance.toLocaleString('id-ID');
+      document.getElementById('stat-spent').innerText = 'Rp ' + monthlySpent.toLocaleString('id-ID');
+      
+      // Sync for PDF Export
+      localStorage.setItem('total_balance', totalBalance);
+
+      const uncleared = txs.filter(t => t.cleared === false).length;
 
       // Budgets & Goals logic
       const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
