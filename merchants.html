@@ -675,7 +675,6 @@
       localStorage.setItem('merchants', JSON.stringify(merchants));
     }
 
-    const types = ['All', 'Supermarket', 'Convenience Store', 'Restaurant', 'Cafe', 'Gas Station', 'Online', 'Pharmacy', 'Other'];
     let activeType = 'All';
     let searchTerm = '';
 
@@ -687,7 +686,12 @@
 
     function renderFilterChips() {
       const parent = document.getElementById('m-filter-chips');
-      parent.innerHTML = types.map(t => `<button class="filter-chip ${t === activeType ? 'active' : ''}" onclick="setType('${t}')">${t}</button>`).join('');
+      const usedTypes = ['All', ...new Set(merchants.map(m => m.type).filter(Boolean))].sort();
+      
+      // If activeType is not in usedTypes, reset to 'All'
+      if (!usedTypes.includes(activeType)) activeType = 'All';
+      
+      parent.innerHTML = usedTypes.map(t => `<button class="filter-chip ${t === activeType ? 'active' : ''}" onclick="setType('${t}')">${t}</button>`).join('');
     }
 
     function renderMerchants() {
@@ -814,7 +818,7 @@
     }
 
     tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
-    function closeModal() { modal.style.display = 'none'; renderMerchants(); }
+    function closeModal() { modal.style.display = 'none'; renderFilterChips(); renderMerchants(); }
 
     let _mergeTargetId = null;
 

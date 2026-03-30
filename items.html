@@ -402,7 +402,6 @@
 
   <script>
     lucide.createIcons();
-    const categories = ['All', 'Food & Groceries', 'Dining Out', 'Transportation', 'Personal Care', 'Clothing & Apparel', 'Housing', 'Utilities', 'Internet & Phone', 'Subscriptions', 'Insurance', 'Entertainment', 'Hobbies', 'Travel & Holidays', 'Sports & Fitness', 'Debt Repayment', 'Education & Self-Development', 'Medical & Dental', 'Health Insurance', 'Wellness', 'Donations', 'Family Support', 'Office Supplies', 'Professional Services', 'Marketing & Advertising', 'Business Travel', 'Unexpected Expenses', 'Miscellaneous'];
     let items = JSON.parse(localStorage.getItem('items'));
     if (!items || items.length === 0) {
       items = [
@@ -493,7 +492,11 @@
 
     function renderFilterChips() {
       const parent = document.getElementById('i-filter-chips');
-      parent.innerHTML = categories.map(c => `<button class="filter-chip ${c===activeCat?'active':''}" onclick="setCategory('${c}')">${c}</button>`).join('');
+      const usedCats = ['All', ...new Set(items.map(i => i.category).filter(Boolean))].sort();
+      
+      if (!usedCats.includes(activeCat)) activeCat = 'All';
+      
+      parent.innerHTML = usedCats.map(c => `<button class="filter-chip ${c===activeCat?'active':''}" onclick="setCategory('${c}')">${c}</button>`).join('');
     }
 
     function renderItems() {
@@ -627,7 +630,7 @@
     }
 
     tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
-    function closeModal() { modal.style.display = 'none'; renderItems(); }
+    function closeModal() { modal.style.display = 'none'; renderFilterChips(); renderItems(); }
 
     function deleteItem() {
       if(typeof showConfirm === 'function') {
