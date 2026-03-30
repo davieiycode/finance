@@ -104,7 +104,7 @@
     <div id="tab-tags" class="tab-content" style="display: none;">
       <div class="chart-container">
         <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 1.5rem;">Tags Breakdown</h3>
-        <div style="height: 250px;"><canvas id="tagsChart"></canvas></div>
+        <div id="tagsChart" style="height: 300px;"></div>
       </div>
       <div id="tags-list"></div>
     </div>
@@ -112,7 +112,7 @@
     <div id="tab-projects" class="tab-content" style="display: none;">
       <div class="chart-container">
         <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 1.5rem;">Project Analysis</h3>
-        <div style="height: 250px;"><canvas id="projectsChart"></canvas></div>
+        <div id="projectsChart" style="height: 350px;"></div>
       </div>
       <div id="projects-list"></div>
     </div>
@@ -165,7 +165,16 @@
         btn.style.background = 'var(--border)';
         const target = document.getElementById(`tab-${btn.dataset.tab}`);
         if (target) target.style.display = 'block';
-        if (btn.dataset.tab === 'flow' && sankeyChartInstance) setTimeout(() => sankeyChartInstance.resize(), 100);
+        
+        // Resize ECharts
+        setTimeout(() => {
+          const sankey = echarts.getInstanceByDom(document.getElementById('sankeyChart'));
+          if (sankey) sankey.resize();
+          const tags = echarts.getInstanceByDom(document.getElementById('tagsChart'));
+          if (tags) tags.resize();
+          const projs = echarts.getInstanceByDom(document.getElementById('projectsChart'));
+          if (projs) projs.resize();
+        }, 100);
       };
     });
 
@@ -236,38 +245,74 @@
       if (document.getElementById('spend-total-val')) document.getElementById('spend-total-val').innerText = fmt(totalExp);
       if (document.getElementById('income-total-val')) document.getElementById('income-total-val').innerText = fmt(totalInc);
 
+      const getProjectBudget = (name) => {
+        const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
+        const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+        const b = budgets.find(x => x.category === name);
+        if (b) return b.limit;
+        const g = goals.find(x => x.name === name);
+        if (g) return g.target;
+        return 10000000;
+      };
+
       const renderL = (data, cid, contextType) => {
         const l = document.getElementById(cid);
         if (!l) return;
-        l.innerHTML = data.length ? data.map((item, i) => `
+        l.innerHTML = data.length ? data.map((item, i) => {
+          const budget = (contextType === 'Project' || (contextType === 'Expense' && (item.name.toLowerCase().includes('food') || item.name.toLowerCase().includes('transport')))) ? getProjectBudget(item.name) : 0;
+          const perc = budget ? Math.min((item.value / budget) * 100, 100) : 0;
+          const color = colors[i % colors.length];
+
+          return `
           <div class="stat-card" style="cursor: pointer; transition: transform 0.1s;" onclick="showCatDetails('${item.name}', '${contextType}')" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${perc > 0 ? '0.5rem' : '0'};">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: ${colors[i % colors.length]};"></div>
+                <div style="width: 10px; height: 10px; border-radius: 50%; background: ${color};"></div>
                 <span style="font-size: 0.8125rem; font-weight: 600;">${item.name}</span>
               </div>
-              <span style="font-size: 0.8125rem; font-weight: 700;">${fmt(item.value)}</span>
+              <div style="text-align: right;">
+                <span style="font-size: 0.8125rem; font-weight: 700;">${fmt(item.value)}</span>
+                ${perc > 0 ? `<div style="font-size: 0.6rem; color: var(--text-secondary);">${Math.round(perc)}% of budget</div>` : ''}
+              </div>
             </div>
-          </div>`).join('') : '<p style="text-align:center; opacity:0.5; padding:2rem; font-size:0.8rem;">No entries found</p>';
+            ${perc > 0 ? `
+            <div style="height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+              <div style="height: 100%; width: ${perc}%; background: ${color}; border-radius: 2px;"></div>
+            </div>
+            ` : ''}
+          </div>`;
+        }).join('') : '<p style="text-align:center; opacity:0.5; padding:2rem; font-size:0.8rem;">No entries found</p>';
       };
 
       renderL(spendAgg, 'spending-parent-list', 'Expense');
       renderL(incomeAgg, 'income-parent-list', 'Income');
 
-      // Tags & Projects
       const tagMap = {}, projMap = {};
       txs.forEach(t => {
          const amt = t.total || 0;
          (t.tags || []).forEach(tg => { if (tg) tagMap[tg] = (tagMap[tg] || 0) + amt; });
          (t.projects || []).forEach(pj => { if (pj) projMap[pj] = (projMap[pj] || 0) + amt; });
       });
-      const tagData = Object.entries(tagMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
-      const projData = Object.entries(projMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
+      const tagDataSummary = Object.entries(tagMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
+      const projDataSummary = Object.entries(projMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
 
-      renderL(tagData, 'tags-list', 'Tag');
-      renderL(projData, 'projects-list', 'Project');
+      renderL(tagDataSummary, 'tags-list', 'Tag');
+      renderL(projDataSummary, 'projects-list', 'Project');
 
-      // Charts update
+      // ---------------------------------------------------------
+      // CHARTS UPDATE
+      // ---------------------------------------------------------
+      
+      // Common ECharts initialization helper
+      const getEChart = (id) => {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        let inst = echarts.getInstanceByDom(el);
+        if (!inst) inst = echarts.init(el, 'dark');
+        return inst;
+      };
+
+      // 1. CASH FLOW SANKEY
       if (!sankeyChartInstance) sankeyChartInstance = echarts.init(document.getElementById('sankeyChart'), 'dark');
       const nodes = [{ name: 'Income', itemStyle: { color: '#22c55e' } }, { name: 'Savings', itemStyle: { color: '#3b82f6' } }];
       incomeAgg.forEach(i => nodes.push({ name: i.name }));
@@ -281,17 +326,187 @@
         series: [{ type: 'sankey', layout: 'none', data: nodes.length > 2 ? nodes : [{name:'No Data'}], links: links.length ? links : [{source:'Income',target:'No Data',value:0.1}], label: { color: '#eee', fontSize: 10 } }] 
       });
 
+      // 2. SPENDING/INCOME DONUTS (Chart.js)
       const donutBase = { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } };
       if (incomeChart) incomeChart.destroy();
       incomeChart = new Chart(document.getElementById('incomeDoughnutChart'), { type: 'doughnut', data: { labels: incomeAgg.map(i => i.name), datasets: [{ data: incomeAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
       if (spendChart) spendChart.destroy();
       spendChart = new Chart(document.getElementById('spendingDoughnutChart'), { type: 'doughnut', data: { labels: spendAgg.map(i => i.name), datasets: [{ data: spendAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
 
-      const barOpt = (labels, data, color) => ({ type: 'bar', data: { labels, datasets: [{ data, backgroundColor: color, borderRadius: 8, barThickness: 15 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } } } } });
-      if (tagChartInst) tagChartInst.destroy();
-      tagChartInst = new Chart(document.getElementById('tagsChart'), barOpt(tagData.map(d => d.name), tagData.map(d => d.value), '#8b5cf6'));
-      if (projChartInst) projChartInst.destroy();
-      projChartInst = new Chart(document.getElementById('projectsChart'), barOpt(projData.map(d => d.name), projData.map(d => d.value), '#10b981'));
+      // ---------------------------------------------------------
+      // ADVANCED TAGS & PROJECTS ANALYSIS (ECharts)
+      // ---------------------------------------------------------
+      
+      // Helper: Get data for multiple months
+      const getMultiMonthData = (txList, startMonth, endMonth, field) => {
+        const monthMap = {}; // { 'YYYY-MM': { 'TagA': 100, 'TagB': 200 } }
+        const allItems = new Set();
+        
+        txList.forEach(t => {
+          if (t.type !== 'Expense') return;
+          const month = (t.date || '').substring(0, 7);
+          if (month < startMonth || month > endMonth) return;
+          
+          if (!monthMap[month]) monthMap[month] = {};
+          const items = Array.isArray(t[field]) ? t[field] : (t[field] ? [t[field]] : []);
+          items.forEach(it => {
+            if (!it) return;
+            allItems.add(it);
+            monthMap[month][it] = (monthMap[month][it] || 0) + (t.total || 0);
+          });
+        });
+        
+        return { monthMap, allItems: Array.from(allItems) };
+      };
+
+      // A. TAGS ANALYSIS
+      const tagChart = getEChart('tagsChart');
+      if (tagChart) {
+        if (analysisMode === 'monthly') {
+          // Requirement: Monthly Tag Analysis -> Stacked Bar (Compare current + last 5 months)
+          const months = [];
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date(activeDate.getFullYear(), activeDate.getMonth() - i, 1);
+            months.push(d.toISOString().substring(0, 7));
+          }
+          const { monthMap, allItems } = getMultiMonthData(allTxs, months[0], months[5], 'tags');
+          
+          const series = allItems.map((tg, idx) => ({
+            name: tg, type: 'bar', stack: 'total',
+            label: { show: false },
+            emphasis: { focus: 'series' },
+            data: months.map(m => (monthMap[m] ? monthMap[m][tg] || 0 : 0))
+          }));
+
+          tagChart.setOption({
+            backgroundColor: 'transparent',
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { show: false },
+            grid: { top: '10%', bottom: '15%', left: '15%', right: '5%' },
+            xAxis: { type: 'category', data: months.map(m => m.split('-')[1] + '/' + m.split('-')[0].substring(2)), axisLabel: { color: '#94a3b8', fontSize: 10 } },
+            yAxis: { type: 'value', axisLabel: { color: '#94a3b8', fontSize: 10, formatter: v => v > 1000 ? (v/1000).toLocaleString() + 'k' : v } },
+            series: series.length ? series : [{ type: 'bar', data: [0] }],
+            color: colors
+          }, true);
+        } else {
+          // Requirement: Yearly Tag Analysis -> Line Chart (Tren Jan-Dec)
+          const months = Array.from({length: 12}, (_, i) => `${activeDate.getFullYear()}-${String(i + 1).padStart(2, '0')}`);
+          const { monthMap, allItems } = getMultiMonthData(allTxs, months[0], months[11], 'tags');
+          
+          const series = allItems.map((tg) => ({
+            name: tg, type: 'line', smooth: true,
+            symbol: 'none',
+            emphasis: { focus: 'series' },
+            data: months.map(m => (monthMap[m] ? monthMap[m][tg] || 0 : 0))
+          }));
+
+          tagChart.setOption({
+            backgroundColor: 'transparent',
+            tooltip: { trigger: 'axis' },
+            legend: { show: false },
+            grid: { top: '10%', bottom: '15%', left: '15%', right: '5%' },
+            xAxis: { type: 'category', data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], axisLabel: { color: '#94a3b8', fontSize: 10 } },
+            yAxis: { type: 'value', axisLabel: { color: '#94a3b8', fontSize: 10, formatter: v => v > 1000 ? (v/1000).toLocaleString() + 'k' : v } },
+            series: series.length ? series : [{ type: 'line', data: months.map(() => 0) }],
+            color: colors
+          }, true);
+        }
+      }
+
+      // B. PROJECTS ANALYSIS
+      const projChart = getEChart('projectsChart');
+      if (projChart) {
+        if (analysisMode === 'monthly') {
+          // Requirement: Monthly Project Analysis -> Gauge/Bullet (Current Month % Budget)
+          // Since ECharts Gauge is best for single value, we'll pick the most spent project or show a simplified overview
+          // For premium look, let's show a Gauge for the TOP project and a summary.
+          const topProj = projDataSummary[0] || { name: 'No Project', value: 0 };
+          
+          // Budget lookup logic
+          const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
+          const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+          const findBudget = (name) => {
+            const b = budgets.find(x => x.category === name);
+            if (b) return b.limit;
+            const g = goals.find(x => x.name === name);
+            if (g) return g.target;
+            return 10000000; // Default 10M
+          };
+          
+          const target = findBudget(topProj.name);
+          const perc = Math.min(Math.round((topProj.value / target) * 100), 100);
+          
+          projChart.setOption({
+            backgroundColor: 'transparent',
+            series: [{
+              type: 'gauge',
+              center: ['50%', '60%'],
+              startAngle: 180, endAngle: 0,
+              min: 0, max: 100,
+              progress: { show: true, width: 18, itemStyle: { color: '#10b981' } },
+              axisLine: { lineStyle: { width: 18, color: [[1, 'rgba(255,255,255,0.05)']] } },
+              axisTick: { show: false }, axisLabel: { show: false }, splitLine: { show: false },
+              pointer: { show: false },
+              anchor: { show: false },
+              title: { offsetCenter: [0, '20%'], fontSize: 14, color: '#94a3b8', fontWeight: 600 },
+              detail: { valueAnimation: true, offsetCenter: [0, '-10%'], fontSize: 32, fontWeight: 800, color: '#fff', formatter: '{value}%' },
+              data: [{ value: perc, name: topProj.name.substring(0, 15) }]
+            }]
+          }, true);
+        } else {
+          // Requirement: Yearly Project Analysis -> Sunburst/Treemap (Composition vs Total Year)
+          // Root = Year Total, First Tier = Categories/Projects
+          const yearTotal = allTxs.filter(t => t.type === 'Expense' && (t.date || '').startsWith(activeDate.getFullYear().toString()))
+                                .reduce((s,t) => s + (t.total || 0), 0);
+          
+          // Data structure for Sunburst
+          const dataForSunburst = [];
+          
+          // Add Projects
+          const projYearMap = {};
+          allTxs.filter(t => t.type === 'Expense' && (t.date || '').startsWith(activeDate.getFullYear().toString()))
+                .forEach(t => {
+                   (t.projects || []).forEach(pj => { if(pj) projYearMap[pj] = (projYearMap[pj] || 0) + (t.total || 0); });
+                });
+          
+          Object.entries(projYearMap).forEach(([name, val], i) => {
+            dataForSunburst.push({
+              name: 'Project: ' + name,
+              value: val,
+              itemStyle: { color: colors[i % colors.length] }
+            });
+          });
+          
+          // Add Other Spending (not in any project)
+          const nonProjTotal = yearTotal - Object.values(projYearMap).reduce((s,v) => s+v, 0);
+          if (nonProjTotal > 0) {
+            dataForSunburst.push({
+              name: 'Other Expenses',
+              value: nonProjTotal,
+              itemStyle: { color: 'rgba(255,255,255,0.1)' }
+            });
+          }
+
+          projChart.setOption({
+            backgroundColor: 'transparent',
+            series: [{
+              type: 'sunburst',
+              data: [{
+                name: 'Yearly Total',
+                children: dataForSunburst
+              }],
+              radius: [0, '90%'],
+              label: { rotate: 'radial', color: '#fff', fontSize: 10 },
+              itemStyle: { borderRadius: 8, borderWidth: 2, borderColor: '#000' },
+              levels: [
+                {},
+                { r0: '0%', r: '35%', itemStyle: { color: 'rgba(139, 92, 246, 0.2)' }, label: { rotate: '0', fontSize: 12, fontWeight: 700 } },
+                { r0: '35%', r: '70%', label: { rotate: 'radial', fontSize: 10 } }
+              ]
+            }]
+          }, true);
+        }
+      }
     }
 
     window.showCatDetails = (name, type) => {
