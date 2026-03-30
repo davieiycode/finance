@@ -621,7 +621,7 @@
 
     function adjPrice(v) {
       const el = document.getElementById('f-price');
-      let val = parseInt(el.value) || 0;
+      let val = parseFloat(el.value) || 0;
       el.value = Math.max(0, val + v);
       autoSave();
     }
@@ -716,7 +716,7 @@
       if (isDuplicate) return; 
 
       const cat = document.getElementById('f-category').value;
-      const price = parseInt(document.getElementById('f-price').value) || 0;
+      const price = parseFloat(document.getElementById('f-price').value) || 0;
       const unit = document.getElementById('f-unit').value;
       const currency = document.getElementById('f-currency').value;
       const manu = document.getElementById('f-manu').value;

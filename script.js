@@ -105,27 +105,54 @@ window.addChip = (wrapperId, val) => {
   if (list) list.appendChild(chip);
 };
 
-// Input Formatting (Live Thousand Separators)
+// Input Formatting (Live Thousand Separators + Decimals up to 10 places)
 function formatInputLocale(e) {
-  let cursor = e.target.selectionStart;
-  let oldLen = e.target.value.length;
-  
-  // Clean all but numbers
-  let val = e.target.value.replace(/[^0-9]/g, "");
-  if (!val) {
-    e.target.value = "";
+  const raw = e.target.value;
+
+  // Allow typing a decimal point or trailing zeros (don't reformat mid-entry)
+  // Only reformat when there's no incomplete decimal being typed
+  const trailingDecimal = /[.,]\d{0,10}$/.test(raw) && !/[.,]$/.test(raw);
+
+  // Normalize: accept both '.' and ',' as decimal separator
+  // Detect decimal part: last '.' or ',' that isn't a thousands separator
+  let intPart = raw;
+  let decPart = '';
+
+  // Find decimal separator (last '.' or ',')
+  const lastDot = raw.lastIndexOf('.');
+  const lastComma = raw.lastIndexOf(',');
+  const decIdx = Math.max(lastDot, lastComma);
+
+  if (decIdx !== -1) {
+    const afterDec = raw.slice(decIdx + 1);
+    // It's a decimal separator if what follows is ≤10 digits and not purely a thousands pattern
+    if (/^\d{0,10}$/.test(afterDec)) {
+      intPart = raw.slice(0, decIdx);
+      decPart = afterDec.slice(0, 10); // max 10 decimal digits
+    }
+  }
+
+  // Strip non-numeric from int part
+  const intClean = intPart.replace(/[^0-9]/g, '');
+
+  if (!intClean && !decPart) {
+    e.target.value = '';
     calculateTotal();
     return;
   }
-  
-  // Format as ID locale (dot thousands)
-  let formatted = new Intl.NumberFormat('id-ID').format(val);
-  e.target.value = formatted;
-  
-  // Adjust cursor position
-  let newLen = e.target.value.length;
-  e.target.setSelectionRange(cursor + (newLen - oldLen), cursor + (newLen - oldLen));
-  
+
+  // Format integer part with ID locale thousands separator
+  const intFormatted = intClean ? new Intl.NumberFormat('id-ID').format(intClean) : '0';
+
+  // If decimal point was just typed (trailing separator), preserve it so user can keep typing
+  if (/[.,]$/.test(raw)) {
+    e.target.value = intFormatted + ',';
+  } else if (decPart !== '') {
+    e.target.value = intFormatted + ',' + decPart;
+  } else {
+    e.target.value = intFormatted;
+  }
+
   calculateTotal();
 }
 
@@ -390,17 +417,18 @@ const initForm = () => {
   } catch (e) { console.error(e); }
 };
 
-// Listeners for inputs (With live formatting for currency/qty)
+// Listeners for inputs (With live formatting for currency/qty + decimal support)
 const locInputs = ['amount-input', 'quantity-input', 'discount-input', 'fee-input'];
 locInputs.forEach(id => {
   const el = document.getElementById(id);
   if (el) el.oninput = formatInputLocale;
 });
 
+// Exchange rate also supports decimals — use the same decimal-aware formatter
 const rawInputs = ['exchange-rate-input'];
 rawInputs.forEach(id => {
   const el = document.getElementById(id);
-  if (el) el.oninput = calculateTotal;
+  if (el) el.oninput = formatInputLocale;
 });
 
 // Save Logic
