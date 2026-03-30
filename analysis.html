@@ -148,6 +148,7 @@
       analysisMode = m;
       document.getElementById('mode-monthly').classList.toggle('active', m === 'monthly');
       document.getElementById('mode-yearly').classList.toggle('active', m === 'yearly');
+      document.querySelector('.month-nav').style.display = (m === 'monthly') ? 'flex' : 'none';
       initData();
     };
 
@@ -295,13 +296,18 @@
 
     window.showCatDetails = (name, type) => {
       const allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      let filtered = [];
+      const filterStr = analysisMode === 'monthly' 
+        ? `${activeDate.getFullYear()}-${String(activeDate.getMonth() + 1).padStart(2,'0')}`
+        : `${activeDate.getFullYear()}`;
+        
+      let filtered = allTxs.filter(t => (t.date || "").startsWith(filterStr));
+
       if (type === 'Tag') {
-        filtered = allTxs.filter(t => (t.tags || []).includes(name));
+        filtered = filtered.filter(t => (t.tags || []).includes(name));
       } else if (type === 'Project') {
-        filtered = allTxs.filter(t => (t.projects || []).includes(name));
+        filtered = filtered.filter(t => (t.projects || []).includes(name));
       } else {
-        filtered = allTxs.filter(t => t.type === type && t.category === name);
+        filtered = filtered.filter(t => t.type === type && t.category === name);
       }
       
       // Sort by amount descending
