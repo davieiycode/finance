@@ -380,15 +380,33 @@
       margin-bottom: 0.25rem;
     }
 
-    #edge-swipe-indicator {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 20px;
-      height: 100vh;
-      z-index: 1000;
-    }
-  </style>
+      #edge-swipe-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 20px;
+        height: 100vh;
+        z-index: 1000;
+      }
+
+      .header-btn {
+        transition: 0.3s;
+        color: var(--text-secondary);
+      }
+      .header-btn:hover {
+        background: var(--border2) !important;
+        color: var(--accent);
+        transform: translateY(-2px);
+      }
+      .header-btn.problematic i {
+        color: #f59e0b;
+        animation: pulse-ring 2s infinite;
+      }
+      @keyframes pulse-ring {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    </style>
 </head>
 
 <body>
@@ -404,9 +422,14 @@
             style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
             <i data-lucide="search" style="width: 20px;"></i>
           </div>
-          <div id="profile-trigger" class="profile-icon"
-            style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-            <i data-lucide="user" style="width: 20px;"></i>
+          <div class="user-meta" style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="header-btn" onclick="openMaintenanceHub()" id="audit-trigger" title="Audit Hub" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+              <i data-lucide="shield-check" style="width: 20px;"></i>
+            </div>
+            <div id="profile-trigger" class="profile-icon"
+              style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+              <i data-lucide="user" style="width: 20px;"></i>
+            </div>
           </div>
         </div>
       </header>
@@ -1989,6 +2012,23 @@ function doPost(e) {
       });
       lucide.createIcons();
       setupSwipeListeners();
+      checkAuditIssues();
+    }
+
+    function checkAuditIssues() {
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const seen = new Map();
+      let hasIssues = false;
+      txs.forEach(t => {
+        const key = `${t.date}-${t.merchant}-${t.total}-${t.type}`;
+        if (seen.has(key)) hasIssues = true;
+        seen.set(key, t);
+      });
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      if (txs.some(t => t.cleared === false && (t.date || '').slice(0, 7) < currentMonth)) hasIssues = true;
+      
+      const trigger = document.getElementById('audit-trigger');
+      if (trigger) trigger.classList.toggle('problematic', hasIssues);
     }
 
     // Helper for form parsing
