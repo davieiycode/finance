@@ -199,6 +199,49 @@
     </div>
   </div>
 
+  <!-- Merge Picker Bottom Sheet -->
+  <div id="merge-picker-backdrop" onclick="closeMergePicker(event)">
+    <div class="merge-picker-sheet" onclick="event.stopPropagation()">
+      <div class="merge-picker-header">
+        <div>
+          <div style="font-weight:800; font-size:1rem; color:white;">Merge Into&hellip;</div>
+          <div id="merge-source-hint" style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;"></div>
+        </div>
+        <button onclick="closeMergePicker()" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:0.25rem;">
+          <i data-lucide="x" style="width:20px;"></i>
+        </button>
+      </div>
+      <div class="merge-search-wrap" style="position: relative; padding: 1rem 1.5rem 0.75rem;">
+        <i data-lucide="search" style="position: absolute; left: 2.25rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); width: 16px; pointer-events: none;"></i>
+        <input type="text" id="merge-search-input" placeholder="Search accounts..." oninput="filterMergeList(this.value)" autocomplete="off"
+               style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.75rem; color: white; font-size: 0.9375rem; outline: none;">
+      </div>
+      <div class="merge-list" id="merge-list" style="max-height: 42vh; overflow-y: auto; padding: 0 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem;"></div>
+    </div>
+  </div>
+
+  <style>
+    #merge-picker-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+      z-index: 2000; display: none; align-items: flex-end; justify-content: center; padding: 1rem;
+    }
+    #merge-picker-backdrop.open { display: flex; animation: fadeInBackdrop 0.2s ease; }
+    .merge-picker-sheet {
+      width: 100%; max-width: 500px; background: #0f0f12; border: 1px solid var(--border);
+      border-radius: 1.75rem 1.75rem 1rem 1rem; overflow: hidden;
+      animation: slideUpSheet 0.28s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .merge-picker-header { padding: 1.25rem 1.5rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .merge-item {
+      display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; border-radius: 1rem;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
+    }
+    .merge-item:hover { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.2); }
+    .merge-item-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--violet-soft); color: var(--violet); display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; }
+    @keyframes fadeInBackdrop { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUpSheet { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+
   <script>
     lucide.createIcons();
     let accounts = JSON.parse(localStorage.getItem('accounts'));
@@ -337,28 +380,71 @@
     tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
 
     function showMergePicker() {
-      const others = accounts.filter(a => a.id !== activeAcc.id);
-      const targetName = prompt(`Merge "${activeAcc.name}" INTO which account?\nAvailable: ${others.map(a => a.name).join(', ')}`);
-      if (!targetName) return;
+      if (!activeAcc) return;
+      document.getElementById('merge-source-hint').textContent = `All balance and transactions of "${activeAcc.name}" will move to the selected account.`;
+      document.getElementById('merge-search-input').value = '';
+      populateMergeList('');
+      document.getElementById('merge-picker-backdrop').classList.add('open');
+      setTimeout(() => document.getElementById('merge-search-input').focus(), 100);
+      lucide.createIcons();
+    }
+
+    function populateMergeList(query) {
+      const others = accounts.filter(a => a.id !== activeAcc.id && (a.name || '').toLowerCase().includes(query.toLowerCase()));
+      const list = document.getElementById('merge-list');
       
-      const target = accounts.find(a => a.name.toLowerCase() === targetName.toLowerCase() && a.id !== activeAcc.id);
-      if (!target) { showToast('Account not found', 'error'); return; }
+      if (others.length === 0) {
+        list.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-secondary); font-size:0.875rem;">No other accounts found.</div>`;
+        return;
+      }
       
-      if (!confirm(`Merge "${activeAcc.name}" INTO "${target.name}"?\nAll balance and transaction history will be moved.`)) return;
+      list.innerHTML = others.map(a => `
+        <div class="merge-item" onclick="confirmMerge(${a.id})">
+          <div class="merge-item-icon" style="background:${a.color}22; color:${a.color}">${a.name.substring(0,2)}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:white; font-size:0.9375rem;">${a.name}</div>
+            <div style="font-size:0.725rem; color:var(--text-secondary);">${a.type}</div>
+          </div>
+          <i data-lucide="chevron-right" style="width:16px; color:var(--accent); opacity:0.5;"></i>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function filterMergeList(q) { populateMergeList(q); }
+
+    function closeMergePicker(e) {
+      if (e && e.target !== document.getElementById('merge-picker-backdrop') && e.target.tagName !== 'BUTTON') return;
+      document.getElementById('merge-picker-backdrop').classList.remove('open');
+    }
+
+    function confirmMerge(targetId) {
+      const target = accounts.find(a => a.id === targetId);
+      if (!target) return;
       
-      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      txs.forEach(t => {
-        if (t.accountPayment === activeAcc.name) t.accountPayment = target.name;
-        if (t.accountReceived === activeAcc.name) t.accountReceived = target.name;
-      });
-      localStorage.setItem('transactions', JSON.stringify(txs));
+      closeMergePicker();
       
-      accounts = accounts.filter(a => a.id !== activeAcc.id);
-      localStorage.setItem('accounts', JSON.stringify(accounts));
-      
-      closeModal();
-      renderAccounts('');
-      showToast('Accounts merged successfully!', 'success', 'git-merge');
+      const doTheMerge = () => {
+        let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+        txs.forEach(t => {
+          if (t.accountPayment === activeAcc.name) t.accountPayment = target.name;
+          if (t.accountReceived === activeAcc.name) t.accountReceived = target.name;
+        });
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        
+        accounts = accounts.filter(a => a.id !== activeAcc.id);
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+        
+        closeModal();
+        renderAccounts('');
+        if(typeof showToast === 'function') showToast('Accounts merged successfully!', 'success', 'git-merge');
+      };
+
+      if (typeof showConfirm === 'function') {
+        showConfirm(`Merge "${activeAcc.name}" INTO "${target.name}"? This cannot be undone.`, doTheMerge);
+      } else {
+        if (confirm(`Merge "${activeAcc.name}" INTO "${target.name}"?`)) doTheMerge();
+      }
     }
 
     function closeModal() { modal.style.display = 'none'; document.body.style.overflow = 'auto'; }

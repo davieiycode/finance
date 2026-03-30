@@ -435,6 +435,8 @@ rawInputs.forEach(id => {
 if (nextBtn) {
   nextBtn.onclick = (e) => {
     e.preventDefault();
+    const db = JSON.parse(localStorage.getItem('transactions') || '[]');
+    const existingTx = (mode === 'edit' && editId) ? db.find(t => t.id == editId) : null;
     const tx = {
       id: mode === 'edit' ? parseInt(editId) : Date.now(),
       date: document.getElementById('transaction-date').value,
@@ -458,10 +460,10 @@ if (nextBtn) {
       projects: Array.from(document.querySelectorAll('#projects-wrapper .chip span:first-child')).map(s => s.innerText),
       description: document.getElementById('transaction-description').value,
       receipt: document.getElementById('receipt-input').value,
-      cleared: document.querySelector('#cleared-selector .type-btn.active')?.dataset.cleared === 'yes'
+      cleared: document.querySelector('#cleared-selector .type-btn.active')?.dataset.cleared === 'yes',
+      xp: existingTx ? (existingTx.xp || 10) : 10
     };
     
-    let db = JSON.parse(localStorage.getItem('transactions') || '[]');
     if (mode === 'edit') {
        const idx = db.findIndex(t => t.id == editId);
        if (idx !== -1) db[idx] = tx; else db.push(tx);

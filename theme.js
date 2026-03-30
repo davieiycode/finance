@@ -234,7 +234,7 @@
         const data = await res.json();
 
         let count = 0;
-        const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals'];
+        const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'membership_cards'];
         
         if (mode === 'overwrite') {
           if (data.status === 'success') {
@@ -356,16 +356,39 @@
       }
     },
     push: async (url) => {
-      SyncHub.start('Cloud Push', 'Preparing local backup...');
+      SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
       try {
-        const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-        if (txs.length === 0) { SyncHub.finish('No data to push'); return 0; }
-        SyncHub.update(40, `Sending ${txs.length} entries...`);
-        await fetch(url, { method: 'POST', body: JSON.stringify({ transactions: txs }) });
-        SyncHub.finish(`Successfully uploaded ${txs.length} entries.`);
-        return txs.length;
+        const payload = {
+          transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
+          accounts: JSON.parse(localStorage.getItem('accounts') || '[]'),
+          merchants: JSON.parse(localStorage.getItem('merchants') || '[]'),
+          items: JSON.parse(localStorage.getItem('items') || '[]'),
+          budgets: JSON.parse(localStorage.getItem('budgets') || '[]'),
+          goals: JSON.parse(localStorage.getItem('goals') || '[]'),
+          membership_cards: JSON.parse(localStorage.getItem('membership_cards') || '[]'),
+          updateTime: new Date().toISOString()
+        };
+
+        if (payload.transactions.length === 0 && payload.accounts.length === 0) {
+          SyncHub.finish('No new data to push');
+          return 0;
+        }
+
+        SyncHub.update(40, `Synchronizing ${payload.transactions.length} tx & master data...`);
+        const res = await fetch(url, { 
+          method: 'POST', 
+          body: JSON.stringify(payload) 
+        });
+        
+        const result = await res.json();
+        if (result.status === 'success') {
+          SyncHub.finish(`Successfully uploaded all sheets!`);
+          return payload.transactions.length;
+        } else {
+          throw new Error(result.message || 'Server error');
+        }
       } catch (e) {
-        SyncHub.finish('Push failed.');
+        SyncHub.finish('Push failed: ' + e.message, false);
         throw e;
       }
     }

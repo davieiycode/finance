@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Membership Cards</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="theme.js"></script>
+  <style>
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      padding-bottom: 5rem;
+    }
+    .member-card {
+      position: relative;
+      height: 200px;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      color: white;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .member-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+    .card-bg { position: absolute; inset: 0; opacity: 0.15; filter: blur(40px); z-index: 0; }
+    .card-content { position: relative; z-index: 1; }
+    .card-logo { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
+    .card-title { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; }
+    .card-number { font-family: 'JetBrains Mono', monospace; font-size: 1rem; letter-spacing: 0.1em; opacity: 0.9; }
+    .card-expiry { font-size: 0.7rem; opacity: 0.7; font-weight: 600; text-transform: uppercase; }
+    
+    .barcode-container { background: white; padding: 1rem; border-radius: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 1.5rem; }
+    #barcode-svg { width: 100%; max-height: 80px; }
+    #qr-canvas { width: 140px; height: 140px; }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(14px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; animation: fadeIn 0.3s; }
+    .modal-card { 
+      background: var(--bg-secondary); 
+      border: 1px solid var(--border); 
+      border-radius: 2rem; 
+      width: 100%; 
+      max-width: 420px; 
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.75rem; 
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
+      position: relative;
+    }
+    .modal-card::-webkit-scrollbar { width: 4px; }
+    .modal-card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 600px; padding: 1.5rem;">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <div onclick="window.location.href='index.html'" style="cursor: pointer; opacity: 0.8;"><i data-lucide="arrow-left"></i></div>
+      <h2 style="font-weight: 800;">Member Cards</h2>
+      <div onclick="openAddMember()" style="width: 44px; height: 44px; border-radius: 22px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;"><i data-lucide="plus"></i></div>
+    </header>
+
+    <div id="member-list" class="card-grid">
+      <!-- Cards go here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" style="display:none; text-align:center; padding: 4rem 2rem;">
+       <div style="width: 80px; height: 80px; background: rgba(139, 92, 246, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+          <i data-lucide="credit-card" style="width: 40px; height: 40px; color: var(--accent);"></i>
+       </div>
+       <h3 style="font-weight: 700; margin-bottom: 0.5rem; color: white;">No Membership Cards</h3>
+       <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">You haven't added any loyalty or membership cards yet. Add them here to keep them handy for scanning.</p>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detail-modal" class="modal-backdrop" onclick="this.style.display='none'">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div id="detail-header" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <div id="detail-logo" style="width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white;"></div>
+        <div>
+          <h3 id="detail-title" style="font-weight: 800;">Member Name</h3>
+          <p id="detail-expiry" style="font-size: 0.75rem; color: var(--text-secondary);"></p>
+        </div>
+      </div>
+
+      <div class="barcode-container">
+        <svg id="barcode-svg" style="width:100%; height:80px;"></svg>
+        <div id="qr-container" style="display: none; justify-content: center; width:100%;">
+          <canvas id="qr-canvas"></canvas>
+        </div>
+        <p id="detail-code" style="font-family: monospace; font-size: 1.1rem; font-weight: 800; color: #000; margin-top: 0.8rem; letter-spacing: 0.05em;"></p>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+        <div id="detail-since-wrap" style="display: none; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--glass); border-radius: 1rem; border: 1px solid var(--border);">
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700;">MEMBER SINCE</span>
+          <span id="detail-since" style="font-size: 0.8125rem; font-weight: 700; color: var(--text-primary);"></span>
+        </div>
+        <div id="detail-notes-wrap" style="display: none; padding: 1rem; background: var(--glass); border-radius: 1rem; border: 1px solid var(--border);">
+          <div style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; margin-bottom: 0.4rem;">NOTES</div>
+          <p id="detail-notes" style="font-size: 0.8125rem; color: var(--text-primary); line-height: 1.4;"></p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-top: 2rem;">
+        <button onclick="deleteMember()" style="padding: 0.8rem; border-radius: 1.25rem; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); color: #ef4444; font-weight: 700; font-size: 0.8125rem;">Delete</button>
+        <button onclick="editMember()" style="padding: 0.8rem; border-radius: 1.25rem; border: 1px solid var(--border); background: var(--glass); color: var(--text-primary); font-weight: 700; font-size: 0.8125rem;">Edit</button>
+        <button onclick="document.getElementById('detail-modal').style.display='none'" style="padding: 0.8rem; border-radius: 1.25rem; border: none; background: var(--accent); color: white; font-weight: 700; font-size: 0.8125rem;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Modal -->
+  <div id="add-modal" class="modal-backdrop" onclick="if(event.target === this) this.style.display='none'">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 id="add-modal-title" style="font-weight: 800;">Add Member Card</h3>
+        <button onclick="document.getElementById('add-modal').style.display='none'" style="background:none; border:none; color:var(--text-secondary); cursor:pointer;"><i data-lucide="x"></i></button>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 0.875rem;">
+        <div><label class="stat-label">CARD NAME</label><input type="text" id="add-name" class="input" placeholder="e.g. Lotte Grosir"></div>
+        <div><label class="stat-label">CARD NUMBER / CODE</label><input type="text" id="add-code" class="input" placeholder="7890 2341 ..."></div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem;">
+          <div><label class="stat-label">EXPIRY DATE</label><input type="month" id="add-expiry" class="input"></div>
+          <div><label class="stat-label">MEMBER SINCE</label><input type="date" id="add-since" class="input"></div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem;">
+          <div><label class="stat-label">CODE TYPE</label>
+            <select id="add-type" class="input">
+              <option value="CODE128">Barcode (Standard)</option>
+              <option value="EAN13">Barcode (EAN-13)</option>
+              <option value="QR">QR Code</option>
+            </select>
+          </div>
+          <div><label class="stat-label">ACCENT COLOR</label><input type="color" id="add-color" value="#8b5cf6" style="width: 100%; height: 44px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border); padding: 4px; cursor: pointer;"></div>
+        </div>
+        
+        <div><label class="stat-label">NOTES / REMARKS</label><textarea id="add-notes" class="input" style="min-height: 60px;" placeholder="Optional notes..."></textarea></div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.75rem; position: sticky; bottom: 0; background: var(--bg-secondary); padding-top: 1rem; border-top: 1px solid var(--border);">
+        <button onclick="document.getElementById('add-modal').style.display='none'" style="padding: 1rem; border-radius: 1.25rem; border: 1px solid var(--border); background: var(--glass); color: var(--text-primary); font-weight: 700;">Cancel</button>
+        <button onclick="saveMember()" style="padding: 1rem; border-radius: 1.25rem; border: none; background: var(--accent); color: white; font-weight: 700;">Save Card</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeMemberId = null;
+    let currentlyEditingCardId = null;
+
+    function renderMembers() {
+      const members = JSON.parse(localStorage.getItem('membership_cards') || '[]');
+      const list = document.getElementById('member-list');
+      const empty = document.getElementById('empty-state');
+      list.innerHTML = '';
+
+      if (members.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+      
+      list.style.display = 'grid';
+      empty.style.display = 'none';
+
+      members.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'member-card';
+        card.style.background = m.color || '#8b5cf6';
+        
+        // Check if expired
+        const isExpired = m.expiry && new Date(m.expiry) < new Date();
+        const expiryLabel = isExpired ? '<span style="background:#ef4444; padding:2px 6px; border-radius:4px;">EXPIRED</span>' : (m.expiry ? 'EXP: ' + m.expiry : 'NO EXPIRY');
+
+        card.innerHTML = `
+          <div class="card-bg" style="background: ${m.color || '#8b5cf6'}"></div>
+          <div class="card-content" style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+            <div>
+              <div class="card-logo">${m.name.charAt(0).toUpperCase()}</div>
+              <div class="card-title">${m.name}</div>
+            </div>
+            <div class="card-expiry">${expiryLabel}</div>
+          </div>
+          <div class="card-content card-number">${m.code}</div>
+        `;
+        card.onclick = () => showDetail(m);
+        list.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function showDetail(m) {
+      if (!m) return;
+      activeMemberId = m.id;
+
+      // Show modal immediately to provide instant feedback
+      const modal = document.getElementById('detail-modal');
+      modal.style.display = 'flex';
+
+      // Populate basic info
+      document.getElementById('detail-title').innerText = m.name;
+      document.getElementById('detail-expiry').innerText = m.expiry ? 'Expires: ' + m.expiry : 'No expiry date';
+      document.getElementById('detail-logo').style.background = m.color || '#8b5cf6';
+      document.getElementById('detail-logo').innerText = m.name.charAt(0).toUpperCase();
+      document.getElementById('detail-code').innerText = m.code;
+
+      const sinceWrap = document.getElementById('detail-since-wrap');
+      const sinceEl = document.getElementById('detail-since');
+      if (m.since) {
+        sinceEl.innerText = m.since;
+        sinceWrap.style.display = 'flex';
+      } else {
+        sinceWrap.style.display = 'none';
+      }
+
+      const notesWrap = document.getElementById('detail-notes-wrap');
+      const notesEl = document.getElementById('detail-notes');
+      if (m.notes) {
+        notesEl.innerText = m.notes;
+        notesWrap.style.display = 'block';
+      } else {
+        notesWrap.style.display = 'none';
+      }
+
+      const barcodeSvg = document.getElementById('barcode-svg');
+      const qrContainer = document.getElementById('qr-container');
+      const qrCanvas = document.getElementById('qr-canvas');
+
+      // Clear previous renders
+      barcodeSvg.innerHTML = '';
+      
+      // QR CODE RENDER
+      if (m.type === 'QR') {
+        barcodeSvg.style.display = 'none';
+        qrContainer.style.display = 'flex';
+        qrContainer.style.justifyContent = 'center';
+        
+        try {
+          if (typeof QRious === 'function') {
+            new QRious({
+              element: qrCanvas,
+              value: m.code,
+              size: 220,
+              background: 'white',
+              foreground: 'black',
+              level: 'H'
+            });
+          }
+        } catch(e) {
+          console.error('QR Render Error:', e);
+          qrContainer.innerHTML = '<p style="color:#ef4444; font-size:12px; font-weight:700;">Format QR Bermasalah</p>';
+        }
+      } 
+      // BARCODE RENDER
+      else {
+        qrContainer.style.display = 'none';
+        barcodeSvg.style.display = 'block';
+        
+        const targetType = m.type || "CODE128";
+        
+        try {
+          // Robust check for JsBarcode
+          const jsb = window.JsBarcode;
+          if (typeof jsb === 'function') {
+            jsb("#barcode-svg", m.code, {
+              format: targetType,
+              displayValue: false,
+              height: 100,
+              width: 2.2,
+              margin: 0,
+              background: "transparent",
+              lineColor: "#000000"
+            });
+          }
+        } catch(e) {
+          console.error('Barcode Render Error:', e);
+          barcodeSvg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" style="font-size:12px; fill:#ef4444; font-weight:700;">Format Barcode Tidak Valid</text>';
+        }
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openAddMember() {
+      currentlyEditingCardId = null;
+      document.getElementById('add-modal-title').innerText = 'Add Member Card';
+      document.getElementById('add-name').value = '';
+      document.getElementById('add-code').value = '';
+      document.getElementById('add-expiry').value = '';
+      document.getElementById('add-since').value = '';
+      document.getElementById('add-notes').value = '';
+      document.getElementById('add-type').value = 'CODE128';
+      document.getElementById('add-color').value = '#8b5cf6';
+      document.getElementById('add-modal').style.display = 'flex';
+      setTimeout(() => document.getElementById('add-name').focus(), 100);
+    }
+
+    function editMember() {
+      const members = JSON.parse(localStorage.getItem('membership_cards') || '[]');
+      const m = members.find(x => x.id === activeMemberId);
+      if (!m) return;
+
+      currentlyEditingCardId = m.id;
+      document.getElementById('add-modal-title').innerText = 'Edit Member Card';
+      document.getElementById('add-name').value = m.name;
+      document.getElementById('add-code').value = m.code;
+      document.getElementById('add-expiry').value = m.expiry || '';
+      document.getElementById('add-since').value = m.since || '';
+      document.getElementById('add-notes').value = m.notes || '';
+      document.getElementById('add-type').value = m.type || 'CODE128';
+      document.getElementById('add-color').value = m.color || '#8b5cf6';
+
+      document.getElementById('detail-modal').style.display = 'none';
+      document.getElementById('add-modal').style.display = 'flex';
+    }
+
+    function saveMember() {
+      const name = document.getElementById('add-name').value;
+      const code = document.getElementById('add-code').value;
+      const expiry = document.getElementById('add-expiry').value;
+      const since = document.getElementById('add-since').value;
+      const notes = document.getElementById('add-notes').value;
+      const type = document.getElementById('add-type').value;
+      const color = document.getElementById('add-color').value;
+
+      if (!name || !code) {
+        if (typeof showToast === 'function') showToast('Name and code required!', 'error');
+        return;
+      }
+
+      let members = JSON.parse(localStorage.getItem('membership_cards') || '[]');
+      
+      const cardObj = { 
+        id: currentlyEditingCardId || Date.now(), 
+        name, code, expiry, since, notes, type, color 
+      };
+
+      if (currentlyEditingCardId) {
+        const idx = members.findIndex(m => m.id === currentlyEditingCardId);
+        if (idx !== -1) members[idx] = cardObj;
+        if (typeof showToast === 'function') showToast('Card updated!', 'success', 'check-circle');
+      } else {
+        members.push(cardObj);
+        if (typeof showToast === 'function') showToast('Membership card added!', 'success', 'credit-card');
+      }
+
+      localStorage.setItem('membership_cards', JSON.stringify(members));
+      document.getElementById('add-modal').style.display = 'none';
+      renderMembers();
+    }
+
+    function deleteMember() {
+      if (confirm('Delete this membership card?')) {
+        let members = JSON.parse(localStorage.getItem('membership_cards') || '[]');
+        members = members.filter(m => m.id !== activeMemberId);
+        localStorage.setItem('membership_cards', JSON.stringify(members));
+        document.getElementById('detail-modal').style.display = 'none';
+        renderMembers();
+        if (typeof showToast === 'function') showToast('Card deleted', 'success');
+      }
+    }
+
+    window.onload = () => {
+      renderMembers();
+      if (window.lucide) lucide.createIcons();
+    };
+  </script>
+</body>
+</html>

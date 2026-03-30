@@ -416,6 +416,13 @@
         <div>
           <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">Finance</h1>
           <p id="welcome-msg" style="font-size: 0.8125rem; color: var(--text-secondary);">Welcome back, User</p>
+          <div id="xp-container" style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
+            <div style="font-size: 0.6rem; font-weight: 800; color: var(--accent); background: rgba(139, 92, 246, 0.1); padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em;">LVL <span id="user-level">1</span></div>
+            <div style="flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; position: relative;">
+              <div id="xp-bar" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--accent); transition: width 1s ease;"></div>
+            </div>
+            <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 600;"><span id="user-xp">0</span> XP</div>
+          </div>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
           <div onclick="toggleDashboardSearch()" class="profile-icon"
@@ -527,64 +534,111 @@
       <i data-lucide="chevron-right" style="color: #f59e0b; width: 18px; opacity: 0.6;"></i>
     </div>
 
-    <!-- Quick Tools Section (Row - Relocated) -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 5rem;">
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 5rem;">
       <div onclick="window.location.href='items.html'"
-        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;"
-        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; border: 1px solid var(--border);">
         <div
-          style="width: 40px; height: 40px; border-radius: 12px; background: rgba(22, 163, 74, 0.1); display: flex; align-items: center; justify-content: center; color: #16a34a;">
-          <i data-lucide="package" style="width: 20px;"></i>
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0;">
+          <i data-lucide="package" style="width: 22px;"></i>
         </div>
         <div>
-          <div style="font-size: 0.875rem; font-weight: 700;">Items</div>
-          <p style="font-size: 0.65rem; color: var(--text-secondary);">Manage item catalog</p>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Items</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Manage Catalog</p>
         </div>
       </div>
       <div onclick="window.location.href='merchants.html'"
-        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;"
-        onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; border: 1px solid var(--border);">
         <div
-          style="width: 40px; height: 40px; border-radius: 12px; background: rgba(249, 115, 22, 0.1); display: flex; align-items: center; justify-content: center; color: #f97316;">
-          <i data-lucide="building-2" style="width: 20px;"></i>
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(249, 115, 22, 0.1); display: flex; align-items: center; justify-content: center; color: #f97316; flex-shrink: 0;">
+          <i data-lucide="building-2" style="width: 22px;"></i>
         </div>
         <div>
-          <div style="font-size: 0.875rem; font-weight: 700;">Merchants</div>
-          <p style="font-size: 0.65rem; color: var(--text-secondary);">Find vendors information</p>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vendors</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Store Locations</p>
+        </div>
+      </div>
+      <div onclick="window.location.href='memberships.html'"
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; border: 1px solid var(--border);">
+        <div
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0;">
+          <i data-lucide="credit-card" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Cards</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Loyalty Points</p>
+        </div>
+      </div>
+      <div onclick="window.location.href='receipts.html'"
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; border: 1px solid var(--border);">
+        <div
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(14, 165, 233, 0.1); display: flex; align-items: center; justify-content: center; color: #0ea5e9; flex-shrink: 0;">
+          <i data-lucide="file-text" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vault</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Cloud Receipts</p>
         </div>
       </div>
     </div>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Navigation Bar & FAB Overlay -->
+    <div id="fab-overlay" onclick="toggleFAB()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1500; animation: fadeIn 0.2s;"></div>
+    
     <div class="bottom-nav-container">
-      <div class="bottom-nav-bar">
-        <div class="nav-tool" onclick="startReceiptScan()"
-          style="display: flex; flex-direction: column; align-items: center; gap: 0.2rem; cursor: pointer; opacity: 0.7;">
-          <i data-lucide="scan" style="width: 20px; color: var(--accent);"></i>
-          <span style="font-size: 0.6rem; font-weight: 700;">SCAN</span>
+      <div id="fab-menu" style="display: none; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; animation: slideUpFAB 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+        <div onclick="window.location.href='transaction.html'" style="display: flex; align-items: center; gap: 1rem; justify-content: flex-end; cursor: pointer;">
+          <span style="background: var(--bg-secondary); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 700;">Manual Entry</span>
+          <div style="width: 50px; height: 50px; border-radius: 25px; background: var(--bg-secondary); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+             <i data-lucide="edit-3" style="width: 20px;"></i>
+          </div>
         </div>
-
-        <button class="fab-new" onclick="window.location.href='transaction.html'"
-          style="width: 60px; height: 60px; border-radius: 30px; background: var(--accent); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);">
-          <i data-lucide="plus" style="width: 28px;"></i>
-        </button>
-
-        <div class="nav-tool" onclick="window.location.href='receipts.html'"
-          style="display: flex; flex-direction: column; align-items: center; gap: 0.2rem; cursor: pointer; opacity: 0.7;">
-          <i data-lucide="file-text" style="width: 20px; color: #0ea5e9;"></i>
-          <span style="font-size: 0.6rem; font-weight: 700;">VAULT</span>
+        <div onclick="startReceiptScan()" style="display: flex; align-items: center; gap: 1rem; justify-content: flex-end; cursor: pointer;">
+          <span style="background: var(--bg-secondary); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 700;">Scan Receipt</span>
+          <div style="width: 50px; height: 50px; border-radius: 25px; background: var(--bg-secondary); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: #22c55e;">
+             <i data-lucide="camera" style="width: 20px;"></i>
+          </div>
         </div>
       </div>
+
+      <div class="bottom-nav-bar" style="justify-content: center; background: none; border: none; backdrop-filter: none; padding: 0;">
+        <button id="main-fab" class="fab-new" onclick="toggleFAB()"
+          style="width: 65px; height: 65px; border-radius: 35px; background: var(--accent); border: none; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+          <i data-lucide="plus" style="width: 30px;"></i>
+        </button>
+      </div>
     </div>
+
+    <script>
+      let fabOpen = false;
+      function toggleFAB() {
+        const menu = document.getElementById('fab-menu');
+        const overlay = document.getElementById('fab-overlay');
+        const mainFab = document.getElementById('main-fab');
+        fabOpen = !fabOpen;
+        
+        if (fabOpen) {
+          menu.style.display = 'flex';
+          overlay.style.display = 'block';
+          mainFab.style.transform = 'rotate(45deg)';
+        } else {
+          menu.style.display = 'none';
+          overlay.style.display = 'none';
+          mainFab.style.transform = 'rotate(0deg)';
+        }
+      }
+    </script>
 
     <style>
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes slideUpFAB {
+        from { opacity: 0; transform: translateY(20px) scale(0.9); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
       .bottom-nav-container {
         position: fixed;
         bottom: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1000;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        right: 1.5rem; /* Corner floating */
+        z-index: 2000;
       }
 
       .bottom-nav-bar {
@@ -1499,133 +1553,146 @@
             style="background:#000; color:#0f0; padding:1.25rem; border-radius:1rem; font-size:0.65rem; overflow-x:auto; user-select:all; line-height:1.4; border:1px solid #333; text-align:left;">
 function doGet(e) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const timezone = ss.getSpreadsheetTimeZone();
   const sheets = ss.getSheets();
-  let sheet = null;
-  for (let s of sheets) {
-    if (s.getName().toLowerCase() === 'transaction') { sheet = s; break; }
-  }
+  const timezone = ss.getSpreadsheetTimeZone();
+  const response = { status: 'success' };
 
-  if (!sheet) return ContentService.createTextOutput(JSON.stringify({ status: 'error', transactions: [] })).setMimeType(ContentService.MimeType.JSON);
-  const data = sheet.getDataRange().getValues(); 
-  if (data.length < 2) return ContentService.createTextOutput(JSON.stringify({ status: 'success', transactions: [] })).setMimeType(ContentService.MimeType.JSON);
-  
-  const headers = data.shift();
-  const transactions = data.map(row => {
-    let t = {};
-    headers.forEach((h, i) => {
-      let v = row[i];
-      let hName = h.toString().trim().toLowerCase();
-      
-      // LOGIKA ANTI 1899 UNTUK TANGGAL
-      if (hName === 'date') {
-        if (v instanceof Date) {
-          if (v.getFullYear() < 1920) {
-            v = Utilities.formatDate(new Date(), timezone, "yyyy-MM-dd"); 
-          } else {
-            v = Utilities.formatDate(v, timezone, "yyyy-MM-dd");
+  sheets.forEach(sh => {
+    const name = sh.getName().toLowerCase().trim();
+    const data = sh.getDataRange().getValues();
+    if (data.length < 2) { response[name + 's'] = []; return; }
+
+    const headers = data.shift();
+    const records = data.map(row => {
+      let r = {};
+      headers.forEach((h, i) => {
+        let v = row[i];
+        let hName = (h || '').toString().trim().toLowerCase();
+        if (!hName) return;
+
+        // Common Field Mapping for all sheets
+        if (hName.includes('id')) r.id = v;
+        else if (hName === 'name' || hName === 'merchant' || hName === 'account' || hName === 'item') r.name = v;
+        
+        // Transaction Specific Mapping
+        if (name === 'transaction') {
+          if (hName === 'date') {
+            if (v instanceof Date) v = Utilities.formatDate(v, timezone, "yyyy-MM-dd");
+            else if (typeof v === 'string' && v.includes('T')) v = v.split('T')[0];
+            r.date = v;
+          }
+          else if (hName === 'time') {
+            if (v instanceof Date) v = Utilities.formatDate(v, timezone, "HH:mm");
+            r.time = v ? v.toString() : '';
+          }
+          else if (hName === 'merchant') r.merchant = v;
+          else if (hName === 'item name' || hName === 'name') r.name = v;
+          else if (hName === 'category') r.category = v;
+          else if (hName === 'category group') r.categoryGroup = v;
+          else if (hName === 'type') r.type = v;
+          else if (hName === 'description') r.description = v;
+          else if (hName === 'author') r.author = v;
+          else if (hName === 'receipt') r.receipt = v;
+          else if (hName === 'cleared') r.cleared = (v === 'Yes');
+          else if (hName === 'analytics tags' || hName === 'tags') r.tags = v ? v.toString().split(', ') : [];
+          else if (hName === 'associated project' || hName === 'project') r.projects = v ? v.toString().split(', ') : [];
+          else if (hName === 'amount (per unit)' || hName === 'amount') r.amount = parseFloat(v) || 0;
+          else if (hName === 'total') r.total = parseFloat(v) || 0;
+          else if (hName === 'discount') r.discount = parseFloat(v) || 0;
+          else if (hName === 'additional fee') r.fee = parseFloat(v) || 0;
+          else if (hName === 'payment source account' || hName === 'payment account') r.accountPayment = v;
+          else if (hName === 'beneficiary account' || hName === 'received account') r.accountReceived = v;
+          else if (hName === 'currency') r.currency = v;
+          else if (hName === 'quantity') r.qty = parseFloat(v) || 1;
+          else if (hName === 'unit scale' || hName === 'scale') r.scale = v;
+          else if (hName === 'exchange rate') r.exchangeRate = parseFloat(v) || 1;
+          else if (hName === 'xp') r.xp = v;
+        } 
+        // Account/Master Data Specific (Generic headers)
+        else {
+          r[h.toString().trim()] = v;
+          // Normalized keys (for app)
+          if (hName === 'balance' || hName === 'limit' || hName === 'target' || hName === 'saved' || hName === 'price') {
+             r[hName] = parseFloat(v) || 0;
           }
         }
-        else if (typeof v === 'string' && v.includes('T')) v = v.split('T')[0];
-        t.date = v;
-      }
-      else if (hName === 'time') {
-        if (v instanceof Date) v = Utilities.formatDate(v, timezone, "HH:mm");
-        t.time = v ? v.toString() : '';
-      }
-      
-      // DATA UTAMA (Author, Description, Receipt, dll)
-      else if (hName === 'transaction id') t.id = v;
-      else if (hName === 'merchant') t.merchant = v;
-      else if (hName === 'item name' || hName === 'name') t.name = v;
-      else if (hName === 'category') t.category = v;
-      else if (hName === 'category group') t.categoryGroup = v;
-      else if (hName === 'type') t.type = v;
-      else if (hName === 'description') t.description = v;
-      else if (hName === 'author') t.author = v;
-      else if (hName === 'receipt') t.receipt = v;
-      else if (hName === 'cleared') t.cleared = (v === 'Yes');
-      
-      // ANALISIS (Tags & Project)
-      else if (hName === 'analytics tags' || hName === 'tags') t.tags = v ? v.toString().split(', ') : [];
-      else if (hName === 'associated project' || hName === 'project') t.projects = v ? v.toString().split(', ') : [];
-      
-      // ANGKA & AKUN (Dipisah dengan benar)
-      else if (hName === 'amount (per unit)' || hName === 'amount') {
-        t.amount = parseFloat(v.toString().replace(/[^0-9.-]/g, '')) || 0;
-      }
-      else if (hName === 'total') {
-        t.total = parseFloat(v.toString().replace(/[^0-9.-]/g, '')) || 0;
-      }
-      else if (hName === 'discount') t.discount = parseFloat(v) || 0;
-      else if (hName === 'additional fee') t.fee = parseFloat(v) || 0;
-      else if (hName === 'payment source account' || hName === 'payment account') t.accountPayment = v;
-      else if (hName === 'beneficiary account' || hName === 'received account') t.accountReceived = v;
-      
-      // LAINNYA
-      else if (hName === 'currency') t.currency = v;
-      else if (hName === 'quantity') t.qty = parseFloat(v) || 1;
-      else if (hName === 'unit scale' || hName === 'scale') t.scale = v;
-      else if (hName === 'exchange rate') t.exchangeRate = parseFloat(v) || 1;
-      
-      // METADATA
-      else if (hName === 'budget amount') t.budgetAmount = v;
-      else if (hName === 'budget period') t.budgetPeriod = v;
-      else if (hName === 'flow') t.flow = v;
-      else if (hName === 'year') t.year = v;
-      else if (hName === 'month') t.month = v;
-      else if (hName === 'update time') t.updateTime = v;
-      else if (hName === 'xp') t.xp = v;
+      });
+      return r;
     });
-    return t;
+
+    // Match app's expected keys
+    let finalKey = name + 's'; 
+    if (name === 'transaction') finalKey = 'transactions';
+    if (name === 'membership') finalKey = 'membership_cards';
+    response[finalKey] = records;
   });
-  
-  return ContentService.createTextOutput(JSON.stringify({ status: 'success', transactions: transactions }))
-    .setMimeType(ContentService.MimeType.JSON);
+
+  return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
   try {
     const contents = JSON.parse(e.postData.contents);
-    const transactions = contents.transactions || [];
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName('transaction');
-    if (!sheet) { sheet = ss.insertSheet('transaction'); } 
     
-    // Clear content but keep header row 1 formatting/frozen if possible
-    if (sheet.getLastRow() > 0) {
-      sheet.getRange(1, 1, sheet.getLastRow(), 31).clearContent();
-    }
-    
-    const headers = [
-      'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
-      'Merchant', 'Item Name', 'Description', 'Amount (per Unit)', 'Currency', 
-      'Exchange Rate', 'Quantity', 'Unit Scale', 'Type', 'Cleared', 
-      'Payment Source Account', 'Beneficiary Account', 'Receipt', 'Analytics Tags', 'Associated Project', 
-      'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 
-      'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
+    // Process each entity type
+    const entities = [
+      { key: 'transactions', sheetName: 'transaction', headers: [
+        'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
+        'Merchant', 'Item Name', 'Description', 'Amount (per Unit)', 'Currency', 
+        'Exchange Rate', 'Quantity', 'Unit Scale', 'Type', 'Cleared', 
+        'Payment Source Account', 'Beneficiary Account', 'Receipt', 'Analytics Tags', 'Associated Project', 
+        'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 
+        'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
+      ]},
+      { key: 'accounts', sheetName: 'account', headers: ['ID', 'Name', 'Type', 'Balance', 'Status', 'Color'] },
+      { key: 'merchants', sheetName: 'merchant', headers: ['ID', 'Name', 'Type'] },
+      { key: 'items', sheetName: 'item', headers: ['ID', 'Name', 'Category', 'Price', 'Unit', 'Status'] },
+      { key: 'budgets', sheetName: 'budget', headers: ['ID', 'Name', 'Type', 'Limit', 'Period'] },
+      { key: 'goals', sheetName: 'goal', headers: ['ID', 'Name', 'Target', 'Saved', 'Deadline'] },
+      { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Type', 'Color'] }
     ];
-    
-    const rows = [headers];
-    
-    if (transactions.length > 0) {
-      transactions.forEach(t => {
-        const d = new Date(t.date || new Date());
-        rows.push([
-          t.id, t.date, t.time || '', t.category, t.categoryGroup || '', t.merchant, t.name, t.description || '',
-          t.amount || 0, t.currency || 'IDR', t.exchangeRate || 1, t.qty || 1, t.scale || 'pcs',
-          t.type, t.cleared ? 'Yes' : 'No', t.accountPayment || '', t.accountReceived || '',
-          t.receipt || '', (t.tags || []).join(', '), (t.projects || []).join(', '), t.author || '',
-          t.discount || 0, t.fee || 0, t.total || 0, t.budgetAmount || 0, t.budgetPeriod || 'Monthly', 
-          t.flow || (t.type === 'Income' ? 'In' : 'Out'), t.year || d.getFullYear(), t.month || (d.getMonth() + 1), t.updateTime || new Date().toISOString(), t.xp || 0
-        ]);
+
+    entities.forEach(ent => {
+      const data = contents[ent.key];
+      if (!data) return; // Skip if no data for this sheet
+      
+      let sheet = ss.getSheetByName(ent.sheetName);
+      if (!sheet) { sheet = ss.insertSheet(ent.sheetName); }
+      
+      const rows = [ent.headers];
+      data.forEach(item => {
+        const row = ent.headers.map(h => {
+          const hName = h.toLowerCase().replace(/\s+/g, '');
+          // Specific mappings for complex types
+          if (h === 'Analytics Tags' || h === 'Tags') return (item.tags || []).join(', ');
+          if (h === 'Associated Project' || h === 'Project') return (item.projects || []).join(', ');
+          if (h === 'Cleared') return item.cleared ? 'Yes' : 'No';
+          
+          // Generic match by property name logic
+          for (let k in item) {
+             if (k.toLowerCase().replace(/\s+/g, '') === hName) return item[k];
+          }
+          // Specific ID fallback
+          if (h === 'ID' || h === 'Transaction ID') return item.id;
+          if (h === 'Name') return item.name;
+          
+          // Re-map common finance keys
+          if (h === 'Payment Source Account') return item.accountPayment || '';
+          if (h === 'Beneficiary Account') return item.accountReceived || '';
+          if (h === 'Amount (per Unit)') return item.amount || 0;
+          
+          return item[h] || ''; // Fallback to raw property
+        });
+        rows.push(row);
       });
-    }
-    
-    sheet.getRange(1, 1, rows.length, 31).setValues(rows);
-    sheet.getRange(1, 1, 1, 31).setFontWeight('bold').setBackground('#f3f3f3');
-    sheet.setFrozenRows(1);
-    
+
+      sheet.getRange(1, 1, sheet.getLastRow() || 1, ent.headers.length).clearContent();
+      sheet.getRange(1, 1, rows.length, ent.headers.length).setValues(rows);
+      sheet.getRange(1, 1, 1, ent.headers.length).setFontWeight('bold').setBackground('#f3f3f3');
+      sheet.setFrozenRows(1);
+    });
+
     return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
@@ -1964,6 +2031,19 @@ function doPost(e) {
       } else {
         banner.style.display = 'none';
       }
+
+      // XP & Level Logic (Gamification)
+      const totalXP = txs.reduce((s, t) => s + (parseInt(t.xp) || 0), 0);
+      const level = Math.floor(totalXP / 100) + 1;
+      const currentLevelXP = totalXP % 100;
+      
+      const lvlEl = document.getElementById('user-level');
+      const xpEl = document.getElementById('user-xp');
+      const barEl = document.getElementById('xp-bar');
+      
+      if (lvlEl) lvlEl.innerText = level;
+      if (xpEl) xpEl.innerText = totalXP.toLocaleString();
+      if (barEl) barEl.style.width = currentLevelXP + '%';
 
       // List
       const recent = [...filtered].sort((a, b) => {
