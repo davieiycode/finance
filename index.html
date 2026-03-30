@@ -1222,13 +1222,13 @@ function doGet(e) {
       // LOGIKA ANTI 1899 UNTUK TANGGAL
       if (hName === 'date') {
         if (v instanceof Date) {
-          // Jika tahun di bawah 1920, berarti ini data Jam yang "nyasar" ke kolom Tanggal
           if (v.getFullYear() < 1920) {
             v = Utilities.formatDate(new Date(), timezone, "yyyy-MM-dd"); 
           } else {
             v = Utilities.formatDate(v, timezone, "yyyy-MM-dd");
           }
         }
+        else if (typeof v === 'string' && v.includes('T')) v = v.split('T')[0];
         t.date = v;
       }
       else if (hName === 'time') {
@@ -1292,7 +1292,12 @@ function doPost(e) {
     const transactions = contents.transactions || [];
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName('transaction');
-    if (!sheet) { sheet = ss.insertSheet('transaction'); } else { sheet.clear(); }
+    if (!sheet) { sheet = ss.insertSheet('transaction'); } 
+    
+    // Clear content but keep header row 1 formatting/frozen if possible
+    if (sheet.getLastRow() > 0) {
+      sheet.getRange(1, 1, sheet.getLastRow(), 31).clearContent();
+    }
     
     const headers = [
       'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
@@ -1302,24 +1307,27 @@ function doPost(e) {
       'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 
       'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
     ];
-    sheet.appendRow(headers);
+    
+    const rows = [headers];
     
     if (transactions.length > 0) {
-      const rows = transactions.map(t => {
+      transactions.forEach(t => {
         const d = new Date(t.date || new Date());
-        return [
+        rows.push([
           t.id, t.date, t.time || '', t.category, t.categoryGroup || '', t.merchant, t.name, t.description || '',
           t.amount || 0, t.currency || 'IDR', t.exchangeRate || 1, t.qty || 1, t.scale || 'pcs',
           t.type, t.cleared ? 'Yes' : 'No', t.accountPayment || '', t.accountReceived || '',
           t.receipt || '', (t.tags || []).join(', '), (t.projects || []).join(', '), t.author || '',
           t.discount || 0, t.fee || 0, t.total || 0, t.budgetAmount || 0, t.budgetPeriod || 'Monthly', 
           t.flow || (t.type === 'Income' ? 'In' : 'Out'), t.year || d.getFullYear(), t.month || (d.getMonth() + 1), t.updateTime || new Date().toISOString(), t.xp || 0
-        ];
+        ]);
       });
-      sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
-      sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f3f3f3');
-      sheet.setFrozenRows(1);
     }
+    
+    sheet.getRange(1, 1, rows.length, 31).setValues(rows);
+    sheet.getRange(1, 1, 1, 31).setFontWeight('bold').setBackground('#f3f3f3');
+    sheet.setFrozenRows(1);
+    
     return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
@@ -2196,8 +2204,11 @@ function doPost(e) {
         { id: 'm-merchant', label: 'Merchant', terms: ['merchant', 'toko', 'vendor', 'payee'] },
         { id: 'm-item', label: 'Item / Name', terms: ['item', 'name', 'nama', 'barang', 'keterangan'] },
         { id: 'm-category', label: 'Category', terms: ['category', 'kategori', 'jenis'] },
-        { id: 'm-amount', label: 'Unit Price', terms: ['price', 'harga', 'amount', 'unit'] },
+        { id: 'm-amount', label: 'Unit Price', terms: ['price', 'harga', 'cost', 'unit price'] },
         { id: 'm-qty', label: 'Quantity', terms: ['qty', 'jumlah', 'quantity', 'volume'] },
+        { id: 'm-discount', label: 'Discount', terms: ['discount', 'diskon', 'potongan'] },
+        { id: 'm-fee', label: 'Additional Fee', terms: ['fee', 'biaya', 'admin'] },
+        { id: 'm-scale', label: 'Unit / Scale', terms: ['unit', 'scale', 'satuan'] },
         { id: 'm-payment', label: 'Payment Source Account', terms: ['payment', 'source', 'akun', 'bank', 'sumber'] },
         { id: 'm-received', label: 'Beneficiary Account', terms: ['received', 'beneficiary', 'tujuan', 'penerima'] },
         { id: 'm-id', label: 'Transaction ID (Unique)', terms: ['id', 'uuid', 'transaction id', 'no'] }
@@ -2237,6 +2248,9 @@ function doPost(e) {
         category: document.getElementById('m-category').value,
         amount: document.getElementById('m-amount').value,
         qty: document.getElementById('m-qty').value,
+        discount: document.getElementById('m-discount').value,
+        fee: document.getElementById('m-fee').value,
+        scale: document.getElementById('m-scale').value,
         payment: document.getElementById('m-payment').value,
         received: document.getElementById('m-received').value,
         txId: document.getElementById('m-id').value
@@ -2280,6 +2294,9 @@ function doPost(e) {
           amount: unitPrice,
           total: total,
           qty: quantity,
+          discount: discount,
+          fee: fee,
+          scale: row[mapping.scale] || 'pcs',
           category: row[mapping.category] || 'Uncategorized',
           accountPayment: row[mapping.payment] || '',
           accountReceived: row[mapping.received] || '',

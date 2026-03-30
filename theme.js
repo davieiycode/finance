@@ -250,16 +250,37 @@
                 let remoteData = data[key];
                 if (key === 'transactions') {
                   remoteData = remoteData.map(t => {
-                    const q = parseFloat(t.qty) || 1;
-                    const d = parseFloat(t.discount) || 0;
-                    const f = parseFloat(t.fee) || 0;
-                    const ex = parseFloat(t.exchangeRate) || 1;
-                    const unitPrice = parseFloat(t.amount || 0);
+                    const parseVal = (v, def = 0) => {
+                      if (v === undefined || v === null || v === '') return def;
+                      if (typeof v === 'number') return v;
+                      let s = v.toString().replace(/Rp/g, '').trim();
+                      if (s.includes(',') && s.includes('.')) {
+                        const lastComma = s.lastIndexOf(',');
+                        const lastDot = s.lastIndexOf('.');
+                        if (lastComma > lastDot) s = s.replace(/\./g, '').replace(/,/g, '.');
+                        else s = s.replace(/,/g, '');
+                      } else if (s.includes(',')) {
+                        const parts = s.split(',');
+                        if (parts[1].length === 3) s = s.replace(/,/g, '');
+                        else s = s.replace(/,/g, '.');
+                      }
+                      return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
+                    };
+
+                    const q = parseVal(t.qty, 1);
+                    const d = parseVal(t.discount, 0);
+                    const f = parseVal(t.fee, 0);
+                    const ex = parseVal(t.exchangeRate, 1);
+                    const unitPrice = parseVal(t.amount, 0);
                     t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
                     const calcTotal = ((q * unitPrice) - d + f) * ex;
-                    t.total = (t.total !== undefined) ? parseFloat(t.total) : calcTotal;
+                    t.total = (t.total !== undefined) ? parseVal(t.total) : calcTotal;
                     t.total = isNaN(t.total) ? 0 : t.total;
                     t.amount = unitPrice;
+                    t.qty = q;
+                    t.discount = d;
+                    t.fee = f;
+                    t.exchangeRate = ex;
                     return t;
                   });
                   count = remoteData.length;
@@ -278,16 +299,37 @@
           SyncHub.update(50, 'Merging local and remote entries...');
           if (data.transactions) {
             const remoteTxs = data.transactions.map(t => {
-              const q = parseFloat(t.qty) || 1;
-              const d = parseFloat(t.discount) || 0;
-              const f = parseFloat(t.fee) || 0;
-              const ex = parseFloat(t.exchangeRate) || 1;
-              const unitPrice = parseFloat(t.amount || 0);
+              const parseVal = (v, def = 0) => {
+                if (v === undefined || v === null || v === '') return def;
+                if (typeof v === 'number') return v;
+                let s = v.toString().replace(/Rp/g, '').trim();
+                if (s.includes(',') && s.includes('.')) {
+                  const lastComma = s.lastIndexOf(',');
+                  const lastDot = s.lastIndexOf('.');
+                  if (lastComma > lastDot) s = s.replace(/\./g, '').replace(/,/g, '.');
+                  else s = s.replace(/,/g, '');
+                } else if (s.includes(',')) {
+                  const parts = s.split(',');
+                  if (parts[1].length === 3) s = s.replace(/,/g, '');
+                  else s = s.replace(/,/g, '.');
+                }
+                return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
+              };
+
+              const q = parseVal(t.qty, 1);
+              const d = parseVal(t.discount, 0);
+              const f = parseVal(t.fee, 0);
+              const ex = parseVal(t.exchangeRate, 1);
+              const unitPrice = parseVal(t.amount, 0);
               t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
               const calcTotal = ((q * unitPrice) - d + f) * ex;
-              t.total = (t.total !== undefined) ? parseFloat(t.total) : calcTotal;
+              t.total = (t.total !== undefined) ? parseVal(t.total) : calcTotal;
               t.total = isNaN(t.total) ? 0 : t.total;
               t.amount = unitPrice;
+              t.qty = q;
+              t.discount = d;
+              t.fee = f;
+              t.exchangeRate = ex;
               return t;
             });
 
