@@ -2569,6 +2569,7 @@ function doPost(e) {
     };
 
     window.exportToPDF = () => {
+      SyncHub.start('Exporting PDF', 'Drawing document canvas...');
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const tableStartY = 85;
@@ -2577,6 +2578,7 @@ function doPost(e) {
       const userName = prefs.name || 'User';
       const reportTitle = document.getElementById('pdf-title').value || 'Financial Audit Report';
 
+      SyncHub.update(20, 'Generating header and summary...');
       // Header
       doc.setFontSize(22);
       doc.setTextColor(pdfThemeColor[0], pdfThemeColor[1], pdfThemeColor[2]);
@@ -2614,6 +2616,7 @@ function doPost(e) {
         return row;
       });
 
+      SyncHub.update(50, 'Processing row data...');
       doc.autoTable({
         startY: tableStartY,
         head: [headCols],
@@ -2624,12 +2627,15 @@ function doPost(e) {
         margin: { top: tableStartY }
       });
 
+      SyncHub.update(90, 'Saving file to device...');
       doc.save(`${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`);
+      SyncHub.finish('PDF Generated Successfully!');
     };
 
     window.exportToDataFormat = (type) => {
+      SyncHub.start(`Exporting ${type.toUpperCase()}`, 'Parsing records...');
       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      if (txs.length === 0) { showToast('No data to export.', 'error', 'alert-circle'); return; }
+      if (txs.length === 0) { SyncHub.finish('No data found.', false); return; }
 
       const reportTitle = document.getElementById('pdf-title').value || 'Finance_Ledger';
       const fileName = `${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.${type}`;
