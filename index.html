@@ -1799,7 +1799,7 @@ function doPost(e) {
         'Merchant', 'Item Name', 'Description', 'Amount (per Unit)', 'Currency', 
         'Exchange Rate', 'Quantity', 'Unit Scale', 'Type', 'Cleared', 
         'Payment Source Account', 'Beneficiary Account', 'Receipt', 'Analytics Tags', 'Associated Project', 
-        'Author', 'Discount', 'Additional Fee', 'Total', 'Update Time', 'XP'
+        'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
       ]},
       { key: 'accounts', sheetName: 'account', headers: [
         'Account ID', 'Account Name', 'Account Type', 'Provider', 'Currency', 
@@ -1839,17 +1839,28 @@ function doPost(e) {
           if (hNorm === 'warrantyexpirydate') return item.expiry || '';
           if (hNorm === 'manufacturer') return item.manu || '';
           if (hNorm === 'itemcategory') return item.category || '';
-          if (hNorm === 'merchantname') return item.name || '';
           if (hNorm === 'updatetime') return Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm");
           
-          // Re-map common finance keys
-          if (h === 'Payment Source Account') return item.accountPayment || '';
-          if (h === 'Beneficiary Account') return item.accountReceived || '';
-          if (h === 'Amount (per Unit)') return item.amount || 0;
+          // Transaction Advanced Mapping
+          if (ent.key === 'transactions') {
+            if (h === 'Payment Source Account') return item.accountPayment || '';
+            if (h === 'Beneficiary Account') return item.accountReceived || '';
+            if (h === 'Amount (per Unit)') return item.amount || 0;
+            if (h === 'Analytics Tags') return (item.tags || []).join(', ');
+            if (h === 'Associated Project') return (item.projects || []).join(', ');
+            if (h === 'Cleared') return item.cleared ? 'Yes' : 'No';
+            if (h === 'Flow') return item.type === 'Income' ? 'IN' : 'OUT';
+            if (h === 'Year' && item.date) return item.date.split('-')[0];
+            if (h === 'Month' && item.date) return item.date.split('-')[1];
+          }
           
           // Generic match by property name logic
           for (let k in item) {
-             if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === hNorm) return item[k];
+             if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === hNorm) {
+                let v = item[k];
+                if (Array.isArray(v)) return v.join(', ');
+                return v;
+             }
           }
           return '';
         });
