@@ -621,7 +621,7 @@
 
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 5rem;">
       <div onclick="window.location.href='items.html'"
-        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; border: 1px solid var(--border);">
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
         <div
           style="width: 44px; height: 44px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0;">
           <i data-lucide="package" style="width: 22px;"></i>
@@ -632,7 +632,7 @@
         </div>
       </div>
       <div onclick="window.location.href='merchants.html'"
-        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; border: 1px solid var(--border);">
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
         <div
           style="width: 44px; height: 44px; border-radius: 14px; background: rgba(249, 115, 22, 0.1); display: flex; align-items: center; justify-content: center; color: #f97316; flex-shrink: 0;">
           <i data-lucide="building-2" style="width: 22px;"></i>
@@ -643,7 +643,7 @@
         </div>
       </div>
       <div onclick="window.location.href='memberships.html'"
-        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; border: 1px solid var(--border);">
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
         <div
           style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0;">
           <i data-lucide="credit-card" style="width: 22px;"></i>
@@ -653,15 +653,26 @@
           <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Loyalty Points</p>
         </div>
       </div>
+      <div onclick="window.location.href='vouchers.html'"
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #f59e0b; flex-shrink: 0;">
+          <i data-lucide="ticket" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vouchers</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Shopping Rewards</p>
+        </div>
+      </div>
       <div onclick="window.location.href='receipts.html'"
-        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; border: 1px solid var(--border);">
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; grid-column: span 2;">
         <div
           style="width: 44px; height: 44px; border-radius: 14px; background: rgba(14, 165, 233, 0.1); display: flex; align-items: center; justify-content: center; color: #0ea5e9; flex-shrink: 0;">
           <i data-lucide="file-text" style="width: 22px;"></i>
         </div>
         <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Vault</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Cloud Receipts</p>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vault Receipts</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Cloud Backup Archive</p>
         </div>
       </div>
     </div>
@@ -2037,18 +2048,11 @@ function doPost(e) {
         return t;
       });
 
-      const itemsCatalog = JSON.parse(localStorage.getItem('items') || '[]');
       const q = query.toLowerCase();
       const filtered = txs.filter(t => {
         if (!q) return true;
-        
-        // Find if any item in catalog matches this transaction's name to get its SKU
-        const catalogItem = itemsCatalog.find(i => (i.name || '').toLowerCase() === (t.name || '').toLowerCase());
-        const sku = catalogItem ? (catalogItem.sku || '').toLowerCase() : '';
-
         const searchPool = [
           t.name, t.merchant, t.category, t.type, t.description, t.author, t.currency, t.scale, t.accountPayment, t.accountReceived,
-          sku,
           ...(t.tags || []), ...(t.projects || []),
           t.total.toString(), (t.cleared ? 'cleared' : 'uncleared')
         ].map(s => (s || '').toLowerCase());

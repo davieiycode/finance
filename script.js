@@ -263,7 +263,8 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
 
 function populateDatalists() {
   const db = JSON.parse(localStorage.getItem('transactions') || '[]');
-  console.log(`Populating datalists from ${db.length} transactions...`);
+  const catalog = JSON.parse(localStorage.getItem('items') || '[]');
+  console.log(`Populating datalists from ${db.length} transactions and ${catalog.length} catalog items...`);
   
   const sets = {
     merchants: new Set(),
@@ -274,6 +275,12 @@ function populateDatalists() {
     tags: new Set(['Monthly', 'Priority']),
     projects: new Set(['General'])
   };
+
+  catalog.forEach(it => {
+    if (it.name) sets.items.add(it.name.trim());
+    if (it.sku) sets.items.add(it.sku.trim());
+    if (it.category) sets.categories.add(it.category.trim());
+  });
 
   db.forEach(t => {
     // Aggressive extraction from all possible key variations
@@ -303,14 +310,6 @@ function populateDatalists() {
   if (sets.accounts.size === 0) {
     ['Cash', 'Bank Account', 'Credit Card', 'E-Wallet'].forEach(a => sets.accounts.add(a));
   }
-
-  // Also include items from Catalog (items.html) for search indexing
-  try {
-    const catalog = JSON.parse(localStorage.getItem('items') || '[]');
-    catalog.forEach(i => {
-      if (i.name) sets.items.add(i.name.trim());
-    });
-  } catch(e) { console.error('Error loading item catalog:', e); }
 
   const fill = (id, items) => {
     const dl = document.getElementById(id);
@@ -559,118 +558,109 @@ window.onload = () => {
   setupChipInput('tags-wrapper');
   setupChipInput('projects-wrapper');
 
+  // Scanner Button Listener
+  const scanBtn = document.getElementById('scan-sku-btn');
+  if (scanBtn) scanBtn.onclick = () => scanBarcode();
+
+  const closeScannerBtn = document.getElementById('close-scanner');
+  if (closeScannerBtn) closeScannerBtn.onclick = () => stopScanner();
+
   lucide.createIcons();
 };
 
-/**
- * SKU & BARCODE SCANNING SYSTEM
- */
 let html5QrCode = null;
 
-window.scanBarcode = () => {
-    const readerContainer = document.getElementById('reader-container');
-    if (!readerContainer) return;
-    
-    readerContainer.style.display = 'flex';
-    html5QrCode = new Html5Qrcode("reader");
-    
-    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-        handleScanSuccess(decodedText);
-        stopScanner();
-    };
-    
-    const config = { fps: 10, qrbox: { width: 250, height: 150 } };
-    
-    html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
-        .catch(err => {
-            console.error(err);
-            showToast("Camera access failed. Check permissions.", "error", "camera-off");
-            stopScanner();
-        });
-};
-
-window.stopScanner = () => {
-    const readerContainer = document.getElementById('reader-container');
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            if (readerContainer) readerContainer.style.display = 'none';
-        }).catch(() => {
-            if (readerContainer) readerContainer.style.display = 'none';
-        });
-    } else {
-        if (readerContainer) readerContainer.style.display = 'none';
-    }
-};
-
-function handleScanSuccess(sku) {
-    const items = JSON.parse(localStorage.getItem('items') || '[]');
-    const match = items.find(i => (i.sku || '').toLowerCase() === sku.toLowerCase());
-    
+function scanBarcode() {
+  document.getElementById('reader-container').style.display = 'flex';
+  html5QrCode = new Html5Qrcode("reader");
+  const qrCodeSuccessCallback = (decodedText, decodedResult) => {
     const itemInput = document.getElementById('item-input');
-    if (match) {
-        itemInput.value = match.name;
-        showToast(`Item detected: ${match.name}`, "success", "package");
-        
-        // Auto-fill metadata if item exists
-        if (match.category) document.getElementById('category-input').value = match.category;
-        if (match.price) {
-            document.getElementById('amount-input').value = new Intl.NumberFormat('id-ID').format(match.price);
-            calculateTotal();
-        }
-    } else {
-        itemInput.value = sku;
-        showToast("SKU not found in catalog. Using raw code.", "info", "info");
+    if (itemInput) {
+      itemInput.value = decodedText;
+      validateItemName();
     }
+    stopScanner();
+  };
+  const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+  html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+    .catch(err => {
+      console.error(err);
+      showToast("Unable to start camera", "error", "alert-circle");
+      stopScanner();
+    });
 }
 
-/**
- * FUZZY ITEM VALIDATION & SKU SEARCH
- */
+function stopScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      document.getElementById('reader-container').style.display = 'none';
+    }).catch(err => {
+      document.getElementById('reader-container').style.display = 'none';
+    });
+  } else {
+    const container = document.getElementById('reader-container');
+    if (container) container.style.display = 'none';
+  }
+}
+
 window.validateItemName = () => {
-    const input = document.getElementById('item-input');
-    if (!input) return;
-    
-    const val = input.value.trim().toLowerCase();
-    const suggestionBox = document.getElementById('item-suggestion');
-    const suggestedItemName = document.getElementById('suggested-item-name');
-    
-    if (!val || val.length < 2) {
-        suggestionBox.style.display = 'none';
-        return;
-    }
+  const input = document.getElementById('item-input');
+  if (!input) return;
+  const val = input.value.trim();
+  const catalog = JSON.parse(localStorage.getItem('items') || '[]');
+  
+  // 1. Try to find by SKU exactly
+  const bySku = catalog.find(it => it.sku && it.sku.toLowerCase() === val.toLowerCase());
+  if (bySku) {
+    autoFillFromItem(bySku);
+    return;
+  }
 
-    const items = JSON.parse(localStorage.getItem('items') || '[]');
-    
-    // Check for exact SKU match or name inclusion
-    const match = items.find(i => 
-        (i.sku && i.sku.toLowerCase() === val) || 
-        (i.name && i.name.toLowerCase().includes(val))
-    );
+  // 2. Try to find by Item Name exactly
+  const byName = catalog.find(it => it.name && it.name.toLowerCase() === val.toLowerCase());
+  if (byName) {
+    autoFillFromItem(byName);
+    return;
+  }
 
-    if (match && match.name.toLowerCase() !== val) {
+  // 3. Fuzzy match for suggestions
+  const suggestionBox = document.getElementById('item-suggestion');
+  const suggestedName = document.getElementById('suggested-item-name');
+  if (val.length > 2) {
+    const fuzzy = catalog.find(it => (it.name && it.name.toLowerCase().includes(val.toLowerCase())) || (it.sku && it.sku.toLowerCase().includes(val.toLowerCase())));
+    if (fuzzy && fuzzy.name.toLowerCase() !== val.toLowerCase()) {
+      if (suggestionBox && suggestedName) {
         suggestionBox.style.display = 'block';
-        suggestedItemName.innerText = match.name;
-        suggestedItemName.onclick = () => {
-            input.value = match.name;
-            suggestionBox.style.display = 'none';
-            
-            // Auto fill
-            if (match.category) document.getElementById('category-input').value = match.category;
-            if (match.price) {
-                document.getElementById('amount-input').value = new Intl.NumberFormat('id-ID').format(match.price);
-                calculateTotal();
-            }
+        suggestedName.innerText = fuzzy.name;
+        suggestedName.onclick = () => {
+          input.value = fuzzy.name;
+          autoFillFromItem(fuzzy);
+          suggestionBox.style.display = 'none';
         };
+      }
     } else {
-        suggestionBox.style.display = 'none';
+      if (suggestionBox) suggestionBox.style.display = 'none';
     }
+  } else {
+    if (suggestionBox) suggestionBox.style.display = 'none';
+  }
 };
 
-// Bind button listeners that might be missing
-document.addEventListener('DOMContentLoaded', () => {
-    const scanBtn = document.getElementById('scan-sku-btn');
-    if (scanBtn) scanBtn.onclick = () => window.scanBarcode();
-    
-    const closeScanBtn = document.getElementById('close-scanner');
-    if (closeScanBtn) closeScanBtn.onclick = () => window.stopScanner();
-});
+function autoFillFromItem(item) {
+  const itemInput = document.getElementById('item-input');
+  const categoryInput = document.getElementById('category-input');
+  const amountInput = document.getElementById('amount-input');
+  const scaleInput = document.getElementById('item-scale');
+  const currencyInput = document.getElementById('currency-input');
+
+  if (itemInput) itemInput.value = item.name || itemInput.value;
+  if (categoryInput && item.category) categoryInput.value = item.category;
+  if (amountInput && item.price) {
+    amountInput.value = new Intl.NumberFormat('id-ID').format(item.price);
+    calculateTotal();
+  }
+  if (scaleInput && item.unit) scaleInput.value = item.unit;
+  if (currencyInput && item.currency) currencyInput.value = item.currency;
+  
+  showToast(`Loaded details for ${item.name}`, 'success', 'package');
+}

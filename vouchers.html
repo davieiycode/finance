@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vouchers & Lucky Draws - Finance</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="theme.js"></script>
+  <style>
+    .voucher-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .voucher-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+    }
+
+    .voucher-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent);
+    }
+
+    .voucher-card.lucky-draw::before {
+      background: #f59e0b;
+    }
+
+    .voucher-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+    }
+
+    .voucher-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .voucher-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .voucher-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .voucher-provider {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .voucher-badge {
+      font-size: 0.6rem;
+      font-weight: 800;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-shopping {
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--accent);
+    }
+
+    .badge-lucky {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+    }
+
+    .voucher-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px dashed var(--border);
+      padding-top: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .voucher-expiry {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .voucher-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      background: var(--bg-input);
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+    }
+
+    /* Modal Styles */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      width: 100%;
+      max-width: 450px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      animation: modal-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes modal-in {
+      from { transform: translateY(20px) scale(0.95); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 0.875rem;
+      padding: 0.875rem 1rem;
+      color: var(--text-primary);
+      font-size: 0.9375rem;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .type-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .type-btn {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 0.875rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .type-btn.active {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: var(--accent);
+    }
+
+    .type-btn.active i {
+      color: var(--accent);
+    }
+
+    .type-btn i {
+      width: 24px;
+      height: 24px;
+      color: var(--text-secondary);
+    }
+
+    .type-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .type-btn.active .type-label {
+      color: var(--text-primary);
+    }
+
+    .btn-save {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 1rem;
+      padding: 1rem;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .filter-scroll {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      padding: 0.5rem 0 1.5rem;
+      scrollbar-width: none;
+    }
+
+    .filter-chip {
+      padding: 0.6rem 1.25rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: 0.2s;
+    }
+
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-secondary);
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--accent);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 600px; padding: 1.5rem;">
+    <header class="header">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button class="back-btn" onclick="window.location.href='index.html'"><i data-lucide="chevron-left"></i></button>
+        <div>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Vouchers & Draws</h1>
+          <p style="font-size: 0.75rem; color: var(--text-secondary);">Manage your rewards & tickets</p>
+        </div>
+      </div>
+      <button class="back-btn" onclick="openVoucherModal()" style="background: var(--accent); border-color: var(--accent); color: white;">
+        <i data-lucide="plus"></i>
+      </button>
+    </header>
+
+    <div class="filter-scroll">
+      <div class="filter-chip active" onclick="filterVouchers('all')">All Rewards</div>
+      <div class="filter-chip" onclick="filterVouchers('shopping')">Shopping</div>
+      <div class="filter-chip" onclick="filterVouchers('lucky')">Lucky Draws</div>
+      <div class="filter-chip" onclick="filterVouchers('expired')">Expired</div>
+    </div>
+
+    <div id="voucher-list" class="voucher-grid">
+      <!-- Dynamic vouchers -->
+    </div>
+
+    <div id="empty-state" class="empty-state" style="display: none;">
+      <div class="empty-icon"><i data-lucide="ticket" style="width:32px; height:32px;"></i></div>
+      <h3 style="font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">No Vouchers Yet</h3>
+      <p style="font-size: 0.8125rem; line-height: 1.5;">Keep your shopping vouchers and lottery tickets organized in one place.</p>
+    </div>
+  </div>
+
+  <!-- Voucher Modal -->
+  <div id="voucher-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 id="modal-title" style="font-weight: 800; font-size: 1.25rem;">Add New Reward</h2>
+        <button class="back-btn" onclick="closeVoucherModal()" style="border: none; background: none;"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Reward Type</label>
+        <div class="type-selector">
+          <div class="type-btn active" onclick="setVoucherType('shopping')">
+            <i data-lucide="shopping-bag"></i>
+            <span class="type-label">Shopping</span>
+          </div>
+          <div class="type-btn" onclick="setVoucherType('lucky')">
+            <i data-lucide="sparkles"></i>
+            <span class="type-label">Lucky Draw</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Reward Name</label>
+        <input type="text" id="v-name" class="form-input" placeholder="e.g. 50k Discount Voucher">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Provider/Store</label>
+        <input type="text" id="v-provider" class="form-input" placeholder="e.g. Indomaret, Shopee">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label class="form-label">Code / Ticket #</label>
+          <input type="text" id="v-code" class="form-input" placeholder="Optional">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expiry Date</label>
+          <input type="date" id="v-expiry" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea id="v-notes" class="form-input" style="min-height: 80px; resize: none;" placeholder="Terms or conditions..."></textarea>
+      </div>
+
+      <button onclick="saveVoucher()" class="btn-save">ADD TO COLLECTION</button>
+    </div>
+  </div>
+
+  <script>
+    let vouchers = JSON.parse(localStorage.getItem('vouchers') || '[]');
+    let currentId = null;
+    let selectedType = 'shopping';
+
+    function init() {
+      lucide.createIcons();
+      renderVouchers();
+    }
+
+    function openVoucherModal(id = null) {
+      currentId = id;
+      const modal = document.getElementById('voucher-modal');
+      const title = document.getElementById('modal-title');
+      
+      if (id) {
+        const v = vouchers.find(v => v.id === id);
+        title.innerText = 'Edit Reward';
+        document.getElementById('v-name').value = v.name;
+        document.getElementById('v-provider').value = v.provider;
+        document.getElementById('v-code').value = v.code || '';
+        document.getElementById('v-expiry').value = v.expiry || '';
+        document.getElementById('v-notes').value = v.notes || '';
+        setVoucherType(v.type);
+      } else {
+        title.innerText = 'Add New Reward';
+        document.getElementById('v-name').value = '';
+        document.getElementById('v-provider').value = '';
+        document.getElementById('v-code').value = '';
+        document.getElementById('v-expiry').value = '';
+        document.getElementById('v-notes').value = '';
+        setVoucherType('shopping');
+      }
+      
+      modal.style.display = 'flex';
+    }
+
+    function closeVoucherModal() {
+      document.getElementById('voucher-modal').style.display = 'none';
+    }
+
+    function setVoucherType(type) {
+      selectedType = type;
+      const btns = document.querySelectorAll('.type-btn');
+      btns.forEach(btn => {
+        const btnType = btn.querySelector('.type-label').innerText.toLowerCase().replace(' ', '-');
+        if (btnType.includes(type)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function saveVoucher() {
+      const name = document.getElementById('v-name').value.trim();
+      const provider = document.getElementById('v-provider').value.trim();
+      const code = document.getElementById('v-code').value.trim();
+      const expiry = document.getElementById('v-expiry').value;
+      const notes = document.getElementById('v-notes').value.trim();
+
+      if (!name || !provider) {
+        alert('Please fill at least name and provider');
+        return;
+      }
+
+      if (currentId) {
+        const idx = vouchers.findIndex(v => v.id === currentId);
+        vouchers[idx] = { ...vouchers[idx], name, provider, code, expiry, notes, type: selectedType };
+      } else {
+        vouchers.push({
+          id: Date.now(),
+          name,
+          provider,
+          code,
+          expiry,
+          notes,
+          type: selectedType,
+          status: 'active'
+        });
+      }
+
+      localStorage.setItem('vouchers', JSON.stringify(vouchers));
+      closeVoucherModal();
+      renderVouchers();
+    }
+
+    function deleteVoucher(id) {
+      if (confirm('Delete this voucher?')) {
+        vouchers = vouchers.filter(v => v.id !== id);
+        localStorage.setItem('vouchers', JSON.stringify(vouchers));
+        renderVouchers();
+      }
+    }
+
+    let activeFilter = 'all';
+    function filterVouchers(filter) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-chip').forEach(c => {
+        if (c.innerText.toLowerCase().includes(filter) || (filter === 'all' && c.innerText.includes('All'))) {
+          c.classList.add('active');
+        } else {
+          c.classList.remove('active');
+        }
+      });
+      renderVouchers();
+    }
+
+    function renderVouchers() {
+      const list = document.getElementById('voucher-list');
+      const empty = document.getElementById('empty-state');
+      
+      let filtered = vouchers;
+      const now = new Date().toISOString().split('T')[0];
+
+      if (activeFilter === 'shopping') filtered = vouchers.filter(v => v.type === 'shopping');
+      else if (activeFilter === 'lucky') filtered = vouchers.filter(v => v.type === 'lucky');
+      else if (activeFilter === 'expired') filtered = vouchers.filter(v => v.expiry && v.expiry < now);
+
+      if (filtered.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+      } else {
+        list.style.display = 'grid';
+        empty.style.display = 'none';
+        
+        list.innerHTML = filtered.map(v => {
+          const isExpired = v.expiry && v.expiry < now;
+          const isLucky = v.type === 'lucky';
+          
+          return `
+            <div class="voucher-card ${isLucky ? 'lucky-draw' : ''}" onclick="openVoucherModal(${v.id})" style="${isExpired ? 'opacity: 0.6;' : ''}">
+              <div class="voucher-header">
+                <div class="voucher-info">
+                  <span class="voucher-provider">${v.provider || 'Generic'}</span>
+                  <span class="voucher-name">${v.name}</span>
+                </div>
+                <div class="voucher-badge badge-${v.type}">
+                  ${v.type === 'lucky' ? 'Lucky Draw' : 'Shopping'}
+                </div>
+              </div>
+              
+              <div class="voucher-footer">
+                <div class="voucher-expiry">
+                  <i data-lucide="clock" style="width:12px;"></i>
+                  ${v.expiry ? `Exp: ${new Date(v.expiry).toLocaleDateString('en-GB')}` : 'No Expiry'}
+                  ${isExpired ? '<span style="color:#ef4444; font-weight:800;"> (EXPIRED)</span>' : ''}
+                </div>
+                ${v.code ? `<div class="voucher-code">${v.code}</div>` : ''}
+              </div>
+              
+              <button onclick="event.stopPropagation(); deleteVoucher(${v.id})" style="position:absolute; top:1.25rem; right:1.25rem; background:none; border:none; color:var(--text-secondary); opacity:0.3; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+            </div>
+          `;
+        }).join('');
+      }
+      lucide.createIcons();
+    }
+
+    init();
+  </script>
+</body>
+</html>
