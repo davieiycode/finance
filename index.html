@@ -2516,42 +2516,35 @@ function doPost(e) {
       return result;
     }
 
-    function showReviewModal(imgData, result) {
-      document.getElementById('review-receipt-img').src = imgData;
-
-      if (result) {
-        document.getElementById('r-merchant').value = result.merchant || 'Unknown';
-        document.getElementById('r-amount').value = result.amount || 0;
-        document.getElementById('r-date').value = result.date;
-      } else {
-        const merchants = ['Starbucks', 'Indomaret', 'Alfamart', 'Pertamina', 'Grab', 'Traveloka'];
-        document.getElementById('r-merchant').value = merchants[Math.floor(Math.random() * merchants.length)];
-        document.getElementById('r-amount').value = Math.floor(Math.random() * 200000) + 15000;
-        document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
-      }
-
+    window.showReviewModal = (imgSrc, data = {}) => {
+      document.getElementById('scan-merchant').value = data.merchant || '';
+      document.getElementById('scan-amount').value = data.total || data.amount || '';
+      document.getElementById('scan-date').value = data.date || new Date().toISOString().split('T')[0];
       document.getElementById('review-modal').style.display = 'flex';
-    }
+    };
 
     window.confirmScanSave = () => {
+      SyncHub.start('Saving Record', 'Updating ledger files...');
       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
       const newTx = {
         id: 'TX-' + Date.now(),
-        merchant: document.getElementById('r-merchant').value,
-        amount: parseFormNum(document.getElementById('r-amount').value),
-        total: parseFormNum(document.getElementById('r-amount').value),
+        merchant: document.getElementById('scan-merchant').value,
+        amount: parseFloat(document.getElementById('scan-amount').value) || 0,
+        total: parseFloat(document.getElementById('scan-amount').value) || 0,
         qty: 1,
-        date: document.getElementById('r-date').value,
-        category: 'Others', // Auto-mapped or default
+        date: document.getElementById('scan-date').value,
+        category: 'Others',
         type: 'Expense',
-        receipt: document.getElementById('review-receipt-img').src,
-        author: JSON.parse(localStorage.getItem('user_prefs') || '{}').name || 'System Scan'
+        receipt: document.getElementById('scan-preview').src,
+        author: JSON.parse(localStorage.getItem('user_prefs') || '{}').name || 'Scan Engine'
       };
 
+      SyncHub.update(50, 'Committing changes to storage...');
       txs.unshift(newTx);
       localStorage.setItem('transactions', JSON.stringify(txs));
-      document.getElementById('review-modal').style.display = 'none';
-      location.reload();
+      
+      SyncHub.finish('Record has been saved!');
+      setTimeout(() => location.reload(), 800);
     };
 
     let pdfThemeColor = [139, 92, 246];
@@ -2742,6 +2735,7 @@ function doPost(e) {
     }
 
     window.executeImport = () => {
+      SyncHub.start('Importing Data', 'Mapping columns and preparing workspace...');
       const mapping = {
         date: document.getElementById('m-date').value,
         merchant: document.getElementById('m-merchant').value,
@@ -2759,7 +2753,11 @@ function doPost(e) {
 
       const currentTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
 
-      const imported = importRawData.map(row => {
+      SyncHub.update(25, `Parsing ${importRawData.length} records...`);
+      const imported = importRawData.map((row, idx) => {
+        if (idx % 100 === 0 && importRawData.length > 200) {
+            SyncHub.update(25 + (idx/importRawData.length * 40), `Processing row ${idx}/${importRawData.length}...`);
+        }
         const parseRowVal = (key) => {
           let val = row[mapping[key]];
           if (val === undefined || val === null || val === '') return 0;
@@ -2780,11 +2778,7 @@ function doPost(e) {
         const quantity = parseRowVal('qty') || 1;
         const discount = parseRowVal('discount') || 0;
         const fee = parseRowVal('fee') || 0;
-
-        // Formula: (quantity x amount) - discount + additional fee = total
         const total = (quantity * unitPrice) - discount + fee;
-
-        // Generate a unique hash based on content if no ID is provided to prevent duplicates
         const rowId = row[mapping.txId] || ('IMP-' + btoa(unescape(encodeURIComponent((row[mapping.date] || '') + (row[mapping.name] || '') + (row[mapping.merchant] || '') + total))).substring(0, 16));
 
         return {
@@ -2807,6 +2801,7 @@ function doPost(e) {
         };
       });
 
+      SyncHub.update(70, 'Merging imported data with local ledger...');
       let finalData = [];
       let skippedCount = 0;
       if (currentImportMode === 'merge') {
@@ -2824,15 +2819,15 @@ function doPost(e) {
       }
       localStorage.setItem('transactions', JSON.stringify(finalData));
       
-      // Auto-extract metadata from imported data
+      SyncHub.update(85, 'Extracting merchant & category intelligence...');
       let extractMsg = '';
       if (typeof rebuildMetadataFromTransactions === 'function') {
         const stats = rebuildMetadataFromTransactions(finalData, currentImportMode);
         extractMsg = ` | Extracted: ${stats.merchants} Mer, ${stats.items} Items`;
       }
 
-      showToast(`Success! Imported ${imported.length} tx (${currentImportMode}). Skipped ${skippedCount} duplicates.${extractMsg}`, 'success', 'file-check');
-      setTimeout(() => location.reload(), 2000);
+      SyncHub.finish(`Imported ${imported.length} tx. Skipped ${skippedCount} dups.${extractMsg}`);
+      setTimeout(() => location.reload(), 1500);
     };
 
     let currentSyncMode = 'merge';
