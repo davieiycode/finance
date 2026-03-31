@@ -508,6 +508,13 @@
             </div>
             <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 600;"><span id="user-xp">0</span> XP</div>
           </div>
+          <div id="dash-sync-info" style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; font-size: 0.65rem; color: var(--text-secondary); opacity: 0.8;">
+            <i data-lucide="cloud-check" style="width: 12px; color: #10b981;"></i>
+            <span id="dash-last-sync">Cloud: Never Synced</span>
+            <button onclick="syncCloud('push')" style="background:none; border:none; padding:0; cursor:pointer; color:var(--accent); display:flex; align-items:center;">
+              <i data-lucide="refresh-cw" style="width: 12px; margin-left: 2px;"></i>
+            </button>
+          </div>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
           <div onclick="toggleDashboardSearch()" class="profile-icon"
@@ -1651,12 +1658,16 @@
         <div style="display:flex; gap:0.75rem;">
           <button onclick="syncCloud('pull')"
             style="flex:1; background:var(--glass); border:1px solid var(--border); color:white; padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-            <i data-lucide="arrow-down-circle" style="width:18px;"></i> Ambil dari Cloud
+            <i data-lucide="arrow-down-circle" style="width:18px;"></i> Ambil ke HP
           </button>
           <button onclick="syncCloud('push')"
             style="flex:1; background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-            <i data-lucide="arrow-up-circle" style="width:18px;"></i> Simpan ke Cloud
+            <i data-lucide="arrow-up-circle" style="width:18px;"></i> Timpa ke Cloud
           </button>
+        </div>
+
+        <div id="last-sync-display" style="font-size:0.65rem; color:var(--text-secondary); text-align:center; padding:0.25rem; font-weight:600; opacity:0; transition:0.3s;">
+          Last Synced: Loading...
         </div>
 
         <div style="font-size:0.6rem; color:var(--text-secondary); line-height:1.5;">
@@ -3099,15 +3110,22 @@ function doPost(e) {
     };
 
     window.syncCloud = async (action) => {
-      const url = document.getElementById('cloud-url').value;
+      const url = document.getElementById('cloud-url').value || localStorage.getItem('cloud_sheet_url');
       if (!url) { showToast('Please enter your Google Script URL', 'warning', 'link-2'); return; }
       localStorage.setItem('cloud_sheet_url', url);
 
       try {
         if (action === 'push') {
-          await window.CloudSync.push(url);
+          if (confirm('Sinkronisasi (Timpa) akan mengganti SELURUH data di Spreadsheet dengan data dari HP ini. Lanjutkan?')) {
+            await window.CloudSync.push(url);
+            const now = new Date().toLocaleString('id-ID');
+            localStorage.setItem('last_cloud_sync', now);
+            updateSyncUI(now);
+          }
         } else {
           await window.CloudSync.pull(url, currentSyncMode);
+          const now = new Date().toLocaleString('id-ID');
+          localStorage.setItem('last_cloud_sync', now);
           setTimeout(() => location.reload(), 2000);
         }
       } catch (e) {
@@ -3115,6 +3133,28 @@ function doPost(e) {
         showToast('Sync Failed: Check connection or script settings.', 'error', 'wifi-off');
       }
     };
+
+    function updateSyncUI(time) {
+      const el = document.getElementById('last-sync-display');
+      const dashEl = document.getElementById('dash-last-sync');
+      const dashIcon = document.querySelector('#dash-sync-info i');
+      
+      const displayTime = time || 'Never';
+      
+      if (el) {
+        el.innerText = `Last Cloud Sync: ${displayTime}`;
+        el.style.opacity = time ? '1' : '0.5';
+      }
+      
+      if (dashEl) {
+        dashEl.innerText = `Cloud: ${displayTime}`;
+        if (dashIcon) {
+          dashIcon.style.color = time ? '#10b981' : '#f59e0b';
+          dashIcon.setAttribute('data-lucide', time ? 'cloud-check' : 'cloud-off');
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
 
     const pModal = document.getElementById('p-modal');
     const pBack = document.getElementById('p-back');
@@ -3290,6 +3330,7 @@ function doPost(e) {
 
       document.getElementById('radius-range').value = tempRadius;
       applyAesthetics(tempTheme, tempAccent, tempRadius);
+      updateSyncUI(localStorage.getItem('last_cloud_sync'));
     }
 
     window.setupBiometric = async () => {
