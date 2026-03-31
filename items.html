@@ -148,9 +148,14 @@
         <input type="file" id="file-import" style="display:none;" accept=".csv,.xlsx,.xls" onchange="handleImportItems(this)">
       </header>
 
-      <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
-        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
-        <input type="text" id="i-search" class="f-input" placeholder="Search items..." style="padding-left: 2.75rem;" oninput="handleFilter(this.value)">
+      <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out; background: var(--bg-darker); padding: 0.5rem 1.5rem 1rem;">
+        <div style="position: relative; display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="search" style="position: absolute; left: 1rem; width: 18px; color: var(--text-secondary);"></i>
+          <input type="text" id="i-search" class="f-input" placeholder="Search by name or SKU..." style="padding-left: 2.75rem; flex: 1;" oninput="handleFilter(this.value)">
+          <button onclick="scanBarcode('search')" class="back-btn" style="flex-shrink: 0; background: var(--violet); border-color: var(--violet); color: white;" title="Scan SKU to Find Item">
+            <i data-lucide="maximize" style="width: 18px;"></i>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -474,13 +479,28 @@
     }
 
     let html5QrCode = null;
-
-    function scanBarcode() {
+    let scanMode = 'edit'; // 'edit' or 'search'
+    function scanBarcode(mode = 'edit') {
+       scanMode = mode;
        document.getElementById('scanner-overlay').style.display = 'flex';
        html5QrCode = new Html5Qrcode("reader");
        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-          document.getElementById('f-sku').value = decodedText;
-          autoSave();
+          if (scanMode === 'search') {
+            const searchInput = document.getElementById('i-search');
+            searchInput.value = decodedText;
+            handleFilter(decodedText);
+            
+            // If only one match, open it
+            const s = decodedText.toLowerCase();
+            const matches = items.filter(i => (i.sku || '').toLowerCase() === s);
+            if (matches.length === 1) {
+              openModal(matches[0].id, 'activity');
+              if (typeof showToast === 'function') showToast(`Found: ${matches[0].name}`, 'success', 'package');
+            }
+          } else {
+            document.getElementById('f-sku').value = decodedText;
+            autoSave();
+          }
           stopScanner();
        };
        const config = { fps: 10, qrbox: { width: 250, height: 150 } };
@@ -512,8 +532,22 @@
         try {
           if (typeof showToast === 'function') showToast('Menganalisa gambar...', 'info', 'loader-2');
           const decodedText = await html5QrCode.scanFile(file, true);
-          document.getElementById('f-sku').value = decodedText;
-          autoSave();
+          
+          if (scanMode === 'search') {
+            const searchInput = document.getElementById('i-search');
+            searchInput.value = decodedText;
+            handleFilter(decodedText);
+            
+            const s = decodedText.toLowerCase();
+            const matches = items.filter(i => (i.sku || '').toLowerCase() === s);
+            if (matches.length === 1) {
+              openModal(matches[0].id, 'activity');
+              if (typeof showToast === 'function') showToast(`Found: ${matches[0].name}`, 'success', 'package');
+            }
+          } else {
+            document.getElementById('f-sku').value = decodedText;
+            autoSave();
+          }
           stopScanner();
           if (typeof showToast === 'function') showToast('Barcode berhasil di-scan!', 'success', 'check-circle');
         } catch (err) {
