@@ -195,7 +195,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 5000;
     }
 
     .modal-card {
@@ -429,6 +429,7 @@
       box-shadow: 0 15px 35px rgba(0,0,0,0.4);
       backdrop-filter: blur(20px);
       overflow: hidden;
+      touch-action: none;
     }
 
     .action-slider-handle {
@@ -702,13 +703,18 @@
 
         function handleStart(e) {
           isDragging = true;
-          startX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
+          const touch = (e.type === 'touchstart') ? e.touches[0] : e;
+          startX = touch.clientX;
+          currentX = startX;
           handle.style.transition = 'none';
         }
 
         function handleMove(e) {
           if (!isDragging) return;
-          currentX = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
+          if (e.cancelable) e.preventDefault();
+          
+          const touch = (e.type === 'touchmove') ? e.touches[0] : e;
+          currentX = touch.clientX;
           let dx = currentX - startX;
           
           // Clamp dx
@@ -761,9 +767,10 @@
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', handleEnd);
 
-        handle.addEventListener('touchstart', handleStart, {passive: true});
+        handle.addEventListener('touchstart', handleStart, {passive: false});
         window.addEventListener('touchmove', handleMove, {passive: false});
         window.addEventListener('touchend', handleEnd);
+        window.addEventListener('touchcancel', handleEnd);
       })();
     </script>
 
@@ -1079,6 +1086,103 @@
   </div>
 
 
+  <!-- Scanner System Modals (Top-level) -->
+  <input type="file" id="receipt-camera" style="display:none;" accept="image/*" capture="environment" onchange="processReceipt(this)">
+  <input type="file" id="receipt-gallery" style="display:none;" accept="image/*" onchange="processReceipt(this)">
+
+  <div id="scan-choice-modal" class="modal-backdrop" style="display:none; justify-content:flex-end; padding:0;">
+    <div class="modal-card" style="width:100%; border-radius:1.75rem 1.75rem 0 0; padding:1.5rem 1.5rem 3rem 1.5rem; background:var(--bg-secondary); animation: slideUp 0.3s ease-out;">
+      <div style="width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 1.5rem auto;"></div>
+      <h3 style="font-weight:800; font-size:1.125rem; margin-bottom:0.5rem; text-align:center;">Scan Receipt</h3>
+      <p style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-bottom:2rem;">Choose your receipt source for OCR processing.</p>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <button onclick="triggerScanSource('camera')" style="background:var(--accent); color:white; border:none; padding:1.5rem; border-radius:1.5rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:pointer;">
+          <i data-lucide="camera" style="width:32px; height:32px;"></i>
+          <span style="font-weight:700; font-size:0.875rem;">Take Photo</span>
+        </button>
+        <button onclick="triggerScanSource('gallery')" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border); padding:1.5rem; border-radius:1.5rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:pointer;">
+          <i data-lucide="image" style="width:32px; height:32px;"></i>
+          <span style="font-weight:700; font-size:0.875rem;">From Gallery</span>
+        </button>
+      </div>
+      
+      <button onclick="document.getElementById('scan-choice-modal').style.display='none'" style="width:100%; padding:1rem; margin-top:1.5rem; background:none; border:none; color:var(--text-secondary); font-weight:600; cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+  
+  <style>
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+  </style>
+
+  <div id="scanning-overlay" class="modal-backdrop"
+    style="display:none; flex-direction:column; gap:1.5rem; text-align:center;">
+    <div
+      style="position:relative; width:200px; height:280px; background:rgba(255,255,255,0.05); border:2px solid var(--accent); border-radius:1rem; overflow:hidden;">
+      <img id="scan-preview" src="" style="width:100%; height:100%; object-fit:cover; opacity:0.5;">
+      <div id="scan-line"
+        style="position:absolute; top:0; left:0; width:100%; height:4px; background:var(--accent); box-shadow:0 0 15px var(--accent); animation: scan-anim 2s ease-in-out infinite;">
+      </div>
+    </div>
+    <div id="scan-status-container" style="width: 200px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.6rem; font-weight:800; color:var(--text-secondary); text-transform:uppercase;">
+          <span id="scan-progress-label">Processing</span>
+          <span id="scan-progress-percent">0%</span>
+      </div>
+      <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+          <div id="scan-progress-bar" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.3s ease;"></div>
+      </div>
+    </div>
+    <p style="font-size:0.75rem; color:var(--text-secondary); max-width:200px;">AI is extracting merchant, date, and final total.</p>
+  </div>
+
+  <style>
+    @keyframes scan-anim {
+      0%, 100% { top: 0; }
+      50% { top: 100%; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+
+  <div id="review-modal" class="modal-backdrop" style="display:none; padding:1.5rem;">
+    <div class="modal-card" style="padding:1.5rem; overflow-y:auto; max-height:90vh;">
+      <h3 style="font-weight:800; margin-bottom:1.5rem; text-align:center;">Review Scanned Data</h3>
+      <div style="display:flex; flex-direction:column; gap:1.25rem;">
+        <div>
+          <label class="form-label">Merchant Name</label>
+          <input type="text" id="scan-merchant" class="f-input" style="width:100%; border-radius:0.75rem;">
+        </div>
+        <div>
+          <label class="form-label">Total Amount</label>
+          <input type="number" id="scan-amount" class="f-input" style="width:100%; border-radius:0.75rem;">
+        </div>
+        <div>
+          <label class="form-label">Transaction Date</label>
+          <input type="date" id="scan-date" class="f-input" style="width:100%; border-radius:0.75rem;">
+        </div>
+        <div>
+          <label class="form-label">Billing Account (Optional)</label>
+          <select id="scan-account" class="f-select" style="width:100%; border-radius:0.75rem;">
+            <option value="">Default Account</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem;">
+        <button onclick="document.getElementById('review-modal').style.display='none'"
+          style="background:var(--glass); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700;">Cancel</button>
+        <button onclick="confirmScanSave()"
+          style="background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700;">Confirm
+          & Save</button>
+      </div>
+    </div>
+  </div>
+
   <div id="p-modal" class="modal-backdrop" style="display:none;">
     <div class="modal-card" style="padding: 1.5rem; min-height: 480px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
@@ -1089,115 +1193,7 @@
         </div>
         <button id="p-close" class="close-btn">&times;</button>
       </div>
-      <!-- Hidden Inputs for Scan -->
-      <input type="file" id="receipt-camera" style="display:none;" accept="image/*" capture="environment" onchange="processReceipt(this)">
-      <input type="file" id="receipt-gallery" style="display:none;" accept="image/*" onchange="processReceipt(this)">
 
-      <!-- Scan Choice Modal -->
-      <div id="scan-choice-modal" class="modal-backdrop" style="display:none; justify-content:flex-end; padding:0;">
-        <div class="modal-card" style="width:100%; border-radius:1.75rem 1.75rem 0 0; padding:1.5rem 1.5rem 3rem 1.5rem; background:var(--bg-secondary); animation: slideUp 0.3s ease-out;">
-          <div style="width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 1.5rem auto;"></div>
-          <h3 style="font-weight:800; font-size:1.125rem; margin-bottom:0.5rem; text-align:center;">Scan Receipt</h3>
-          <p style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-bottom:2rem;">Choose your receipt source for OCR processing.</p>
-          
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-            <button onclick="triggerScanSource('camera')" style="background:var(--accent); color:white; border:none; padding:1.5rem; border-radius:1.5rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:pointer;">
-              <i data-lucide="camera" style="width:32px; height:32px;"></i>
-              <span style="font-weight:700; font-size:0.875rem;">Take Photo</span>
-            </button>
-            <button onclick="triggerScanSource('gallery')" style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border); padding:1.5rem; border-radius:1.5rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:pointer;">
-              <i data-lucide="image" style="width:32px; height:32px;"></i>
-              <span style="font-weight:700; font-size:0.875rem;">From Gallery</span>
-            </button>
-          </div>
-          
-          <button onclick="document.getElementById('scan-choice-modal').style.display='none'" style="width:100%; padding:1rem; margin-top:1.5rem; background:none; border:none; color:var(--text-secondary); font-weight:600; cursor:pointer;">Cancel</button>
-        </div>
-      </div>
-      
-      <style>
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
-      </style>
-
-      <div id="scanning-overlay" class="modal-backdrop"
-        style="display:none; flex-direction:column; gap:1.5rem; text-align:center;">
-        <div
-          style="position:relative; width:200px; height:280px; background:rgba(255,255,255,0.05); border:2px solid var(--accent); border-radius:1rem; overflow:hidden;">
-          <img id="scan-preview" src="" style="width:100%; height:100%; object-fit:cover; opacity:0.5;">
-          <div id="scan-line"
-            style="position:absolute; top:0; left:0; width:100%; height:4px; background:var(--accent); box-shadow:0 0 15px var(--accent); animation: scan-anim 2s ease-in-out infinite;">
-          </div>
-        </div>
-        <h4 style="font-weight:800; animation: pulse 1.5s infinite;">Scanning Receipt...</h4>
-        <p style="font-size:0.75rem; color:var(--text-secondary); max-width:200px;">AI is extracting merchant, date, and
-          final total.</p>
-      </div>
-
-      <style>
-        @keyframes scan-anim {
-
-          0%,
-          100% {
-            top: 5%;
-          }
-
-          50% {
-            top: 95%;
-          }
-        }
-
-        @keyframes pulse {
-
-          0%,
-          100% {
-            opacity: 1;
-          }
-
-          50% {
-            opacity: 0.5;
-          }
-        }
-      </style>
-
-      <div id="review-modal" class="modal-backdrop" style="display:none; padding:1.5rem;">
-        <div class="modal-card" style="padding:1.5rem;">
-          <h3 style="font-weight:800; margin-bottom:1.5rem;">Review & Confirm</h3>
-          <div
-            style="text-align:center; margin-bottom:1.5rem; background:var(--bg-input); padding:1rem; border-radius:1rem;">
-            <img id="review-receipt-img" src=""
-              style="max-height:120px; border-radius:0.5rem; margin-bottom:0.8rem; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-            <div id="review-raw-text"
-              style="font-size:0.6rem; color:var(--text-secondary); opacity:0.5; font-family:monospace;">EXTRACTING
-              BINARY DATA...</div>
-          </div>
-
-          <div style="display:grid; gap:1rem;">
-            <div><label class="label" style="font-size:0.7rem; opacity:0.6;">MERCHANT</label><input type="text"
-                id="r-merchant" class="f-input"
-                style="width:100%; margin-top:0.3rem; background:var(--bg-input); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; color:white;">
-            </div>
-            <div><label class="label" style="font-size:0.7rem; opacity:0.6;">AMOUNT (IDR)</label><input type="number"
-                id="r-amount" class="f-input"
-                style="width:100%; margin-top:0.3rem; background:var(--bg-input); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; color:white;">
-            </div>
-            <div><label class="label" style="font-size:0.7rem; opacity:0.6;">DATE</label><input type="date" id="r-date"
-                class="f-input"
-                style="width:100%; margin-top:0.3rem; background:var(--bg-input); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; color:white;">
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.5rem;">
-            <button onclick="document.getElementById('review-modal').style.display='none'"
-              style="background:var(--glass); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700;">Cancel</button>
-            <button onclick="confirmScanSave()"
-              style="background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700;">Confirm
-              & Save</button>
-          </div>
-        </div>
-      </div>
 
       <!-- Main Menu -->
       <div id="p-view-main" style="display:block;">
@@ -2454,11 +2450,23 @@ function doPost(e) {
           const dataUrl = e.target.result;
           document.getElementById('scan-preview').src = dataUrl;
           document.getElementById('scanning-overlay').style.display = 'flex';
+          
+          // Reset Progress
+          document.getElementById('scan-progress-bar').style.width = '0%';
+          document.getElementById('scan-progress-percent').innerText = '0%';
+          document.getElementById('scan-progress-label').innerText = 'Initializing';
 
           Tesseract.recognize(
             dataUrl,
             'eng+ind',
-            { logger: m => console.log(m) }
+            { logger: m => {
+                if (m.status === 'recognizing text' || m.status === 'loading tesseract core') {
+                    const progress = Math.round(m.progress * 100);
+                    document.getElementById('scan-progress-bar').style.width = progress + '%';
+                    document.getElementById('scan-progress-percent').innerText = progress + '%';
+                    document.getElementById('scan-progress-label').innerText = m.status.replace(/_/g, ' ');
+                }
+            } }
           ).then(({ data: { text } }) => {
             document.getElementById('scanning-overlay').style.display = 'none';
             const result = parseReceiptText(text);
