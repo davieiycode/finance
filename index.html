@@ -3114,13 +3114,14 @@ function doPost(e) {
       try {
         if (action === 'push') {
           await window.CloudSync.push(url);
+          if (window.updateSyncUI) window.updateSyncUI();
         } else {
           await window.CloudSync.pull(url, currentSyncMode);
           setTimeout(() => location.reload(), 2000);
         }
       } catch (e) {
         console.error(e);
-        showToast('Sync Failed: Check connection or script settings.', 'error', 'wifi-off');
+        // Error is now handled by CloudSync.finish with detailed info
       }
     };
 
@@ -3363,34 +3364,10 @@ function doPost(e) {
       }
     };
 
-    let autoSyncTimer = null;
-    function startAutoSync() {
-      if (autoSyncTimer) clearInterval(autoSyncTimer);
-      autoSyncTimer = setInterval(async () => {
-        const url = localStorage.getItem('cloud_sheet_url');
-        if (!url) return;
-
-        // Visual feedback for background sync
-        const dot = document.getElementById('sync-dot');
-        if (dot) {
-          dot.style.background = '#8b5cf6';
-          dot.style.boxShadow = '0 0 8px #8b5cf6';
-        }
-
-        try {
-          await window.CloudSync.push(url, true); // Added 'silent' flag
-          window.updateSyncUI();
-        } catch (e) {
-          if (dot) dot.style.background = '#ef4444';
-        }
-      }, 5000);
-    }
-
     window.onload = () => {
       refreshDashboard('');
       checkExpiries();
       window.updateSyncUI();
-      startAutoSync();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     };
 
