@@ -653,7 +653,7 @@
     }
 
     function renderMerchants() {
-      const filtered = merchants.filter(m => (activeType === 'All' || m.type === activeType) && (m.name || '').toLowerCase().includes(searchTerm))
+      const filtered = (merchants || []).filter(m => (activeType === 'All' || m.type === activeType) && (m.name || '').toLowerCase().includes(searchTerm))
         .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       const list = document.getElementById('merchant-list');
       const empty = document.getElementById('empty-state');
@@ -664,18 +664,22 @@
       } else {
         list.style.display = 'block';
         empty.style.display = 'none';
-        list.innerHTML = filtered.map(m => `
-          <div class="merchant-card" onclick="openModal(${m.id}, 'analysis')">
+        list.innerHTML = filtered.map(m => {
+          const firstChar = (m.name || '?')[0].toUpperCase();
+          const cleanId = typeof m.id === 'string' ? `'${m.id}'` : m.id;
+          return `
+          <div class="merchant-card" onclick="openModal(${cleanId}, 'analysis')">
             <div style="display:flex; align-items:center; gap:1rem;">
-              <div class="m-icon">${m.name[0].toUpperCase()}</div>
+              <div class="m-icon">${firstChar}</div>
               <div style="flex:1;">
-                <div style="font-weight:700; color:white;">${m.name}</div>
-                <div style="font-size:0.75rem; color:var(--text-secondary);">${m.type}</div>
+                <div style="font-weight:700; color:white;">${m.name || 'Unnamed Merchant'}</div>
+                <div style="font-size:0.75rem; color:var(--text-secondary);">${m.type || 'Other'}</div>
               </div>
             </div>
-          </div>`).join('');
+          </div>`;
+        }).join('');
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     const modal = document.getElementById('merchant-modal');
