@@ -575,6 +575,15 @@
       </div>
     </div>
 
+    <!-- Sync Status Bar -->
+    <div id="sync-status-bar" style="display: none; align-items: center; justify-content: space-between; background: var(--bg-input); border: 1px solid var(--border); border-radius: 0.8rem; padding: 0.6rem 1rem; margin-bottom: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <div id="sync-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e;"></div>
+        <span id="sync-text" style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary);">SYNCED WITH CLOUD</span>
+      </div>
+      <span id="sync-time" style="font-size: 0.65rem; color: var(--text-secondary); opacity: 0.6;">Just now</span>
+    </div>
+
     <div class="dashboard-grid" style="grid-template-columns: repeat(2, 1fr);">
       <div class="stat-card" onclick="window.location.href='accounts.html'">
         <i data-lucide="wallet" style="width: 14px; color: var(--accent); margin-bottom: 0.2rem;"></i>
@@ -3327,9 +3336,61 @@ function doPost(e) {
       document.getElementById('cloud-url').value = savedUrl;
     }
 
+    window.updateSyncUI = () => {
+      const lastSync = localStorage.getItem('last_cloud_sync');
+      const url = localStorage.getItem('cloud_sheet_url');
+      const bar = document.getElementById('sync-status-bar');
+      if (!url) { bar.style.display = 'none'; return; }
+      
+      bar.style.display = 'flex';
+      const timeEl = document.getElementById('sync-time');
+      const dot = document.getElementById('sync-dot');
+      const text = document.getElementById('sync-text');
+
+      if (!lastSync) {
+        text.innerText = 'NOT SYNCED';
+        timeEl.innerText = 'Never';
+        dot.style.background = '#a1a1aa';
+        dot.style.boxShadow = 'none';
+      } else {
+        const diff = Math.floor((Date.now() - parseInt(lastSync)) / 1000);
+        text.innerText = 'CLOUD BACKUP ACTIVE';
+        dot.style.background = '#22c55e';
+        dot.style.boxShadow = '0 0 8px #22c55e';
+        if (diff < 10) timeEl.innerText = 'Just now';
+        else if (diff < 60) timeEl.innerText = diff + 's ago';
+        else timeEl.innerText = Math.floor(diff/60) + 'm ago';
+      }
+    };
+
+    let autoSyncTimer = null;
+    function startAutoSync() {
+      if (autoSyncTimer) clearInterval(autoSyncTimer);
+      autoSyncTimer = setInterval(async () => {
+        const url = localStorage.getItem('cloud_sheet_url');
+        if (!url) return;
+
+        // Visual feedback for background sync
+        const dot = document.getElementById('sync-dot');
+        if (dot) {
+          dot.style.background = '#8b5cf6';
+          dot.style.boxShadow = '0 0 8px #8b5cf6';
+        }
+
+        try {
+          await window.CloudSync.push(url, true); // Added 'silent' flag
+          window.updateSyncUI();
+        } catch (e) {
+          if (dot) dot.style.background = '#ef4444';
+        }
+      }, 5000);
+    }
+
     window.onload = () => {
       refreshDashboard('');
       checkExpiries();
+      window.updateSyncUI();
+      startAutoSync();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     };
 

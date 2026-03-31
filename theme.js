@@ -226,10 +226,10 @@
 
   // Cloud Sync Engine
   const CloudSync = {
-    pull: async (url, mode = 'overwrite') => {
-      SyncHub.start('Cloud Pull', 'Connecting to secure server...');
+    pull: async (url, mode = 'overwrite', silent = false) => {
+      if (!silent) SyncHub.start('Cloud Pull', 'Connecting to secure server...');
       try {
-        SyncHub.update(15, 'Fetching remote ledger...');
+        if (!silent) SyncHub.update(15, 'Fetching remote ledger...');
         const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'get=data');
         const data = await res.json();
 
@@ -347,16 +347,17 @@
           await window.syncMasterData();
         }
 
-        SyncHub.finish(`Success! ${count} records processed.`);
+        if (!silent) SyncHub.finish(`Success! ${count} records processed.`);
+        localStorage.setItem('last_cloud_sync', Date.now());
         return count;
       } catch (err) {
-        SyncHub.finish('Pull failed. Check connection.', false);
+        if (!silent) SyncHub.finish('Pull failed. Check connection.', false);
         console.error('Cloud Sync Error:', err);
         throw err;
       }
     },
-    push: async (url) => {
-      SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
+    push: async (url, silent = false) => {
+      if (!silent) SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
       try {
         const keys = ['transactions', 'accounts', 'merchants', 'items', 'budgets', 'goals', 'membership_cards'];
         const payload = { updateTime: new Date().toISOString() };
@@ -366,7 +367,7 @@
 
         keys.forEach(key => {
           const stepLoad = (processedKeys / totalKeys) * 35; // First 35% is gathering
-          SyncHub.update(stepLoad, `Gathering ${key}...`);
+          if (!silent) SyncHub.update(stepLoad, `Gathering ${key}...`);
           payload[key] = JSON.parse(localStorage.getItem(key) || '[]');
           processedKeys++;
         });
@@ -387,13 +388,14 @@
         SyncHub.update(85, 'Verifying cloud ledger integrity...');
         const result = await res.json();
         if (result.status === 'success') {
-          SyncHub.finish(`Successfully uploaded all sheets!`);
+          if (!silent) SyncHub.finish(`Successfully uploaded all sheets!`);
+          localStorage.setItem('last_cloud_sync', Date.now());
           return payload.transactions.length;
         } else {
           throw new Error(result.message || 'Server error');
         }
       } catch (e) {
-        SyncHub.finish('Push failed: ' + e.message, false);
+        if (!silent) SyncHub.finish('Push failed: ' + e.message, false);
         throw e;
       }
     }
