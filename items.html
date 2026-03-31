@@ -895,7 +895,10 @@
         { id: 'mi-price', label: 'Unit Price', terms: ['price', 'harga', 'cost', 'unit price'] },
         { id: 'mi-unit', label: 'Unit / Scale', terms: ['unit', 'scale', 'satuan', 'pcs'] },
         { id: 'mi-sku', label: 'SKU / Barcode', terms: ['sku', 'barcode', 'kode'] },
-        { id: 'mi-manu', label: 'Manufacturer', terms: ['manu', 'brand', 'merk'] }
+        { id: 'mi-manu', label: 'Manufacturer', terms: ['manu', 'brand', 'merk'] },
+        { id: 'mi-model', label: 'Model', terms: ['model', 'type', 'seri'] },
+        { id: 'mi-expiry', label: 'Expiry / Warranty', terms: ['expiry', 'kadaluarsa', 'exp', 'warranty', 'garansi'] },
+        { id: 'mi-notes', label: 'Notes', terms: ['note', 'catatan', 'desc', 'keterangan'] }
       ];
 
       const container = document.getElementById('mapping-fields-items');
@@ -936,7 +939,10 @@
         price: document.getElementById('mi-price').value,
         unit: document.getElementById('mi-unit').value,
         sku: document.getElementById('mi-sku').value,
-        manu: document.getElementById('mi-manu').value
+        manu: document.getElementById('mi-manu').value,
+        model: document.getElementById('mi-model').value,
+        expiry: document.getElementById('mi-expiry').value,
+        notes: document.getElementById('mi-notes').value
       };
 
       if (!mapping.name) { alert('Item Name mapping is required.'); return; }
@@ -953,6 +959,9 @@
           unit: row[mapping.unit] || 'pcs',
           sku: row[mapping.sku] || '',
           manu: row[mapping.manu] || '',
+          model: row[mapping.model] || '',
+          expiry: row[mapping.expiry] || '',
+          notes: row[mapping.notes] || '',
           status: 'Active',
           image: ''
         };
@@ -991,6 +1000,8 @@
         'Manufacturer': i.manu || '',
         'Model': i.model || '',
         'SKU': i.sku || '',
+        'Expiry Date': i.expiry || '',
+        'Notes': i.notes || '',
         'Status': i.status
       }));
 

@@ -1739,10 +1739,18 @@ function doGet(e) {
         // Account/Master Data Specific (Generic headers)
         else {
           r[h.toString().trim()] = v;
-          // Normalized keys (for app)
+          // Normalized keys (for app processing)
           if (hName === 'balance' || hName === 'limit' || hName === 'target' || hName === 'saved' || hName === 'price') {
              r[hName] = parseFloat(v) || 0;
           }
+          if (hName === 'manufacturer' || hName === 'manu') r.manu = v;
+          if (hName === 'model') r.model = v;
+          if (hName === 'sku' || hName === 'barcode') r.sku = v;
+          if (hName === 'notes' || hName === 'description') r.notes = v;
+          if (hName === 'expiry' || hName === 'expirydate' || hName === 'cardexpiry') r.expiry = v;
+          if (hName === 'cardexpiry') r.cardExpiry = v;
+          if (hName === 'since') r.since = v;
+          if (hName === 'provider') r.provider = v;
         }
       });
       return r;
@@ -1770,15 +1778,14 @@ function doPost(e) {
         'Merchant', 'Item Name', 'Description', 'Amount (per Unit)', 'Currency', 
         'Exchange Rate', 'Quantity', 'Unit Scale', 'Type', 'Cleared', 
         'Payment Source Account', 'Beneficiary Account', 'Receipt', 'Analytics Tags', 'Associated Project', 
-        'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 
-        'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
+        'Author', 'Discount', 'Additional Fee', 'Total', 'Update Time', 'XP'
       ]},
-      { key: 'accounts', sheetName: 'account', headers: ['ID', 'Name', 'Type', 'Balance', 'Status', 'Color'] },
+      { key: 'accounts', sheetName: 'account', headers: ['ID', 'Name', 'Type', 'Provider', 'Card Expiry', 'Balance', 'Status', 'Color'] },
       { key: 'merchants', sheetName: 'merchant', headers: ['ID', 'Name', 'Type'] },
-      { key: 'items', sheetName: 'item', headers: ['ID', 'Name', 'Category', 'Price', 'Unit', 'Status'] },
+      { key: 'items', sheetName: 'item', headers: ['ID', 'Name', 'Category', 'Manufacturer', 'Model', 'SKU', 'Price', 'Unit', 'Expiry Date', 'Notes', 'Status'] },
       { key: 'budgets', sheetName: 'budget', headers: ['ID', 'Name', 'Type', 'Limit', 'Period'] },
       { key: 'goals', sheetName: 'goal', headers: ['ID', 'Name', 'Target', 'Saved', 'Deadline'] },
-      { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Type', 'Color'] }
+      { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] }
     ];
 
     entities.forEach(ent => {
@@ -1809,6 +1816,9 @@ function doPost(e) {
           if (h === 'Payment Source Account') return item.accountPayment || '';
           if (h === 'Beneficiary Account') return item.accountReceived || '';
           if (h === 'Amount (per Unit)') return item.amount || 0;
+          if (h === 'Manufacturer') return item.manu || '';
+          if (h === 'SKU') return item.sku || '';
+          if (h === 'Expiry Date' || h === 'Card Expiry') return item.expiry || item.cardExpiry || '';
           
           return item[h] || ''; // Fallback to raw property
         });
@@ -3309,7 +3319,7 @@ function doPost(e) {
       members.forEach(m => {
         if (m.expiry) {
           const exp = parseDate(m.expiry);
-          if (exp < in30Days) reminders.push({ type: 'Card', name: m.name, date: m.expiry, expired: exp < now, link: 'memberships.html', color: '#8b5cf6' });
+          if (exp < in30Days) reminders.push({ id: m.id, type: 'Card', name: m.name, date: m.expiry, expired: exp < now, link: `memberships.html?id=${m.id}`, color: '#8b5cf6' });
         }
       });
 
@@ -3318,7 +3328,7 @@ function doPost(e) {
       vouchers.forEach(v => {
         if (v.expiry) {
           const exp = parseDate(v.expiry);
-          if (exp < in30Days) reminders.push({ type: 'Voucher', name: v.name, date: v.expiry, expired: exp < now, link: 'vouchers.html', color: '#f59e0b' });
+          if (exp < in30Days) reminders.push({ id: v.id, type: 'Voucher', name: v.name, date: v.expiry, expired: exp < now, link: `vouchers.html?id=${v.id}`, color: '#f59e0b' });
         }
       });
 
@@ -3327,7 +3337,7 @@ function doPost(e) {
       items.forEach(i => {
         if (i.expiry) {
           const exp = parseDate(i.expiry);
-          if (exp < in30Days) reminders.push({ type: 'Item', name: i.name, date: i.expiry, expired: exp < now, link: 'items.html', color: '#16a34a' });
+          if (exp < in30Days) reminders.push({ id: i.id, type: 'Item', name: i.name, date: i.expiry, expired: exp < now, link: `items.html?id=${i.id}`, color: '#16a34a' });
         }
       });
 
@@ -3336,7 +3346,7 @@ function doPost(e) {
       accounts.forEach(a => {
         if (a.cardExpiry) {
           const exp = parseDate(a.cardExpiry);
-          if (exp < in30Days) reminders.push({ type: 'Bank Card', name: a.name, date: a.cardExpiry, expired: exp < now, link: 'accounts.html', color: '#0ea5e9' });
+          if (exp < in30Days) reminders.push({ id: a.id, type: 'Bank Card', name: a.name, date: a.cardExpiry, expired: exp < now, link: `accounts.html?id=${a.id}`, color: '#0ea5e9' });
         }
       });
 
