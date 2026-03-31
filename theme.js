@@ -358,28 +358,33 @@
     push: async (url) => {
       SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
       try {
-        const payload = {
-          transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
-          accounts: JSON.parse(localStorage.getItem('accounts') || '[]'),
-          merchants: JSON.parse(localStorage.getItem('merchants') || '[]'),
-          items: JSON.parse(localStorage.getItem('items') || '[]'),
-          budgets: JSON.parse(localStorage.getItem('budgets') || '[]'),
-          goals: JSON.parse(localStorage.getItem('goals') || '[]'),
-          membership_cards: JSON.parse(localStorage.getItem('membership_cards') || '[]'),
-          updateTime: new Date().toISOString()
-        };
+        const keys = ['transactions', 'accounts', 'merchants', 'items', 'budgets', 'goals', 'membership_cards'];
+        const payload = { updateTime: new Date().toISOString() };
+        
+        let processedKeys = 0;
+        const totalKeys = keys.length;
+
+        keys.forEach(key => {
+          const stepLoad = (processedKeys / totalKeys) * 35; // First 35% is gathering
+          SyncHub.update(stepLoad, `Gathering ${key}...`);
+          payload[key] = JSON.parse(localStorage.getItem(key) || '[]');
+          processedKeys++;
+        });
 
         if (payload.transactions.length === 0 && payload.accounts.length === 0) {
-          SyncHub.finish('No new data to push');
+          SyncHub.finish('No data to backup');
           return 0;
         }
 
-        SyncHub.update(40, `Synchronizing ${payload.transactions.length} tx & master data...`);
+        SyncHub.update(40, `Synchronizing ${payload.transactions.length} records to cloud...`);
+        
+        // Final upload stage
         const res = await fetch(url, { 
           method: 'POST', 
           body: JSON.stringify(payload) 
         });
         
+        SyncHub.update(85, 'Verifying cloud ledger integrity...');
         const result = await res.json();
         if (result.status === 'success') {
           SyncHub.finish(`Successfully uploaded all sheets!`);
