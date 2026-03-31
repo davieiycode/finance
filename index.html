@@ -514,6 +514,7 @@
             <button onclick="syncCloud('push')" style="background:none; border:none; padding:0; cursor:pointer; color:var(--accent); display:flex; align-items:center;">
               <i data-lucide="refresh-cw" style="width: 12px; margin-left: 2px;"></i>
             </button>
+            <span style="margin-left:auto; opacity:0.6;">v2.5.4</span>
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
@@ -1300,6 +1301,11 @@
           </div>
         </div>
 
+        <div style="margin-top:2rem; text-align:center; opacity:0.4;">
+           <p style="font-size:0.65rem; font-weight:700;">BUILD v2.5.4</p>
+           <p style="font-size:0.6rem;">Updated: Apr 01, 2026</p>
+        </div>
+
       </div>
 
       <!-- Personal View -->
@@ -1627,7 +1633,10 @@
           <label class="label" style="font-size:0.75rem;">CONNECTED CLOUD URL</label>
           <input type="text" id="cloud-url" class="f-input" readonly
             style="width:100%; margin-top:0.4rem; padding:1rem; border-radius:1rem; background:var(--bg-input); border:1px solid var(--border); color:var(--text-secondary); cursor:not-allowed;">
-          <p style="font-size:0.6rem; color:var(--accent); margin-top:0.4rem;"><i data-lucide="check-circle" style="width:10px; display:inline-block; vertical-align:middle;"></i> Verified via QR Connect</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.4rem;">
+            <p style="font-size:0.6rem; color:var(--accent);"><i data-lucide="check-circle" style="width:10px; display:inline-block; vertical-align:middle;"></i> Verified via QR Connect</p>
+            <p style="font-size:0.6rem; opacity:0.5;">App Version: v2.5.4</p>
+          </div>
         </div>
 
         <div
@@ -2125,6 +2134,9 @@ function doPost(e) {
   </div>
 
   <script>
+    const APP_VERSION = 'v2.5.4';
+    const BUILD_DATE = 'Apr 01, 2026';
+
     lucide.createIcons();
 
     const recentList = document.getElementById('recent-list');
