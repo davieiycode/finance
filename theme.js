@@ -86,22 +86,10 @@
     container.appendChild(toast);
     if (window.lucide) window.lucide.createIcons();
     
-    if (type === 'error') {
-      const closeBtn = document.createElement('button');
-      closeBtn.innerHTML = '<i data-lucide="x" style="width:14px;"></i>';
-      closeBtn.style.cssText = 'background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:4px; margin-left:auto; display:flex; align-items:center;';
-      toast.appendChild(closeBtn);
-      if (window.lucide) window.lucide.createIcons();
-      closeBtn.onclick = () => {
-        toast.style.animation = 'toast-out 0.4s ease forwards';
-        setTimeout(() => toast.remove(), 400);
-      };
-    } else {
-      setTimeout(() => {
-        toast.style.animation = 'toast-out 0.4s ease forwards';
-        setTimeout(() => toast.remove(), 400);
-      }, 4000);
-    }
+    setTimeout(() => {
+      toast.style.animation = 'toast-out 0.4s ease forwards';
+      setTimeout(() => toast.remove(), 400);
+    }, 4000);
   }
 
   // Animation styles if not present
@@ -195,10 +183,6 @@
             <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.02);">
                <div id="sync-hub-progress" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #c084fc); transition: width 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);"></div>
             </div>
-            <div id="sync-hub-error-actions" style="display: none; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
-               <p id="sync-hub-error-detail" style="color: #ef4444; font-size: 0.7rem; font-weight: 600; line-height: 1.4; background: rgba(239,68,68,0.05); padding: 0.75rem; border-radius: 0.75rem; border: 1px solid rgba(239,68,68,0.1);"></p>
-               <button id="sync-hub-close" style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary); padding: 0.75rem; border-radius: 1rem; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Acknowledge & Close</button>
-            </div>
           </div>
         </div>
         <style> @keyframes hub-spin { to { transform: rotate(360deg); } } </style>
@@ -231,40 +215,21 @@
       if (status) this.statusText.innerText = status;
     },
 
-    finish(msg, success = true, errorDetail = '') {
-      if (success) {
-        this.update(100, msg || 'Done!');
-        document.getElementById('sync-hub-error-actions').style.display = 'none';
-        setTimeout(() => {
-          this.el.style.opacity = '0';
-          setTimeout(() => this.el.style.display = 'none', 400);
-        }, 1000);
-      } else {
-        this.update(100, 'Process Failed');
-        this.titleText.innerText = 'Operation Error';
-        this.titleText.style.color = '#ef4444';
-        const errActions = document.getElementById('sync-hub-error-actions');
-        const errDetailEl = document.getElementById('sync-hub-error-detail');
-        errActions.style.display = 'flex';
-        errDetailEl.innerText = errorDetail || msg || 'An unknown error occurred during sync.';
-        
-        document.getElementById('sync-hub-close').onclick = () => {
-          this.el.style.opacity = '0';
-          setTimeout(() => {
-            this.el.style.display = 'none';
-            this.titleText.style.color = 'white';
-          }, 400);
-        };
-      }
+    finish(msg, success = true) {
+      this.update(100, msg || 'Done!');
+      setTimeout(() => {
+        this.el.style.opacity = '0';
+        setTimeout(() => this.el.style.display = 'none', 400);
+      }, 1000);
     }
   };
 
   // Cloud Sync Engine
   const CloudSync = {
-    pull: async (url, mode = 'overwrite', silent = false) => {
-      if (!silent) SyncHub.start('Cloud Pull', 'Connecting to secure server...');
+    pull: async (url, mode = 'overwrite') => {
+      SyncHub.start('Cloud Pull', 'Connecting to secure server...');
       try {
-        if (!silent) SyncHub.update(15, 'Fetching remote ledger...');
+        SyncHub.update(15, 'Fetching remote ledger...');
         const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'get=data');
         const data = await res.json();
 
@@ -382,17 +347,16 @@
           await window.syncMasterData();
         }
 
-        if (!silent) SyncHub.finish(`Success! ${count} records processed.`);
-        localStorage.setItem('last_cloud_sync', Date.now());
+        SyncHub.finish(`Success! ${count} records processed.`);
         return count;
       } catch (err) {
-        if (!silent) SyncHub.finish('Pull failed', false, err.message);
+        SyncHub.finish('Pull failed. Check connection.', false);
         console.error('Cloud Sync Error:', err);
         throw err;
       }
     },
-    push: async (url, silent = false) => {
-      if (!silent) SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
+    push: async (url) => {
+      SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
       try {
         const keys = ['transactions', 'accounts', 'merchants', 'items', 'budgets', 'goals', 'membership_cards'];
         const payload = { updateTime: new Date().toISOString() };
@@ -402,7 +366,7 @@
 
         keys.forEach(key => {
           const stepLoad = (processedKeys / totalKeys) * 35; // First 35% is gathering
-          if (!silent) SyncHub.update(stepLoad, `Gathering ${key}...`);
+          SyncHub.update(stepLoad, `Gathering ${key}...`);
           payload[key] = JSON.parse(localStorage.getItem(key) || '[]');
           processedKeys++;
         });
@@ -423,14 +387,13 @@
         SyncHub.update(85, 'Verifying cloud ledger integrity...');
         const result = await res.json();
         if (result.status === 'success') {
-          if (!silent) SyncHub.finish(`Successfully uploaded all sheets!`);
-          localStorage.setItem('last_cloud_sync', Date.now());
+          SyncHub.finish(`Successfully uploaded all sheets!`);
           return payload.transactions.length;
         } else {
           throw new Error(result.message || 'Server error');
         }
       } catch (e) {
-        if (!silent) SyncHub.finish('Push failed', false, e.message);
+        SyncHub.finish('Push failed: ' + e.message, false);
         throw e;
       }
     }
