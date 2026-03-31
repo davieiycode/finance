@@ -2037,11 +2037,18 @@ function doPost(e) {
         return t;
       });
 
+      const itemsCatalog = JSON.parse(localStorage.getItem('items') || '[]');
       const q = query.toLowerCase();
       const filtered = txs.filter(t => {
         if (!q) return true;
+        
+        // Find if any item in catalog matches this transaction's name to get its SKU
+        const catalogItem = itemsCatalog.find(i => (i.name || '').toLowerCase() === (t.name || '').toLowerCase());
+        const sku = catalogItem ? (catalogItem.sku || '').toLowerCase() : '';
+
         const searchPool = [
           t.name, t.merchant, t.category, t.type, t.description, t.author, t.currency, t.scale, t.accountPayment, t.accountReceived,
+          sku,
           ...(t.tags || []), ...(t.projects || []),
           t.total.toString(), (t.cleared ? 'cleared' : 'uncleared')
         ].map(s => (s || '').toLowerCase());

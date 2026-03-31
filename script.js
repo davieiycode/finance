@@ -304,6 +304,14 @@ function populateDatalists() {
     ['Cash', 'Bank Account', 'Credit Card', 'E-Wallet'].forEach(a => sets.accounts.add(a));
   }
 
+  // Also include items from Catalog (items.html) for search indexing
+  try {
+    const catalog = JSON.parse(localStorage.getItem('items') || '[]');
+    catalog.forEach(i => {
+      if (i.name) sets.items.add(i.name.trim());
+    });
+  } catch(e) { console.error('Error loading item catalog:', e); }
+
   const fill = (id, items) => {
     const dl = document.getElementById(id);
     if (dl) {
@@ -553,3 +561,116 @@ window.onload = () => {
 
   lucide.createIcons();
 };
+
+/**
+ * SKU & BARCODE SCANNING SYSTEM
+ */
+let html5QrCode = null;
+
+window.scanBarcode = () => {
+    const readerContainer = document.getElementById('reader-container');
+    if (!readerContainer) return;
+    
+    readerContainer.style.display = 'flex';
+    html5QrCode = new Html5Qrcode("reader");
+    
+    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+        handleScanSuccess(decodedText);
+        stopScanner();
+    };
+    
+    const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+    
+    html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+        .catch(err => {
+            console.error(err);
+            showToast("Camera access failed. Check permissions.", "error", "camera-off");
+            stopScanner();
+        });
+};
+
+window.stopScanner = () => {
+    const readerContainer = document.getElementById('reader-container');
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            if (readerContainer) readerContainer.style.display = 'none';
+        }).catch(() => {
+            if (readerContainer) readerContainer.style.display = 'none';
+        });
+    } else {
+        if (readerContainer) readerContainer.style.display = 'none';
+    }
+};
+
+function handleScanSuccess(sku) {
+    const items = JSON.parse(localStorage.getItem('items') || '[]');
+    const match = items.find(i => (i.sku || '').toLowerCase() === sku.toLowerCase());
+    
+    const itemInput = document.getElementById('item-input');
+    if (match) {
+        itemInput.value = match.name;
+        showToast(`Item detected: ${match.name}`, "success", "package");
+        
+        // Auto-fill metadata if item exists
+        if (match.category) document.getElementById('category-input').value = match.category;
+        if (match.price) {
+            document.getElementById('amount-input').value = new Intl.NumberFormat('id-ID').format(match.price);
+            calculateTotal();
+        }
+    } else {
+        itemInput.value = sku;
+        showToast("SKU not found in catalog. Using raw code.", "info", "info");
+    }
+}
+
+/**
+ * FUZZY ITEM VALIDATION & SKU SEARCH
+ */
+window.validateItemName = () => {
+    const input = document.getElementById('item-input');
+    if (!input) return;
+    
+    const val = input.value.trim().toLowerCase();
+    const suggestionBox = document.getElementById('item-suggestion');
+    const suggestedItemName = document.getElementById('suggested-item-name');
+    
+    if (!val || val.length < 2) {
+        suggestionBox.style.display = 'none';
+        return;
+    }
+
+    const items = JSON.parse(localStorage.getItem('items') || '[]');
+    
+    // Check for exact SKU match or name inclusion
+    const match = items.find(i => 
+        (i.sku && i.sku.toLowerCase() === val) || 
+        (i.name && i.name.toLowerCase().includes(val))
+    );
+
+    if (match && match.name.toLowerCase() !== val) {
+        suggestionBox.style.display = 'block';
+        suggestedItemName.innerText = match.name;
+        suggestedItemName.onclick = () => {
+            input.value = match.name;
+            suggestionBox.style.display = 'none';
+            
+            // Auto fill
+            if (match.category) document.getElementById('category-input').value = match.category;
+            if (match.price) {
+                document.getElementById('amount-input').value = new Intl.NumberFormat('id-ID').format(match.price);
+                calculateTotal();
+            }
+        };
+    } else {
+        suggestionBox.style.display = 'none';
+    }
+};
+
+// Bind button listeners that might be missing
+document.addEventListener('DOMContentLoaded', () => {
+    const scanBtn = document.getElementById('scan-sku-btn');
+    if (scanBtn) scanBtn.onclick = () => window.scanBarcode();
+    
+    const closeScanBtn = document.getElementById('close-scanner');
+    if (closeScanBtn) closeScanBtn.onclick = () => window.stopScanner();
+});
