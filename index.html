@@ -2167,8 +2167,8 @@ function doPost(e) {
       const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
       
       if (accounts.length > 0) {
-        // More accurate: Sum of all account balances + their transaction flows
         totalBalance = accounts.reduce((sum, acc) => {
+           if (!acc || !acc.name) return sum + (acc?.balance || 0);
            const inSum = txs.filter(t => (t.accountReceived || '').toLowerCase() === acc.name.toLowerCase())
                             .reduce((s, t) => s + (t.total || 0), 0);
            const outSum = txs.filter(t => (t.accountPayment || '').toLowerCase() === acc.name.toLowerCase())
@@ -2176,7 +2176,6 @@ function doPost(e) {
            return sum + (acc.balance || 0) + inSum - outSum;
         }, 0);
       } else {
-        // Fallback: Simple Lifetime Income - Expense
         const baseBalance = parseFloat(localStorage.getItem('base_balance') || '0');
         totalBalance = baseBalance + totalIncome - totalSpent;
       }
@@ -2529,7 +2528,7 @@ function doPost(e) {
        if(typeof showToast === 'function') showToast("Visit Merchant page to Merge.", "info", "git-merge");
     }
 
-    refreshDashboard();
+    try { refreshDashboard(); } catch(e) { console.error("Dashboard Load Error:", e); }
 
     // Scan System
     window.startReceiptScan = () => {
@@ -3366,7 +3365,8 @@ function doPost(e) {
     pBack.onclick = () => showPView('main', 'Settings');
     pModal.onclick = (e) => { if (e.target === pModal) pModal.style.display = 'none'; };
 
-    initPrefs();
+    try { initPrefs(); } catch(e) { console.error("PrefsInit Error:", e); }
+    try { checkExpiries(); } catch(e) { console.error("ExpiryCheck Error:", e); }
     const savedUrl = localStorage.getItem('cloud_sheet_url');
     if (savedUrl && document.getElementById('cloud-url')) {
       document.getElementById('cloud-url').value = savedUrl;
@@ -3423,9 +3423,9 @@ function doPost(e) {
     }
 
     function parseDate(str) {
-      // Handles YYYY-MM and YYYY-MM-DD
+      if (!str || typeof str !== 'string') return new Date();
       const parts = str.split('-');
-      if (parts.length === 2) return new Date(parts[0], parts[1] - 1, 28); // End of month
+      if (parts.length === 2) return new Date(parts[0], parts[1] - 1, 28);
       return new Date(str);
     }
 
