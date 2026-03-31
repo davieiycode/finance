@@ -387,6 +387,16 @@
     function init() {
       lucide.createIcons();
       renderVouchers();
+
+      // Deep-linking support: auto-open reward from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const deepId = urlParams.get('id');
+      if (deepId) {
+        const match = vouchers.find(v => v.id.toString() === deepId);
+        if (match) {
+          setTimeout(() => openVoucherModal(match.id), 500);
+        }
+      }
     }
 
     function openVoucherModal(id = null) {

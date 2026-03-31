@@ -505,6 +505,16 @@
     });
 
     renderAccounts();
+
+    // Deep-linking support: auto-open account from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const deepId = urlParams.get('id');
+    if (deepId) {
+      const match = accounts.find(a => a.id.toString() === deepId);
+      if (match) {
+        setTimeout(() => openModal(match.id, 'analysis'), 500);
+      }
+    }
   </script>
 </body>
 </html>

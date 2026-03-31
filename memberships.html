@@ -379,6 +379,17 @@
     window.onload = () => {
       renderMembers();
       if (window.lucide) lucide.createIcons();
+
+      // Deep-linking support: auto-open card from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const deepId = urlParams.get('id');
+      if (deepId) {
+        let members = JSON.parse(localStorage.getItem('membership_cards') || '[]');
+        const match = members.find(m => m.id.toString() === deepId);
+        if (match) {
+          setTimeout(() => showDetail(match), 500);
+        }
+      }
     };
   </script>
 </body>

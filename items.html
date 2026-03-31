@@ -1036,6 +1036,16 @@
 
     renderFilterChips();
     renderItems();
+
+    // Deep-linking support: auto-open item from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const deepId = urlParams.get('id');
+    if (deepId) {
+      const match = items.find(i => i.id.toString() === deepId);
+      if (match) {
+        setTimeout(() => openModal(match.id, 'activity'), 500);
+      }
+    }
   </script>
 </body>
 </html>
