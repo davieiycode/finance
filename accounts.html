@@ -191,7 +191,10 @@
         <div class="form-group"><label class="form-label">Type</label><select class="f-input" id="acc-type"><option>Bank</option><option>E-Wallet</option><option>Cash</option></select></div>
         <div class="form-group"><label class="form-label">Name</label><input type="text" id="acc-name-input" class="f-input"></div>
         <div class="form-group"><label class="form-label">Provider</label><input type="text" id="acc-provider" class="f-input"></div>
-        <div class="form-group"><label class="form-label">Number / ID</label><input type="text" id="acc-id" class="f-input"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group"><label class="form-label">Number / ID</label><input type="text" id="acc-id" class="f-input"></div>
+          <div class="form-group"><label class="form-label">Card Expiry</label><input type="month" id="acc-card-expiry" class="f-input"></div>
+        </div>
         <div class="form-group"><label class="form-label">Opening Balance</label><input type="number" id="acc-balance-init" class="f-input" placeholder="Rp 0"></div>
         <div class="form-group"><label class="form-label">Opening Date</label><input type="date" id="acc-date" class="f-input"></div>
         <div class="form-group"><label class="form-label">Notes</label><textarea id="acc-notes" class="f-input" style="min-height: 80px;"></textarea></div>
@@ -353,6 +356,8 @@
          document.getElementById('acc-id').value = activeAcc.number;
          document.getElementById('acc-type').value = activeAcc.type;
          document.getElementById('acc-balance-init').value = activeAcc.balance;
+         document.getElementById('acc-provider').value = activeAcc.provider || '';
+         document.getElementById('acc-card-expiry').value = activeAcc.cardExpiry || '';
       }
 
       modal.style.display = 'block';
@@ -460,7 +465,9 @@
         id: activeAcc ? activeAcc.id : Date.now(),
         name: name,
         type: document.getElementById('acc-type').value,
+        provider: document.getElementById('acc-provider').value,
         number: document.getElementById('acc-id').value,
+        cardExpiry: document.getElementById('acc-card-expiry').value,
         balance: parseFloat(document.getElementById('acc-balance-init').value) || 0,
         status: document.querySelector('.status-btn.active').dataset.status,
         color: activeAcc ? activeAcc.color : '#8b5cf6'

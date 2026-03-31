@@ -448,9 +448,9 @@
     let items = JSON.parse(localStorage.getItem('items'));
     if (!items || items.length === 0) {
       items = [
-        { id: 1, name: '3 Ayam Mie Telur Kuning 200 g', category: 'Food & Groceries', status: 'Active', price: 5300, unit: 'pcs', sku: 'SKU-001', manu: 'Manufacturer', model: 'Model X', image: '' },
-        { id: 2, name: 'Pertamax', category: 'Transportation', status: 'Active', price: 13500, unit: 'L', image: '' },
-        { id: 3, name: 'Coffee Latte', category: 'Dining Out', status: 'Active', price: 35000, unit: 'cup', image: '' }
+        { id: 1, name: '3 Ayam Mie Telur Kuning 200 g', category: 'Food & Groceries', status: 'Active', price: 5300, unit: 'pcs', sku: 'SKU-001', manu: 'Manufacturer', model: 'Model X', image: '', expiry: '' },
+        { id: 2, name: 'Pertamax', category: 'Transportation', status: 'Active', price: 13500, unit: 'L', image: '', expiry: '' },
+        { id: 3, name: 'Coffee Latte', category: 'Dining Out', status: 'Active', price: 35000, unit: 'cup', image: '', expiry: '' }
       ];
       localStorage.setItem('items', JSON.stringify(items));
     }
