@@ -239,6 +239,21 @@
         if (mode === 'overwrite') {
           if (data.status === 'success') {
             SyncHub.update(40, 'Parsing cloud data entities...');
+            
+            // --- SAFETY CHECK ---
+            // If the user's cloud has 0 records and their local storage HAS records, abort or warn!
+            const isEmptyCloud = !keys.some(k => data[k] && data[k].length > 0);
+            const hasLocalData = keys.some(k => {
+              const local = JSON.parse(localStorage.getItem(k) || '[]');
+              return local.length > 0;
+            });
+
+            if (isEmptyCloud && hasLocalData) {
+               SyncHub.finish('Pull ABORTED: Cloud is empty.', false);
+               alert('Peringatan: Data di Cloud (Google Sheet) Anda kosong. Jika dilanjutkan, data di HP akan terhapus. Gunakan "Simpan ke Cloud" (Upload) terlebih dahulu jika ini HP utama Anda.');
+               return 0;
+            }
+
             const totalKeys = keys.filter(k => data[k]).length || 1;
             let processedKeys = 0;
 
