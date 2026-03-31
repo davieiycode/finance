@@ -3429,6 +3429,47 @@ function doPost(e) {
       return new Date(str);
     }
 
+    function rebuildMetadataFromTransactions(txs, mode = 'merge') {
+      const merchants = JSON.parse(localStorage.getItem('merchants') || '[]');
+      const items = JSON.parse(localStorage.getItem('items') || '[]');
+      const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+      
+      const mNames = new Set(merchants.map(m => m.name.toLowerCase()));
+      const iNames = new Set(items.map(i => i.name.toLowerCase()));
+      const aNames = new Set(accounts.map(a => a.name.toLowerCase()));
+
+      let newM = 0; let newI = 0; let newA = 0;
+
+      txs.forEach(t => {
+        // Merchant
+        if (t.merchant && !mNames.has(t.merchant.toLowerCase())) {
+          merchants.push({ id: 'M-' + Date.now() + Math.random(), name: t.merchant, type: 'Retail' });
+          mNames.add(t.merchant.toLowerCase());
+          newM++;
+        }
+        // Item
+        if (t.name && !iNames.has(t.name.toLowerCase())) {
+          items.push({ id: 'I-' + Date.now() + Math.random(), name: t.name, category: t.category || 'General', manu: t.manu || '', price: t.amount || 0 });
+          iNames.add(t.name.toLowerCase());
+          newI++;
+        }
+        // Accounts (Payment & Received)
+        [t.accountPayment, t.accountReceived].forEach(accName => {
+          if (accName && !aNames.has(accName.toLowerCase())) {
+            accounts.push({ id: 'ACC-' + Date.now() + Math.random(), name: accName, type: 'Cash', balance: 0, status: 'Active', color: '#8b5cf6' });
+            aNames.add(accName.toLowerCase());
+            newA++;
+          }
+        });
+      });
+
+      localStorage.setItem('merchants', JSON.stringify(merchants));
+      localStorage.setItem('items', JSON.stringify(items));
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+
+      return { merchants: newM, items: newI, accounts: newA };
+    }
+
     function renderReminders(reminders) {
       const container = document.getElementById('expiry-reminders');
       const list = document.getElementById('reminder-list');

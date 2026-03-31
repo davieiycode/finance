@@ -302,8 +302,6 @@
                 }
                 localStorage.setItem(key, JSON.stringify(remoteData));
                 processedKeys++;
-              } else if (['transactions', 'accounts', 'merchants', 'items', 'vault'].includes(key)) {
-                localStorage.removeItem(key);
               }
             });
           } else {
