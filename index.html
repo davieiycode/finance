@@ -1165,18 +1165,51 @@
     <div class="modal-card" style="padding:1.5rem; overflow-y:auto; max-height:90vh;">
       <h3 style="font-weight:800; margin-bottom:1.5rem; text-align:center;">Review Scanned Data</h3>
       <div style="display:flex; flex-direction:column; gap:1.25rem;">
-        <div>
-          <label class="form-label">Merchant Name</label>
-          <input type="text" id="scan-merchant" class="f-input" style="width:100%; border-radius:0.75rem;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div>
+            <label class="form-label">Merchant Name</label>
+            <input type="text" id="scan-merchant" class="f-input" style="width:100%; border-radius:0.75rem;">
+          </div>
+          <div>
+            <label class="form-label">Transaction Date</label>
+            <input type="date" id="scan-date" class="f-input" style="width:100%; border-radius:0.75rem;">
+          </div>
         </div>
-        <div>
-          <label class="form-label">Total Amount</label>
-          <input type="number" id="scan-amount" class="f-input" style="width:100%; border-radius:0.75rem;">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div>
+            <label class="form-label">Total Amount</label>
+            <input type="number" id="scan-amount" class="f-input" style="width:100%; border-radius:0.75rem;">
+          </div>
+          <div>
+             <label class="form-label">Time</label>
+             <input type="time" id="scan-time" class="f-input" style="width:100%; border-radius:0.75rem;">
+          </div>
         </div>
-        <div>
-          <label class="form-label">Transaction Date</label>
-          <input type="date" id="scan-date" class="f-input" style="width:100%; border-radius:0.75rem;">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div>
+            <label class="form-label">Customer / Author</label>
+            <input type="text" id="scan-author" class="f-input" style="width:100%; border-radius:0.75rem;">
+          </div>
+          <div>
+            <label class="form-label">Payment Method</label>
+            <input type="text" id="scan-payment" class="f-input" style="width:100%; border-radius:0.75rem;">
+          </div>
         </div>
+
+        <div id="scan-vouchers-container" style="display:none; flex-direction:column; gap:0.5rem; background:rgba(217, 119, 6, 0.1); padding:0.75rem; border-radius:1rem; border:1px dashed #d97706;">
+          <label style="font-size:0.65rem; font-weight:800; color:#d97706; text-transform:uppercase;">Vouchers Detected</label>
+          <div id="scan-vouchers-list" style="font-size:0.75rem; color:var(--text-primary); font-weight:600;"></div>
+        </div>
+
+        <div>
+          <label class="form-label">Itemized Breakdown</label>
+          <div id="scan-items-list" style="display:flex; flex-direction:column; gap:0.5rem; max-height:300px; overflow-y:auto; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:1rem; padding:0.75rem;">
+            <p style="font-size:0.7rem; color:var(--text-secondary); text-align:center;">No items detected.</p>
+          </div>
+        </div>
+
         <div>
           <label class="form-label">Billing Account (Optional)</label>
           <select id="scan-account" class="f-select" style="width:100%; border-radius:0.75rem;">
@@ -2493,69 +2526,234 @@ function doPost(e) {
     };
 
     function parseReceiptText(text) {
-      const result = { merchant: '', amount: 0, date: new Date().toISOString().split('T')[0] };
-      const lines = text.split('\n');
+      const result = { 
+        merchant: '', 
+        amount: 0, 
+        date: new Date().toISOString().split('T')[0],
+        time: '',
+        author: '',
+        payment: '',
+        items: [],
+        vouchers: []
+      };
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-      const knownMerchants = ['INDOMARET', 'ALFAMART', 'PERTAMINA', 'STARBUCKS', 'GRAB', 'GOJEK', 'TOKOPEDIA', 'SHOPEE', 'TRAVELOKA', 'MCDONALDS', 'KFC', 'PIZZA HUT'];
+      // 1. Merchant Extraction
+      const knownMerchants = ['MANNA KAMPUS', 'MIROTA NAYAN', 'MIROTA KAMPUS', 'INDOMARET', 'ALFAMART', 'PERTAMINA', 'STARBUCKS', 'GRAB', 'GOJEK', 'TOKOPEDIA', 'SHOPEE', 'TRAVELOKA', 'MCDONALDS', 'KFC', 'PIZZA HUT'];
       for (const m of knownMerchants) {
         if (text.toUpperCase().includes(m)) {
-          result.merchant = m.charAt(0) + m.slice(1).toLowerCase();
+          result.merchant = m;
+          // Specialized Manna/Mirota Address
+          if (m.includes('MANNA') || m.includes('MIROTA')) {
+            result.merchant = "Manna Kampus (Jl. Solo Babarsari Km 7)";
+          }
           break;
         }
       }
+      if (!result.merchant && lines.length > 0) result.merchant = lines[0].substring(0, 40);
 
-      if (!result.merchant && lines.length > 0) {
-        result.merchant = lines[0].trim().substring(0, 30);
-      }
-
-      const dateMatch = text.match(/(\d{2}[/-]\d{2}[/-]\d{4})|(\d{4}[/-]\d{2}[/-]\d{2})/);
+      // 2. Date & Time Extraction
+      const dateRegex = /(\d{2}[/-]\d{2}[/-]\d{2,4})/;
+      const timeRegex = /(\d{2}:\d{2})/;
+      const dateMatch = text.match(dateRegex);
+      const timeMatch = text.match(timeRegex);
+      
       if (dateMatch) {
-        result.date = dateMatch[0].replace(/\//g, '-');
-        const parts = result.date.split('-');
-        if (parts[0].length === 2) result.date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+         let d = dateMatch[0].replace(/\//g, '-');
+         let p = d.split('-');
+         if (p[0].length === 2 && p[2].length === 4) result.date = `${p[2]}-${p[1]}-${p[0]}`; // DD-MM-YYYY
+         else if (p[2].length === 2) result.date = `20${p[2]}-${p[1]}-${p[0]}`; // DD-MM-YY
+      }
+      if (timeMatch) result.time = timeMatch[0];
+
+      // 3. Customer / Author & Payment
+      lines.forEach(line => {
+        const l = line.toUpperCase();
+        if (l.includes('PELANGGAN')) {
+           result.author = line.split(/[:=-]/).pop().trim();
+        }
+        if (l.includes('CARD') || l.includes('MASTER CARD') || l.includes('VISA') || l.includes('DEBIT')) {
+           if (l.includes('MASTER CARD')) result.payment = 'Master card';
+           else if (l.includes('VISA')) result.payment = 'Visa card';
+           else result.payment = 'Card';
+        }
+      });
+
+      // 4. Item Extraction (Advanced)
+      // Look for lines that have a price at the end or quantity patterns
+      let subtotalIdx = -1;
+      lines.forEach((line, idx) => {
+        if (line.toUpperCase().includes('SUBTOTAL')) subtotalIdx = idx;
+      });
+
+      // Usually items are between header and subtotal
+      const itemLines = lines.slice(0, subtotalIdx > -1 ? subtotalIdx : lines.length);
+      itemLines.forEach((line, idx) => {
+        const parts = line.split(/\s+/);
+        // Pattern: [Code] [NAME] [PRICE]
+        // or [Qty]X [Price] [Subtotal]
+        const priceRegex = /([\d\.]+),?(\d{0,3})$/;
+        const match = line.match(/(\d+\.\d{3})$/); // matches Indonesian price 17.130
+        
+        if (match && parts.length >= 2) {
+           const priceStr = match[0].replace(/\./g, '');
+           const price = parseFloat(priceStr);
+           
+           // Skip if price is actually a date or too small
+           if (price > 100 && !line.includes(':')) {
+              // Try to find the name (everything before the price)
+              let name = line.replace(match[0], '').trim();
+              // Remove leading code if exists
+              name = name.replace(/^\d{4,}/, '').trim();
+
+              // Check if previous line was a descriptor for this weighted item
+              if (idx > 0 && itemLines[idx-1] && !itemLines[idx-1].match(/\d/)) {
+                 name = itemLines[idx-1] + " " + name;
+              }
+
+              result.items.push({ name, price, qty: 1 });
+           }
+        }
+      });
+
+      // 5. Voucher Extraction
+      const undianRegex = /(\d+)\s+NOMOR\s+UNDIAN\s+(.+)/i;
+      const undianMatch = text.match(undianRegex);
+      if (undianMatch) {
+         result.vouchers.push(`${undianMatch[1]} Nomor ${undianMatch[2]}`);
+         const rangeRegex = /NO UNDIAN\s+([\w\d-]+)/i;
+         const rangeMatch = text.match(rangeRegex);
+         if (rangeMatch) result.vouchers[0] += ` (${rangeMatch[1]})`;
       }
 
-      const cleanedText = text.replace(/,/g, '');
-      const totalMatch = cleanedText.match(/(?:TOTAL|Rp|Amount).?\s*:?.?\s*([\d\.]+)/i);
+      // Calculate Total Amount
+      const totalMatch = text.replace(/,/g, '').match(/(?:TOTAL|SUBTOTAL).?\s*:?.?\s*([\d\.]+\d{3})/i);
       if (totalMatch) {
-        result.amount = parseFloat(totalMatch[1]) || 0;
-      } else {
-        const numbers = cleanedText.match(/\d+(\.\d+)?/g) || [];
-        const prices = numbers.map(n => parseFloat(n)).filter(n => n > 1000 && n < 10000000);
-        if (prices.length > 0) result.amount = Math.max(...prices);
+        result.amount = parseFloat(totalMatch[1].replace(/\./g, '')) || 0;
+      } else if (result.items.length > 0) {
+        result.amount = result.items.reduce((sum, item) => sum + item.price, 0);
       }
+
       return result;
     }
 
     window.showReviewModal = (imgSrc, data = {}) => {
       document.getElementById('scan-merchant').value = data.merchant || '';
-      document.getElementById('scan-amount').value = data.total || data.amount || '';
+      document.getElementById('scan-amount').value = data.amount || 0;
       document.getElementById('scan-date').value = data.date || new Date().toISOString().split('T')[0];
+      document.getElementById('scan-time').value = data.time || '';
+      document.getElementById('scan-author').value = data.author || '';
+      document.getElementById('scan-payment').value = data.payment || '';
+
+      // Items List rendering
+      const itemsList = document.getElementById('scan-items-list');
+      if (data.items && data.items.length > 0) {
+        itemsList.innerHTML = `<p style="font-size:0.6rem; color:var(--text-secondary); margin-bottom:0.5rem; font-weight:700;">${data.items.length} ITEMS DETECTED</p>` + 
+          data.items.map((it, idx) => `
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding:0.4rem 0;">
+             <span style="font-size:0.75rem; font-weight:600; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${it.name}</span>
+             <span style="font-size:0.75rem; font-weight:800; color:var(--text-primary);">Rp ${it.price.toLocaleString('id-ID')}</span>
+          </div>
+        `).join('');
+      } else {
+        itemsList.innerHTML = '<p style="font-size:0.7rem; color:var(--text-secondary); text-align:center;">No items detected.</p>';
+      }
+
+      // Vouchers rendering
+      const voucherContainer = document.getElementById('scan-vouchers-container');
+      const voucherList = document.getElementById('scan-vouchers-list');
+      if (data.vouchers && data.vouchers.length > 0) {
+        voucherContainer.style.display = 'flex';
+        voucherList.innerHTML = data.vouchers.map(v => `<div style="margin-bottom:0.25rem;">• ${v}</div>`).join('');
+      } else {
+        voucherContainer.style.display = 'none';
+      }
+
       document.getElementById('review-modal').style.display = 'flex';
+      window.lastScannedData = data; // Keep for saving
     };
 
     window.confirmScanSave = () => {
-      SyncHub.start('Saving Record', 'Updating ledger files...');
+      SyncHub.start('Processing Receipt', 'Creating itemized records...');
       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-      const newTx = {
-        id: 'TX-' + Date.now(),
-        merchant: document.getElementById('scan-merchant').value,
-        amount: parseFloat(document.getElementById('scan-amount').value) || 0,
-        total: parseFloat(document.getElementById('scan-amount').value) || 0,
-        qty: 1,
-        date: document.getElementById('scan-date').value,
-        category: 'Others',
-        type: 'Expense',
-        receipt: document.getElementById('scan-preview').src,
-        author: JSON.parse(localStorage.getItem('user_prefs') || '{}').name || 'Scan Engine'
-      };
+      const vouchers = JSON.parse(localStorage.getItem('vouchers') || '[]');
+      const scanData = window.lastScannedData || {};
+      
+      const merchant = document.getElementById('scan-merchant').value;
+      const date = document.getElementById('scan-date').value;
+      const time = document.getElementById('scan-time').value;
+      const author = document.getElementById('scan-author').value;
+      const account = document.getElementById('scan-account').value;
+      const paymentInfo = document.getElementById('scan-payment').value;
 
-      SyncHub.update(50, 'Committing changes to storage...');
-      txs.unshift(newTx);
+      // 1. If we have multiple items, save as breakdown in one transaction OR separate ones?
+      // For this app's "Recent Transactions" view, let's group them but save as one detailed record if possible,
+      // Or save individually to ensure "Item Management" works correctly.
+      // THE BETTER WAY for Analytics: Save individual items.
+      
+      if (scanData.items && scanData.items.length > 0) {
+        scanData.items.forEach((it, idx) => {
+          const step = 20 + ((idx / scanData.items.length) * 60);
+          SyncHub.update(step, `Saving item ${idx+1}: ${it.name}...`);
+          
+          txs.unshift({
+            id: 'TX-' + Date.now() + '-' + idx,
+            name: it.name,
+            merchant: merchant,
+            amount: it.price, // unit price
+            total: it.price,
+            qty: 1,
+            date: date,
+            time: time,
+            category: 'Shopping',
+            type: 'Expense',
+            receipt: document.getElementById('scan-preview').src,
+            author: author || 'Scan Engine',
+            accountPayment: account || (paymentInfo.includes('Card') ? 'Credit Card' : 'Cash'),
+            tags: ['Receipt Scan']
+          });
+        });
+      } else {
+        // Fallback to single transaction
+        txs.unshift({
+          id: 'TX-' + Date.now(),
+          name: 'Receipt Purchase',
+          merchant: merchant,
+          total: parseFloat(document.getElementById('scan-amount').value) || 0,
+          amount: parseFloat(document.getElementById('scan-amount').value) || 0,
+          qty: 1,
+          date: date,
+          time: time,
+          author: author || 'Scan Engine',
+          category: 'Others',
+          type: 'Expense',
+          receipt: document.getElementById('scan-preview').src,
+          accountPayment: account
+        });
+      }
+
+      // 2. Save Vouchers if any
+      if (scanData.vouchers && scanData.vouchers.length > 0) {
+        SyncHub.update(90, 'Logging new vouchers...');
+        scanData.vouchers.forEach(vText => {
+          vouchers.push({
+            id: Date.now() + Math.random(),
+            name: vText,
+            provider: merchant,
+            type: 'lucky',
+            expiry: '',
+            notes: 'Generated from Receipt Scan',
+            status: 'active'
+          });
+        });
+        localStorage.setItem('vouchers', JSON.stringify(vouchers));
+      }
+
+      SyncHub.update(95, 'Syncing with local storage...');
       localStorage.setItem('transactions', JSON.stringify(txs));
       
-      SyncHub.finish('Record has been saved!');
-      setTimeout(() => location.reload(), 800);
+      SyncHub.finish('Receipt successfully digitized!');
+      setTimeout(() => location.reload(), 1000);
     };
 
     let pdfThemeColor = [139, 92, 246];
