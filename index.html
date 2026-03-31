@@ -1735,12 +1735,24 @@ function doGet(e) {
       let r = {};
       headers.forEach((h, i) => {
         let v = row[i];
-        let hName = (h || '').toString().trim().toLowerCase();
+        let hName = (h || '').toString().trim().toLowerCase().replace(/[^a-z0-9]/g, '');
         if (!hName) return;
 
-        // Common Field Mapping for all sheets
-        if (hName.includes('id')) r.id = v;
-        else if (hName === 'name' || hName === 'merchant' || hName === 'account' || hName === 'item') r.name = v;
+        // Normalization Mapping
+        if (hName === 'accountid' || hName === 'itemid' || hName === 'merchantid' || hName === 'transactionid') r.id = v;
+        else if (hName === 'accountname' || hName === 'itemname' || hName === 'merchantname') r.name = v;
+        else if (hName === 'accounttype' || hName === 'type') r.type = v;
+        else if (hName === 'provider') r.provider = v;
+        else if (hName === 'currentbalance' || hName === 'balance') r.balance = parseFloat(v) || 0;
+        else if (hName === 'status') r.status = v;
+        else if (hName === 'itemcategory' || hName === 'category') r.category = v;
+        else if (hName === 'manufacturer') r.manu = v;
+        else if (hName === 'model') r.model = v;
+        else if (hName === 'stockkeepingunit' || hName === 'sku') r.sku = v;
+        else if (hName === 'defaultunitprice' || hName === 'price') r.price = parseFloat(v) || 0;
+        else if (hName === 'unit') r.unit = v;
+        else if (hName === 'warrantyexpirydate' || hName === 'expirydate' || hName === 'expiry') r.expiry = v;
+        else if (hName === 'notes') r.notes = v;
         
         // Transaction Specific Mapping
         if (name === 'transaction') {
@@ -1753,44 +1765,14 @@ function doGet(e) {
             if (v instanceof Date) v = Utilities.formatDate(v, timezone, "HH:mm");
             r.time = v ? v.toString() : '';
           }
-          else if (hName === 'merchant') r.merchant = v;
-          else if (hName === 'item name' || hName === 'name') r.name = v;
           else if (hName === 'category') r.category = v;
-          else if (hName === 'category group') r.categoryGroup = v;
           else if (hName === 'type') r.type = v;
           else if (hName === 'description') r.description = v;
-          else if (hName === 'author') r.author = v;
-          else if (hName === 'receipt') r.receipt = v;
-          else if (hName === 'cleared') r.cleared = (v === 'Yes');
-          else if (hName === 'analytics tags' || hName === 'tags') r.tags = v ? v.toString().split(', ') : [];
-          else if (hName === 'associated project' || hName === 'project') r.projects = v ? v.toString().split(', ') : [];
-          else if (hName === 'amount (per unit)' || hName === 'amount') r.amount = parseFloat(v) || 0;
-          else if (hName === 'total') r.total = parseFloat(v) || 0;
-          else if (hName === 'discount') r.discount = parseFloat(v) || 0;
-          else if (hName === 'additional fee') r.fee = parseFloat(v) || 0;
-          else if (hName === 'payment source account' || hName === 'payment account') r.accountPayment = v;
-          else if (hName === 'beneficiary account' || hName === 'received account') r.accountReceived = v;
-          else if (hName === 'currency') r.currency = v;
+          else if (hName === 'amountperunit') r.amount = parseFloat(v) || 0;
           else if (hName === 'quantity') r.qty = parseFloat(v) || 1;
-          else if (hName === 'unit scale' || hName === 'scale') r.scale = v;
-          else if (hName === 'exchange rate') r.exchangeRate = parseFloat(v) || 1;
-          else if (hName === 'xp') r.xp = v;
-        } 
-        // Account/Master Data Specific (Generic headers)
-        else {
-          r[h.toString().trim()] = v;
-          // Normalized keys (for app processing)
-          if (hName === 'balance' || hName === 'limit' || hName === 'target' || hName === 'saved' || hName === 'price') {
-             r[hName] = parseFloat(v) || 0;
-          }
-          if (hName === 'manufacturer' || hName === 'manu') r.manu = v;
-          if (hName === 'model') r.model = v;
-          if (hName === 'sku' || hName === 'barcode') r.sku = v;
-          if (hName === 'notes' || hName === 'description') r.notes = v;
-          if (hName === 'expiry' || hName === 'expirydate' || hName === 'cardexpiry') r.expiry = v;
-          if (hName === 'cardexpiry') r.cardExpiry = v;
-          if (hName === 'since') r.since = v;
-          if (hName === 'provider') r.provider = v;
+          else if (hName === 'paymentsourceaccount') r.accountPayment = v;
+          else if (hName === 'beneficiaryaccount') r.accountReceived = v;
+          else if (hName === 'total') r.total = parseFloat(v) || 0;
         }
       });
       return r;
@@ -1811,7 +1793,6 @@ function doPost(e) {
     const contents = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     
-    // Process each entity type
     const entities = [
       { key: 'transactions', sheetName: 'transaction', headers: [
         'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
@@ -1820,17 +1801,27 @@ function doPost(e) {
         'Payment Source Account', 'Beneficiary Account', 'Receipt', 'Analytics Tags', 'Associated Project', 
         'Author', 'Discount', 'Additional Fee', 'Total', 'Update Time', 'XP'
       ]},
-      { key: 'accounts', sheetName: 'account', headers: ['ID', 'Name', 'Type', 'Provider', 'Card Expiry', 'Balance', 'Status', 'Color'] },
-      { key: 'merchants', sheetName: 'merchant', headers: ['ID', 'Name', 'Type'] },
-      { key: 'items', sheetName: 'item', headers: ['ID', 'Name', 'Category', 'Manufacturer', 'Model', 'SKU', 'Price', 'Unit', 'Expiry Date', 'Notes', 'Status'] },
-      { key: 'budgets', sheetName: 'budget', headers: ['ID', 'Name', 'Type', 'Limit', 'Period'] },
-      { key: 'goals', sheetName: 'goal', headers: ['ID', 'Name', 'Target', 'Saved', 'Deadline'] },
+      { key: 'accounts', sheetName: 'account', headers: [
+        'Account ID', 'Account Name', 'Account Type', 'Provider', 'Currency', 
+        'Opening Balance', 'Opening Date', 'Current Balance', 'Status', 'Owner', 
+        'Account Number / ID', 'Branch / Location', 'Notes', 'Account Image', 'Update Time'
+      ]},
+      { key: 'merchants', sheetName: 'merchant', headers: [
+        'Merchant ID', 'Merchant Name', 'Category', 'Primary Contact Name', 'Phone Number', 
+        'Email', 'Website', 'Physical Address', 'City', 'Country', 
+        'Preferred Payment Method', 'Bank Account Details', 'Notes', 'Status', 'Update Time'
+      ]},
+      { key: 'items', sheetName: 'item', headers: [
+        'Item ID', 'Item Name', 'Item Category', 'Item Category Group', 'Item Image', 
+        'Manufacturer', 'Model', 'Unit', 'Default Unit Price', 'Currency', 
+        'Warranty / Expiry Date', 'Stock Keeping Unit', 'Notes', 'Status', 'Update Time'
+      ]},
       { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] }
     ];
 
     entities.forEach(ent => {
       const data = contents[ent.key];
-      if (!data) return; // Skip if no data for this sheet
+      if (!data) return;
       
       let sheet = ss.getSheetByName(ent.sheetName);
       if (!sheet) { sheet = ss.insertSheet(ent.sheetName); }
@@ -1838,29 +1829,29 @@ function doPost(e) {
       const rows = [ent.headers];
       data.forEach(item => {
         const row = ent.headers.map(h => {
-          const hName = h.toLowerCase().replace(/\s+/g, '');
-          // Specific mappings for complex types
-          if (h === 'Analytics Tags' || h === 'Tags') return (item.tags || []).join(', ');
-          if (h === 'Associated Project' || h === 'Project') return (item.projects || []).join(', ');
-          if (h === 'Cleared') return item.cleared ? 'Yes' : 'No';
+          const hNorm = h.toLowerCase().replace(/[^a-z0-9]/g, '');
           
-          // Generic match by property name logic
-          for (let k in item) {
-             if (k.toLowerCase().replace(/\s+/g, '') === hName) return item[k];
-          }
-          // Specific ID fallback
-          if (h === 'ID' || h === 'Transaction ID') return item.id;
-          if (h === 'Name') return item.name;
+          if (hNorm === 'accountid' || hNorm === 'itemid' || hNorm === 'merchantid' || hNorm === 'transactionid') return item.id;
+          if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname') return item.name;
+          if (hNorm === 'currentbalance') return item.balance || 0;
+          if (hNorm === 'defaultunitprice') return item.price || 0;
+          if (hNorm === 'stockkeepingunit') return item.sku || '';
+          if (hNorm === 'warrantyexpirydate') return item.expiry || '';
+          if (hNorm === 'manufacturer') return item.manu || '';
+          if (hNorm === 'itemcategory') return item.category || '';
+          if (hNorm === 'merchantname') return item.name || '';
+          if (hNorm === 'updatetime') return Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm");
           
           // Re-map common finance keys
           if (h === 'Payment Source Account') return item.accountPayment || '';
           if (h === 'Beneficiary Account') return item.accountReceived || '';
           if (h === 'Amount (per Unit)') return item.amount || 0;
-          if (h === 'Manufacturer') return item.manu || '';
-          if (h === 'SKU') return item.sku || '';
-          if (h === 'Expiry Date' || h === 'Card Expiry') return item.expiry || item.cardExpiry || '';
           
-          return item[h] || ''; // Fallback to raw property
+          // Generic match by property name logic
+          for (let k in item) {
+             if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === hNorm) return item[k];
+          }
+          return '';
         });
         rows.push(row);
       });
