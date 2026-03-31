@@ -1750,7 +1750,7 @@ function doGet(e) {
         // Normalization Mapping
         if (hName === 'accountid' || hName === 'itemid' || hName === 'merchantid' || hName === 'transactionid') r.id = v;
         else if (hName === 'accountname' || hName === 'itemname' || hName === 'merchantname') r.name = v;
-        else if (hName === 'accounttype' || hName === 'type') r.type = v;
+        else if (hName === 'accounttype' || hName === 'type' || (hName === 'category' && name === 'merchant')) r.type = v;
         else if (hName === 'provider') r.provider = v;
         else if (hName === 'currentbalance' || hName === 'balance') r.balance = parseFloat(v) || 0;
         else if (hName === 'status') r.status = v;
@@ -1849,6 +1849,9 @@ function doPost(e) {
           if (hNorm === 'manufacturer') return item.manu || '';
           if (hNorm === 'itemcategory') return item.category || '';
           if (hNorm === 'updatetime') return Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm");
+          
+          // Specific Merchant mapping: link "Category" column to item.type
+          if (ent.key === 'merchants' && hNorm === 'category') return item.type || '';
           
           // Transaction Advanced Mapping
           if (ent.key === 'transactions') {
