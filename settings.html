@@ -498,13 +498,7 @@
         <div class="settings-list-card" style="padding:1.5rem;">
           <label class="sett-label">IDENTIFIER AVATAR</label>
           <div class="avatar-scroll" id="avatar-picker">
-            <script>
-              document.write(window.AVATAR_SVGS.map((svg, idx) => `
-                <div class="av-item" onclick="setAvatar('svg:${idx}', this)">
-                  ${svg}
-                </div>
-              `).join(''));
-            </script>
+            <!-- Dynamically filled by settings_logic.js -->
             <div class="av-item" onclick="setAvatar('👤', this)"><span>👤</span></div>
           </div>
         </div>

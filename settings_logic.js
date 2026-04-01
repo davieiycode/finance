@@ -630,6 +630,33 @@ window.setAvatar = (av, el) => {
   if (el) el.classList.add('active');
 };
 
+function renderAvatarPicker() {
+  const picker = document.getElementById('avatar-picker');
+  if (!picker) return;
+  
+  // Clear but keep the default one
+  const def = picker.querySelector('span')?.innerText === '👤' ? picker.querySelector('.av-item') : null;
+  picker.innerHTML = '';
+  
+  window.AVATAR_SVGS.forEach((svg, idx) => {
+    const item = document.createElement('div');
+    const val = `svg:${idx}`;
+    item.className = 'av-item';
+    if (selectedAvatar === val) item.classList.add('active');
+    item.onclick = (e) => window.setAvatar(val, item);
+    item.innerHTML = svg;
+    picker.appendChild(item);
+  });
+  
+  // Add the default one back
+  const defItem = document.createElement('div');
+  defItem.className = 'av-item';
+  if (selectedAvatar === '👤') defItem.classList.add('active');
+  defItem.onclick = (e) => window.setAvatar('👤', defItem);
+  defItem.innerHTML = '<span>👤</span>';
+  picker.appendChild(defItem);
+}
+
 window.savePrefs = () => {
   const prefs = {
     name: document.getElementById('pref-name').value,
@@ -662,6 +689,9 @@ window.initSettings = () => {
   tempAccent = ps.color || '#1D9E75';
   tempRadius = ps.radius || 16;
   selectedAvatar = ps.avatar || '👤';
+
+  // Render AVATARS first
+  renderAvatarPicker();
 
   const tc = document.getElementById('tc-' + tempTheme);
   if (tc) tc.classList.add('active');

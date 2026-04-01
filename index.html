@@ -1290,39 +1290,39 @@
     <div class="modal-card" style="padding:1.5rem; overflow-y:auto; max-height:90vh;">
       <h3 style="font-weight:800; margin-bottom:1.5rem; text-align:center;">Review Scanned Data</h3>
       <div style="display:flex; flex-direction:column; gap:1.25rem;">
+        <!-- Meta Group 1 -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-          <div>
-            <label class="form-label">Merchant Name</label>
-            <input type="text" id="scan-merchant" class="f-input" style="width:100%; border-radius:0.75rem;" list="merchant-batch-list" placeholder="Search merchant...">
-            <datalist id="merchant-batch-list"></datalist>
+          <div class="fieldbox">
+            <label class="label">MERCHANT NAME</label>
+            <input type="text" id="scan-merchant" class="input" list="merchant-batch-list" placeholder="Vendor Name">
           </div>
-          <div>
-            <label class="form-label">Transaction Date</label>
-            <input type="date" id="scan-date" class="f-input" style="width:100%; border-radius:0.75rem;">
+          <div class="fieldbox">
+            <label class="label">TRANSACTION DATE</label>
+            <input type="date" id="scan-date" class="input">
           </div>
         </div>
 
+        <!-- Meta Group 2 -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-          <div>
-            <label class="form-label">Total Amount</label>
-            <input type="number" id="scan-amount" class="f-input" style="width:100%; border-radius:0.75rem;">
+          <div class="fieldbox">
+            <label class="label">TIME</label>
+            <input type="time" id="scan-time" class="input">
           </div>
-          <div>
-            <label class="form-label">Time</label>
-            <input type="time" id="scan-time" class="f-input" style="width:100%; border-radius:0.75rem;">
+          <div class="fieldbox" style="background:var(--accent); border-color:var(--accent); box-shadow:0 0 15px rgba(29, 158, 117, 0.2);">
+            <label class="label" style="color:white; opacity:0.8;">BATCH TOTAL</label>
+            <input type="text" id="scan-amount" class="input" readonly value="0" style="color:white; font-weight:800; cursor:default;">
           </div>
         </div>
 
-        <div class="form-group-row" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-          <div>
-            <label class="form-label">Customer / Author</label>
-            <input type="text" id="scan-author" class="f-input" style="width:100%; border-radius:1rem; background:var(--bg-input); border:1px solid var(--border);" list="author-batch-list" placeholder="Who paid?">
-            <datalist id="author-batch-list"></datalist>
+        <!-- Meta Group 3 -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="fieldbox">
+            <label class="label">CUSTOMER / AUTHOR</label>
+            <input type="text" id="scan-author" class="input" list="author-batch-list" placeholder="Anonymous">
           </div>
-          <div>
-            <label class="form-label">Payment Account</label>
-            <input type="text" id="scan-payment" class="f-input" style="width:100%; border-radius:1rem; background:var(--bg-input); border:1px solid var(--border);" list="payment-batch-list" placeholder="Which account?">
-            <datalist id="payment-batch-list"></datalist>
+          <div class="fieldbox">
+            <label class="label">PAYMENT ACCOUNT</label>
+            <input type="text" id="scan-payment" class="input" list="payment-batch-list" placeholder="Default Account">
           </div>
         </div>
 
@@ -1344,12 +1344,6 @@
           </div>
         </div>
 
-        <div>
-          <label class="form-label">Billing Account (Optional)</label>
-          <select id="scan-account" class="f-select" style="width:100%; border-radius:0.75rem;">
-            <option value="">Default Account</option>
-          </select>
-        </div>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem;">
         <button onclick="document.getElementById('review-modal').style.display='none'"
@@ -1999,35 +1993,69 @@
       if (window.lucide) window.lucide.createIcons();
     };
 
-    function addItemToUI(name = '', price = 0) {
+    function addItemToUI(name = '', price = 0, qty = 1) {
       const list = document.getElementById('scan-items-list');
       const empty = list.querySelector('p');
       if (empty) empty.remove();
 
       const div = document.createElement('div');
       div.className = 'scan-item-row';
-      div.style.cssText = 'display:grid; grid-template-columns:1fr 100px 70px 30px; gap:0.5rem; align-items:center; border-bottom:1px solid var(--border); padding:0.5rem 0;';
+      div.style.cssText = 'display:flex; flex-direction:column; gap:0.5rem; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:0.75rem; padding:0.75rem; margin-bottom:0.5rem;';
       
       const rowId = 'row-' + Date.now() + Math.random();
       div.id = rowId;
 
       div.innerHTML = `
-        <div style="position:relative;">
-          <input type="text" class="f-input item-name" list="item-batch-list" placeholder="Item name" value="${name}" 
-            style="background:none; border:none; padding:0; height:auto; font-size:0.75rem; width:100%;">
-          <datalist id="item-batch-list"></datalist>
+        <div style="display:grid; grid-template-columns:1fr 80px 30px; gap:0.55rem; align-items:center;">
+          <input type="text" class="f-input item-name" list="item-batch-list" placeholder="Product Name" value="${name}" 
+            style="background:none; border:none; padding:0; height:auto; font-size:0.85rem; font-weight:700; color:var(--text-primary);">
+          <button onclick="scanForBatchRow('${rowId}')" style="background:var(--bg-input); border:1px solid var(--border); color:var(--accent); border-radius:0.4rem; padding:0.3rem; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+             <i data-lucide="scan-barcode" style="width:14px;"></i>
+          </button>
+          <button onclick="this.parentElement.parentElement.remove(); recalculateBatchTotal();" style="background:none; border:none; color:#ef4444; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <i data-lucide="trash-2" style="width:14px;"></i>
+          </button>
         </div>
-        <input type="number" class="f-input item-price" placeholder="Price" value="${price}" 
-          style="background:none; border:none; padding:0; height:auto; font-size:0.75rem; text-align:right;">
-        <button onclick="scanForBatchRow('${rowId}')" style="background:var(--bg-input); border:1px solid var(--border); color:var(--text-secondary); border-radius:0.4rem; padding:0.2rem 0.4rem; font-size:0.6rem; display:flex; align-items:center; gap:0.2rem; cursor:pointer;">
-           <i data-lucide="scan-barcode" style="width:12px;"></i> SKU
-        </button>
-        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#ef4444; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-          <i data-lucide="trash-2" style="width:14px;"></i>
-        </button>
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.4rem; border-top:1px solid var(--border); padding-top:0.4rem;">
+          <div style="display:flex; flex-direction:column; gap:0.2rem;">
+            <label style="font-size:0.55rem; opacity:0.5;">QTY</label>
+            <input type="number" class="f-input item-qty" value="${qty}" oninput="recalculateBatchTotal()" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem;">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.2rem;">
+            <label style="font-size:0.55rem; opacity:0.5;">SCALE</label>
+            <input type="text" class="f-input item-scale" placeholder="pcs" oninput="recalculateBatchTotal()" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem;">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.2rem;">
+            <label style="font-size:0.55rem; opacity:0.5;">PRICE</label>
+            <input type="number" class="f-input item-price" placeholder="0" value="${price}" oninput="recalculateBatchTotal()" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem;">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.2rem;">
+            <label style="font-size:0.55rem; opacity:0.5;">DISC</label>
+            <input type="number" class="f-input item-disc" placeholder="0" value="0" oninput="recalculateBatchTotal()" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem;">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.2rem;">
+            <label style="font-size:0.55rem; opacity:0.5;">FEE</label>
+            <input type="number" class="f-input item-fee" placeholder="0" value="0" oninput="recalculateBatchTotal()" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem;">
+          </div>
+        </div>
       `;
       list.appendChild(div);
       if (window.lucide) window.lucide.createIcons();
+      recalculateBatchTotal();
+    }
+
+    function recalculateBatchTotal() {
+       const rows = document.querySelectorAll('.scan-item-row');
+       let grandTotal = 0;
+       rows.forEach(row => {
+          const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+          const price = parseFloat(row.querySelector('.item-price').value) || 0;
+          const disc = parseFloat(row.querySelector('.item-disc').value) || 0;
+          const fee = parseFloat(row.querySelector('.item-fee').value) || 0;
+          grandTotal += (qty * price) - disc + fee;
+       });
+       const totalEl = document.getElementById('scan-amount');
+       if (totalEl) totalEl.value = 'Rp ' + grandTotal.toLocaleString('id-ID');
     }
 
     function populateBatchDatalists() {
@@ -2099,41 +2127,50 @@
       const date = document.getElementById('scan-date').value;
       const time = document.getElementById('scan-time').value;
       const author = document.getElementById('scan-author').value;
-      const account = document.getElementById('scan-account').value;
       const paymentInfo = document.getElementById('scan-payment').value;
 
       // Collect items from UI
       const rows = document.querySelectorAll('.scan-item-row');
       const items = Array.from(rows).map(row => ({
         name: row.querySelector('.item-name').value || 'Unnamed Item',
-        price: parseFloat(row.querySelector('.item-price').value) || 0
+        qty: parseFloat(row.querySelector('.item-qty').value) || 1,
+        scale: row.querySelector('.item-scale').value || 'pcs',
+        price: parseFloat(row.querySelector('.item-price').value) || 0,
+        disc: parseFloat(row.querySelector('.item-disc').value) || 0,
+        fee: parseFloat(row.querySelector('.item-fee').value) || 0
       }));
 
       if (items.length > 0) {
         items.forEach((it, idx) => {
           const step = 20 + ((idx / items.length) * 60);
           SyncHub.update(step, `Saving item ${idx + 1}: ${it.name}...`);
+          
+          const itemTotal = (it.qty * it.price) - it.disc + it.fee;
 
           txs.unshift({
             id: 'TX-' + Date.now() + '-' + idx,
             name: it.name,
             merchant: merchant,
-            amount: it.price,
-            total: it.price,
-            qty: 1,
+            amount: it.price, // Unit price
+            qty: it.qty,
+            scale: it.scale,
+            discount: it.disc,
+            fee: it.fee,
+            total: itemTotal,
             date: date,
             time: time,
             category: 'Shopping',
             type: 'Expense',
             receipt: document.getElementById('scan-preview').src,
             author: author || 'Batch Entry',
-            accountPayment: account || (paymentInfo.includes('Card') ? 'Credit Card' : 'Cash'),
+            accountPayment: paymentInfo || 'Cash',
             tags: ['Batch Receipt']
           });
         });
       } else {
         // Single transaction if list empty
-        const totalAmt = parseFloat(document.getElementById('scan-amount').value) || 0;
+        const rawAmt = document.getElementById('scan-amount').value.replace(/[^0-9.-]+/g, "");
+        const totalAmt = parseFloat(rawAmt) || 0;
         txs.unshift({
           id: 'TX-' + Date.now(),
           name: 'Manual Receipt',
@@ -2147,7 +2184,7 @@
           category: 'Others',
           type: 'Expense',
           receipt: document.getElementById('scan-preview').src,
-          accountPayment: account
+          accountPayment: paymentInfo
         });
       }
 
