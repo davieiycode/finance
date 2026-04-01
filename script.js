@@ -79,6 +79,7 @@ function calculateTotal() {
   const dStr = document.getElementById('discount-input')?.value || '0';
   const fStr = document.getElementById('fee-input')?.value || '0';
   const rStr = document.getElementById('exchange-rate-input')?.value || '1';
+  const curr = document.getElementById('currency-input')?.value || 'IDR';
   
   const q = parseNum(qStr);
   const a = parseNum(aStr);
@@ -90,7 +91,19 @@ function calculateTotal() {
   const total = subtotal * ex;
   
   const totalDisplay = document.getElementById('total-display');
-  if (totalDisplay) totalDisplay.innerText = totalFormatter.format(total);
+  if (totalDisplay) {
+    const formatter = new Intl.NumberFormat('id-ID', { 
+      style: 'currency', 
+      currency: curr === 'IDR' ? 'IDR' : 'USD', // Simple fallback for non-IDR
+      minimumFractionDigits: 0 
+    });
+    // If not IDR, we can't easily guess the symbol and formatting for all, but let's try to be helpful
+    let result = formatter.format(total);
+    if(curr !== 'IDR' && curr !== 'USD') {
+       result = curr + " " + total.toLocaleString('id-ID');
+    }
+    totalDisplay.innerText = result;
+  }
 }
 
 // Global Chip Function
@@ -351,10 +364,10 @@ const initForm = () => {
       if (tx) {
         document.getElementById('transaction-date').value = tx.date || '';
         document.getElementById('transaction-time').value = tx.time || '';
-        document.getElementById('author-input').value = tx.author || '';
-        document.getElementById('item-input').value = tx.name || '';
-        document.getElementById('merchant-input').value = tx.merchant || '';
-        document.getElementById('category-input').value = tx.category || '';
+        document.getElementById('author-input').value = tx.author || tx.Author || '';
+        document.getElementById('item-input').value = tx.name || tx.Item || '';
+        document.getElementById('merchant-input').value = tx.merchant || tx.Merchant || '';
+        document.getElementById('category-input').value = tx.category || tx.Category || '';
         document.getElementById('transaction-description').value = tx.description || '';
         
         if (amountInput) {
@@ -402,6 +415,10 @@ const initForm = () => {
         if (tx.projects) (Array.isArray(tx.projects) ? tx.projects : []).forEach(pj => addChip('projects-wrapper', pj));
         
         calculateTotal();
+
+        if (mode === 'summary') {
+          showSummary(tx);
+        }
 
         // Update account groups visibility for edit mode
         const pGroup = document.getElementById('payment-account-group');
@@ -479,18 +496,15 @@ if (nextBtn) {
     }
     localStorage.setItem('transactions', JSON.stringify(db));
     
-    // Immediate metadata extraction for newly added items/merchants
     if (typeof window.syncMasterData === 'function') window.syncMasterData();
-    
     showToast(mode === 'edit' ? 'Transaction updated successfully' : 'Transaction saved successfully', 'success', 'check-circle');
+    
+    // Instead of redirecting, show the summary
+    showSummary(tx);
     
     // Auto-cloud sync
     const curl = localStorage.getItem('cloud_sheet_url');
     if (curl) fetch(curl, { method: 'POST', body: JSON.stringify({ transactions: db }) }).catch(e => console.error(e));
-    
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 1000);
   };
 }
 
@@ -565,8 +579,40 @@ window.onload = () => {
   const scanBtn = document.getElementById('scan-sku-btn');
   if (scanBtn) scanBtn.onclick = () => scanBarcode();
 
+  const uploadBtn = document.getElementById('upload-doc-btn');
+  const hInput = document.getElementById('h-doc-input');
+  if (uploadBtn && hInput) {
+    uploadBtn.onclick = () => hInput.click();
+    hInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          document.getElementById('receipt-input').value = re.target.result;
+          updateReceiptPreview(re.target.result);
+          showToast('Documentation uploaded', 'success', 'image');
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+  }
+
   const closeScannerBtn = document.getElementById('close-scanner');
   if (closeScannerBtn) closeScannerBtn.onclick = () => stopScanner();
+
+  const doneBtn = document.getElementById('btn-done');
+  if (doneBtn) doneBtn.onclick = () => window.location.href = 'index.html';
+
+  const closeDetailBtn = document.getElementById('close-detail');
+  if (closeDetailBtn) closeDetailBtn.onclick = () => window.location.href = 'index.html';
+
+  const shareBtn = document.getElementById('btn-share');
+  const shareModal = document.getElementById('share-modal');
+  const closeShare = document.getElementById('close-share');
+  if (shareBtn && shareModal) {
+    shareBtn.onclick = () => shareModal.style.display = 'flex';
+    closeShare.onclick = () => shareModal.style.display = 'none';
+  }
 
   lucide.createIcons();
 };
@@ -591,6 +637,48 @@ function scanBarcode() {
       showToast("Unable to start camera", "error", "alert-circle");
       stopScanner();
     });
+}
+
+function showSummary(tx) {
+  const form = document.querySelector('.form-content');
+  const summary = document.getElementById('detail-view');
+  const header = document.querySelector('.header');
+  
+  if (form) form.style.display = 'none';
+  if (header) header.style.display = 'none';
+  if (summary) summary.style.display = 'block';
+  
+  document.getElementById('detail-item-name').innerText = tx.name || '-';
+  document.getElementById('detail-total').innerText = tx.total ? tx.currency + " " + tx.total.toLocaleString('id-ID') : 'Rp ' + (tx.amount || 0).toLocaleString('id-ID');
+  document.getElementById('detail-merchant').innerText = tx.merchant || '-';
+  document.getElementById('detail-category').innerText = tx.category || '-';
+  document.getElementById('detail-account').innerText = tx.accountPayment || tx.accountReceived || '-';
+  document.getElementById('detail-author').innerText = tx.author || '-';
+  document.getElementById('detail-status').innerText = tx.cleared ? 'Cleared' : 'Uncleared';
+  document.getElementById('detail-date').innerText = (tx.date || '') + ' ' + (tx.time || '');
+  
+  const tagsList = document.getElementById('detail-tags-list');
+  if (tagsList) {
+    tagsList.innerHTML = (tx.tags || []).map(t => `<span class="chip" style="background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:4px; font-size:0.7rem;">${t}</span>`).join('');
+  }
+  
+  const projList = document.getElementById('detail-projects-list');
+  if (projList) {
+    projList.innerHTML = (tx.projects || []).map(p => `<span class="chip" style="background:rgba(139,92,246,0.1); color:var(--accent); padding:2px 8px; border-radius:4px; font-size:0.7rem;">${p}</span>`).join('');
+  }
+
+  // Summary breakdown
+  const breakdown = document.getElementById('receipt-summary');
+  if (breakdown) {
+    breakdown.innerHTML = `
+      <div style="display:flex; justify-content:space-between;"><span>Price</span><span>${tx.amount.toLocaleString()}</span></div>
+      <div style="display:flex; justify-content:space-between;"><span>Quantity</span><span>${tx.qty} ${tx.scale || ''}</span></div>
+      ${tx.discount ? `<div style="display:flex; justify-content:space-between; color:#ef4444;"><span>Discount</span><span>-${tx.discount.toLocaleString()}</span></div>` : ''}
+      ${tx.fee ? `<div style="display:flex; justify-content:space-between; color:var(--accent);"><span>Fee</span><span>+${tx.fee.toLocaleString()}</span></div>` : ''}
+    `;
+  }
+  
+  lucide.createIcons();
 }
 
 function stopScanner() {

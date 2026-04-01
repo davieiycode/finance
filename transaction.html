@@ -207,7 +207,7 @@
           <div class="form-group">
             <label class="label">Amount (per Unit)<span>*</span></label>
             <div class="input-container">
-              <input type="text" class="input input-amount" id="amount-input" placeholder="0" style="font-size: 1.25rem; font-weight: 800; text-align: right; padding-right: 1.25rem;">
+              <input type="text" class="input input-amount" id="amount-input" placeholder="0" style="font-size: 1.25rem; font-weight: 800; text-align: right; padding-right: 1.25rem;" oninput="calculateTotal()">
             </div>
           </div>
         </div>
@@ -317,9 +317,10 @@
               </div>
               <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 1rem;">No Document Attached</h4>
               <p style="color: var(--text-secondary); font-size: 0.8125rem; margin-bottom: 2rem; max-width: 280px; margin-left: auto; margin-right: auto;">Upload a digital receipt to ensure this transaction is audit-ready and easy to reconcile.</p>
-              <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: center; background: var(--bg-input); border-color: var(--border);">
+              <button type="button" id="upload-doc-btn" class="btn btn-secondary" style="width: 100%; justify-content: center; background: var(--bg-input); border-color: var(--border);">
                  <i data-lucide="upload-cloud" style="width: 18px;"></i> Upload Documentation
               </button>
+              <input type="file" id="h-doc-input" style="display: none;" accept="image/*">
            </div>
         </div>
       </div>
@@ -423,11 +424,15 @@
           </div>
           <div style="grid-column: span 2;">
             <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.5rem;">TAGS</label>
-            <div id="detail-tags-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">-</div>
+            <div id="detail-tags-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+          </div>
+          <div>
+            <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.125rem;">AUTHOR</label>
+            <div id="detail-author" style="font-weight: 500; font-size: 0.875rem;">-</div>
           </div>
           <div style="grid-column: span 2;">
             <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.5rem;">PROJECTS</label>
-            <div id="detail-projects-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">-</div>
+            <div id="detail-projects-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
           </div>
           <div style="grid-column: span 2; border-top: 1px solid var(--border); padding-top: 1rem; text-align: center;">
             <label class="label" style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 0.25rem;">DATE & TIME</label>
