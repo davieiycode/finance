@@ -457,7 +457,7 @@
           if (similar) {
              showMergeCard('merchant', t.merchant, similar);
              suggestionCount++;
-          } else if (!isDashboard || suggestionCount < MAX_SUGGESTIONS) {
+          } else {
              merchants.push({ id: Date.now() + Math.random(), name: t.merchant, type: t.category || 'Other' });
              merMap.set(mLower, { name: t.merchant });
              updated = true;
@@ -474,7 +474,7 @@
           if (similar) {
              showMergeCard('account', name, similar);
              suggestionCount++;
-          } else if (!isDashboard || suggestionCount < MAX_SUGGESTIONS) {
+          } else {
              accounts.push({ id: Date.now() + Math.random(), name: name, type: 'Vault/Savings', balance: 0, status: 'Active', color: '#8b5cf6' });
              accMap.set(aLower, { name: name });
              updated = true;
@@ -490,7 +490,7 @@
           if (similar) {
              showMergeCard('item', t.name, similar);
              suggestionCount++;
-          } else if (suggestionCount < MAX_SUGGESTIONS || (!isDashboard && !isItems)) {
+          } else {
              items.push({ id: Date.now() + Math.random(), name: t.name, category: t.category || 'General', price: t.amount || 0, unit: t.scale || 'pcs', status: 'Active' });
              itMap.set(iLower, { name: t.name });
              updated = true;
@@ -520,6 +520,11 @@
       localStorage.setItem('merchants', JSON.stringify(merchants));
       localStorage.setItem('items', JSON.stringify(items));
       if (isDashboard && typeof window.renderDashboard === 'function') window.renderDashboard();
+    }
+    
+    // Always refresh the audit badge if on dashboard
+    if (isDashboard && typeof window.refreshMaintenanceHub === 'function') {
+      window.refreshMaintenanceHub();
     }
   }
 

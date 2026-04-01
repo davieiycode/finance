@@ -491,6 +491,26 @@
     .hint-active {
         animation: pulse-hint 1.5s infinite;
     }
+    
+    .audit-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 2px solid var(--bg-primary);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+      z-index: 5;
+    }
     </style>
 </head>
 
@@ -523,8 +543,9 @@
             <i data-lucide="search" style="width: 20px;"></i>
           </div>
           <div class="user-meta" style="display: flex; align-items: center; gap: 0.75rem;">
-            <div class="header-btn" onclick="openMaintenanceHub()" id="audit-trigger" title="Audit Hub" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <div class="header-btn" onclick="openMaintenanceHub()" id="audit-trigger" title="Audit Hub" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;">
               <i data-lucide="shield-check" style="width: 20px;"></i>
+              <div id="audit-badge" class="audit-badge" style="display: none;">0</div>
             </div>
             <div id="profile-trigger" class="profile-icon"
               style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
@@ -898,6 +919,9 @@
       const statusBox = document.getElementById('m-hub-status');
       issuesList.innerHTML = '';
       
+      const badge = document.getElementById('audit-badge');
+      const trigger = document.getElementById('audit-trigger');
+      
       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
       const currentMonth = new Date().toISOString().slice(0, 7);
       
@@ -913,10 +937,17 @@
         }
       });
 
-      // 2. UNCLEARED OLD RECORDS
-      const uncleared = txs.filter(t => t.cleared === false && (t.date || '').slice(0, 7) < currentMonth);
+      // 3. CLEANUP SUGGESTIONS
+      const dashboardMerges = document.getElementById('merge-center');
+      const cleanupCount = dashboardMerges ? dashboardMerges.children.length : 0;
 
-      let totalIssues = duplicates.length + uncleared.length;
+      let totalIssues = duplicates.length + uncleared.length + cleanupCount;
+
+      if (badge) {
+        badge.innerText = totalIssues;
+        badge.style.display = totalIssues > 0 ? 'flex' : 'none';
+        if (trigger) trigger.classList.toggle('problematic', totalIssues > 0);
+      }
 
       if (totalIssues === 0) {
         statusBox.style.display = 'block';
@@ -967,13 +998,13 @@
       }
 
       // Attach merge cards from dashboard to hub
-      const dashboardMerges = document.getElementById('merge-center');
-      if (dashboardMerges && dashboardMerges.children.length > 0) {
+      const dashboardMergesHub = document.getElementById('merge-center');
+      if (dashboardMergesHub && dashboardMergesHub.children.length > 0) {
          const group = document.createElement('div');
          group.className = 'issue-group';
-         group.innerHTML = `<div class="issue-title">Data Cleanup Suggestions (${dashboardMerges.children.length})</div>`;
-         while(dashboardMerges.firstChild) {
-            const item = dashboardMerges.firstChild;
+         group.innerHTML = `<div class="issue-title">Data Cleanup Suggestions (${dashboardMergesHub.children.length})</div>`;
+         while(dashboardMergesHub.firstChild) {
+            const item = dashboardMergesHub.firstChild;
             item.style.marginBottom = '0.75rem';
             group.appendChild(item);
          }
@@ -981,6 +1012,8 @@
       }
       lucide.createIcons();
     }
+
+    window.refreshMaintenanceHub = refreshMaintenanceHub; // Export to window for access from other functions
 
     window.deleteTx = (id) => {
       if(confirm('Delete this duplicate transaction?')) {
@@ -1301,9 +1334,18 @@
           </div>
         </div>
 
+        <div class="p-menu-item" style="border-color: var(--accent); margin-top: 1rem;" 
+             onclick="updateApp()">
+          <i data-lucide="refresh-cw" style="color:var(--accent);"></i>
+          <div style="flex:1;">
+            <h6 style="color:var(--accent);">Update Software</h6>
+            <p style="font-size:0.7rem; color:var(--text-secondary);">Clear cache & fetch latest version</p>
+          </div>
+        </div>
+
         <div style="margin-top:2rem; text-align:center; opacity:0.4;">
-           <p style="font-size:0.65rem; font-weight:700;">BUILD v2.5.6</p>
-           <p style="font-size:0.6rem;">Updated: Apr 01, 2026 05:47</p>
+           <p style="font-size:0.65rem; font-weight:700;">BUILD v2.5.7</p>
+           <p style="font-size:0.6rem;">Updated: Apr 01, 2026 11:24</p>
         </div>
 
       </div>
@@ -2175,6 +2217,9 @@ function doPost(e) {
       // Monthly Spent (Current Month Expenses only)
       const monthlySpent = txs.filter(t => t.type === 'Expense' && (t.date || '').startsWith(currentMonth))
                               .reduce((s, t) => s + t.total, 0);
+
+      // Refresh Audit Hub badge
+      if (typeof refreshMaintenanceHub === 'function') refreshMaintenanceHub();
 
       // Lifetime Totals for Balance Calculation (Fallback)
       const totalSpent = txs.filter(t => t.type === 'Expense').reduce((s, t) => s + t.total, 0);
@@ -3392,6 +3437,7 @@ function doPost(e) {
     window.onload = () => {
       refreshDashboard('');
       checkExpiries();
+      refreshMaintenanceHub();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     };
 

@@ -699,7 +699,7 @@
 
     function openModal(id, view) {
       currentEditId = id;
-      const m = id ? merchants.find(x => x.id === id) : null;
+      const m = id ? merchants.find(x => x.id.toString() === id.toString()) : null;
       document.getElementById('m-title').innerText = m ? m.name : 'New Merchant';
       document.getElementById('modal-tabs').style.display = id ? 'flex' : 'none';
       switchView(id ? view : 'form');
@@ -785,7 +785,7 @@
     let _mergeTargetId = null;
 
     function showMergePicker() {
-      const source = merchants.find(m => m.id === currentEditId);
+      const source = merchants.find(m => m.id.toString() === currentEditId.toString());
       if (!source) return;
 
       document.getElementById('merge-source-hint').textContent = `All transactions of "${source.name}" will move to the selected merchant.`;

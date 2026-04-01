@@ -479,6 +479,9 @@ if (nextBtn) {
     }
     localStorage.setItem('transactions', JSON.stringify(db));
     
+    // Immediate metadata extraction for newly added items/merchants
+    if (typeof window.syncMasterData === 'function') window.syncMasterData();
+    
     showToast(mode === 'edit' ? 'Transaction updated successfully' : 'Transaction saved successfully', 'success', 'check-circle');
     
     // Auto-cloud sync

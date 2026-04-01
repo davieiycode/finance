@@ -268,19 +268,23 @@
       ).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       
       list.innerHTML = filtered.map(acc => {
+        const accName = (acc.name || 'Unnamed Account').toLowerCase();
         // Calculate real-time balance for each card
-        const inSum = txs.filter(t => (t.accountReceived || '').toLowerCase() === acc.name.toLowerCase())
+        const inSum = txs.filter(t => (t.accountReceived || '').toLowerCase() === accName)
                          .reduce((s, t) => s + (t.total || t.amount || 0), 0);
-        const outSum = txs.filter(t => (t.accountPayment || '').toLowerCase() === acc.name.toLowerCase())
+        const outSum = txs.filter(t => (t.accountPayment || '').toLowerCase() === accName)
                           .reduce((s, t) => s + (t.total || t.amount || 0), 0);
         const currentBalance = (acc.balance || 0) + inSum - outSum;
 
+        const cleanId = typeof acc.id === 'string' ? `'${acc.id}'` : acc.id;
+        const name = acc.name || 'Unnamed Account';
+
         return `
-        <div class="account-card" onclick="openModal(${acc.id}, 'analysis')">
+        <div class="account-card" onclick="openModal(${cleanId}, 'analysis')">
           <div class="acc-info">
-            <div class="acc-icon" style="background:${acc.color}">${acc.name.substring(0,2)}</div>
+            <div class="acc-icon" style="background:${acc.color}">${name.substring(0,2)}</div>
             <div>
-              <div class="acc-name">${acc.name}</div>
+              <div class="acc-name">${name}</div>
               <div class="acc-type">${acc.type} • ${acc.number || '-'}</div>
             </div>
           </div>
@@ -298,7 +302,7 @@
     let activeAcc = null;
 
     function openModal(id, initialView) {
-      activeAcc = id ? accounts.find(a => a.id === id) : null;
+      activeAcc = id ? accounts.find(a => a.id.toString() === id.toString()) : null;
       document.getElementById('m-title').innerText = activeAcc ? activeAcc.name : 'New Account';
       
       // Toggle tabs visibility for New Account

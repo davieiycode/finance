@@ -596,19 +596,23 @@
       } else {
         list.style.display = 'block';
         empty.style.display = 'none';
-        list.className = '';
-        list.innerHTML = filtered.map(i => `
-        <div class="item-card" onclick="openModal(${i.id}, 'activity')">
-          <div style="display:flex; align-items:center; gap:1rem; flex:1;">
-            <div class="i-icon" style="background:${i.image ? 'none' : 'rgba(139,92,246,0.1)'}; color:var(--accent); overflow:hidden; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-               ${i.image ? `<img src="${i.image}" style="width:100%; height:100%; object-fit:cover;">` : (i.name || 'I')[0].toUpperCase()}
-            </div>
-            <div>
-              <div style="font-weight:700; color:white; font-size:0.9375rem;">${i.name}</div>
-              <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">${i.category} • Rp ${i.price.toLocaleString('id-ID')} / ${i.unit}</div>
-            </div>
-          </div>
-        </div>`).join('');
+        list.innerHTML = filtered.map(i => {
+           const cleanId = typeof i.id === 'string' ? `'${i.id}'` : i.id;
+           const name = i.name || 'Unnamed Item';
+
+           return `
+           <div class="item-card" onclick="openModal(${cleanId}, 'activity')">
+             <div style="display:flex; align-items:center; gap:1rem; flex:1;">
+               <div class="i-icon" style="background:${i.image ? 'none' : 'rgba(139,92,246,0.1)'}; color:var(--accent); overflow:hidden; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  ${i.image ? `<img src="${i.image}" style="width:100%; height:100%; object-fit:cover;">` : name[0].toUpperCase()}
+               </div>
+               <div>
+                 <div style="font-weight:700; color:white; font-size:0.9375rem;">${name}</div>
+                 <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">${i.category} • Rp ${i.price.toLocaleString('id-ID')} / ${i.unit}</div>
+               </div>
+             </div>
+           </div>`;
+        }).join('');
       }
       lucide.createIcons();
     }
@@ -622,7 +626,7 @@
     function openModal(id, view) {
       currentEditId = id;
       updateManuList();
-      const it = id ? items.find(x => x.id === id) : null;
+      const it = id ? items.find(x => x.id.toString() === id.toString()) : null;
       document.getElementById('modal-title-text').innerText = it ? it.name : 'New Item';
       document.getElementById('modal-tabs').style.display = id ? 'flex' : 'none';
       switchView(id ? view : 'form');

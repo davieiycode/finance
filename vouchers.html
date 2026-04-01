@@ -405,7 +405,7 @@
       const title = document.getElementById('modal-title');
       
       if (id) {
-        const v = vouchers.find(v => v.id === id);
+        const v = vouchers.find(v => v.id.toString() === id.toString());
         title.innerText = 'Edit Reward';
         document.getElementById('v-name').value = v.name;
         document.getElementById('v-provider').value = v.provider;
@@ -456,7 +456,7 @@
       }
 
       if (currentId) {
-        const idx = vouchers.findIndex(v => v.id === currentId);
+        const idx = vouchers.findIndex(v => v.id.toString() === currentId.toString());
         vouchers[idx] = { ...vouchers[idx], name, provider, code, expiry, notes, type: selectedType };
       } else {
         vouchers.push({
@@ -478,7 +478,7 @@
 
     function deleteVoucher(id) {
       if (confirm('Delete this voucher?')) {
-        vouchers = vouchers.filter(v => v.id !== id);
+        vouchers = vouchers.filter(v => v.id.toString() !== id.toString());
         localStorage.setItem('vouchers', JSON.stringify(vouchers));
         renderVouchers();
       }
@@ -518,9 +518,10 @@
         list.innerHTML = filtered.map(v => {
           const isExpired = v.expiry && v.expiry < now;
           const isLucky = v.type === 'lucky';
+          const cleanId = typeof v.id === 'string' ? `'${v.id}'` : v.id;
           
           return `
-            <div class="voucher-card ${isLucky ? 'lucky-draw' : ''}" onclick="openVoucherModal(${v.id})" style="${isExpired ? 'opacity: 0.6;' : ''}">
+            <div class="voucher-card ${isLucky ? 'lucky-draw' : ''}" onclick="openVoucherModal(${cleanId})" style="${isExpired ? 'opacity: 0.6;' : ''}">
               <div class="voucher-header">
                 <div class="voucher-info">
                   <span class="voucher-provider">${v.provider || 'Generic'}</span>
@@ -540,7 +541,7 @@
                 ${v.code ? `<div class="voucher-code">${v.code}</div>` : ''}
               </div>
               
-              <button onclick="event.stopPropagation(); deleteVoucher(${v.id})" style="position:absolute; top:1.25rem; right:1.25rem; background:none; border:none; color:var(--text-secondary); opacity:0.3; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+              <button onclick="event.stopPropagation(); deleteVoucher(${cleanId})" style="position:absolute; top:1.25rem; right:1.25rem; background:none; border:none; color:var(--text-secondary); opacity:0.3; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
             </div>
           `;
         }).join('');
