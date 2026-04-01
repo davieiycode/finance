@@ -12,8 +12,8 @@
   <script src="theme.js"></script>
   <style>
     body {
-      background: #000;
-      color: #fff;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -25,12 +25,12 @@
     .connect-card {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
-      border-radius: 2rem;
+      border-radius: 2.5rem;
       padding: 2.5rem;
       width: 90%;
       max-width: 400px;
       text-align: center;
-      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
       position: relative;
       z-index: 10;
       animation: cardIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -123,16 +123,28 @@
     <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">Scan your ledger code to start
       tracking.</p>
 
-    <div class="qr-container" style="border: 1px solid var(--border); background: #000; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
+    <div class="qr-container"
+      style="border: 1px solid var(--border); background: #000; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);">
       <div id="reader" style="border:none;"></div>
-      
+
       <!-- Premium Overlay Effects -->
-      <div id="scan-frame" style="position: absolute; inset: 20px; border: 2px solid var(--accent); border-radius: 1.5rem; pointer-events: none; z-index: 5; box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);">
-        <div style="position: absolute; top: 0; left: 0; width: 30px; height: 30px; border-top: 4px solid var(--accent); border-left: 4px solid var(--accent); border-radius: 8px 0 0 0;"></div>
-        <div style="position: absolute; top: 0; right: 0; width: 30px; height: 30px; border-top: 4px solid var(--accent); border-right: 4px solid var(--accent); border-radius: 0 8px 0 0;"></div>
-        <div style="position: absolute; bottom: 0; left: 0; width: 30px; height: 30px; border-bottom: 4px solid var(--accent); border-left: 4px solid var(--accent); border-radius: 0 0 0 8px;"></div>
-        <div style="position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; border-bottom: 4px solid var(--accent); border-right: 4px solid var(--accent); border-radius: 0 0 8px 0;"></div>
-        <div id="scan-laser" style="position: absolute; top: 10%; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, transparent, var(--accent), transparent); box-shadow: 0 0 15px var(--accent); animation: laserMove 2s ease-in-out infinite;"></div>
+      <div id="scan-frame"
+        style="position: absolute; inset: 20px; border: 2px solid var(--accent); border-radius: 1.5rem; pointer-events: none; z-index: 5; box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);">
+        <div
+          style="position: absolute; top: 0; left: 0; width: 30px; height: 30px; border-top: 4px solid var(--accent); border-left: 4px solid var(--accent); border-radius: 8px 0 0 0;">
+        </div>
+        <div
+          style="position: absolute; top: 0; right: 0; width: 30px; height: 30px; border-top: 4px solid var(--accent); border-right: 4px solid var(--accent); border-radius: 0 8px 0 0;">
+        </div>
+        <div
+          style="position: absolute; bottom: 0; left: 0; width: 30px; height: 30px; border-bottom: 4px solid var(--accent); border-left: 4px solid var(--accent); border-radius: 0 0 0 8px;">
+        </div>
+        <div
+          style="position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; border-bottom: 4px solid var(--accent); border-right: 4px solid var(--accent); border-radius: 0 0 8px 0;">
+        </div>
+        <div id="scan-laser"
+          style="position: absolute; top: 10%; left: 0; width: 100%; height: 2px; background: linear-gradient(to right, transparent, var(--accent), transparent); box-shadow: 0 0 15px var(--accent); animation: laserMove 2s ease-in-out infinite;">
+        </div>
       </div>
 
       <div id="sync-hub-placeholder"></div>
@@ -141,21 +153,39 @@
 
     <style>
       @keyframes laserMove {
-        0%, 100% { top: 10%; opacity: 0.3; }
-        50% { top: 90%; opacity: 1; }
+
+        0%,
+        100% {
+          top: 10%;
+          opacity: 0.3;
+        }
+
+        50% {
+          top: 90%;
+          opacity: 1;
+        }
       }
-      #reader__status_span { display: none !important; }
-      #reader__dashboard { padding: 10px !important; }
-      #reader__camera_selection { 
-        background: var(--bg-input); 
-        color: white; 
-        border: 1px solid var(--border); 
-        border-radius: 0.5rem; 
-        padding: 5px; 
+
+      #reader__status_span {
+        display: none !important;
+      }
+
+      #reader__dashboard {
+        padding: 10px !important;
+      }
+
+      #reader__camera_selection {
+        background: var(--bg-input);
+        color: white;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 5px;
         margin-bottom: 10px;
         font-size: 0.75rem;
       }
-      button#html5-qrcode-button-camera-start, button#html5-qrcode-button-camera-stop {
+
+      button#html5-qrcode-button-camera-start,
+      button#html5-qrcode-button-camera-stop {
         background: var(--accent);
         color: white;
         border: none;
@@ -169,23 +199,29 @@
       }
     </style>
 
-    <div
-      style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
       <div
         style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--glass); border-radius: 1rem; border: 1px solid var(--border);">
         <i data-lucide="info" style="width: 16px; color: var(--text-secondary);"></i>
-        <p style="font-size: 0.7rem; color: var(--text-secondary); text-align: left;">Your device will automatically pull
-          all records from the cloud after scanning.</p>
+        <p style="font-size: 0.7rem; color: var(--text-secondary); text-align: left;">Your device will automatically
+          pull all records from the cloud after scanning.</p>
       </div>
 
       <button id="gallery-btn"
         style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; color: var(--text-primary); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: 0.3s;">
         <i data-lucide="image" style="width: 18px;"></i>
-        <span>Scan dari Galeri Foto</span>
+        <span>Scan from Gallery</span>
       </button>
       <input type="file" id="qr-file-input" accept="image/*" style="display: none;">
+      
+      <div id="version-display" style="margin-top: 1.5rem; text-align: center; opacity: 0.5;">
+        <p style="font-size: 0.7rem; font-weight: 800; color: var(--accent); margin-bottom: 0.2rem;">APP VERSION</p>
+        <p style="font-size: 0.65rem; color: var(--text-secondary);">v2.5.8 (Build 2026.04.01)</p>
+      </div>
     </div>
   </div>
+
+  <div id="toast-container" style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; align-items: center; width: 100%; max-width: 400px; padding: 0 1rem; pointer-events: none;"></div>
 
   <script>
     lucide.createIcons();
@@ -195,7 +231,8 @@
     const qrFileInput = document.getElementById('qr-file-input');
     const galleryBtn = document.getElementById('gallery-btn');
 
-    const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+    const APP_VERSION = 'v2.5.8';
+    const BUILD_DATE = 'Apr 01, 2026 12:14';
 
     async function onScanSuccess(decodedText) {
       decodedText = decodedText.trim();
@@ -205,14 +242,17 @@
         try {
           const data = JSON.parse(decodedText);
           const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'cloud_sheet_url'];
-          
+
           keys.forEach(k => {
             if (data[k]) localStorage.setItem(k, (typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k])));
           });
 
-          if (window.SyncHub) window.SyncHub.start('Restoring Ledger', 'Extracting JSON data...');
-          if (typeof showToast === 'function') showToast(`Ledger restored!`, 'success', 'database-backup');
-          
+          localStorage.setItem('app_version', APP_VERSION);
+          localStorage.setItem('last_version_sync', APP_VERSION);
+
+          if (window.SyncHub) window.SyncHub.start('Restoring Ledger', `Extracting JSON data (${APP_VERSION})...`);
+          if (typeof showToast === 'function') showToast(`Ledger restored (${APP_VERSION})!`, 'success', 'database-backup');
+
           setTimeout(() => {
             window.location.href = 'index.html';
           }, 1500);
@@ -231,14 +271,18 @@
       // 1. Stop scanning if active
       try { await html5QrCode.stop(); } catch (e) { }
 
-      // 3. Save URL
+      // 3. Save URL & Version
       localStorage.setItem('cloud_sheet_url', scriptUrl);
+      localStorage.setItem('app_version', APP_VERSION);
+      localStorage.setItem('last_version_sync', APP_VERSION);
 
       try {
         // 4. Pull data from cloud using global engine (Overwrite on first connect)
+        if (window.SyncHub) window.SyncHub.start('Cloud Connection', `Contacting ledger server (${APP_VERSION})...`);
         const count = await window.CloudSync.pull(scriptUrl, 'overwrite');
-        
+
         if (count >= 0) {
+          if (typeof showToast === 'function') showToast(`Synced Successfully (${APP_VERSION})!`, 'success', 'cloud-check');
           setTimeout(() => {
             window.location.href = 'index.html';
           }, 800);
@@ -265,7 +309,7 @@
       const file = e.target.files[0];
       try {
         if (typeof showToast === 'function') showToast('Menganalisa gambar...', 'info', 'loader-2');
-        
+
         const decodedText = await html5QrCode.scanFile(file, true);
         onScanSuccess(decodedText);
       } catch (err) {

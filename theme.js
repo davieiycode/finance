@@ -1,14 +1,26 @@
 (function() {
   function applyAesthetics(theme, color, radius) {
     const root = document.documentElement;
-    root.style.setProperty('--accent', color);
     root.style.setProperty('--card-radius', radius + 'px');
     
+    // Brand Specs Mapping — Dynamic Adaptation
     const themeMap = {
-      dark: { bg: '#0f0f0f', card: '#1a1a1a', input: '#1f1f23', glass: 'rgba(255,255,255,0.03)', text: '#ffffff', border: '#27272a', sub: '#d4d4d8' },
-      night: { bg: '#000000', card: '#0a0a0a', input: '#121212', glass: 'rgba(255,255,255,0.03)', text: '#ffffff', border: '#1a1a1a', sub: '#a1a1aa' },
-      light: { bg: '#f8fafc', card: '#ffffff', input: '#f1f5f9', glass: 'rgba(0,0,0,0.03)', text: '#0f172a', border: '#e2e8f0', sub: '#64748b' },
-      contrast: { bg: '#000000', card: '#000000', input: '#000000', glass: 'rgba(255,255,255,0.05)', text: '#ffffff', border: '#ffffff', sub: '#ffffff' }
+      dark: { 
+        bg: '#121212', card: '#1a1a1a', input: '#121212', glass: 'rgba(255,255,255,0.04)', 
+        text: '#ffffff', border: 'rgba(255,255,255,0.1)', sub: '#888780', accent: '#1D9E75', sec: '#EF9F27' 
+      },
+      obsidian: { 
+        bg: '#000000', card: '#0a0a0a', input: '#000000', glass: 'rgba(255,255,255,0.05)', 
+        text: '#ffffff', border: '#161616', sub: '#a1a1aa', accent: '#5DCAA5', sec: '#FAC775' 
+      },
+      night: { 
+        bg: '#04342C', card: '#085041', input: '#04342C', glass: 'rgba(255,255,255,0.02)', 
+        text: '#ffffff', border: 'rgba(255,255,255,0.05)', sub: '#9FE1CB', accent: '#5DCAA5', sec: '#FAC775' 
+      },
+      light: { 
+        bg: '#F1EFE8', card: '#ffffff', input: '#F1EFE8', glass: 'rgba(0,0,0,0.03)', 
+        text: '#2C2C2A', border: '#B4B2A9', sub: '#5F5E5A', accent: '#0F6E56', sec: '#BA7517' 
+      }
     };
 
     const t = themeMap[theme] || themeMap.dark;
@@ -19,6 +31,8 @@
     root.style.setProperty('--text-primary', t.text);
     root.style.setProperty('--border', t.border);
     root.style.setProperty('--text-secondary', t.sub);
+    root.style.setProperty('--accent', t.accent || color);
+    root.style.setProperty('--accent-secondary', t.sec);
     document.body.style.color = t.text;
     document.body.style.backgroundColor = t.bg;
   }
@@ -757,23 +771,30 @@
 
   async function triggerCloudPush() {
     const url = localStorage.getItem('cloud_sheet_url');
-    if (!url) return;
+    if (!url) {
+      if (window.showToast) window.showToast('Cloud URL not set. Connect your ledger.', 'warning', 'link-2');
+      return;
+    }
 
     if (pullIndicator) {
-      pullIndicator.querySelector('span').innerText = 'Pushing Data...';
-      pullIndicator.querySelector('i').classList.add('animate-spin');
+      pullIndicator.innerHTML = `<i data-lucide="refresh-cw" class="animate-spin" style="width:16px;"></i><span>Pushing Data...</span>`;
       pullIndicator.style.top = '30px';
       pullIndicator.style.background = '#0ea5e9';
+      if (window.lucide) window.lucide.createIcons();
     }
 
     try {
       await window.CloudSync.push(url);
+      const now = new Date().toLocaleString('id-ID');
+      localStorage.setItem('last_cloud_sync', now);
+      updateSyncUI(now);
+
       if (pullIndicator) {
         pullIndicator.style.background = '#10b981';
         pullIndicator.innerHTML = `<i data-lucide="check" style="width:16px;"></i><span>Cloud Updated!</span>`;
       }
-      if(window.lucide) window.lucide.createIcons();
-      
+      if (window.lucide) window.lucide.createIcons();
+
       setTimeout(() => {
         if (pullIndicator) pullIndicator.style.top = '-60px';
       }, 1500);
@@ -782,6 +803,28 @@
         pullIndicator.style.background = '#ef4444';
         pullIndicator.innerHTML = `<i data-lucide="alert-circle" style="width:16px;"></i><span>Upload Failed</span>`;
         setTimeout(() => { if (pullIndicator) pullIndicator.style.top = '-60px'; }, 2000);
+      }
+    }
+  }
+
+  function updateSyncUI(time) {
+    const displayTime = time || 'Never';
+    // Settings Page
+    const el = document.getElementById('last-sync-display');
+    if (el) {
+      el.innerText = `Last Cloud Sync: ${displayTime}`;
+      el.style.opacity = time ? '1' : '0.5';
+    }
+
+    // Dashboard
+    const dashEl = document.getElementById('dash-last-sync');
+    const dashIcon = document.querySelector('#dash-sync-info i');
+    if (dashEl) {
+      dashEl.innerText = `Cloud: ${displayTime}`;
+      if (dashIcon) {
+        dashIcon.style.color = time ? '#10b981' : '#f59e0b';
+        dashIcon.setAttribute('data-lucide', time ? 'cloud-check' : 'cloud-off');
+        if (window.lucide) window.lucide.createIcons();
       }
     }
   }
@@ -828,4 +871,7 @@
   window.SyncHub = SyncHub;
   window.syncMasterData = syncMasterData;
   window.CloudSync = CloudSync;
+  window.triggerCloudPush = triggerCloudPush;
+  window.triggerCloudSync = triggerCloudSync;
+  window.updateSyncUI = updateSyncUI;
 })();

@@ -84,6 +84,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
     }
 
     .item-info {
@@ -297,46 +299,6 @@
       border-color: var(--accent);
     }
 
-    .toggle-chip {
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .toggle-chip input {
-      display: none;
-    }
-
-    .toggle-chip .chip-content {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border);
-      border-radius: 0.8rem;
-      padding: 0.7rem 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .toggle-chip input:checked+.chip-content {
-      background: rgba(139, 92, 246, 0.1);
-      border-color: var(--accent);
-      color: var(--text-primary);
-      box-shadow: 0 0 15px rgba(139, 92, 246, 0.15);
-    }
-
-    .toggle-chip .chip-content i {
-      width: 16px;
-      opacity: 0.7;
-      transition: 0.3s;
-    }
-
-    .toggle-chip input:checked+.chip-content i {
-      opacity: 1;
-      color: var(--accent);
-    }
 
     /* Maintenance Drawer */
     .maintenance-drawer {
@@ -588,7 +550,7 @@
             style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; font-size: 0.65rem; color: var(--text-secondary); opacity: 0.8;">
             <i data-lucide="cloud-check" style="width: 12px; color: #10b981;"></i>
             <span id="dash-last-sync">Cloud: Never Synced</span>
-            <button onclick="syncCloud('push')"
+            <button onclick="triggerCloudPush()"
               style="background:none; border:none; padding:0; cursor:pointer; color:var(--accent); display:flex; align-items:center;">
               <i data-lucide="refresh-cw" style="width: 12px; margin-left: 2px;"></i>
             </button>
@@ -606,7 +568,7 @@
               <i data-lucide="shield-check" style="width: 20px;"></i>
               <div id="audit-badge" class="audit-badge" style="display: none;">0</div>
             </div>
-            <div id="profile-trigger" class="profile-icon"
+            <div id="profile-trigger" class="profile-icon" onclick="window.location.href='settings.html'"
               style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
               <i data-lucide="user" style="width: 20px;"></i>
             </div>
@@ -1388,916 +1350,12 @@
     </div>
   </div>
 
-  <div id="p-modal" class="modal-backdrop" style="display:none;">
-    <div class="modal-card" style="padding: 1.5rem; min-height: 480px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <button id="p-back" class="close-btn" style="display:none; font-size:1.1rem;"><i
-              data-lucide="chevron-left"></i></button>
-          <h2 id="p-title" style="font-size:1.125rem; font-weight:800; color:var(--text-primary);">Settings</h2>
-        </div>
-        <button id="p-close" class="close-btn">&times;</button>
-      </div>
 
-
-      <!-- Main Menu -->
-      <div id="p-view-main" style="display:block;">
-        <div class="p-menu-item" onclick="showPView('personal', 'Profile Details')"><i data-lucide="user"></i>
-          <div style="flex:1;">
-            <h6>Personal Info</h6>
-            <p id="p-sub-user" style="font-size:0.7rem; color:var(--text-secondary);">User</p>
-          </div>
-        </div>
-        <div class="p-menu-item" onclick="showPView('prefs', 'App Preferences')"><i data-lucide="settings"></i>
-          <div style="flex:1;">
-            <h6>App Preferences</h6>
-            <p id="p-sub-prefs" style="font-size:0.7rem; color:var(--text-secondary);">Visual Themes</p>
-          </div>
-        </div>
-        <div class="p-menu-item" onclick="showPView('report', 'Report Designer')"><i data-lucide="printer"
-            style="color:var(--accent);"></i>
-          <div style="flex:1;">
-            <h6>Export Center</h6>
-            <p style="font-size:0.7rem; color:var(--text-secondary);">Export data to XLSX/CSV/PDF</p>
-          </div>
-        </div>
-        <div class="p-menu-item" onclick="showPView('import', 'Import Hub')"><i data-lucide="file-up"
-            style="color:#16a34a;"></i>
-          <div style="flex:1;">
-            <h6>Import Data</h6>
-            <p style="font-size:0.7rem; color:var(--text-secondary);">Sync CSV/Excel records</p>
-          </div>
-        </div>
-        <div class="p-menu-item" onclick="showPView('cloud', 'Cloud Sync')"><i data-lucide="cloud-lightning"
-            style="color:var(--accent);"></i>
-          <div style="flex:1;">
-            <h6>Cloud Ledger</h6>
-            <p style="font-size:0.7rem; color:var(--text-secondary);">Sync with Google Sheets</p>
-          </div>
-        </div>
-        <div class="p-menu-item" style="border-color: rgba(239,68,68,0.2);"
-          onclick="if(typeof showConfirm === 'function') { showConfirm('Clear all data?', () => { localStorage.clear(); if(typeof showToast === 'function') showToast('All data cleared!', 'success', 'trash-2'); setTimeout(() => location.reload(), 1000); }); } else { if(confirm('Clear all data?')) { localStorage.clear(); if(typeof showToast === 'function') showToast('All data cleared!', 'success', 'trash-2'); setTimeout(() => location.reload(), 1000); } }">
-          <i data-lucide="trash-2" style="color:#ef4444;"></i>
-          <div style="flex:1;">
-            <h6 style="color:#ef4444;">Clear All Data</h6>
-            <p style="font-size:0.7rem; color:var(--text-secondary);">Reset entire application</p>
-          </div>
-        </div>
-
-        <div class="p-menu-item" style="border-color: var(--accent); margin-top: 1rem;" onclick="updateApp()">
-          <i data-lucide="refresh-cw" style="color:var(--accent);"></i>
-          <div style="flex:1;">
-            <h6 style="color:var(--accent);">Update Software</h6>
-            <p style="font-size:0.7rem; color:var(--text-secondary);">Clear cache & fetch latest version</p>
-          </div>
-        </div>
-
-        <div style="margin-top:2rem; text-align:center; opacity:0.4;">
-          <p style="font-size:0.65rem; font-weight:700;">BUILD v2.5.8</p>
-          <p style="font-size:0.6rem;">Updated: Apr 01, 2026 12:14</p>
-        </div>
 
       </div>
-
-      <!-- Personal View -->
-      <div id="p-view-personal" style="display:none; flex-direction:column; gap:1rem;">
-        <label
-          style="font-size:0.7rem; color:var(--text-secondary); font-weight:700; text-transform:uppercase; margin-bottom:-0.5rem; display:block;">Profile
-          Avatar</label>
-        <div class="avatar-scroll" id="avatar-picker">
-          <div class="av-item" onclick="setAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', this)">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
-          </div>
-          <div class="av-item" onclick="setAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka', this)">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka">
-          </div>
-          <div class="av-item" onclick="setAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=Jameson', this)">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jameson">
-          </div>
-          <div class="av-item" onclick="setAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=Jocelyn', this)">
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jocelyn">
-          </div>
-          <div class="av-item" onclick="setAvatar('https://api.dicebear.com/7.x/bottts/svg?seed=Gizmo', this)">
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Gizmo">
-          </div>
-          <div class="av-item active" onclick="setAvatar('👤', this)"><span>👤</span></div>
-        </div>
-        <style>
-          .avatar-scroll {
-            display: flex;
-            gap: 0.8rem;
-            overflow-x: auto;
-            padding: 0.5rem 0;
-            scrollbar-width: none;
-          }
-
-          .av-item {
-            min-width: 54px;
-            height: 54px;
-            border-radius: 27px;
-            background: var(--glass);
-            border: 2px solid transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 1.5rem;
-            position: relative;
-            overflow: hidden;
-          }
-
-          .av-item.active {
-            border-color: var(--accent);
-            background: var(--bg-input);
-            transform: scale(1.1);
-          }
-
-          .av-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            animation: av-float 4s ease-in-out infinite;
-          }
-
-          .av-item span {
-            animation: av-float 3s ease-in-out infinite;
-          }
-
-          @keyframes av-float {
-
-            0%,
-            100% {
-              transform: translateY(0) scale(1);
-            }
-
-            50% {
-              transform: translateY(-3px) scale(1.05);
-            }
-          }
-
-          .av-item:hover img,
-          .av-item:hover span {
-            animation-play-state: paused;
-          }
-        </style>
-
-        <div>
-          <label style="font-size:0.7rem; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">FULL
-            NAME</label><input type="text" id="pref-name"
-            style="width:100%; background:var(--bg-input); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; color:var(--text-primary); outline:none; margin-top:0.4rem;">
-        </div>
-        <div><label
-            style="font-size:0.7rem; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">EMAIL
-            ADDRESS</label><input type="email" id="pref-email"
-            style="width:100%; background:var(--bg-input); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; color:var(--text-primary); outline:none; margin-top:0.4rem;">
-        </div>
-        <button onclick="savePrefs()"
-          style="background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700; cursor:pointer; margin-top:1rem;">Save
-          Changes</button>
-      </div>
-
-      <!-- Preferences View: Telegram Style Theme Picker -->
-      <div id="p-view-prefs" style="display:none; flex-direction:column; gap:1.25rem;">
-        <style>
-          .theme-scroll {
-            display: flex;
-            gap: 1rem;
-            overflow-x: auto;
-            padding: 0.5rem 0 1.5rem;
-            scrollbar-width: none;
-          }
-
-          .theme-scroll::-webkit-scrollbar {
-            display: none;
-          }
-
-          .theme-card {
-            min-width: 80px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-          }
-
-          .theme-preview {
-            width: 70px;
-            height: 100px;
-            border-radius: 1rem;
-            border: 2px solid transparent;
-            padding: 0.5rem;
-            background: #222;
-            position: relative;
-            transition: 0.3s;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-          }
-
-          .theme-card.active .theme-preview {
-            border-color: var(--accent);
-            transform: translateY(-4px);
-          }
-
-          .p-bub {
-            width: 30px;
-            height: 12px;
-            border-radius: 6px;
-            margin-bottom: 0.4rem;
-          }
-
-          .p-bub-r {
-            margin-left: auto;
-            background: var(--accent);
-            opacity: 0.6;
-          }
-
-          .p-bub-l {
-            background: rgba(255, 255, 255, 0.1);
-          }
-
-          .color-row {
-            display: flex;
-            gap: 0.75rem;
-            overflow-x: auto;
-            padding: 0.5rem 0 1.5rem;
-            scrollbar-width: none;
-          }
-
-          .color-bubble {
-            width: 44px;
-            height: 44px;
-            border-radius: 22px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            transition: 0.2s;
-            border: 2px solid transparent;
-            flex-shrink: 0;
-          }
-
-          .color-bubble.active {
-            border-color: var(--accent);
-            transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-          }
-
-          .color-bubble.custom {
-            background: linear-gradient(45deg, #FF0000, #00FF00, #0000FF);
-          }
-
-          .radius-slider {
-            width: 100%;
-            height: 4px;
-            border-radius: 2px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: var(--border);
-            outline: none;
-            margin: 1.5rem 0;
-          }
-
-          .radius-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 9px;
-            background: var(--accent);
-            cursor: pointer;
-            border: 2px solid var(--bg-secondary);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-          }
-
-          .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-          }
-
-          .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-          }
-
-          .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--border);
-            transition: .4s;
-            border-radius: 24px;
-          }
-
-          .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-          }
-
-          input:checked+.slider {
-            background-color: var(--accent);
-          }
-
-          input:checked+.slider:before {
-            transform: translateX(20px);
-          }
-        </style>
-
-        <label class="form-label" style="margin-bottom: -0.5rem;">Visual Theme</label>
-        <div class="theme-scroll">
-          <div class="theme-card active" onclick="setAppTheme('dark')" id="tc-dark">
-            <div class="theme-preview" style="background:#0f0f0f;">
-              <div class="p-bub p-bub-l"></div>
-              <div class="p-bub p-bub-r"></div>
-              <div class="p-bub p-bub-l"></div>
-              <div id="check-dark" style="position:absolute; bottom:10px; right:10px; opacity:0;"><i
-                  data-lucide="check-circle-2" style="width:16px; color:var(--accent);"></i></div>
-            </div>
-            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:700;">Classic</span>
-          </div>
-          <div class="theme-card" onclick="setAppTheme('night')" id="tc-night">
-            <div class="theme-preview" style="background:#000;">
-              <div class="p-bub p-bub-l" style="background:#111;"></div>
-              <div class="p-bub p-bub-r"></div>
-              <div class="p-bub p-bub-l" style="background:#111;"></div>
-            </div>
-            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:700;">Night</span>
-          </div>
-          <div class="theme-card" onclick="setAppTheme('light')" id="tc-light">
-            <div class="theme-preview" style="background:#f1f5f9;">
-              <div class="p-bub p-bub-l" style="background:#ddd;"></div>
-              <div class="p-bub p-bub-r"></div>
-              <div class="p-bub p-bub-l" style="background:#ddd;"></div>
-            </div>
-            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:700;">Arctic</span>
-          </div>
-          <div class="theme-card" onclick="setAppTheme('contrast')" id="tc-contrast">
-            <div class="theme-preview" style="background:#000; border:1px solid #fff;">
-              <div class="p-bub p-bub-l" style="background:#333;"></div>
-              <div class="p-bub p-bub-r" style="background:#fff;"></div>
-            </div>
-            <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:700;">Neon</span>
-          </div>
-        </div>
-
-        <label class="form-label" style="margin-top: 0.5rem;">Accent Color</label>
-        <div class="color-row">
-          <div class="color-bubble custom" id="custom-color-bubble"
-            onclick="document.getElementById('custom-color').click()">
-            <i data-lucide="more-horizontal" style="color:white; width:20px;"></i>
-          </div>
-          <div class="color-bubble active" style="background:#8b5cf6;" onclick="setAccent('#8b5cf6', this)"></div>
-          <div class="color-bubble" style="background:#3b82f6;" onclick="setAccent('#3b82f6', this)"></div>
-          <div class="color-bubble" style="background:#10b981;" onclick="setAccent('#10b981', this)"></div>
-          <div class="color-bubble" style="background:#ef4444;" onclick="setAccent('#ef4444', this)"></div>
-          <div class="color-bubble" style="background:#f59e0b;" onclick="setAccent('#f59e0b', this)"></div>
-          <input type="color" id="custom-color" style="display:none;"
-            oninput="setAccent(this.value, document.getElementById('custom-color-bubble'))">
-        </div>
-
-        <label class="form-label">Corners Intensity</label>
-        <input type="range" class="radius-slider" min="4" max="24" value="16" id="radius-range"
-          oninput="updateRadius(this.value)">
-
-        <button onclick="savePrefs()"
-          style="background:var(--accent); color:white; border:none; padding:1.1rem; border-radius:1rem; font-weight:800; cursor:pointer; margin-top:0.5rem; transition:0.3s;">Save
-          Settings</button>
-      </div>
-
-      <!-- Cloud View -->
-      <div id="p-view-cloud" style="display:none; flex-direction:column; gap:1.25rem; text-align:left;">
-        <div>
-          <label class="label" style="font-size:0.75rem;">CONNECTED CLOUD URL</label>
-          <input type="text" id="cloud-url" class="f-input" readonly
-            style="width:100%; margin-top:0.4rem; padding:1rem; border-radius:1rem; background:var(--bg-input); border:1px solid var(--border); color:var(--text-secondary); cursor:not-allowed;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.4rem;">
-            <p style="font-size:0.6rem; color:var(--accent);"><i data-lucide="check-circle"
-                style="width:10px; display:inline-block; vertical-align:middle;"></i> Verified via QR Connect</p>
-            <p style="font-size:0.6rem; opacity:0.5;">App Version: v2.5.8</p>
-          </div>
-        </div>
-
-        <div
-          style="background:var(--bg-input); border:1px solid var(--border); border-radius:1.25rem; padding:1.25rem;">
-          <label class="label" style="font-size:0.75rem; color:var(--accent);">METODE SINKRONISASI</label>
-          <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
-            <label class="p-menu-item" id="sync-merge" style="margin-bottom:0; justify-content:flex-start;">
-              <input type="radio" name="sync_strategy" value="merge" checked onchange="setSyncMode('merge')"
-                style="display:none;">
-              <i data-lucide="merge"></i>
-              <div style="flex:1;">
-                <div style="font-size:0.875rem; font-weight:700;">Gabungkan Data</div>
-                <p style="font-size:0.6rem; color:var(--text-secondary);">Tambahkan data cloud ke data HP Anda</p>
-              </div>
-            </label>
-            <label class="p-menu-item" id="sync-overwrite" style="margin-bottom:0; justify-content:flex-start;">
-              <input type="radio" name="sync_strategy" value="overwrite" onchange="setSyncMode('overwrite')"
-                style="display:none;">
-              <i data-lucide="refresh-cw"></i>
-              <div style="flex:1;">
-                <div style="font-size:0.875rem; font-weight:700;">Ganti Data HP</div>
-                <p style="font-size:0.6rem; color:var(--text-secondary);">Gunakan data cloud sebagai data utama</p>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div style="display:flex; gap:0.75rem;">
-          <button onclick="syncCloud('pull')"
-            style="flex:1; background:var(--glass); border:1px solid var(--border); color:white; padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-            <i data-lucide="arrow-down-circle" style="width:18px;"></i> Ambil ke HP
-          </button>
-          <button onclick="syncCloud('push')"
-            style="flex:1; background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-            <i data-lucide="arrow-up-circle" style="width:18px;"></i> Timpa ke Cloud
-          </button>
-        </div>
-
-        <div id="last-sync-display"
-          style="font-size:0.65rem; color:var(--text-secondary); text-align:center; padding:0.25rem; font-weight:600; opacity:0; transition:0.3s;">
-          Last Synced: Loading...
-        </div>
-
-        <div style="font-size:0.6rem; color:var(--text-secondary); line-height:1.5;">
-          <b>Guide:</b> Click the button below for a step-by-step setup guide and code.
-        </div>
-        <button onclick="showPView('tutorial', 'Sheet Integration')"
-          style="background:rgba(139,92,246,0.1); color:var(--accent); border:1px solid var(--accent); padding:1rem; border-radius:1rem; font-weight:700;">View
-          Integration Tutorial</button>
-      </div>
-
-      <!-- Tutorial View -->
-      <div id="p-view-tutorial"
-        style="display:none; flex-direction:column; gap:1.25rem; text-align:left; padding-bottom: 2rem;">
-        <div
-          style="background: rgba(139, 92, 246, 0.05); border: 1px dashed var(--accent); border-radius: 1.5rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
-          <div style="display:flex; align-items:center; gap:1rem;">
-            <div
-              style="width:48px; height:48px; border-radius:12px; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              <i data-lucide="file-code-2" style="width:24px;"></i>
-            </div>
-            <div>
-              <h3 style="font-weight:800; font-size:1rem; color:var(--text-primary);">Google Sheet Connector</h3>
-              <p style="font-size:0.75rem; color:var(--text-secondary);">Copy this code to your Apps Script editor.</p>
-            </div>
-          </div>
-
-          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.8125rem; color:var(--text-primary);">
-              <span
-                style="width:20px; height:20px; border-radius:10px; background:var(--border); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:900;">1</span>
-              <span>Open <b>Extensions > Apps Script</b> in Sheets</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.8125rem; color:var(--text-primary);">
-              <span
-                style="width:20px; height:20px; border-radius:10px; background:var(--border); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:900;">2</span>
-              <span>Delete all existing code & paste snippet</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.8125rem; color:var(--text-primary);">
-              <span
-                style="width:20px; height:20px; border-radius:10px; background:var(--border); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:900;">3</span>
-              <span>Deploy as <b>Web App (Anyone)</b></span>
-            </div>
-          </div>
-
-          <button onclick="copyScriptCode()"
-            style="width:100%; background:var(--accent); color:white; border:none; padding:1.25rem; border-radius:1.25rem; font-weight:800; font-size:1rem; display:flex; align-items:center; justify-content:center; gap:0.75rem; cursor:pointer; box-shadow:0 10px 20px rgba(139,92,246,0.2);">
-            <i data-lucide="copy" style="width:20px;"></i> COPY MASTER SCRIPT
-          </button>
-        </div>
-
-        <div style="font-size:0.75rem; color:var(--text-secondary); text-align:center;">
-          Having trouble? <a href="#" style="color:var(--accent); font-weight:700;">View Full Guide</a>
-        </div>
-
-        <!-- Hidden script container to keep DOM clean -->
-        <div style="display:none;">
-          <pre id="as-code">
-function doGet(e) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheets = ss.getSheets();
-  const timezone = ss.getSpreadsheetTimeZone();
-  const response = { status: 'success' };
-
-  sheets.forEach(sh => {
-    const name = sh.getName().toLowerCase().trim();
-    const data = sh.getDataRange().getValues();
-    if (data.length < 2) { response[name + 's'] = []; return; }
-
-    const headers = data.shift();
-    const records = data.map(row => {
-      let r = {};
-      headers.forEach((h, i) => {
-        let v = row[i];
-        let hName = (h || '').toString().trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-        if (!hName) return;
-
-        // Normalization Mapping
-        if (hName === 'accountid' || hName === 'itemid' || hName === 'merchantid' || hName === 'transactionid') r.id = v;
-        else if (hName === 'accountname' || hName === 'itemname' || hName === 'merchantname') r.name = v;
-        else if (hName === 'accounttype' || hName === 'type' || (hName === 'category' && name === 'merchant')) r.type = v;
-        else if (hName === 'provider') r.provider = v;
-        else if (hName === 'currentbalance' || hName === 'balance') r.balance = parseFloat(v) || 0;
-        else if (hName === 'status') r.status = v;
-        else if (hName === 'itemcategory' || hName === 'category') r.category = v;
-        else if (hName === 'manufacturer') r.manu = v;
-        else if (hName === 'model') r.model = v;
-        else if (hName === 'stockkeepingunit' || hName === 'sku') r.sku = v;
-        else if (hName === 'defaultunitprice' || hName === 'price') r.price = parseFloat(v) || 0;
-        else if (hName === 'unit') r.unit = v;
-        else if (hName === 'warrantyexpirydate' || hName === 'expirydate' || hName === 'expiry') r.expiry = v;
-        else if (hName === 'notes') r.notes = v;
-        
-        // Transaction Specific Mapping
-        if (name === 'transaction') {
-          if (hName === 'date') {
-            if (v instanceof Date) v = Utilities.formatDate(v, timezone, "yyyy-MM-dd");
-            else if (typeof v === 'string' && v.includes('T')) v = v.split('T')[0];
-            r.date = v;
-          }
-          else if (hName === 'time') {
-            if (v instanceof Date) v = Utilities.formatDate(v, timezone, "HH:mm");
-            r.time = v ? v.toString() : '';
-          }
-          else if (hName === 'category') r.category = v;
-          else if (hName === 'type') r.type = v;
-          else if (hName === 'description') r.description = v;
-          else if (hName === 'amountperunit') r.amount = parseFloat(v) || 0;
-          else if (hName === 'quantity') r.qty = parseFloat(v) || 1;
-          else if (hName === 'paymentsourceaccount') r.accountPayment = v;
-          else if (hName === 'beneficiaryaccount') r.accountReceived = v;
-          else if (hName === 'total') r.total = parseFloat(v) || 0;
-        }
-      });
-      return r;
-    });
-
-    // Match app's expected keys
-    let finalKey = name + 's'; 
-    if (name === 'transaction') finalKey = 'transactions';
-    if (name === 'membership') finalKey = 'membership_cards';
-    response[finalKey] = records;
-  });
-
-  return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
-}
-
-function doPost(e) {
-  try {
-    const contents = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    
-    const entities = [
-      { key: 'transactions', sheetName: 'transaction', headers: [
-        'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
-        'Merchant', 'Item Name', 'Description', 'Amount (per Unit)', 'Currency', 
-        'Exchange Rate', 'Quantity', 'Unit Scale', 'Type', 'Cleared', 
-        'Payment Source Account', 'Beneficiary Account', 'Receipt', 'Analytics Tags', 'Associated Project', 
-        'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
-      ]},
-      { key: 'accounts', sheetName: 'account', headers: [
-        'Account ID', 'Account Name', 'Account Type', 'Provider', 'Currency', 
-        'Opening Balance', 'Opening Date', 'Current Balance', 'Status', 'Owner', 
-        'Account Number / ID', 'Branch / Location', 'Notes', 'Account Image', 'Update Time'
-      ]},
-      { key: 'merchants', sheetName: 'merchant', headers: [
-        'Merchant ID', 'Merchant Name', 'Category', 'Primary Contact Name', 'Phone Number', 
-        'Email', 'Website', 'Physical Address', 'City', 'Country', 
-        'Preferred Payment Method', 'Bank Account Details', 'Notes', 'Status', 'Update Time'
-      ]},
-      { key: 'items', sheetName: 'item', headers: [
-        'Item ID', 'Item Name', 'Item Category', 'Item Category Group', 'Item Image', 
-        'Manufacturer', 'Model', 'Unit', 'Default Unit Price', 'Currency', 
-        'Warranty / Expiry Date', 'Stock Keeping Unit', 'Notes', 'Status', 'Update Time'
-      ]},
-      { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] }
-    ];
-
-    entities.forEach(ent => {
-      const data = contents[ent.key];
-      if (!data) return;
-      
-      let sheet = ss.getSheetByName(ent.sheetName);
-      if (!sheet) { sheet = ss.insertSheet(ent.sheetName); }
-      
-      const rows = [ent.headers];
-      data.forEach(item => {
-        const row = ent.headers.map(h => {
-          const hNorm = h.toLowerCase().replace(/[^a-z0-9]/g, '');
-          
-          if (hNorm === 'accountid' || hNorm === 'itemid' || hNorm === 'merchantid' || hNorm === 'transactionid') return item.id;
-          if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname') return item.name;
-          if (hNorm === 'currentbalance') return item.balance || 0;
-          if (hNorm === 'defaultunitprice') return item.price || 0;
-          if (hNorm === 'stockkeepingunit') return item.sku || '';
-          if (hNorm === 'warrantyexpirydate') return item.expiry || '';
-          if (hNorm === 'manufacturer') return item.manu || '';
-          if (hNorm === 'itemcategory') return item.category || '';
-          if (hNorm === 'updatetime') return Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm");
-          
-          // Specific Merchant mapping: link "Category" column to item.type
-          if (ent.key === 'merchants' && hNorm === 'category') return item.type || '';
-          
-          // Transaction Advanced Mapping
-          if (ent.key === 'transactions') {
-            if (h === 'Payment Source Account') return item.accountPayment || '';
-            if (h === 'Beneficiary Account') return item.accountReceived || '';
-            if (h === 'Amount (per Unit)') return item.amount || 0;
-            if (h === 'Analytics Tags') return (item.tags || []).join(', ');
-            if (h === 'Associated Project') return (item.projects || []).join(', ');
-            if (h === 'Cleared') return item.cleared ? 'Yes' : 'No';
-            if (h === 'Flow') return item.type === 'Income' ? 'IN' : 'OUT';
-            if (h === 'Year' && item.date) return item.date.split('-')[0];
-            if (h === 'Month' && item.date) return item.date.split('-')[1];
-          }
-          
-          // Generic match by property name logic
-          for (let k in item) {
-             if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === hNorm) {
-                let v = item[k];
-                if (Array.isArray(v)) return v.join(', ');
-                return v;
-             }
-          }
-          return '';
-        });
-        rows.push(row);
-      });
-
-      sheet.getRange(1, 1, sheet.getLastRow() || 1, ent.headers.length).clearContent();
-      sheet.getRange(1, 1, rows.length, ent.headers.length).setValues(rows);
-      sheet.getRange(1, 1, 1, ent.headers.length).setFontWeight('bold').setBackground('#f3f3f3');
-      sheet.setFrozenRows(1);
-    });
-
-    return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-</pre>
-        </div>
-      </div>
-
-      <!-- Report View -->
-      <div id="p-view-report" style="display:none; flex-direction:column; gap:1.25rem;">
-        <div>
-          <label class="label" style="font-size:0.75rem;">REPORT TITLE</label>
-          <input type="text" id="pdf-title" class="f-input" placeholder="Financial Audit Report"
-            style="width:100%; margin-top:0.4rem; padding:1rem; border-radius:1rem; background:var(--bg-input); border:1px solid var(--border); color:white;">
-        </div>
-
-        <div>
-          <label class="label" style="font-size:0.75rem;">THEME COLOR</label>
-          <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-            <button class="color-bubble custom" id="report-custom-color-bubble"
-              onclick="document.getElementById('report-custom-color').click()">
-              <i data-lucide="more-horizontal" style="color:white; width:20px;"></i>
-            </button>
-            <button class="color-bubble active" style="background:#8b5cf6;"
-              onclick="setPdfColor([139,92,246], this)"></button>
-            <button class="color-bubble" style="background:#0ea5e9;" onclick="setPdfColor([14,165,233], this)"></button>
-            <button class="color-bubble" style="background:#16a34a;" onclick="setPdfColor([22,163,74], this)"></button>
-            <button class="color-bubble" style="background:#1e293b;" onclick="setPdfColor([30,41,59], this)"></button>
-            <input type="color" id="report-custom-color" style="display:none;"
-              oninput="setPdfColor(this.value, document.getElementById('report-custom-color-bubble'))">
-          </div>
-        </div>
-
-        <div>
-          <label class="label"
-            style="font-size:0.75rem; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">COLUMNS
-            TO INCLUDE</label>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-top:0.6rem;">
-            <label class="toggle-chip">
-              <input type="checkbox" id="col-date" checked>
-              <div class="chip-content"><i data-lucide="calendar"></i> Date</div>
-            </label>
-            <label class="toggle-chip">
-              <input type="checkbox" id="col-merch" checked>
-              <div class="chip-content"><i data-lucide="building-2"></i> Merchant</div>
-            </label>
-            <label class="toggle-chip">
-              <input type="checkbox" id="col-item" checked>
-              <div class="chip-content"><i data-lucide="package"></i> Item Name</div>
-            </label>
-            <label class="toggle-chip">
-              <input type="checkbox" id="col-cat" checked>
-              <div class="chip-content"><i data-lucide="tag"></i> Category</div>
-            </label>
-            <label class="toggle-chip" style="grid-column: span 2;">
-              <input type="checkbox" id="col-total" checked>
-              <div class="chip-content" style="justify-content:center;"><i data-lucide="banknote"></i> Transaction
-                Amount</div>
-            </label>
-          </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-top:1rem;">
-          <button onclick="exportToPDF()"
-            style="grid-column: span 2; background:var(--accent); color:white; border:none; padding:1.1rem; border-radius:1.25rem; font-weight:800; box-shadow:0 10px 30px rgba(139,92,246,0.3); display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-            <i data-lucide="file-text" style="width:18px;"></i> GENERATE PDF
-          </button>
-          <button onclick="exportToDataFormat('xlsx')"
-            style="background:rgba(22,163,74,0.1); color:#16a34a; border:1px solid #16a34a; padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-            <i data-lucide="file-spreadsheet" style="width:18px;"></i> EXCEL
-          </button>
-          <button onclick="exportToDataFormat('csv')"
-            style="background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border); padding:1rem; border-radius:1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-            <i data-lucide="file-code-2" style="width:18px;"></i> CSV
-          </button>
-        </div>
-      </div>
-
-      <!-- Import View -->
-      <div id="p-view-import" style="display:none; flex-direction:column; gap:1.25rem;">
-        <div
-          style="border:2px dashed var(--border); border-radius:1.5rem; padding:2.5rem 1rem; text-align:center; background:rgba(255,255,255,0.02); cursor:pointer;"
-          onclick="document.getElementById('file-import').click()">
-          <div
-            style="width:60px; height:60px; border-radius:30px; background:rgba(22,163,74,0.1); color:#16a34a; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem;">
-            <i data-lucide="upload" style="width:30px;"></i>
-          </div>
-          <h6 style="font-weight:800; margin-bottom:0.5rem;">Select Finance Ledger</h6>
-          <p style="font-size:0.75rem; color:var(--text-secondary);">Supports .csv, .xlsx, and .xls</p>
-          <input type="file" id="file-import" style="display:none;" accept=".csv,.xlsx,.xls"
-            onchange="handleImport(this)">
-        </div>
-        <div
-          style="background:var(--bg-input); border:1px solid var(--border); border-radius:1.25rem; padding:1.25rem;">
-          <label class="label" style="font-size:0.75rem; color:var(--accent);">PILIHAN IMPOR</label>
-          <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
-            <label class="p-menu-item" id="import-merge" style="margin-bottom:0; justify-content:flex-start;">
-              <input type="radio" name="import_strategy" value="merge" checked onchange="setImportMode('merge')"
-                style="display:none;">
-              <i data-lucide="merge"></i>
-              <div style="flex:1;">
-                <div style="font-size:0.875rem; font-weight:700;">Tambahkan Data</div>
-                <p style="font-size:0.6rem; color:var(--text-secondary);">Sisipkan data baru ke catatan sekarang</p>
-              </div>
-            </label>
-            <label class="p-menu-item" id="import-overwrite" style="margin-bottom:0; justify-content:flex-start;">
-              <input type="radio" name="import_strategy" value="overwrite" onchange="setImportMode('overwrite')"
-                style="display:none;">
-              <i data-lucide="refresh-cw"></i>
-              <div style="flex:1;">
-                <div style="font-size:0.875rem; font-weight:700;">Timpa Data Lama</div>
-                <p style="font-size:0.6rem; color:var(--text-secondary);">Ganti semua data lama dengan isi berkas</p>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div
-          style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); border-radius:1rem; padding:1rem; display:flex; gap:0.8rem; align-items:center;">
-          <i data-lucide="help-circle" style="color:#f59e0b; width:20px;"></i>
-          <p style="font-size:0.65rem; color:var(--text-secondary);">For PDF receipts, please use the <b>AI SCAN</b>
-            feature on the main dashboard for precise OCR extraction.</p>
-        </div>
-
-        <div style="font-size:0.65rem; padding:0.5rem; opacity:0.6; line-height:1.4;">
-          <b>Expected Columns:</b> Date, Merchant, Item, Category, Amount (Price), Qty, Discount, Fee.
-        </div>
-      </div>
-
-      <!-- Import Mapping View -->
-      <div id="p-view-import-mapping" style="display:none; flex-direction:column; gap:1.25rem;">
-        <div
-          style="background:rgba(139,92,246,0.05); border:1px solid var(--border); border-radius:1rem; padding:1rem;">
-          <h6 style="font-weight:800; color:var(--accent); margin-bottom:0.4rem;">Column Mapping</h6>
-          <p style="font-size:0.65rem; color:var(--text-secondary);">Map your file columns to finance fields.</p>
-        </div>
-
-        <div id="mapping-fields" style="display:flex; flex-direction:column; gap:1rem;">
-          <!-- Dynamic Mapping Rows -->
-        </div>
-
-        <button onclick="executeImport()"
-          style="background:var(--accent); color:white; border:none; padding:1rem; border-radius:1rem; font-weight:800; margin-top:0.5rem; box-shadow:0 10px 30px rgba(139,92,246,0.3);">
-          CONFIRM & IMPORT
-        </button>
-      </div>
-      <div id="p-view-security" style="display:none; flex-direction:column; gap:1.25rem;">
-        <div class="p-menu-item" style="margin-bottom:0.5rem; justify-content:space-between; cursor:default;">
-          <div style="flex:1;">
-            <h6>App PIN Lock</h6>
-            <p style="font-size:0.7rem; color:var(--text-secondary);">Protect your wallet automatically</p>
-          </div>
-          <label class="switch"><input type="checkbox" id="pref-pin-toggle" onchange="togglePIN(this.checked)"><span
-              class="slider round"></span></label>
-        </div>
-        <div class="p-menu-item" onclick="showPView('pin-setup', 'Setup Your PIN')">
-          <i data-lucide="key" style="color:var(--accent);"></i>
-          <div style="flex:1;">
-            <h6>Setup Secure PIN</h6>
-            <p id="p-sub-pin-status" style="font-size:0.7rem; color:var(--text-secondary);">Not set</p>
-          </div>
-          <i data-lucide="chevron-right" style="width:16px; opacity:0.5;"></i>
-        </div>
-        <div class="p-menu-item" onclick="setupBiometric()">
-          <i data-lucide="fingerprint" id="bio-icon" style="color:var(--text-secondary);"></i>
-          <div style="flex:1;">
-            <h6>FaceID / Fingerprint Lock</h6>
-            <p id="p-sub-bio-status" style="font-size:0.7rem; color:var(--text-secondary);">Tap to activate</p>
-          </div>
-          <label class="switch" style="pointer-events:none;"><input type="checkbox" id="pref-bio-toggle"><span
-              class="slider round"></span></label>
-        </div>
-      </div>
-
-      <!-- PIN Setup View -->
-      <div id="p-view-pin-setup"
-        style="display:none; flex-direction:column; align-items:center; gap:1.5rem; padding-top:1rem;">
-        <div style="text-align:center;">
-          <p id="pin-prompt" style="font-size:0.875rem; color:var(--text-secondary); margin-bottom:1rem;">Enter a
-            4-digit secure code</p>
-          <div style="display:flex; justify-content:center; gap:1rem;">
-            <div class="pin-dot" id="pin-1"></div>
-            <div class="pin-dot" id="pin-2"></div>
-            <div class="pin-dot" id="pin-3"></div>
-            <div class="pin-dot" id="pin-4"></div>
-          </div>
-        </div>
-        <style>
-          .pin-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 7px;
-            border: 2px solid var(--border);
-            transition: 0.2s;
-          }
-
-          .pin-dot.filled {
-            background: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-          }
-
-          .n-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            width: 100%;
-            max-width: 240px;
-            margin: 0 auto;
-          }
-
-          .n-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 30px;
-            background: var(--glass);
-            border: 1px solid var(--border);
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-          }
-
-          .n-btn:active {
-            background: var(--accent);
-            border-color: var(--accent);
-            transform: scale(0.9);
-          }
-        </style>
-        <div class="n-pad" id="numeric-pad">
-          <button class="n-btn" onclick="addPin('1')">1</button><button class="n-btn"
-            onclick="addPin('2')">2</button><button class="n-btn" onclick="addPin('3')">3</button>
-          <button class="n-btn" onclick="addPin('4')">4</button><button class="n-btn"
-            onclick="addPin('5')">5</button><button class="n-btn" onclick="addPin('6')">6</button>
-          <button class="n-btn" onclick="addPin('7')">7</button><button class="n-btn"
-            onclick="addPin('8')">8</button><button class="n-btn" onclick="addPin('9')">9</button>
-          <button class="n-btn" style="background:none; border:none;"></button><button class="n-btn"
-            onclick="addPin('0')">0</button>
-          <button class="n-btn" onclick="delPin()"
-            style="background:rgba(239, 68, 68, 0.1); border-color:rgba(239, 68, 68, 0.3);"><i data-lucide="delete"
-              style="width:20px;"></i></button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script>
     const APP_VERSION = 'v2.5.8';
-    const BUILD_DATE = 'Apr 01, 2026 12:14';
 
     lucide.createIcons();
 
@@ -2445,14 +1503,14 @@ function doPost(e) {
             </button>
           </div>
           <div class="transaction-item" onclick="if(this.dataset.swiping !== 'true') showDetailById('${t.id}')">
-            <div class="item-icon" style="background: ${isExp ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; color: ${isExp ? '#ef4444' : '#10b981'};">
+            <div class="item-icon" style="background: ${isExp ? 'var(--red-soft)' : 'var(--green-soft)'}; color: ${isExp ? 'var(--red)' : 'var(--green)'};">
               <i data-lucide="${isExp ? 'shopping-cart' : 'banknote'}"></i>
             </div>
             <div class="item-info">
               <div class="item-name">${t.name}</div>
               <div class="item-meta">${t.merchant ? t.merchant + ' • ' : ''}${t.category} • ${t.date}</div>
             </div>
-            <div class="item-amount" style="color: ${isExp ? '#ef4444' : '#10b981'};">
+            <div class="item-amount" style="color: ${isExp ? 'var(--red)' : 'var(--green)'};">
               ${isExp ? '-' : '+'}Rp ${t.total.toLocaleString('id-ID')}
             </div>
           </div>
@@ -2541,7 +1599,7 @@ function doPost(e) {
       const statusEl = document.getElementById('m-status');
       const isCleared = t.cleared !== false;
       statusEl.innerText = isCleared ? 'Cleared' : 'Uncleared';
-      statusEl.style.color = isCleared ? '#10b981' : '#f59e0b';
+      statusEl.style.color = isCleared ? 'var(--green)' : 'var(--amber-400)';
 
       const clearBtn = document.getElementById('m-clear-btn');
       if (clearBtn) {
@@ -3009,6 +2067,28 @@ function doPost(e) {
       setTimeout(() => location.reload(), 1000);
     };
 
+    window.syncCloud = async (action) => {
+      const url = localStorage.getItem('cloud_sheet_url');
+      if (!url) { alert('Please enter your Google Script URL'); return; }
+      try {
+        if (action === 'push') {
+          if (confirm('Backup all local data to cloud?')) {
+            await CloudSync.push(url);
+            localStorage.setItem('last_cloud_sync', new Date().toLocaleString('id-ID'));
+            alert('Cloud database updated successfully.');
+            refreshDashboard();
+          }
+        } else {
+          await CloudSync.pull(url, currentSyncMode || 'merge');
+          alert('Cloud data pulled successfully.');
+          refreshDashboard();
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Sync Operation Failed');
+      }
+    };
+
     let pdfThemeColor = [139, 92, 246];
     window.setPdfColor = (rgbOrHex, el) => {
       if (typeof rgbOrHex === 'string' && rgbOrHex.startsWith('#')) {
@@ -3292,283 +2372,27 @@ function doPost(e) {
       setTimeout(() => location.reload(), 1500);
     };
 
-    let currentSyncMode = 'merge';
-    let currentImportMode = 'merge';
-
-    window.setImportMode = (mode) => {
-      currentImportMode = mode;
-      const r = document.querySelector(`#import-${mode} input`);
-      if (r) r.checked = true;
-    };
-    window.setSyncMode = (mode) => {
-      currentSyncMode = mode;
-      const r = document.querySelector(`#sync-${mode} input`);
-      if (r) r.checked = true;
-    };
-
-    window.syncCloud = async (action) => {
-      const url = document.getElementById('cloud-url').value || localStorage.getItem('cloud_sheet_url');
-      if (!url) { showToast('Please enter your Google Script URL', 'warning', 'link-2'); return; }
-      localStorage.setItem('cloud_sheet_url', url);
-
-      try {
-        if (action === 'push') {
-          if (confirm('Sinkronisasi (Timpa) akan mengganti SELURUH data di Spreadsheet dengan data dari HP ini. Lanjutkan?')) {
-            await window.CloudSync.push(url);
-            const now = new Date().toLocaleString('id-ID');
-            localStorage.setItem('last_cloud_sync', now);
-            updateSyncUI(now);
-          }
-        } else {
-          await window.CloudSync.pull(url, currentSyncMode);
-          const now = new Date().toLocaleString('id-ID');
-          localStorage.setItem('last_cloud_sync', now);
-          setTimeout(() => location.reload(), 2000);
-        }
-      } catch (e) {
-        console.error(e);
-        showToast('Sync Failed: Check connection or script settings.', 'error', 'wifi-off');
-      }
-    };
-
-    function updateSyncUI(time) {
-      const el = document.getElementById('last-sync-display');
-      const dashEl = document.getElementById('dash-last-sync');
-      const dashIcon = document.querySelector('#dash-sync-info i');
-
-      const displayTime = time || 'Never';
-
-      if (el) {
-        el.innerText = `Last Cloud Sync: ${displayTime}`;
-        el.style.opacity = time ? '1' : '0.5';
-      }
-
-      if (dashEl) {
-        dashEl.innerText = `Cloud: ${displayTime}`;
-        if (dashIcon) {
-          dashIcon.style.color = time ? '#10b981' : '#f59e0b';
-          dashIcon.setAttribute('data-lucide', time ? 'cloud-check' : 'cloud-off');
-          if (window.lucide) lucide.createIcons();
-        }
-      }
-    }
-
-    const pModal = document.getElementById('p-modal');
-    const pBack = document.getElementById('p-back');
-    const pTitle = document.getElementById('p-title');
-
-    function showPView(vId, title) {
-      document.getElementById('p-view-main').style.display = (vId === 'main') ? 'block' : 'none';
-      document.getElementById('p-view-personal').style.display = (vId === 'personal') ? 'flex' : 'none';
-      document.getElementById('p-view-prefs').style.display = (vId === 'prefs') ? 'flex' : 'none';
-      document.getElementById('p-view-security').style.display = (vId === 'security') ? 'flex' : 'none';
-      document.getElementById('p-view-pin-setup').style.display = (vId === 'pin-setup') ? 'flex' : 'none';
-      document.getElementById('p-view-report').style.display = (vId === 'report') ? 'flex' : 'none';
-      document.getElementById('p-view-import').style.display = (vId === 'import') ? 'flex' : 'none';
-      document.getElementById('p-view-import-mapping').style.display = (vId === 'import-mapping') ? 'flex' : 'none';
-      document.getElementById('p-view-cloud').style.display = (vId === 'cloud') ? 'flex' : 'none';
-      document.getElementById('p-view-tutorial').style.display = (vId === 'tutorial') ? 'flex' : 'none';
-      pTitle.innerText = title;
-      pBack.style.display = (vId === 'main') ? 'none' : 'block';
-      lucide.createIcons();
-    }
-
-    let currentPin = '';
-    let pinSetupMode = 'first';
-    let firstPin = '';
-
-    window.togglePIN = (enabled) => {
-      if (enabled && !localStorage.getItem('app_pin')) {
-        showPView('pin-setup', 'Setup Your PIN');
-      } else {
-        localStorage.setItem('pin_enabled', enabled);
-      }
-    };
-
-    window.addPin = (num) => {
-      if (currentPin.length < 4) {
-        currentPin += num;
-        updatePinDots();
-        if (currentPin.length === 4) setTimeout(handlePinComplete, 300);
-      }
-    };
-
-    window.delPin = () => { currentPin = currentPin.slice(0, -1); updatePinDots(); };
-
-    window.copyScriptCode = () => {
-      const code = document.getElementById('as-code').innerText;
-      navigator.clipboard.writeText(code);
-      alert('Script code copied to clipboard!');
-    };
-
-    function updatePinDots() {
-      for (let i = 1; i <= 4; i++) {
-        const dot = document.getElementById(`pin-${i}`);
-        if (dot) dot.classList.toggle('filled', i <= currentPin.length);
-      }
-    }
-
-    function handlePinComplete() {
-      if (pinSetupMode === 'first') {
-        firstPin = currentPin; currentPin = ''; pinSetupMode = 'confirm';
-        document.getElementById('pin-prompt').innerText = 'Confirm your secure code';
-        updatePinDots();
-      } else {
-        if (currentPin === firstPin) {
-          localStorage.setItem('app_pin', currentPin);
-          localStorage.setItem('pin_enabled', 'true');
-          const statusEl = document.getElementById('p-sub-pin-status');
-          if (statusEl) statusEl.innerText = 'Active';
-          document.getElementById('pref-pin-toggle').checked = true;
-          showPView('security', 'Security Hub');
-          currentPin = ''; pinSetupMode = 'first';
-        } else {
-          alert('PINs do not match. Try again.');
-          currentPin = ''; pinSetupMode = 'first';
-          document.getElementById('pin-prompt').innerText = 'Enter a 4-digit secure code';
-          updatePinDots();
-        }
-      }
-    }
-
-    let tempTheme = 'dark';
-    let tempAccent = '#8b5cf6';
-    let tempRadius = 16;
-
-    window.setAppTheme = (t) => {
-      tempTheme = t;
-      document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
-      document.getElementById('tc-' + t).classList.add('active');
-      applyAesthetics(t, tempAccent, tempRadius);
-    };
-
-    window.setAccent = (c, el) => {
-      tempAccent = c;
-      document.querySelectorAll('.color-bubble').forEach(b => b.classList.remove('active'));
-      if (el) el.classList.add('active');
-      applyAesthetics(tempTheme, c, tempRadius);
-    };
-
-    window.updateRadius = (v) => {
-      tempRadius = v;
-      window.applyAesthetics(tempTheme, tempAccent, v);
-    };
-
-    window.savePrefs = () => {
-      const prefs = {
-        name: document.getElementById('pref-name').value,
-        email: document.getElementById('pref-email').value,
-        theme: tempTheme,
-        color: tempAccent,
-        radius: tempRadius,
-        pin: document.getElementById('pref-pin-toggle') ? document.getElementById('pref-pin-toggle').checked : false,
-        avatar: selectedAvatar
-      };
-      localStorage.setItem('user_prefs', JSON.stringify(prefs));
-      localStorage.setItem('pin_enabled', prefs.pin);
-      document.getElementById('p-sub-user').innerText = prefs.name || 'User';
-      document.getElementById('p-sub-prefs').innerText = `${prefs.theme.charAt(0).toUpperCase() + prefs.theme.slice(1)} Aesthetic`;
-
-      // Auto-cloud sync for preferences
-      const cloudUrl = localStorage.getItem('cloud_sheet_url');
-      if (cloudUrl) {
-        if (typeof showToast === 'function') showToast('Settings saved & syncing to cloud...', 'info', 'cloud');
-        window.CloudSync.push(cloudUrl).catch(e => console.error('Cloud Prefs Sync failed:', e));
-      } else {
-        showPView('main', 'Settings');
-      }
-    };
-
-    let selectedAvatar = '👤';
-    window.setAvatar = (av, el) => {
-      selectedAvatar = av;
-      document.querySelectorAll('.av-item').forEach(i => i.classList.remove('active'));
-      if (el) el.classList.add('active');
-      const trigger = document.getElementById('profile-trigger');
-      if (av.startsWith('http') || av.startsWith('file')) {
-        trigger.innerHTML = `<img src="${av}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-      } else {
-        trigger.innerHTML = av;
-      }
-    };
-
-    function initPrefs() {
-      const ps = JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Alex Doe","theme":"dark","color":"#8b5cf6","radius":16}');
-      const nameVal = ps.name || 'Alex Doe';
-      document.getElementById('pref-name').value = nameVal;
-      document.getElementById('pref-email').value = ps.email || 'alex@example.com';
-      document.getElementById('p-sub-user').innerText = nameVal;
+    function initDashboardState() {
+      const ps = JSON.parse(localStorage.getItem('user_prefs') || '{"name":"User","avatar":"👤"}');
+      const nameVal = ps.name || 'User';
       document.getElementById('welcome-msg').innerText = 'Welcome back, ' + nameVal;
-      document.getElementById('cloud-url').value = localStorage.getItem('cloud_sheet_url') || '';
 
       if (ps.avatar) {
-        selectedAvatar = ps.avatar;
         const trigger = document.getElementById('profile-trigger');
-        if (ps.avatar.startsWith('http') || ps.avatar.startsWith('file')) {
-          trigger.innerHTML = `<img src="${ps.avatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        const av = ps.avatar;
+        if (av.startsWith('svg:')) {
+          const idx = parseInt(av.split(':')[1]);
+          trigger.innerHTML = window.AVATAR_SVGS[idx] || '👤';
+        } else if (av.startsWith('http') || av.startsWith('file')) {
+          trigger.innerHTML = `<img src="${av}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
         } else {
-          trigger.innerHTML = ps.avatar;
+          trigger.innerHTML = av;
         }
-        document.querySelectorAll('.av-item').forEach(i => {
-          const content = i.querySelector('img') ? i.querySelector('img').src : i.innerText.trim();
-          i.classList.toggle('active', content === ps.avatar);
-        });
       }
-
-      const pinEnabled = localStorage.getItem('pin_enabled') === 'true';
-      const pinToggle = document.getElementById('pref-pin-toggle');
-      if (pinToggle) pinToggle.checked = pinEnabled;
-
-      const pinStatus = document.getElementById('p-sub-pin-status');
-      if (pinStatus) pinStatus.innerText = localStorage.getItem('app_pin') ? 'Active' : 'Not set';
-
-      const bioEnabled = localStorage.getItem('bio_enabled') === 'true';
-      updateBioUI(bioEnabled);
-
-      tempTheme = ps.theme || 'dark';
-      tempAccent = ps.color || '#8b5cf6';
-      tempRadius = ps.radius || 16;
-
-      document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
-      const tc = document.getElementById('tc-' + tempTheme);
-      if (tc) tc.classList.add('active');
-
-      document.getElementById('radius-range').value = tempRadius;
-      applyAesthetics(tempTheme, tempAccent, tempRadius);
       updateSyncUI(localStorage.getItem('last_cloud_sync'));
     }
 
-    window.setupBiometric = async () => {
-      const isAvailable = window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-      if (!isAvailable) { alert('Biometric authentication is not supported or requires HTTPS.'); return; }
-      const enabled = localStorage.getItem('bio_enabled') === 'true';
-      if (enabled) {
-        if (typeof showConfirm === 'function') {
-          showConfirm('Disable Biometric Lock?', () => { localStorage.setItem('bio_enabled', 'false'); updateBioUI(false); });
-        } else {
-          if (confirm('Disable Biometric Lock?')) { localStorage.setItem('bio_enabled', 'false'); updateBioUI(false); }
-        }
-      } else {
-        alert('Activating device biometrics... (Security prompt will appear on hosted HTTPS domains)');
-        localStorage.setItem('bio_enabled', 'true'); updateBioUI(true);
-      }
-    };
-
-    function updateBioUI(enabled) {
-      const toggle = document.getElementById('pref-bio-toggle');
-      if (toggle) toggle.checked = enabled;
-      const status = document.getElementById('p-sub-bio-status');
-      if (status) status.innerText = enabled ? 'Enabled' : 'Disabled';
-      const icon = document.getElementById('bio-icon');
-      if (icon) icon.style.color = enabled ? 'var(--accent)' : 'var(--text-secondary)';
-    }
-
-    document.getElementById('profile-trigger').onclick = () => { initPrefs(); showPView('main', 'Settings'); pModal.style.display = 'flex'; };
-    document.getElementById('p-close').onclick = () => pModal.style.display = 'none';
-    pBack.onclick = () => showPView('main', 'Settings');
-    pModal.onclick = (e) => { if (e.target === pModal) pModal.style.display = 'none'; };
-
-    try { initPrefs(); } catch (e) { console.error("PrefsInit Error:", e); }
+    initDashboardState();
     try { checkExpiries(); } catch (e) { console.error("ExpiryCheck Error:", e); }
     const savedUrl = localStorage.getItem('cloud_sheet_url');
     if (savedUrl && document.getElementById('cloud-url')) {
@@ -3592,7 +2416,7 @@ function doPost(e) {
       members.forEach(m => {
         if (m.expiry) {
           const exp = parseDate(m.expiry);
-          if (exp < in30Days) reminders.push({ id: m.id, type: 'Card', name: m.name, date: m.expiry, expired: exp < now, link: `memberships.html?id=${m.id}`, color: '#8b5cf6' });
+          if (exp < in30Days) reminders.push({ id: m.id, type: 'Card', name: m.name, date: m.expiry, expired: exp < now, link: `memberships.html?id=${m.id}`, color: 'var(--purple)' });
         }
       });
 
@@ -3601,7 +2425,7 @@ function doPost(e) {
       vouchers.forEach(v => {
         if (v.expiry) {
           const exp = parseDate(v.expiry);
-          if (exp < in30Days) reminders.push({ id: v.id, type: 'Voucher', name: v.name, date: v.expiry, expired: exp < now, link: `vouchers.html?id=${v.id}`, color: '#f59e0b' });
+          if (exp < in30Days) reminders.push({ id: v.id, type: 'Voucher', name: v.name, date: v.expiry, expired: exp < now, link: `vouchers.html?id=${v.id}`, color: 'var(--amber-400)' });
         }
       });
 
@@ -3610,7 +2434,7 @@ function doPost(e) {
       items.forEach(i => {
         if (i.expiry) {
           const exp = parseDate(i.expiry);
-          if (exp < in30Days) reminders.push({ id: i.id, type: 'Item', name: i.name, date: i.expiry, expired: exp < now, link: `items.html?id=${i.id}`, color: '#16a34a' });
+          if (exp < in30Days) reminders.push({ id: i.id, type: 'Item', name: i.name, date: i.expiry, expired: exp < now, link: `items.html?id=${i.id}`, color: 'var(--green)' });
         }
       });
 
@@ -3619,7 +2443,7 @@ function doPost(e) {
       accounts.forEach(a => {
         if (a.cardExpiry) {
           const exp = parseDate(a.cardExpiry);
-          if (exp < in30Days) reminders.push({ id: a.id, type: 'Bank Card', name: a.name, date: a.cardExpiry, expired: exp < now, link: `accounts.html?id=${a.id}`, color: '#0ea5e9' });
+          if (exp < in30Days) reminders.push({ id: a.id, type: 'Bank Card', name: a.name, date: a.cardExpiry, expired: exp < now, link: `accounts.html?id=${a.id}`, color: 'var(--blue)' });
         }
       });
 
@@ -3660,7 +2484,7 @@ function doPost(e) {
         // Accounts (Payment & Received)
         [t.accountPayment, t.accountReceived].forEach(accName => {
           if (accName && !aNames.has(accName.toLowerCase())) {
-            accounts.push({ id: 'ACC-' + Date.now() + Math.random(), name: accName, type: 'Cash', balance: 0, status: 'Active', color: '#8b5cf6' });
+            accounts.push({ id: 'ACC-' + Date.now() + Math.random(), name: accName, type: 'Cash', balance: 0, status: 'Active', color: 'var(--teal-400)' });
             aNames.add(accName.toLowerCase());
             newA++;
           }
@@ -3684,11 +2508,11 @@ function doPost(e) {
 
       container.style.display = 'block';
       list.innerHTML = reminders.map(r => `
-        <div onclick="window.location.href='${r.link}'" style="min-width: 160px; background: var(--glass); border: 1px solid ${r.expired ? '#ef4444' : 'var(--border)'}; border-radius: 1rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;">
+        <div onclick="window.location.href='${r.link}'" style="min-width: 160px; background: var(--glass); border: 1px solid ${r.expired ? 'var(--red)' : 'var(--border)'}; border-radius: 1rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;">
           <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: ${r.color};"></div>
           <div style="font-size: 0.6rem; font-weight: 800; color: ${r.color}; text-transform: uppercase; letter-spacing: 0.05em;">${r.type}</div>
           <div style="font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.name}</div>
-          <div style="font-size: 0.7rem; color: ${r.expired ? '#ef4444' : 'var(--text-secondary)'}; font-weight: 600;">
+          <div style="font-size: 0.7rem; color: ${r.expired ? 'var(--red)' : 'var(--text-secondary)'}; font-weight: 600;">
             ${r.expired ? 'Expired' : 'Expires'}: ${r.date}
           </div>
         </div>
