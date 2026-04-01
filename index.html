@@ -748,8 +748,8 @@
     <div class="action-slider-container">
       <div class="action-slider-track">
         <div class="action-slider-side" id="slider-left">
-          <i data-lucide="camera"></i>
-          <span>Scan</span>
+          <i data-lucide="receipt"></i>
+          <span>Add Receipt</span>
         </div>
 
         <div class="action-slider-handle" id="action-handle">
@@ -827,10 +827,10 @@
 
           if (dx < -triggerPoint) {
             // Swiped Left -> Scan
-            if (typeof startReceiptScan === 'function') {
-              startReceiptScan();
+            if (typeof openReceiptBatcher === 'function') {
+              openReceiptBatcher();
             } else {
-              console.error('startReceiptScan not found');
+              console.error('openReceiptBatcher not found');
             }
           } else if (dx > triggerPoint) {
             // Swiped Right -> Manual
@@ -1197,22 +1197,27 @@
       style="width:100%; border-radius:1.75rem 1.75rem 0 0; padding:1.5rem 1.5rem 3rem 1.5rem; background:var(--bg-secondary); animation: slideUp 0.3s ease-out;">
       <div style="width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 1.5rem auto;">
       </div>
-      <h3 style="font-weight:800; font-size:1.125rem; margin-bottom:0.5rem; text-align:center;">Scan Receipt</h3>
-      <p style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-bottom:2rem;">Choose your
-        receipt source for OCR processing.</p>
+      <h3 style="font-weight:800; font-size:1.125rem; margin-bottom:0.5rem; text-align:center;">Add Receipt Hub</h3>
+      <p style="font-size:0.75rem; color:var(--text-secondary); text-align:center; margin-bottom:2rem;">OCR automation or professional manual batching.</p>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
         <button onclick="triggerScanSource('camera')"
-          style="background:var(--accent); color:white; border:none; padding:1.5rem; border-radius:1.5rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:pointer;">
-          <i data-lucide="camera" style="width:32px; height:32px;"></i>
-          <span style="font-weight:700; font-size:0.875rem;">Take Photo</span>
+          style="background:var(--accent); color:white; border:none; padding:1.25rem; border-radius:1.5rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:pointer;">
+          <i data-lucide="camera" style="width:28px; height:28px;"></i>
+          <span style="font-weight:700; font-size:0.8rem;">Snapshot</span>
         </button>
         <button onclick="triggerScanSource('gallery')"
-          style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border); padding:1.5rem; border-radius:1.5rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:pointer;">
-          <i data-lucide="image" style="width:32px; height:32px;"></i>
-          <span style="font-weight:700; font-size:0.875rem;">From Gallery</span>
+          style="background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border); padding:1.25rem; border-radius:1.5rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; cursor:pointer;">
+          <i data-lucide="image" style="width:28px; height:28px;"></i>
+          <span style="font-weight:700; font-size:0.8rem;">Gallery</span>
         </button>
       </div>
+      
+      <button onclick="triggerScanSource('manual')"
+        style="width:100%; margin-top:1rem; background:rgba(139, 92, 246, 0.1); border:1px solid var(--accent); color:var(--accent); padding:1rem; border-radius:1.25rem; display:flex; align-items:center; justify-content:center; gap:0.75rem; cursor:pointer;">
+        <i data-lucide="plus-square" style="width:20px; height:20px;"></i>
+        <span style="font-weight:800; font-size:0.875rem;">START MANUAL BATCH</span>
+      </button>
 
       <button onclick="document.getElementById('scan-choice-modal').style.display='none'"
         style="width:100%; padding:1rem; margin-top:1.5rem; background:none; border:none; color:var(--text-secondary); font-weight:600; cursor:pointer;">Cancel</button>
@@ -1326,10 +1331,13 @@
         </div>
 
         <div>
-          <label class="form-label">Itemized Breakdown</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <label class="form-label" style="margin-bottom:0;">Itemized Breakdown</label>
+            <button onclick="addManualItemRow()" style="background:var(--accent); color:white; border:none; padding:0.25rem 0.5rem; border-radius:0.5rem; font-size:0.6rem; font-weight:800; display:flex; align-items:center; gap:0.25rem;"><i data-lucide="plus" style="width:10px; height:10px;"></i> ADD ITEM</button>
+          </div>
           <div id="scan-items-list"
             style="display:flex; flex-direction:column; gap:0.5rem; max-height:300px; overflow-y:auto; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:1rem; padding:0.75rem;">
-            <p style="font-size:0.7rem; color:var(--text-secondary); text-align:center;">No items detected.</p>
+            <p style="font-size:0.7rem; color:var(--text-secondary); text-align:center;">No items added yet.</p>
           </div>
         </div>
 
@@ -1781,8 +1789,8 @@
 
     try { refreshDashboard(); } catch (e) { console.error("Dashboard Load Error:", e); }
 
-    // Scan System
-    window.startReceiptScan = () => {
+    // Scan & Batch System
+    window.openReceiptBatcher = () => {
       document.getElementById('scan-choice-modal').style.display = 'flex';
       if (window.lucide) window.lucide.createIcons();
     };
@@ -1791,8 +1799,15 @@
       document.getElementById('scan-choice-modal').style.display = 'none';
       if (source === 'camera') {
         document.getElementById('receipt-camera').click();
-      } else {
+      } else if (source === 'gallery') {
         document.getElementById('receipt-gallery').click();
+      } else if (source === 'manual') {
+        showReviewModal(null, {
+          merchant: '',
+          amount: 0,
+          date: new Date().toISOString().split('T')[0],
+          items: [{name: '', price: 0}]
+        });
       }
     };
 
@@ -1956,19 +1971,14 @@
       document.getElementById('scan-author').value = data.author || '';
       document.getElementById('scan-payment').value = data.payment || '';
 
-      // Items List rendering
-      const itemsList = document.getElementById('scan-items-list');
-      if (data.items && data.items.length > 0) {
-        itemsList.innerHTML = `<p style="font-size:0.6rem; color:var(--text-secondary); margin-bottom:0.5rem; font-weight:700;">${data.items.length} ITEMS DETECTED</p>` +
-          data.items.map((it, idx) => `
-          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding:0.4rem 0;">
-             <span style="font-size:0.75rem; font-weight:600; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${it.name}</span>
-             <span style="font-size:0.75rem; font-weight:800; color:var(--text-primary);">Rp ${it.price.toLocaleString('id-ID')}</span>
-          </div>
-        `).join('');
-      } else {
-        itemsList.innerHTML = '<p style="font-size:0.7rem; color:var(--text-secondary); text-align:center;">No items detected.</p>';
-      }
+      // Items List rendering (Editable)
+      const list = document.getElementById('scan-items-list');
+      list.innerHTML = '';
+      
+      const items = (data.items && data.items.length > 0) ? data.items : [];
+      if (items.length === 0) items.push({name: '', price: 0});
+
+      items.forEach(it => addItemToUI(it.name, it.price));
 
       // Vouchers rendering
       const voucherContainer = document.getElementById('scan-vouchers-container');
@@ -1981,10 +1991,31 @@
       }
 
       document.getElementById('review-modal').style.display = 'flex';
-      window.lastScannedData = data; // Keep for saving
+      document.getElementById('scan-preview').src = imgSrc || '';
+      window.lastScannedData = data;
+      if (window.lucide) window.lucide.createIcons();
     };
 
-    window.confirmScanSave = () => {
+    function addItemToUI(name = '', price = 0) {
+      const list = document.getElementById('scan-items-list');
+      const empty = list.querySelector('p');
+      if (empty) empty.remove();
+
+      const div = document.createElement('div');
+      div.className = 'scan-item-row';
+      div.style.cssText = 'display:grid; grid-template-columns:1fr 80px 30px; gap:0.5rem; align-items:center; border-bottom:1px solid var(--border); padding:0.5rem 0;';
+      div.innerHTML = `
+        <input type="text" class="f-input item-name" placeholder="Item name" value="${name}" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem;">
+        <input type="number" class="f-input item-price" placeholder="Price" value="${price}" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem; text-align:right;">
+        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#ef4444; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i data-lucide="trash-2" style="width:14px;"></i></button>
+      `;
+      list.appendChild(div);
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    window.addManualItemRow = () => addItemToUI();
+
+     window.confirmScanSave = () => {
       SyncHub.start('Processing Receipt', 'Creating itemized records...');
       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
       const vouchers = JSON.parse(localStorage.getItem('vouchers') || '[]');
@@ -1997,21 +2028,23 @@
       const account = document.getElementById('scan-account').value;
       const paymentInfo = document.getElementById('scan-payment').value;
 
-      // 1. If we have multiple items, save as breakdown in one transaction OR separate ones?
-      // For this app's "Recent Transactions" view, let's group them but save as one detailed record if possible,
-      // Or save individually to ensure "Item Management" works correctly.
-      // THE BETTER WAY for Analytics: Save individual items.
+      // Collect items from UI
+      const rows = document.querySelectorAll('.scan-item-row');
+      const items = Array.from(rows).map(row => ({
+        name: row.querySelector('.item-name').value || 'Unnamed Item',
+        price: parseFloat(row.querySelector('.item-price').value) || 0
+      }));
 
-      if (scanData.items && scanData.items.length > 0) {
-        scanData.items.forEach((it, idx) => {
-          const step = 20 + ((idx / scanData.items.length) * 60);
+      if (items.length > 0) {
+        items.forEach((it, idx) => {
+          const step = 20 + ((idx / items.length) * 60);
           SyncHub.update(step, `Saving item ${idx + 1}: ${it.name}...`);
 
           txs.unshift({
             id: 'TX-' + Date.now() + '-' + idx,
             name: it.name,
             merchant: merchant,
-            amount: it.price, // unit price
+            amount: it.price,
             total: it.price,
             qty: 1,
             date: date,
@@ -2019,23 +2052,24 @@
             category: 'Shopping',
             type: 'Expense',
             receipt: document.getElementById('scan-preview').src,
-            author: author || 'Scan Engine',
+            author: author || 'Batch Entry',
             accountPayment: account || (paymentInfo.includes('Card') ? 'Credit Card' : 'Cash'),
-            tags: ['Receipt Scan']
+            tags: ['Batch Receipt']
           });
         });
       } else {
-        // Fallback to single transaction
+        // Single transaction if list empty
+        const totalAmt = parseFloat(document.getElementById('scan-amount').value) || 0;
         txs.unshift({
           id: 'TX-' + Date.now(),
-          name: 'Receipt Purchase',
+          name: 'Manual Receipt',
           merchant: merchant,
-          total: parseFloat(document.getElementById('scan-amount').value) || 0,
-          amount: parseFloat(document.getElementById('scan-amount').value) || 0,
+          total: totalAmt,
+          amount: totalAmt,
           qty: 1,
           date: date,
           time: time,
-          author: author || 'Scan Engine',
+          author: author || 'Batch Entry',
           category: 'Others',
           type: 'Expense',
           receipt: document.getElementById('scan-preview').src,
