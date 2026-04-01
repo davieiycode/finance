@@ -1293,7 +1293,8 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div>
             <label class="form-label">Merchant Name</label>
-            <input type="text" id="scan-merchant" class="f-input" style="width:100%; border-radius:0.75rem;">
+            <input type="text" id="scan-merchant" class="f-input" style="width:100%; border-radius:0.75rem;" list="merchant-batch-list" placeholder="Search merchant...">
+            <datalist id="merchant-batch-list"></datalist>
           </div>
           <div>
             <label class="form-label">Transaction Date</label>
@@ -1312,14 +1313,16 @@
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div class="form-group-row" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div>
             <label class="form-label">Customer / Author</label>
-            <input type="text" id="scan-author" class="f-input" style="width:100%; border-radius:0.75rem;">
+            <input type="text" id="scan-author" class="f-input" style="width:100%; border-radius:1rem; background:var(--bg-input); border:1px solid var(--border);" list="author-batch-list" placeholder="Who paid?">
+            <datalist id="author-batch-list"></datalist>
           </div>
           <div>
-            <label class="form-label">Payment Method</label>
-            <input type="text" id="scan-payment" class="f-input" style="width:100%; border-radius:0.75rem;">
+            <label class="form-label">Payment Account</label>
+            <input type="text" id="scan-payment" class="f-input" style="width:100%; border-radius:1rem; background:var(--bg-input); border:1px solid var(--border);" list="payment-batch-list" placeholder="Which account?">
+            <datalist id="payment-batch-list"></datalist>
           </div>
         </div>
 
@@ -2003,15 +2006,86 @@
 
       const div = document.createElement('div');
       div.className = 'scan-item-row';
-      div.style.cssText = 'display:grid; grid-template-columns:1fr 80px 30px; gap:0.5rem; align-items:center; border-bottom:1px solid var(--border); padding:0.5rem 0;';
+      div.style.cssText = 'display:grid; grid-template-columns:1fr 100px 70px 30px; gap:0.5rem; align-items:center; border-bottom:1px solid var(--border); padding:0.5rem 0;';
+      
+      const rowId = 'row-' + Date.now() + Math.random();
+      div.id = rowId;
+
       div.innerHTML = `
-        <input type="text" class="f-input item-name" placeholder="Item name" value="${name}" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem;">
-        <input type="number" class="f-input item-price" placeholder="Price" value="${price}" style="background:none; border:none; padding:0; height:auto; font-size:0.75rem; text-align:right;">
-        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#ef4444; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i data-lucide="trash-2" style="width:14px;"></i></button>
+        <div style="position:relative;">
+          <input type="text" class="f-input item-name" list="item-batch-list" placeholder="Item name" value="${name}" 
+            style="background:none; border:none; padding:0; height:auto; font-size:0.75rem; width:100%;">
+          <datalist id="item-batch-list"></datalist>
+        </div>
+        <input type="number" class="f-input item-price" placeholder="Price" value="${price}" 
+          style="background:none; border:none; padding:0; height:auto; font-size:0.75rem; text-align:right;">
+        <button onclick="scanForBatchRow('${rowId}')" style="background:var(--bg-input); border:1px solid var(--border); color:var(--text-secondary); border-radius:0.4rem; padding:0.2rem 0.4rem; font-size:0.6rem; display:flex; align-items:center; gap:0.2rem; cursor:pointer;">
+           <i data-lucide="scan-barcode" style="width:12px;"></i> SKU
+        </button>
+        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#ef4444; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <i data-lucide="trash-2" style="width:14px;"></i>
+        </button>
       `;
       list.appendChild(div);
       if (window.lucide) window.lucide.createIcons();
     }
+
+    function populateBatchDatalists() {
+       const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+       const merchants = new Set();
+       const items = new Set();
+       const accounts = new Set();
+       const authors = new Set();
+
+       txs.forEach(t => {
+         if (t.merchant) merchants.add(t.merchant);
+         if (t.name) items.add(t.name);
+         if (t.author) authors.add(t.author);
+         [t.accountPayment, t.accountReceived].forEach(a => { if (a) accounts.add(a); });
+       });
+
+       const fill = (id, set) => {
+         const dl = document.getElementById(id);
+         if (dl) dl.innerHTML = Array.from(set).map(v => `<option value="${v}">`).join('');
+       };
+
+       fill('merchant-batch-list', merchants);
+       fill('author-batch-list', authors);
+       fill('payment-batch-list', accounts);
+       fill('item-batch-list', items);
+    }
+
+    window.scanForBatchRow = (rowId) => {
+      window.activeBatchRow = rowId;
+      document.getElementById('reader-container').style.display = 'flex';
+      if (!window.html5QrCode) {
+        window.html5QrCode = new Html5Qrcode("reader");
+      }
+      const config = { fps: 10, qrbox: { width: 250, height: 150 } };
+      window.html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+         const row = document.getElementById(window.activeBatchRow);
+         if (row) {
+           const input = row.querySelector('.item-name');
+           input.value = decodedText;
+         }
+         stopBatchScanner();
+      }).catch(err => {
+         console.error(err);
+         stopBatchScanner();
+      });
+    };
+
+    window.stopBatchScanner = () => {
+      if (window.html5QrCode) {
+        window.html5QrCode.stop().then(() => {
+          document.getElementById('reader-container').style.display = 'none';
+        }).catch(e => {
+          document.getElementById('reader-container').style.display = 'none';
+        });
+      } else {
+        document.getElementById('reader-container').style.display = 'none';
+      }
+    };
 
     window.addManualItemRow = () => addItemToUI();
 
@@ -2437,6 +2511,7 @@
       refreshDashboard('');
       checkExpiries();
       refreshMaintenanceHub();
+      populateBatchDatalists();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     };
 
@@ -2553,6 +2628,13 @@
       `).join('');
     }
   </script>
+  <div id="reader-container" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem;">
+    <div id="reader" style="width:100%; max-width:400px; border-radius:1rem; overflow:hidden; background:white;"></div>
+    <button type="button" onclick="stopBatchScanner()" class="btn btn-secondary" style="margin-top:2rem; width:100%; max-width:400px; padding:1rem; font-weight:700; color:white; border:1px solid var(--border); background:rgba(255,255,255,0.05);">Cancel Scanning</button>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
   <div id="toast-container"
     style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; align-items: center; width: 100%; max-width: 400px; padding: 0 1rem; pointer-events: none;">
   </div>
