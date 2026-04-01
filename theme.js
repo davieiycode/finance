@@ -234,8 +234,8 @@
         const data = await res.json();
 
         let count = 0;
-        const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'membership_cards'];
-        
+        const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
+        const objectKeys = ['user_prefs']; // Keys that store objects, not arrays
         if (mode === 'overwrite') {
           if (data.status === 'success') {
             SyncHub.update(40, 'Parsing cloud data entities...');
@@ -264,43 +264,34 @@
                 
                 let remoteData = data[key];
                 if (key === 'transactions') {
-                  remoteData = remoteData.map(t => {
-                    const parseVal = (v, def = 0) => {
-                      if (v === undefined || v === null || v === '') return def;
-                      if (typeof v === 'number') return v;
-                      let s = v.toString().replace(/Rp/g, '').trim();
-                      if (s.includes(',') && s.includes('.')) {
-                        const lastComma = s.lastIndexOf(',');
-                        const lastDot = s.lastIndexOf('.');
-                        if (lastComma > lastDot) s = s.replace(/\./g, '').replace(/,/g, '.');
-                        else s = s.replace(/,/g, '');
-                      } else if (s.includes(',')) {
-                        const parts = s.split(',');
-                        if (parts[1].length === 3) s = s.replace(/,/g, '');
-                        else s = s.replace(/,/g, '.');
-                      }
-                      return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
-                    };
+                  const sanitizeNum = (v, def = 0) => {
+                    if (v === undefined || v === null || v === '') return def;
+                    if (typeof v === 'number') return v;
+                    let s = v.toString().replace(/Rp/g, '').trim();
+                    return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
+                  };
+                  const sanitizeArr = (v) => {
+                    if (Array.isArray(v)) return v;
+                    if (typeof v === 'string') return v.split(',').map(s => s.trim()).filter(s => s);
+                    return [];
+                  };
 
-                    const q = parseVal(t.qty, 1);
-                    const d = parseVal(t.discount, 0);
-                    const f = parseVal(t.fee, 0);
-                    const ex = parseVal(t.exchangeRate, 1);
-                    const unitPrice = parseVal(t.amount, 0);
+                  remoteData = remoteData.map(t => {
+                    t.total = sanitizeNum(t.total ?? t.amount);
+                    t.amount = sanitizeNum(t.amount);
+                    t.qty = sanitizeNum(t.qty, 1);
+                    t.discount = sanitizeNum(t.discount);
+                    t.fee = sanitizeNum(t.fee);
+                    t.exchangeRate = sanitizeNum(t.exchangeRate, 1);
+                    t.xp = sanitizeNum(t.xp, 10);
+                    t.tags = sanitizeArr(t.tags);
+                    t.projects = sanitizeArr(t.projects);
                     t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
-                    const calcTotal = ((q * unitPrice) - d + f) * ex;
-                    t.total = (t.total !== undefined) ? parseVal(t.total) : calcTotal;
-                    t.total = isNaN(t.total) ? 0 : t.total;
-                    t.amount = unitPrice;
-                    t.qty = q;
-                    t.discount = d;
-                    t.fee = f;
-                    t.exchangeRate = ex;
                     return t;
                   });
                   count = remoteData.length;
                 }
-                localStorage.setItem(key, JSON.stringify(remoteData));
+                localStorage.setItem(key, typeof remoteData === 'string' ? remoteData : JSON.stringify(remoteData));
                 processedKeys++;
               }
             });
@@ -371,7 +362,8 @@
     push: async (url) => {
       SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
       try {
-        const keys = ['transactions', 'accounts', 'merchants', 'items', 'budgets', 'goals', 'membership_cards'];
+        const keys = ['transactions', 'accounts', 'merchants', 'items', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
+        const objectKeys = ['user_prefs'];
         const payload = { updateTime: new Date().toISOString() };
         
         let processedKeys = 0;
@@ -380,7 +372,12 @@
         keys.forEach(key => {
           const stepLoad = (processedKeys / totalKeys) * 35; // First 35% is gathering
           SyncHub.update(stepLoad, `Gathering ${key}...`);
-          payload[key] = JSON.parse(localStorage.getItem(key) || '[]');
+          const raw = localStorage.getItem(key);
+          if (objectKeys.includes(key)) {
+            payload[key] = JSON.parse(raw || '{}');
+          } else {
+            payload[key] = JSON.parse(raw || '[]');
+          }
           processedKeys++;
         });
 

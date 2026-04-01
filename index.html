@@ -1011,6 +1011,9 @@
         }
       });
 
+      // 2. UNCLEARED OLD RECORDS
+      const uncleared = txs.filter(t => t.cleared === false && (t.date || '').slice(0, 7) < currentMonth);
+
       // 3. CLEANUP SUGGESTIONS
       const dashboardMerges = document.getElementById('merge-center');
       const cleanupCount = dashboardMerges ? dashboardMerges.children.length : 0;
@@ -1539,21 +1542,6 @@
           }
         </style>
 
-        <label class="form-label" style="margin-top: 0.5rem;">Accent Color</label>
-        <div class="color-row">
-          <div class="color-bubble custom" id="custom-color-bubble"
-            onclick="document.getElementById('custom-color').click()">
-            <i data-lucide="more-horizontal" style="color:white; width:20px;"></i>
-          </div>
-          <div class="color-bubble active" style="background:#8b5cf6;" onclick="setAccent('#8b5cf6', this)"></div>
-          <div class="color-bubble" style="background:#3b82f6;" onclick="setAccent('#3b82f6', this)"></div>
-          <div class="color-bubble" style="background:#10b981;" onclick="setAccent('#10b981', this)"></div>
-          <div class="color-bubble" style="background:#ef4444;" onclick="setAccent('#ef4444', this)"></div>
-          <div class="color-bubble" style="background:#f59e0b;" onclick="setAccent('#f59e0b', this)"></div>
-          <input type="color" id="custom-color" style="display:none;"
-            oninput="setAccent(this.value, document.getElementById('custom-color-bubble'))">
-        </div>
-
         <div>
           <label style="font-size:0.7rem; color:var(--text-secondary); font-weight:700; text-transform:uppercase;">FULL
             NAME</label><input type="text" id="pref-name"
@@ -1764,6 +1752,21 @@
             </div>
             <span style="font-size:0.7rem; color:var(--text-secondary); font-weight:700;">Neon</span>
           </div>
+        </div>
+
+        <label class="form-label" style="margin-top: 0.5rem;">Accent Color</label>
+        <div class="color-row">
+          <div class="color-bubble custom" id="custom-color-bubble"
+            onclick="document.getElementById('custom-color').click()">
+            <i data-lucide="more-horizontal" style="color:white; width:20px;"></i>
+          </div>
+          <div class="color-bubble active" style="background:#8b5cf6;" onclick="setAccent('#8b5cf6', this)"></div>
+          <div class="color-bubble" style="background:#3b82f6;" onclick="setAccent('#3b82f6', this)"></div>
+          <div class="color-bubble" style="background:#10b981;" onclick="setAccent('#10b981', this)"></div>
+          <div class="color-bubble" style="background:#ef4444;" onclick="setAccent('#ef4444', this)"></div>
+          <div class="color-bubble" style="background:#f59e0b;" onclick="setAccent('#f59e0b', this)"></div>
+          <input type="color" id="custom-color" style="display:none;"
+            oninput="setAccent(this.value, document.getElementById('custom-color-bubble'))">
         </div>
 
         <label class="form-label">Corners Intensity</label>
@@ -2304,12 +2307,26 @@ function doPost(e) {
     function refreshDashboard(query = '') {
       let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
 
-      // Migration: Convert old structure (amount=Total, price=UnitPrice) to new (total=Total, amount=UnitPrice)
+      // Migration & Sanitization: Ensure all fields have the correct types (numbers and arrays)
       txs = txs.map(t => {
-        if (t.total === undefined && t.amount !== undefined) {
-          t.total = t.amount;
-          t.amount = t.price || (t.total / (t.qty || 1));
-        }
+        const parseF = (v, def = 0) => {
+          if (v === undefined || v === null || v === '') return def;
+          if (typeof v === 'number') return v;
+          let s = v.toString().replace(/Rp/g, '').trim();
+          return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
+        };
+        const parseA = (v) => {
+          if (Array.isArray(v)) return v;
+          if (typeof v === 'string') return v.split(',').map(s => s.trim()).filter(s => s);
+          return [];
+        };
+
+        t.total = parseF(t.total ?? t.amount);
+        t.amount = parseF(t.amount);
+        t.qty = parseF(t.qty, 1);
+        t.xp = parseF(t.xp, 10);
+        t.tags = parseA(t.tags);
+        t.projects = parseA(t.projects);
         return t;
       });
 
@@ -3444,14 +3461,22 @@ function doPost(e) {
         theme: tempTheme,
         color: tempAccent,
         radius: tempRadius,
-        pin: document.getElementById('pref-pin-toggle').checked,
+        pin: document.getElementById('pref-pin-toggle') ? document.getElementById('pref-pin-toggle').checked : false,
         avatar: selectedAvatar
       };
       localStorage.setItem('user_prefs', JSON.stringify(prefs));
       localStorage.setItem('pin_enabled', prefs.pin);
       document.getElementById('p-sub-user').innerText = prefs.name || 'User';
       document.getElementById('p-sub-prefs').innerText = `${prefs.theme.charAt(0).toUpperCase() + prefs.theme.slice(1)} Aesthetic`;
-      showPView('main', 'Settings');
+      
+      // Auto-cloud sync for preferences
+      const cloudUrl = localStorage.getItem('cloud_sheet_url');
+      if (cloudUrl) {
+        if (typeof showToast === 'function') showToast('Settings saved & syncing to cloud...', 'info', 'cloud');
+        window.CloudSync.push(cloudUrl).catch(e => console.error('Cloud Prefs Sync failed:', e));
+      } else {
+        showPView('main', 'Settings');
+      }
     };
 
     let selectedAvatar = '👤';

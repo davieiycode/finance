@@ -184,10 +184,23 @@
       let allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
       
       allTxs = allTxs.map(t => {
-        if (t.total === undefined && t.amount !== undefined) {
-          t.total = t.amount;
-          t.amount = t.price || (t.total / (t.qty || 1));
-        }
+        const parseF = (v, def = 0) => {
+          if (v === undefined || v === null || v === '') return def;
+          if (typeof v === 'number') return v;
+          let s = v.toString().replace(/Rp/g, '').trim();
+          return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
+        };
+        const parseA = (v) => {
+          if (Array.isArray(v)) return v;
+          if (typeof v === 'string') return v.split(',').map(s => s.trim()).filter(s => s);
+          return [];
+        };
+
+        t.total = parseF(t.total ?? t.amount);
+        t.amount = parseF(t.amount);
+        t.qty = parseF(t.qty, 1);
+        t.tags = parseA(t.tags);
+        t.projects = parseA(t.projects);
         return t;
       });
       
