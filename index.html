@@ -2008,6 +2008,7 @@
       div.innerHTML = `
         <div style="display:grid; grid-template-columns:1fr 80px 30px; gap:0.55rem; align-items:center;">
           <input type="text" class="f-input item-name" list="item-batch-list" placeholder="Product Name" value="${name}" 
+            onchange="checkItemAutoFill(this)" oninput="checkItemAutoFill(this)"
             style="background:none; border:none; padding:0; height:auto; font-size:0.85rem; font-weight:700; color:var(--text-primary);">
           <button onclick="scanForBatchRow('${rowId}')" style="background:var(--bg-input); border:1px solid var(--border); color:var(--accent); border-radius:0.4rem; padding:0.3rem; display:flex; align-items:center; justify-content:center; cursor:pointer;">
              <i data-lucide="scan-barcode" style="width:14px;"></i>
@@ -2064,12 +2065,26 @@
        const items = new Set();
        const accounts = new Set();
        const authors = new Set();
+       
+       // Metadata map for auto-fill
+       window.BATCH_ITEM_META = {};
 
        txs.forEach(t => {
+         const name = t.name || t.Item;
          if (t.merchant) merchants.add(t.merchant);
-         if (t.name) items.add(t.name);
          if (t.author) authors.add(t.author);
          [t.accountPayment, t.accountReceived].forEach(a => { if (a) accounts.add(a); });
+         
+         if (name) {
+           items.add(name);
+           // Store latest metadata if not already present (since we unshift, the first encounter is the newest)
+           if (!window.BATCH_ITEM_META[name]) {
+             window.BATCH_ITEM_META[name] = {
+               scale: t.scale || 'pcs',
+               price: t.amount || 0
+             };
+           }
+         }
        });
 
        const fill = (id, set) => {
@@ -2081,6 +2096,20 @@
        fill('author-batch-list', authors);
        fill('payment-batch-list', accounts);
        fill('item-batch-list', items);
+    }
+
+    function checkItemAutoFill(inputEl) {
+       const row = inputEl.closest('.scan-item-row');
+       if (!row || !window.BATCH_ITEM_META) return;
+       const name = inputEl.value;
+       const meta = window.BATCH_ITEM_META[name];
+       if (meta) {
+          const scaleInp = row.querySelector('.item-scale');
+          const priceInp = row.querySelector('.item-price');
+          if (scaleInp && (!scaleInp.value || scaleInp.value === 'pcs')) scaleInp.value = meta.scale;
+          if (priceInp && (!priceInp.value || priceInp.value === '0')) priceInp.value = meta.price;
+          recalculateBatchTotal();
+       }
     }
 
     window.scanForBatchRow = (rowId) => {
