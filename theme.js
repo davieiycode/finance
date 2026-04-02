@@ -394,6 +394,10 @@
               t.projects = sanitizeArr(t.projects);
               t.cleared = (t.cleared === true || t.cleared === 'TRUE' || t.cleared === 'Yes');
               
+              // Robust extraction for Merchant and Author to avoid missing data from spreadsheet variations
+              t.merchant = t.merchant || t.Merchant || rawT['Merchant'] || rawT['merchant'] || rawT['Merchant Name'] || '-';
+              t.author = t.author || t.Author || rawT['Author'] || rawT['author'] || rawT['Kreator'] || '-';
+              
               // Generate Derived Fields if missing
               if (t.date && !t.year) {
                 const dateObj = new Date(t.date);
