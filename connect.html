@@ -208,7 +208,7 @@
       </div>
 
       <button id="gallery-btn"
-        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; color: var(--text-primary); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: 0.3s;">
+        style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; color: var(--text-primary); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: 0.3s; position: relative; z-index: 50; pointer-events: auto;">
         <i data-lucide="image" style="width: 18px;"></i>
         <span>Scan from Gallery</span>
       </button>
@@ -224,18 +224,29 @@
   <div id="toast-container" style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 0.75rem; align-items: center; width: 100%; max-width: 400px; padding: 0 1rem; pointer-events: none;"></div>
 
   <script>
+    const APP_VERSION = 'v2.6.0';
+    const BUILD_DATE = 'Apr 02, 2026 00:12';
+    
+    // 1. Initial UI Logic
     lucide.createIcons();
-
-    const html5QrCode = new Html5Qrcode("reader");
-
     const qrFileInput = document.getElementById('qr-file-input');
     const galleryBtn = document.getElementById('gallery-btn');
 
-    const APP_VERSION = 'v2.6.0';
-    const BUILD_DATE = 'Apr 02, 2026 00:12';
+    // Attach Gallery Listener Immediately
+    if (galleryBtn && qrFileInput) {
+      galleryBtn.addEventListener('click', () => {
+        console.log("Gallery button clicked");
+        qrFileInput.click();
+      });
+    }
+
+    // 2. QR Scanner Logic
+    let html5QrCode = null;
+    const qrConfig = { fps: 15, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 };
 
     async function onScanSuccess(decodedText) {
       decodedText = decodedText.trim();
+      console.log("QR Decoded:", decodedText);
 
       // Check if it's direct JSON Ledger Data
       if (decodedText.startsWith('{') && (decodedText.includes('transactions') || decodedText.includes('items'))) {
@@ -251,7 +262,7 @@
           localStorage.setItem('last_version_sync', APP_VERSION);
 
           if (window.SyncHub) window.SyncHub.start('Restoring Ledger', `Extracting JSON data (${APP_VERSION})...`);
-          if (typeof showToast === 'function') showToast(`Ledger restored (${APP_VERSION})!`, 'success', 'database-backup');
+          if (window.showToast) window.showToast(`Ledger restored (${APP_VERSION})!`, 'success', 'database-backup');
 
           setTimeout(() => {
             window.location.href = 'index.html';
@@ -264,59 +275,82 @@
 
       const scriptUrl = decodedText;
       if (!scriptUrl.startsWith('http')) {
-        if (typeof showToast === 'function') showToast('Invalid QR Code content.', 'error', 'alert-circle');
+        console.warn("Invalid content scanned:", scriptUrl);
+        if (window.showToast) window.showToast('Invalid QR Code. Please scan a valid ledger URL.', 'error', 'alert-circle');
         return;
       }
 
-      // 1. Stop scanning if active
-      try { await html5QrCode.stop(); } catch (e) { }
+      // Stop scanning if active
+      if (html5QrCode) {
+        try { await html5QrCode.stop(); } catch (e) { }
+      }
 
-      // 3. Save URL & Version
       localStorage.setItem('cloud_sheet_url', scriptUrl);
       localStorage.setItem('app_version', APP_VERSION);
       localStorage.setItem('last_version_sync', APP_VERSION);
 
       try {
-        // 4. Pull data from cloud using global engine (Overwrite on first connect)
         if (window.SyncHub) window.SyncHub.start('Cloud Connection', `Contacting ledger server (${APP_VERSION})...`);
         const count = await window.CloudSync.pull(scriptUrl, 'overwrite');
 
         if (count >= 0) {
-          if (typeof showToast === 'function') showToast(`Synced Successfully (${APP_VERSION})!`, 'success', 'cloud-check');
+          if (window.showToast) window.showToast(`Synced Successfully (${APP_VERSION})!`, 'success', 'cloud-check');
           setTimeout(() => {
             window.location.href = 'index.html';
           }, 800);
         }
       } catch (err) {
         console.error("Initial Sync Failed:", err);
-        if (typeof showToast === 'function') showToast('Sync Failed. Check URL or script settings.', 'error');
-        setTimeout(() => location.reload(), 2000);
+        if (window.showToast) window.showToast('Sync Failed. Check URL or script settings.', 'error');
+        setTimeout(() => location.reload(), 2500);
       }
     }
 
-    // Camera Start
-    html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
-      .catch(err => {
-        console.warn("Camera start failed, probably waiting for user to pick file or permission denied.");
-      });
-
-    // Gallery Scan Logic
-    galleryBtn.addEventListener('click', () => qrFileInput.click());
-
-    qrFileInput.addEventListener('change', async (e) => {
-      if (e.target.files.length === 0) return;
-
-      const file = e.target.files[0];
+    // Camera Start Initialization
+    function initCamera() {
       try {
-        if (typeof showToast === 'function') showToast('Menganalisa gambar...', 'info', 'loader-2');
-
-        const decodedText = await html5QrCode.scanFile(file, true);
-        onScanSuccess(decodedText);
+        if (typeof Html5Qrcode === 'undefined') {
+          console.error("Html5Qrcode not defined");
+          if (window.showToast) window.showToast('Scanner library not loaded. Check connection.', 'error');
+          return;
+        }
+        
+        if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+        
+        html5QrCode.start({ facingMode: "environment" }, qrConfig, onScanSuccess)
+          .catch(err => {
+            console.warn("Camera start failed:", err);
+            // Don't show toast automatically as it might be annoying on desktop
+          });
       } catch (err) {
-        console.error("QR Scan Error:", err);
-        if (typeof showToast === 'function') showToast('Gagal mendeteksi QR code dari gambar.', 'error', 'alert-circle');
+        console.error("Scanner init error:", err);
       }
-    });
+    }
+
+    // Gallery Scan Change Handler
+    if (qrFileInput) {
+      qrFileInput.addEventListener('change', async (e) => {
+        if (e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        try {
+          if (window.showToast) window.showToast('Menganalisa gambar...', 'info', 'loader-2');
+          
+          if (!html5QrCode) {
+            if (typeof Html5Qrcode === 'undefined') throw new Error("Library not ready");
+            html5QrCode = new Html5Qrcode("reader");
+          }
+
+          const decodedText = await html5QrCode.scanFile(file, true);
+          onScanSuccess(decodedText);
+        } catch (err) {
+          console.error("QR Scan Error:", err);
+          if (window.showToast) window.showToast('Gagal mendeteksi QR code. Pastikan gambar jelas.', 'error', 'alert-circle');
+        }
+      });
+    }
+
+    // Delay start slightly
+    setTimeout(initCamera, 1000);
   </script>
 </body>
 
