@@ -376,30 +376,28 @@
       const tagChart = getEChart('tagsChart');
       if (tagChart) {
         if (analysisMode === 'monthly') {
-          // Requirement: Monthly Tag Analysis -> Stacked Bar (Compare current + last 5 months)
-          const months = [];
-          for (let i = 5; i >= 0; i--) {
-            const d = new Date(activeDate.getFullYear(), activeDate.getMonth() - i, 1);
-            months.push(d.toISOString().substring(0, 7));
-          }
-          const { monthMap, allItems } = getMultiMonthData(allTxs, months[0], months[5], 'tags');
+          // Requirement: Monthly Tag Analysis -> Bar Chart (Current month's tags)
+          const data = tagDataSummary.length ? tagDataSummary : [{ name: 'No Data', value: 0 }];
           
-          const series = allItems.map((tg, idx) => ({
-            name: tg, type: 'bar', stack: 'total',
-            label: { show: false },
-            emphasis: { focus: 'series' },
-            data: months.map(m => (monthMap[m] ? monthMap[m][tg] || 0 : 0))
-          }));
-
           tagChart.setOption({
             backgroundColor: 'transparent',
             tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            legend: { show: false },
-            grid: { top: '10%', bottom: '15%', left: '15%', right: '5%' },
-            xAxis: { type: 'category', data: months.map(m => m.split('-')[1] + '/' + m.split('-')[0].substring(2)), axisLabel: { color: '#94a3b8', fontSize: 10 } },
-            yAxis: { type: 'value', axisLabel: { color: '#94a3b8', fontSize: 10, formatter: v => v > 1000 ? (v/1000).toLocaleString() + 'k' : v } },
-            series: series.length ? series : [{ type: 'bar', data: [0] }],
-            color: colors
+            grid: { top: '10%', bottom: '15%', left: '20%', right: '5%' },
+            xAxis: { type: 'value', axisLabel: { color: '#94a3b8', fontSize: 10, formatter: v => v > 1000 ? (v/1000).toLocaleString() + 'k' : v } },
+            yAxis: { type: 'category', data: data.map(d => d.name), axisLabel: { color: '#94a3b8', fontSize: 10 } },
+            series: [{
+              name: 'Spending',
+              type: 'bar',
+              data: data.map(d => d.value),
+              itemStyle: { 
+                borderRadius: [0, 4, 4, 0],
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                  { offset: 0, color: '#10b981' },
+                  { offset: 1, color: '#34d399' }
+                ])
+              },
+              label: { show: true, position: 'right', color: '#fff', fontSize: 10, formatter: params => fmt(params.value) }
+            }]
           }, true);
         } else {
           // Requirement: Yearly Tag Analysis -> Line Chart (Tren Jan-Dec)
@@ -430,93 +428,49 @@
       const projChart = getEChart('projectsChart');
       if (projChart) {
         if (analysisMode === 'monthly') {
-          // Requirement: Monthly Project Analysis -> Gauge/Bullet (Current Month % Budget)
-          // Since ECharts Gauge is best for single value, we'll pick the most spent project or show a simplified overview
-          // For premium look, let's show a Gauge for the TOP project and a summary.
-          const topProj = projDataSummary[0] || { name: 'No Project', value: 0 };
-          
-          // Budget lookup logic
-          const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
-          const goals = JSON.parse(localStorage.getItem('goals') || '[]');
-          const findBudget = (name) => {
-            const b = budgets.find(x => x.category === name);
-            if (b) return b.limit;
-            const g = goals.find(x => x.name === name);
-            if (g) return g.target;
-            return 10000000; // Default 10M
-          };
-          
-          const target = findBudget(topProj.name);
-          const perc = Math.min(Math.round((topProj.value / target) * 100), 100);
+          // Requirement: Monthly Project Analysis -> Bar Chart (Compare all projects in current month)
+          const data = projDataSummary.length ? projDataSummary : [{ name: 'No Data', value: 0 }];
           
           projChart.setOption({
             backgroundColor: 'transparent',
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            grid: { top: '10%', bottom: '15%', left: '20%', right: '5%' },
+            xAxis: { type: 'value', axisLabel: { color: '#94a3b8', fontSize: 10, formatter: v => v > 1000 ? (v/1000).toLocaleString() + 'k' : v } },
+            yAxis: { type: 'category', data: data.map(d => d.name), axisLabel: { color: '#94a3b8', fontSize: 10 } },
             series: [{
-              type: 'gauge',
-              center: ['50%', '60%'],
-              startAngle: 180, endAngle: 0,
-              min: 0, max: 100,
-              progress: { show: true, width: 18, itemStyle: { color: '#10b981' } },
-              axisLine: { lineStyle: { width: 18, color: [[1, 'rgba(255,255,255,0.05)']] } },
-              axisTick: { show: false }, axisLabel: { show: false }, splitLine: { show: false },
-              pointer: { show: false },
-              anchor: { show: false },
-              title: { offsetCenter: [0, '20%'], fontSize: 14, color: '#94a3b8', fontWeight: 600 },
-              detail: { valueAnimation: true, offsetCenter: [0, '-10%'], fontSize: 32, fontWeight: 800, color: '#fff', formatter: '{value}%' },
-              data: [{ value: perc, name: topProj.name.substring(0, 15) }]
+              name: 'Spending',
+              type: 'bar',
+              data: data.map(d => d.value),
+              itemStyle: { 
+                borderRadius: [0, 4, 4, 0],
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                  { offset: 0, color: '#8b5cf6' },
+                  { offset: 1, color: '#c084fc' }
+                ])
+              },
+              label: { show: true, position: 'right', color: '#fff', fontSize: 10, formatter: params => fmt(params.value) }
             }]
           }, true);
         } else {
-          // Requirement: Yearly Project Analysis -> Sunburst/Treemap (Composition vs Total Year)
-          // Root = Year Total, First Tier = Categories/Projects
-          const yearTotal = allTxs.filter(t => t.type === 'Expense' && (t.date || '').startsWith(activeDate.getFullYear().toString()))
-                                .reduce((s,t) => s + (t.total || 0), 0);
+          // Requirement: Yearly Project Analysis -> Stacked Bar (Projects monthly trend)
+          const months = Array.from({length: 12}, (_, i) => `${activeDate.getFullYear()}-${String(i + 1).padStart(2, '0')}`);
+          const { monthMap, allItems } = getMultiMonthData(allTxs, months[0], months[11], 'projects');
           
-          // Data structure for Sunburst
-          const dataForSunburst = [];
+          const series = allItems.map((pj, idx) => ({
+            name: pj, type: 'bar', stack: 'total',
+            emphasis: { focus: 'series' },
+            data: months.map(m => (monthMap[m] ? monthMap[m][pj] || 0 : 0))
+          }));
           
-          // Add Projects
-          const projYearMap = {};
-          allTxs.filter(t => t.type === 'Expense' && (t.date || '').startsWith(activeDate.getFullYear().toString()))
-                .forEach(t => {
-                   (t.projects || []).forEach(pj => { if(pj) projYearMap[pj] = (projYearMap[pj] || 0) + (t.total || 0); });
-                });
-          
-          Object.entries(projYearMap).forEach(([name, val], i) => {
-            dataForSunburst.push({
-              name: 'Project: ' + name,
-              value: val,
-              itemStyle: { color: colors[i % colors.length] }
-            });
-          });
-          
-          // Add Other Spending (not in any project)
-          const nonProjTotal = yearTotal - Object.values(projYearMap).reduce((s,v) => s+v, 0);
-          if (nonProjTotal > 0) {
-            dataForSunburst.push({
-              name: 'Other Expenses',
-              value: nonProjTotal,
-              itemStyle: { color: 'rgba(255,255,255,0.1)' }
-            });
-          }
-
           projChart.setOption({
             backgroundColor: 'transparent',
-            series: [{
-              type: 'sunburst',
-              data: [{
-                name: 'Yearly Total',
-                children: dataForSunburst
-              }],
-              radius: [0, '90%'],
-              label: { rotate: 'radial', color: '#fff', fontSize: 10 },
-              itemStyle: { borderRadius: 8, borderWidth: 2, borderColor: '#000' },
-              levels: [
-                {},
-                { r0: '0%', r: '35%', itemStyle: { color: 'rgba(139, 92, 246, 0.2)' }, label: { rotate: '0', fontSize: 12, fontWeight: 700 } },
-                { r0: '35%', r: '70%', label: { rotate: 'radial', fontSize: 10 } }
-              ]
-            }]
+            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+            legend: { show: false },
+            grid: { top: '10%', bottom: '15%', left: '15%', right: '5%' },
+            xAxis: { type: 'category', data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], axisLabel: { color: '#94a3b8', fontSize: 10 } },
+            yAxis: { type: 'value', axisLabel: { color: '#94a3b8', fontSize: 10, formatter: v => v > 1000 ? (v/1000).toLocaleString() + 'k' : v } },
+            series: series.length ? series : [{ type: 'bar', data: months.map(() => 0) }],
+            color: colors
           }, true);
         }
       }

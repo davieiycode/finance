@@ -33,21 +33,37 @@
     .filter-panel { padding: 1.25rem; background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.25rem; margin-top: 1rem; display: none; flex-direction: column; gap: 1rem; }
     
     .date-group-header {
-      font-size: 0.7rem;
-      font-weight: 700;
+      font-size: 0.725rem;
+      font-weight: 800;
       color: var(--text-secondary);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin: 1.5rem 0 0.75rem 0.5rem;
+      letter-spacing: 0.08em;
+      margin: 2rem 0.5rem 1rem 0.5rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 1rem;
     }
-    .date-group-header::after {
-      content: '';
+    
+    .date-group-header .date-text {
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    .date-group-header .header-line {
       flex: 1;
       height: 1px;
       background: linear-gradient(to right, var(--border), transparent);
+      opacity: 0.5;
+    }
+
+    .date-group-header .daily-total {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      letter-spacing: 0;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 2px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
     }
     
     /* Swipe Gestures */
@@ -123,18 +139,40 @@
         </div>
       </header>
 
-      <div id="filter-panel" class="filter-panel" style="padding: 1.25rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1.25rem; margin-top: 1rem; display: none; flex-direction: column; gap: 1rem;">
+      <div id="filter-panel" class="filter-panel" style="padding: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 1.5rem; margin-top: 1rem; display: none; flex-direction: column; gap: 1.25rem; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div>
-               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; display: block; letter-spacing: 0.05em;">From</label>
-               <input type="date" class="search-bar" id="filter-date-from" style="padding: 0.65rem 0.8rem; font-size: 0.8125rem; width: 100%;" onclick="this.showPicker()">
+               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block; letter-spacing: 0.08em;">From Date</label>
+               <input type="date" class="search-bar" id="filter-date-from" style="padding: 0.75rem; font-size: 0.875rem; width: 100%;" onclick="this.showPicker()">
             </div>
             <div>
-               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; display: block; letter-spacing: 0.05em;">To</label>
-               <input type="date" class="search-bar" id="filter-date-to" style="padding: 0.65rem 0.8rem; font-size: 0.8125rem; width: 100%;" onclick="this.showPicker()">
+               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block; letter-spacing: 0.08em;">To Date</label>
+               <input type="date" class="search-bar" id="filter-date-to" style="padding: 0.75rem; font-size: 0.875rem; width: 100%;" onclick="this.showPicker()">
             </div>
          </div>
-         <button id="apply-filter" class="btn btn-primary" style="padding: 0.75rem; font-weight: 700; border-radius: 0.75rem; width: 100%; background: var(--accent); color: white; border: none; cursor: pointer;">Apply Filter</button>
+         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block; letter-spacing: 0.08em;">Type</label>
+               <select id="filter-type" class="search-bar" style="padding: 0.75rem; font-size: 0.875rem; width: 100%; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23888%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem;">
+                  <option value="">All Types</option>
+                  <option value="Expense">Expense</option>
+                  <option value="Income">Income</option>
+                  <option value="Transfer">Transfer</option>
+               </select>
+            </div>
+            <div>
+               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block; letter-spacing: 0.08em;">Status</label>
+               <select id="filter-status" class="search-bar" style="padding: 0.75rem; font-size: 0.875rem; width: 100%; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23888%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem;">
+                  <option value="">All Status</option>
+                  <option value="cleared">Cleared</option>
+                  <option value="uncleared">Uncleared</option>
+               </select>
+            </div>
+         </div>
+         <div style="display: flex; gap: 1rem;">
+            <button id="reset-filter" class="btn btn-secondary" style="flex: 1; padding: 0.75rem; font-weight: 800; border-radius: 1rem; border: 1px solid var(--border); cursor: pointer;">Reset</button>
+            <button id="apply-filter" class="btn btn-primary" style="flex: 2; padding: 0.75rem; font-weight: 800; border-radius: 1rem; background: var(--accent); color: white; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);">Apply Filters</button>
+         </div>
       </div>
 
       <div id="history-search-container" style="position: relative; display: none; transform-origin: top; animation: slideInSearch 0.3s ease-out; margin-top: 1rem;">
@@ -309,13 +347,34 @@
         return dtB.localeCompare(dtA);
       });
 
+      // Calculate totals per date
+      const dateTotals = {};
+      sorted.forEach(t => {
+        if (!t.date) return;
+        if (!dateTotals[t.date]) dateTotals[t.date] = 0;
+        if (t.type === 'Expense') dateTotals[t.date] -= (t.total || 0);
+        else if (t.type === 'Income') dateTotals[t.date] += (t.total || 0);
+        // ignore transfers etc... just show net cash flow
+      });
+
       let lastDate = null;
       
       sorted.forEach(t => {
         if (t.date !== lastDate) {
           const header = document.createElement('div');
           header.className = 'date-group-header';
-          header.innerText = formatDateHeader(t.date);
+          
+          const totalVal = dateTotals[t.date] || 0;
+          const totalColor = totalVal < 0 ? '#ef4444' : (totalVal > 0 ? '#10b981' : 'var(--text-secondary)');
+          const totalStr = (totalVal < 0 ? '-' : (totalVal > 0 ? '+' : '')) + 'Rp ' + Math.abs(totalVal).toLocaleString('id-ID');
+
+          header.innerHTML = `
+            <span class="date-text">${formatDateHeader(t.date)}</span>
+            <div class="header-line"></div>
+            <div class="daily-total" style="color: ${totalColor}; border-color: ${totalVal !== 0 ? totalColor + '44' : 'var(--border)'}; background: ${totalVal !== 0 ? totalColor + '11' : 'rgba(255,255,255,0.03)'};">
+              ${totalStr}
+            </div>
+          `;
           transactionList.appendChild(header);
           lastDate = t.date;
         }
@@ -583,30 +642,64 @@
     };
 
     document.getElementById('filter-toggle').onclick = () => {
-       const panel = document.getElementById('filter-panel');
-       panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+      const panel = document.getElementById('filter-panel');
+      panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+    };
+
+    document.getElementById('apply-filter').onclick = () => {
+      const from = document.getElementById('filter-date-from').value;
+      const to = document.getElementById('filter-date-to').value;
+      const type = document.getElementById('filter-type').value;
+      const status = document.getElementById('filter-status').value;
+      const query = searchInput.value.toLowerCase();
+      
+      let filtered = [...mainTxs];
+      
+      if (from) filtered = filtered.filter(t => t.date >= from);
+      if (to) filtered = filtered.filter(t => t.date <= to);
+      if (type) filtered = filtered.filter(t => (t.type || '').toLowerCase() === type.toLowerCase());
+      if (status) {
+        if (status === 'cleared') filtered = filtered.filter(t => t.cleared !== false);
+        else filtered = filtered.filter(t => t.cleared === false);
+      }
+      
+      if (query) {
+        filtered = filtered.filter(t => {
+          const pool = [
+            t.name, t.merchant, t.category, t.type, t.description, t.author,
+            t.accountPayment, t.accountReceived,
+            ...(t.tags || []), ...(t.projects || []),
+            (t.cleared ? 'cleared' : 'uncleared')
+          ].map(s => (s || '').toLowerCase());
+          return pool.some(s => s.includes(query));
+        });
+      }
+      
+      renderList(filtered);
+      document.getElementById('filter-panel').style.display = 'none';
+      if(typeof showToast === 'function') {
+        showToast(`Filter applied: ${filtered.length} results`, 'success', 'filter');
+      }
+    };
+
+    document.getElementById('reset-filter').onclick = () => {
+      document.getElementById('filter-date-from').value = '';
+      document.getElementById('filter-date-to').value = '';
+      document.getElementById('filter-type').value = '';
+      document.getElementById('filter-status').value = '';
+      searchInput.value = '';
+      renderList(mainTxs);
+      if(typeof showToast === 'function') showToast('Filters cleared', 'info', 'refresh-cw');
     };
 
     window.onclick = (e) => { if (e.target === detailModal) detailModal.style.display = 'none'; };
 
     refreshHistory();
 
-    // URL parameter for deep-linking
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('status') === 'uncleared') {
-      searchInput.value = 'uncleared';
-      // Trigger fuzzy search
-      const q = 'uncleared';
-      const filtered = mainTxs.filter(t => {
-        const pool = [
-          t.name, t.merchant, t.category, t.type, t.description, t.author, t.currency, t.scale, t.sku,
-          t.accountPayment, t.accountReceived,
-          ...(t.tags || []), ...(t.projects || []),
-          t.amount.toString(), (t.cleared ? 'cleared' : 'uncleared')
-        ].map(s => (s || '').toLowerCase());
-        return pool.some(s => s.includes(q));
-      });
-      renderList(filtered);
+      document.getElementById('filter-status').value = 'uncleared';
+      document.getElementById('apply-filter').click();
     }
   </script>
 </body>

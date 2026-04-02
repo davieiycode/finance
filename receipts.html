@@ -109,13 +109,36 @@
 
   <script>
     lucide.createIcons();
-    const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
-    const receipts = txs.filter(t => t.receipt);
+    
+    function refreshReceiptGallery() {
+      const allTx = JSON.parse(localStorage.getItem('transactions') || '[]');
+      
+      // Pull only transactions with valid receipt data (base64 or URLs)
+      const list = allTx.filter(t => t.receipt && t.receipt.trim().length > 0).map(t => {
+        // Migration logic for old data consistency
+        if (t.total === undefined && t.amount !== undefined) {
+           t.total = t.amount;
+        }
+        return t;
+      });
+
+      // Sort by date (descending)
+      list.sort((a,b) => {
+        const dA = (a.date || '0000-00-00') + (a.time || '00:00');
+        const dB = (b.date || '0000-00-00') + (b.time || '00:00');
+        return dB.localeCompare(dA);
+      });
+
+      renderGallery(list);
+      return list;
+    }
+
+    let mainReceipts = refreshReceiptGallery();
 
     function renderGallery(list) {
       const container = document.getElementById('receipt-list');
       const empty = document.getElementById('empty-state');
-      document.getElementById('receipt-count').innerText = `${list.length} Files`;
+      document.getElementById('receipt-count').innerText = `${list.length} Records`;
       
       container.innerHTML = '';
       if (list.length === 0) {
@@ -130,11 +153,21 @@
       list.forEach(t => {
         const card = document.createElement('div');
         card.className = 'receipt-card';
+        card.style.animation = 'receiptIn 0.4s ease-out forwards';
+        
         card.innerHTML = `
-          <img src="${t.receipt}" class="receipt-img">
+          <div style="position: relative;">
+            <img src="${t.receipt}" class="receipt-img" loading="lazy">
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 20px; font-size: 0.6rem; color: white; border: 1px solid rgba(255,255,255,0.1);">
+              ${t.type === 'Income' ? 'IN' : 'EX'}
+            </div>
+          </div>
           <div class="receipt-meta">
-            <div class="r-title">${t.merchant || t.name}</div>
-            <div class="r-sub">${t.date || 'No Date'} • Rp ${t.amount.toLocaleString('id-ID')}</div>
+            <div class="r-title">${t.merchant || t.name || 'Untitled'}</div>
+            <div class="r-sub" style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
+               <span>${t.date || 'No Date'}</span>
+               <span style="font-weight: 800; color: var(--text-primary);">Rp ${(t.total || 0).toLocaleString('id-ID')}</span>
+            </div>
           </div>
         `;
         card.onclick = () => showViewer(t);
@@ -149,38 +182,54 @@
       currentReceiptTx = t;
       document.getElementById('viewer-img').src = t.receipt;
       document.getElementById('v-title').innerText = t.merchant || t.name;
-      document.getElementById('v-sub').innerText = `${t.date} • ${t.category}`;
+      document.getElementById('v-sub').innerText = `${t.date || 'Unknown'} • ${t.category || t.name} • Rp ${(t.total || 0).toLocaleString('id-ID')}`;
       document.getElementById('viewer-modal').style.display = 'flex';
       lucide.createIcons();
     }
 
     function deleteReceipt() {
       if(typeof showConfirm === 'function') {
-        showConfirm('Remove this receipt from transaction?', () => {
+        showConfirm('This will remove the attached receipt from its transaction record. Are you sure?', () => {
           const allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
           const idx = allTxs.findIndex(x => x.id === currentReceiptTx.id);
           if (idx >= 0) {
             allTxs[idx].receipt = null;
             localStorage.setItem('transactions', JSON.stringify(allTxs));
+            document.getElementById('viewer-modal').style.display = 'none';
+            if(typeof showToast === 'function') showToast('Receipt unlinked successfully', 'success', 'trash-2');
+            mainReceipts = refreshReceiptGallery();
           }
-          document.getElementById('viewer-modal').style.display='none';
-          if(typeof showToast === 'function') showToast('Receipt deleted successfully!', 'success', 'trash-2');
-          location.reload();
-        });
+        }, 'Unlink Documentation');
       }
     }
 
     document.getElementById('r-search').oninput = (e) => {
-      const q = e.target.value.toLowerCase();
-      const filtered = receipts.filter(r => 
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderGallery(mainReceipts);
+        return;
+      }
+      const filtered = mainReceipts.filter(r => 
         (r.merchant || '').toLowerCase().includes(q) || 
         (r.name || '').toLowerCase().includes(q) ||
-        (r.category || '').toLowerCase().includes(q)
+        (r.category || '').toLowerCase().includes(q) ||
+        (r.date || '').toLowerCase().includes(q)
       );
       renderGallery(filtered);
     };
 
-    renderGallery(receipts);
+    // Style for the animation
+    if (!document.getElementById('receipt-styles')) {
+      const style = document.createElement('style');
+      style.id = 'receipt-styles';
+      style.innerHTML = `
+        @keyframes receiptIn {
+          from { opacity: 0; transform: translateY(10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
   </script>
 </body>
 </html>

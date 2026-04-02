@@ -123,47 +123,157 @@
     document.head.appendChild(style);
   }
 
-  function showConfirm(message, onConfirm) {
+  // --- Premium UI: Universal Confirmation Modal ---
+  function showConfirm(message, onConfirm, title = 'Authentication Required') {
     let modal = document.getElementById('custom-confirm-modal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'custom-confirm-modal';
-      modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); display:none; z-index:10000; padding:1.5rem; flex-direction:column; justify-content:center; align-items:center;';
+      modal.className = 'modal-backdrop';
+      modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(20px); display:none; z-index:99999; padding:1.5rem; flex-direction:column; justify-content:center; align-items:center; opacity:0; transition:opacity 0.4s cubic-bezier(0.19, 1, 0.22, 1);';
       modal.innerHTML = `
-        <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:1.5rem; padding:2rem; max-width:400px; width:100%; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
-          <div id="confirm-icon-box" style="width:64px; height:64px; border-radius:32px; background:rgba(239,68,68,0.1); color:#ef4444; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem auto;">
-            <i id="confirm-icon" data-lucide="alert-triangle" style="width:32px; height:32px;"></i>
+        <div style="background:var(--bg-secondary); border:1px solid var(--border); border-radius:2.5rem; padding:2.5rem 2rem; max-width:380px; width:100%; text-align:center; box-shadow:0 30px 60px -12px rgba(0,0,0,0.8); transform:scale(0.9); transition:transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);">
+          <div id="confirm-icon-box" style="width:80px; height:80px; border-radius:40px; background:rgba(139,92,246,0.1); color:var(--accent); display:flex; align-items:center; justify-content:center; margin:0 auto 2rem auto; border: 1px solid rgba(139,92,246,0.2);">
+            <i id="confirm-icon" data-lucide="help-circle" style="width:36px; height:36px;"></i>
           </div>
-          <h3 id="confirm-title" style="font-weight:700; font-size:1.25rem; margin-bottom:0.75rem; color:var(--text-primary);">Confirm Action</h3>
-          <p id="confirm-msg" style="color:var(--text-secondary); font-size:0.875rem; margin-bottom:2rem; line-height:1.5;"></p>
-          <div style="display:flex; gap:1rem; flex-direction:row;">
-            <button id="btn-confirm-cancel" style="flex:1; padding:0.875rem; border-radius:1rem; border:1px solid var(--border); background:var(--glass); color:var(--text-primary); font-weight:600; cursor:pointer;">Cancel</button>
-            <button id="btn-confirm-ok" style="flex:1; padding:0.875rem; border-radius:1rem; border:none; background:#ef4444; color:white; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(239,68,68,0.3);">Proceed</button>
+          <h3 id="confirm-title" style="font-weight:800; font-size:1.5rem; margin-bottom:0.75rem; color:var(--text-primary); letter-spacing:-0.03em;">Confirm</h3>
+          <p id="confirm-msg" style="color:var(--text-secondary); font-size:0.9375rem; margin-bottom:2.5rem; line-height:1.6; font-weight:500;"></p>
+          <div style="display:flex; gap:1rem; width:100%;">
+            <button id="btn-confirm-cancel" style="flex:1; padding:1.125rem; border-radius:1.25rem; border:1px solid var(--border); background:rgba(255,255,255,0.02); color:var(--text-primary); font-weight:700; cursor:pointer; font-size:0.9rem;">Cancel</button>
+            <button id="btn-confirm-ok" style="flex:1.5; padding:1.125rem; border-radius:1.25rem; border:none; background:var(--accent); color:white; font-weight:800; cursor:pointer; font-size:0.9rem; box-shadow:0 12px 24px -6px rgba(139,92,246,0.5);">Proceed</button>
           </div>
         </div>
       `;
       document.body.appendChild(modal);
     }
     
+    // Dynamic styling based on message
+    const isDestructive = message.toLowerCase().includes('delete') || message.toLowerCase().includes('remove') || message.toLowerCase().includes('clear');
+    const iconBox = document.getElementById('confirm-icon-box');
+    const icon = document.getElementById('confirm-icon');
+    const okBtn = document.getElementById('btn-confirm-ok');
+    const titleEl = document.getElementById('confirm-title');
+
+    titleEl.innerText = title;
     document.getElementById('confirm-msg').innerText = message;
-    document.getElementById('confirm-title').innerText = 'Confirm Action';
-    document.getElementById('confirm-icon-box').style.background = 'rgba(239,68,68,0.1)';
-    document.getElementById('confirm-icon-box').style.color = '#ef4444';
-    document.getElementById('btn-confirm-ok').style.background = '#ef4444';
-    document.getElementById('confirm-icon').setAttribute('data-lucide', 'alert-triangle');
+    
+    if (isDestructive) {
+      iconBox.style.background = 'rgba(239,68,68,0.1)';
+      iconBox.style.color = '#ef4444';
+      iconBox.style.borderColor = 'rgba(239,68,68,0.2)';
+      okBtn.style.background = '#ef4444';
+      okBtn.style.boxShadow = '0 12px 24px -6px rgba(239,68,68,0.5)';
+      icon.setAttribute('data-lucide', 'trash-2');
+    } else {
+      iconBox.style.background = 'rgba(139,92,246,0.1)';
+      iconBox.style.color = 'var(--accent)';
+      iconBox.style.borderColor = 'rgba(139,92,246,0.2)';
+      okBtn.style.background = 'var(--accent)';
+      okBtn.style.boxShadow = '0 12px 24px -6px rgba(139,92,246,0.5)';
+      icon.setAttribute('data-lucide', 'alert-circle');
+    }
 
     modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      modal.firstElementChild.style.transform = 'scale(1)';
+    }, 10);
+
     if(window.lucide) window.lucide.createIcons();
     
     document.getElementById('btn-confirm-cancel').onclick = () => {
-      modal.style.display = 'none';
+      modal.style.opacity = '0';
+      modal.firstElementChild.style.transform = 'scale(0.9)';
+      setTimeout(() => modal.style.display = 'none', 400);
     };
     
     document.getElementById('btn-confirm-ok').onclick = () => {
-      modal.style.display = 'none';
-      if(onConfirm) onConfirm();
+      modal.style.opacity = '0';
+      modal.firstElementChild.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        modal.style.display = 'none';
+        if(onConfirm) onConfirm();
+      }, 400);
     };
   }
+
+  // --- Premium Progress Hub (Sync & Exports) ---
+  const SyncHub = {
+    el: null, progressBar: null, statusText: null, titleText: null, percentText: null, iconBox: null,
+
+    init() {
+      if (this.el) return;
+      const hubHtml = `
+        <div id="sync-hub-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(25px); z-index: 999999; flex-direction: column; align-items: center; justify-content: center; color: white; opacity: 0; transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);">
+          <div style="width: 100%; max-width: 360px; text-align: center; display: flex; flex-direction: column; gap: 2rem; padding: 2.5rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 3rem; box-shadow: 0 40px 100px rgba(0,0,0,0.8);">
+            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+              <svg style="width: 100px; height: 100px; transform: rotate(-90deg);">
+                <circle cx="50" cy="50" r="46" fill="transparent" stroke="rgba(255,255,255,0.05)" stroke-width="4"></circle>
+                <circle id="sync-hub-circle" cx="50" cy="50" r="46" fill="transparent" stroke="var(--accent)" stroke-width="4" stroke-dasharray="290" stroke-dashoffset="290" stroke-linecap="round" style="transition: stroke-dashoffset 0.6s cubic-bezier(0.1, 0.7, 0.1, 1);"></circle>
+              </svg>
+              <div id="sync-hub-icon-box" style="position: absolute; display: flex; align-items: center; justify-content: center; color: var(--accent); animation: hub-pulse 2s infinite ease-in-out;">
+                <i data-lucide="cloud-lightning" style="width: 32px; height: 32px;"></i>
+              </div>
+            </div>
+            <div>
+              <h3 id="sync-hub-title" style="font-weight: 900; font-size: 1.5rem; margin-bottom: 0.5rem; letter-spacing: -0.04em; background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Syncing</h3>
+              <p id="sync-hub-status" style="opacity: 0.5; font-size: 0.8125rem; min-height: 1.25rem; font-weight: 500; letter-spacing: 0.02em;">Initializing Neural Link...</p>
+            </div>
+            <div style="display: flex; justify-content: center;">
+               <div id="sync-hub-percent" style="font-weight: 900; font-size: 0.75rem; color: var(--accent); font-family: 'Inter', sans-serif; background: rgba(139, 92, 246, 0.1); padding: 0.4rem 1rem; border-radius: 2rem; border: 1px solid rgba(139, 92, 246, 0.2);">0%</div>
+            </div>
+          </div>
+        </div>
+        <style> 
+          @keyframes hub-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.85); opacity: 0.7; } }
+        </style>
+      `;
+      const div = document.createElement('div');
+      div.id = 'sync-hub-root';
+      div.innerHTML = hubHtml;
+      document.body.appendChild(div);
+      this.el = document.getElementById('sync-hub-overlay');
+      this.circle = document.getElementById('sync-hub-circle');
+      this.statusText = document.getElementById('sync-hub-status');
+      this.titleText = document.getElementById('sync-hub-title');
+      this.percentText = document.getElementById('sync-hub-percent');
+      this.iconBox = document.getElementById('sync-hub-icon-box');
+    },
+
+    start(title, status) {
+      this.init();
+      this.titleText.innerText = title;
+      this.statusText.innerText = status;
+      this.update(0);
+      this.el.style.display = 'flex';
+      if(window.lucide) window.lucide.createIcons();
+      setTimeout(() => this.el.style.opacity = '1', 10);
+    },
+
+    update(percent, status) {
+      if (!this.el) return;
+      const p = Math.min(100, Math.max(0, percent));
+      const offset = 290 - (p / 100 * 290);
+      this.circle.style.strokeDashoffset = offset;
+      if (this.percentText) this.percentText.innerText = Math.round(p) + '%';
+      if (status) this.statusText.innerText = status;
+    },
+
+    finish(msg, success = true) {
+      this.update(100, msg || 'Optimized!');
+      if (this.iconBox) this.iconBox.innerHTML = '<i data-lucide="check" style="width: 32px; height: 32px; color: #10b981;"></i>';
+      if(window.lucide) window.lucide.createIcons();
+      setTimeout(() => {
+        this.el.style.opacity = '0';
+        setTimeout(() => {
+          this.el.style.display = 'none';
+          // Restore icon for next use
+          if (this.iconBox) this.iconBox.innerHTML = '<i data-lucide="cloud-lightning" style="width: 32px; height: 32px;"></i>';
+          if(window.lucide) window.lucide.createIcons();
+        }, 600);
+      }, 1200);
+    }
+  };
 
   function getSimilarity(s1, s2) {
     s1 = s1.toLowerCase().trim().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
@@ -177,71 +287,45 @@
     return 0;
   }
 
-  // --- SyncHub: Premium Progress Hub ---
-  const SyncHub = {
-    el: null, progressBar: null, statusText: null, titleText: null, percentText: null,
-
-    init() {
-      if (this.el) return;
-      const hubHtml = `
-        <div id="sync-hub-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 999999; flex-direction: column; align-items: center; justify-content: center; color: white; opacity: 0; transition: all 0.4s ease;">
-          <div style="width: 100%; max-width: 320px; text-align: center; display: flex; flex-direction: column; gap: 1.5rem; padding: 2rem;">
-            <div style="position: relative; width: 84px; height: 84px; margin: 0 auto;">
-              <div style="width: 84px; height: 84px; border: 3px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent); border-radius: 50%; animation: hub-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
-              <div id="sync-hub-percent" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; color: var(--accent); font-family: 'JetBrains Mono', monospace;">0%</div>
-            </div>
-            <div>
-              <h3 id="sync-hub-title" style="font-weight: 800; font-size: 1.25rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Syncing</h3>
-              <p id="sync-hub-status" style="opacity: 0.6; font-size: 0.75rem; min-height: 1.25rem; font-weight: 500;">Initializing...</p>
-            </div>
-            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; position: relative; border: 1px solid rgba(255,255,255,0.02);">
-               <div id="sync-hub-progress" style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #c084fc); transition: width 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);"></div>
-            </div>
-          </div>
-        </div>
-        <style> @keyframes hub-spin { to { transform: rotate(360deg); } } </style>
-      `;
-      const div = document.createElement('div');
-      div.id = 'sync-hub-root';
-      div.innerHTML = hubHtml;
-      document.body.appendChild(div);
-      this.el = document.getElementById('sync-hub-overlay');
-      this.progressBar = document.getElementById('sync-hub-progress');
-      this.statusText = document.getElementById('sync-hub-status');
-      this.titleText = document.getElementById('sync-hub-title');
-      this.percentText = document.getElementById('sync-hub-percent');
-    },
-
-    start(title, status) {
-      this.init();
-      this.titleText.innerText = title;
-      this.statusText.innerText = status;
-      this.update(0);
-      this.el.style.display = 'flex';
-      setTimeout(() => this.el.style.opacity = '1', 10);
-    },
-
-    update(percent, status) {
-      if (!this.el) return;
-      const p = Math.min(100, Math.max(0, percent));
-      this.progressBar.style.width = p + '%';
-      if (this.percentText) this.percentText.innerText = Math.round(p) + '%';
-      if (status) this.statusText.innerText = status;
-    },
-
-    finish(msg, success = true) {
-      this.update(100, msg || 'Done!');
-      setTimeout(() => {
-        this.el.style.opacity = '0';
-        setTimeout(() => this.el.style.display = 'none', 400);
-      }, 1000);
-    }
-  };
-
   // Cloud Sync Engine
   const CloudSync = {
-    pull: async (url, mode = 'overwrite') => {
+    pull: async (url, mode = 'merge') => {
       SyncHub.start('Cloud Pull', 'Connecting to secure server...');
+      
+      const COLUMN_MAP = {
+        'Transaction ID': 'id',
+        'Date': 'date',
+        'Time': 'time',
+        'Category': 'category',
+        'Category Group': 'categoryGroup',
+        'Merchant': 'merchant',
+        'Item Name': 'name',
+        'Description': 'description',
+        'Amount (per Unit)': 'amount',
+        'Currency': 'currency',
+        'Exchange Rate': 'exchangeRate',
+        'Quantity': 'qty',
+        'Unit Scale': 'scale',
+        'Type': 'type',
+        'Cleared': 'cleared',
+        'Payment Source Account': 'accountPayment',
+        'Beneficiary Account': 'accountReceived',
+        'Receipt': 'receipt',
+        'Analytics Tags': 'tags',
+        'Associated Project': 'projects',
+        'Author': 'author',
+        'Discount': 'discount',
+        'Additional Fee': 'fee',
+        'Total': 'total',
+        'Budget Amount': 'budgetAmount',
+        'Budget Period': 'budgetPeriod',
+        'Flow': 'flow',
+        'Year': 'year',
+        'Month': 'month',
+        'Update Time': 'updateTime',
+        'XP': 'xp'
+      };
+
       try {
         SyncHub.update(15, 'Fetching remote ledger...');
         const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'get=data');
@@ -250,131 +334,183 @@
         let count = 0;
         const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
         const objectKeys = ['user_prefs']; // Keys that store objects, not arrays
-        if (mode === 'overwrite') {
-          if (data.status === 'success') {
-            SyncHub.update(40, 'Parsing cloud data entities...');
-            
-            // --- SAFETY CHECK ---
-            // If the user's cloud has 0 records and their local storage HAS records, abort or warn!
-            const isEmptyCloud = !keys.some(k => data[k] && data[k].length > 0);
-            const hasLocalData = keys.some(k => {
-              const local = JSON.parse(localStorage.getItem(k) || '[]');
-              return local.length > 0;
-            });
+        const reverseMap = (obj) => {
+          const newObj = {};
+          Object.keys(obj).forEach(k => {
+            const internalKey = COLUMN_MAP[k] || k;
+            newObj[internalKey] = obj[k];
+          });
+          return newObj;
+        };
 
-            if (isEmptyCloud && hasLocalData) {
-               SyncHub.finish('Pull ABORTED: Cloud is empty.', false);
-               alert('Peringatan: Data di Cloud (Google Sheet) Anda kosong. Jika dilanjutkan, data di HP akan terhapus. Gunakan "Simpan ke Cloud" (Upload) terlebih dahulu jika ini HP utama Anda.');
-               return 0;
-            }
-
-            const totalKeys = keys.filter(k => data[k]).length || 1;
-            let processedKeys = 0;
-
-            keys.forEach(key => {
-              if (data[key]) {
-                const stepLoad = 40 + ((processedKeys / totalKeys) * 50);
-                SyncHub.update(stepLoad, `Processing ${key}...`);
-                
-                let remoteData = data[key];
-                if (key === 'transactions') {
-                  const sanitizeNum = (v, def = 0) => {
-                    if (v === undefined || v === null || v === '') return def;
-                    if (typeof v === 'number') return v;
-                    let s = v.toString().replace(/Rp/g, '').trim();
-                    return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
-                  };
-                  const sanitizeArr = (v) => {
-                    if (Array.isArray(v)) return v;
-                    if (typeof v === 'string') return v.split(',').map(s => s.trim()).filter(s => s);
-                    return [];
-                  };
-
-                  remoteData = remoteData.map(t => {
-                    t.total = sanitizeNum(t.total ?? t.amount);
-                    t.amount = sanitizeNum(t.amount);
-                    t.qty = sanitizeNum(t.qty, 1);
-                    t.discount = sanitizeNum(t.discount);
-                    t.fee = sanitizeNum(t.fee);
-                    t.exchangeRate = sanitizeNum(t.exchangeRate, 1);
-                    t.xp = sanitizeNum(t.xp, 10);
-                    t.tags = sanitizeArr(t.tags);
-                    t.projects = sanitizeArr(t.projects);
-                    t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
-                    return t;
-                  });
-                  count = remoteData.length;
-                }
-                localStorage.setItem(key, typeof remoteData === 'string' ? remoteData : JSON.stringify(remoteData));
-                processedKeys++;
-              }
-            });
-          } else {
-            throw new Error('Cloud returned an error or invalid status');
+        const sanitizeNum = (v, def = 0) => {
+          if (v === undefined || v === null || v === '') return def;
+          if (typeof v === 'number') return v;
+          let s = v.toString().replace(/Rp/g, '').trim();
+          if (s.includes(',') && s.includes('.')) {
+            const lastComma = s.lastIndexOf(',');
+            const lastDot = s.lastIndexOf('.');
+            if (lastComma > lastDot) s = s.replace(/\./g, '').replace(/,/g, '.');
+            else s = s.replace(/,/g, '');
+          } else if (s.includes(',')) {
+            const parts = s.split(',');
+            if (parts[1] && parts[1].length === 3) s = s.replace(/,/g, '');
+            else s = s.replace(/,/g, '.');
           }
-        } else {
-          // Merge Logic (Default) - Cloud is Master
-          SyncHub.update(50, 'Merging local and remote entries...');
-          if (data.transactions) {
-            const remoteTxs = data.transactions.map(t => {
-              const parseVal = (v, def = 0) => {
-                if (v === undefined || v === null || v === '') return def;
-                if (typeof v === 'number') return v;
-                let s = v.toString().replace(/Rp/g, '').trim();
-                if (s.includes(',') && s.includes('.')) {
-                  const lastComma = s.lastIndexOf(',');
-                  const lastDot = s.lastIndexOf('.');
-                  if (lastComma > lastDot) s = s.replace(/\./g, '').replace(/,/g, '.');
-                  else s = s.replace(/,/g, '');
-                } else if (s.includes(',')) {
-                  const parts = s.split(',');
-                  if (parts[1].length === 3) s = s.replace(/,/g, '');
-                  else s = s.replace(/,/g, '.');
-                }
-                return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
-              };
+          return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
+        };
 
-              const q = parseVal(t.qty, 1);
-              const d = parseVal(t.discount, 0);
-              const f = parseVal(t.fee, 0);
-              const ex = parseVal(t.exchangeRate, 1);
-              const unitPrice = parseVal(t.amount, 0);
+        const sanitizeArr = (v) => {
+          if (Array.isArray(v)) return v;
+          if (typeof v === 'string') return v.split(',').map(s => s.trim()).filter(s => s);
+          return [];
+        };
+
+        if (data.status === 'success') {
+          SyncHub.update(40, 'Parsing cloud data entities...');
+
+          // 1. Process Transactions with Column Mapping & Field Derivation
+          if (data.transactions) {
+            SyncHub.update(50, 'Merging transactions...');
+            const remoteTxs = data.transactions.map(rawT => {
+              const t = reverseMap(rawT);
+              
+              const q = sanitizeNum(t.qty, 1);
+              const d = sanitizeNum(t.discount, 0);
+              const f = sanitizeNum(t.fee, 0);
+              const ex = sanitizeNum(t.exchangeRate, 1);
+              const unitPrice = sanitizeNum(t.amount, 0);
+              
               t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
               const calcTotal = ((q * unitPrice) - d + f) * ex;
-              t.total = (t.total !== undefined) ? parseVal(t.total) : calcTotal;
-              t.total = isNaN(t.total) ? 0 : t.total;
+              t.total = (t.total !== undefined) ? sanitizeNum(t.total) : calcTotal;
               t.amount = unitPrice;
               t.qty = q;
               t.discount = d;
               t.fee = f;
               t.exchangeRate = ex;
+              t.xp = sanitizeNum(t.xp, 10);
+              t.tags = sanitizeArr(t.tags);
+              t.projects = sanitizeArr(t.projects);
+              t.cleared = (t.cleared === true || t.cleared === 'TRUE' || t.cleared === 'Yes');
+              
+              // Generate Derived Fields if missing
+              if (t.date && !t.year) {
+                const dateObj = new Date(t.date);
+                if (!isNaN(dateObj)) {
+                  t.year = dateObj.getFullYear();
+                  t.month = dateObj.getMonth() + 1;
+                }
+              }
+              if (!t.flow) {
+                const type = (t.type || 'Expense').toLowerCase();
+                t.flow = ['income', 'inflow', 'received'].includes(type) ? 'Inflow' : 'Outflow';
+              }
+              if (!t.updateTime) t.updateTime = new Date().toISOString();
+              
               return t;
             });
 
             const localTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
-            const cloudIds = new Set(remoteTxs.map(t => t.id.toString()));
-            // Keep remote, add unique locals
-            const uniqueLocals = localTxs.filter(t => !cloudIds.has(t.id.toString()));
-            localStorage.setItem('transactions', JSON.stringify([...remoteTxs, ...uniqueLocals]));
-            count = remoteTxs.length;
+            
+            if (mode === 'overwrite') {
+              // Safety check for overwrite
+              if (remoteTxs.length === 0 && localTxs.length > 0) {
+                 SyncHub.finish('Pull ABORTED: Cloud is empty.', false);
+                 alert('Peringatan: Data di Cloud kosong. Jika dilanjutkan, data di HP akan terhapus. Gunakan "Cloud Push" terlebih dahulu.');
+                 return 0;
+              }
+              localStorage.setItem('transactions', JSON.stringify(remoteTxs));
+              count = remoteTxs.length;
+            } else {
+              // Smart Merge by ID and Update Time
+              const localMap = new Map(localTxs.map(t => [t.id.toString(), t]));
+              const mergedTxs = [...remoteTxs];
+              const remoteIds = new Set(remoteTxs.map(t => t.id.toString()));
+
+              // Add unique locals (new entries not yet in cloud)
+              localTxs.forEach(lt => {
+                if (!remoteIds.has(lt.id.toString())) {
+                  mergedTxs.push(lt);
+                } else {
+                  // If in both, keep the one with latest updateTime
+                  const rt = remoteTxs.find(r => r.id.toString() === lt.id.toString());
+                  const rTime = new Date(rt.updateTime || 0).getTime();
+                  const lTime = new Date(lt.updateTime || 0).getTime();
+                  if (lTime > rTime) {
+                    // Local is newer (likely manual edit in app)
+                    const idx = mergedTxs.findIndex(r => r.id.toString() === rt.id.toString());
+                    mergedTxs[idx] = lt;
+                  }
+                }
+              });
+
+              mergedTxs.sort((a,b) => new Date(b.date + ' ' + (b.time || '00:00')) - new Date(a.date + ' ' + (a.time || '00:00')));
+              localStorage.setItem('transactions', JSON.stringify(mergedTxs));
+              count = mergedTxs.length;
+            }
           }
-        }
 
-        SyncHub.update(95, 'Finalizing data extraction...');
-        if (!data.accounts && !data.merchants && !data.items && typeof window.syncMasterData === 'function') {
-          await window.syncMasterData();
-        }
+          // 2. Process Metadata Keys
+          const otherKeys = ['accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
+          otherKeys.forEach(key => {
+            if (data[key]) {
+              SyncHub.update(80, `Updating ${key}...`);
+              localStorage.setItem(key, typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]));
+            }
+          });
 
-        SyncHub.finish(`Success! ${count} records processed.`);
-        return count;
+          SyncHub.update(95, 'Finalizing sync...');
+          if (typeof window.syncMasterData === 'function') await window.syncMasterData();
+          SyncHub.finish(`Success! ${count} records synced.`);
+          return count;
+        } else {
+          throw new Error(data.message || 'Cloud returned error status');
+        }
       } catch (err) {
         SyncHub.finish('Pull failed. Check connection.', false);
         console.error('Cloud Sync Error:', err);
         throw err;
       }
     },
+
     push: async (url) => {
       SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
+      
+      const COLUMN_MAP = {
+        'id': 'Transaction ID',
+        'date': 'Date',
+        'time': 'Time',
+        'category': 'Category',
+        'categoryGroup': 'Category Group',
+        'merchant': 'Merchant',
+        'name': 'Item Name',
+        'description': 'Description',
+        'amount': 'Amount (per Unit)',
+        'currency': 'Currency',
+        'exchangeRate': 'Exchange Rate',
+        'qty': 'Quantity',
+        'scale': 'Unit Scale',
+        'type': 'Type',
+        'cleared': 'Cleared',
+        'accountPayment': 'Payment Source Account',
+        'accountReceived': 'Beneficiary Account',
+        'receipt': 'Receipt',
+        'tags': 'Analytics Tags',
+        'projects': 'Associated Project',
+        'author': 'Author',
+        'discount': 'Discount',
+        'fee': 'Additional Fee',
+        'total': 'Total',
+        'budgetAmount': 'Budget Amount',
+        'budgetPeriod': 'Budget Period',
+        'flow': 'Flow',
+        'year': 'Year',
+        'month': 'Month',
+        'updateTime': 'Update Time',
+        'xp': 'XP'
+      };
+
       try {
         const keys = ['transactions', 'accounts', 'merchants', 'items', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
         const objectKeys = ['user_prefs'];
@@ -384,14 +520,43 @@
         const totalKeys = keys.length;
 
         keys.forEach(key => {
-          const stepLoad = (processedKeys / totalKeys) * 35; // First 35% is gathering
+          const stepLoad = (processedKeys / totalKeys) * 35;
           SyncHub.update(stepLoad, `Gathering ${key}...`);
           const raw = localStorage.getItem(key);
-          if (objectKeys.includes(key)) {
-            payload[key] = JSON.parse(raw || '{}');
-          } else {
-            payload[key] = JSON.parse(raw || '[]');
+          let data = objectKeys.includes(key) ? JSON.parse(raw || '{}') : JSON.parse(raw || '[]');
+          
+          if (key === 'transactions') {
+            // Map to spreadsheet columns
+            data = data.map(t => {
+              const mapped = {};
+              Object.keys(t).forEach(k => {
+                const sheetKey = COLUMN_MAP[k] || k;
+                mapped[sheetKey] = t[k];
+              });
+              
+              // Ensure Derived Fields are present for Spreadsheet
+              if (t.date) {
+                const dateObj = new Date(t.date);
+                if (!isNaN(dateObj)) {
+                  mapped['Year'] = mapped['Year'] || dateObj.getFullYear();
+                  mapped['Month'] = mapped['Month'] || dateObj.getMonth() + 1;
+                }
+              }
+              if (!mapped['Flow']) {
+                const type = (t.type || 'Expense').toLowerCase();
+                mapped['Flow'] = ['income', 'inflow', 'received'].includes(type) ? 'Inflow' : 'Outflow';
+              }
+              mapped['Update Time'] = t.updateTime || new Date().toISOString();
+              
+              // Formatting for spreadsheet visibility
+              if (Array.isArray(t.tags)) mapped['Analytics Tags'] = t.tags.join(', ');
+              if (Array.isArray(t.projects)) mapped['Associated Project'] = t.projects.join(', ');
+              
+              return mapped;
+            });
           }
+          
+          payload[key] = data;
           processedKeys++;
         });
 
@@ -749,7 +914,7 @@
     }
 
     try {
-      const count = await window.CloudSync.pull(url, 'overwrite');
+      const count = await window.CloudSync.pull(url, 'merge');
       if (pullIndicator) {
         pullIndicator.style.background = '#10b981';
         pullIndicator.innerHTML = `<i data-lucide="check" style="width:16px;"></i><span>Cloud Synced (${count})</span>`;

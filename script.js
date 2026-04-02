@@ -485,7 +485,8 @@ if (nextBtn) {
       description: document.getElementById('transaction-description').value,
       receipt: document.getElementById('receipt-input').value,
       cleared: document.querySelector('#cleared-selector .type-btn.active')?.dataset.cleared === 'yes',
-      xp: existingTx ? (existingTx.xp || 10) : 10
+      xp: existingTx ? (existingTx.xp || 10) : 10,
+      updateTime: new Date().toISOString()
     };
     
     if (mode === 'edit') {
