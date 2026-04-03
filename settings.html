@@ -585,11 +585,11 @@
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-          <button onclick="syncCloud('pull')" class="sett-card" style="align-items:center; background:var(--glass);">
+          <button id="pull-btn" onclick="syncCloud('pull')" class="sett-card" style="align-items:center; background:var(--glass);">
              <i data-lucide="cloud-download" style="margin-bottom:0.25rem;"></i>
              <span class="sett-label">PULL CORE</span>
           </button>
-          <button onclick="syncCloud('push')" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none;">
+          <button id="push-btn" onclick="syncCloud('push')" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none;">
              <i data-lucide="cloud-upload" style="margin-bottom:0.25rem;"></i>
              <span class="sett-label" style="color:white;">PUSH STATE</span>
           </button>

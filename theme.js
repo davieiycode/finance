@@ -923,22 +923,26 @@
     });
   }
 
-  async function triggerCloudSync() {
+  async function triggerCloudSync(mode = 'merge') {
     const url = localStorage.getItem('cloud_sheet_url');
-    if (!url) return;
+    if (!url) {
+      if (window.showToast) window.showToast('Cloud URL not set. Connect your ledger.', 'warning', 'link-2');
+      return;
+    }
 
     const pullIndicator = document.getElementById('pull-indicator');
     if (pullIndicator) {
-      pullIndicator.querySelector('span').innerText = 'Syncing...';
+      pullIndicator.querySelector('span').innerText = (mode === 'overwrite' ? 'Overwriting...' : 'Syncing...');
       pullIndicator.querySelector('i').classList.add('animate-spin');
       pullIndicator.style.top = '20px';
     }
 
     try {
-      const count = await window.CloudSync.pull(url, 'merge');
+      if (window.showToast) window.showToast(`Initialising ${mode} sync...`, 'info', 'cloud');
+      const count = await window.CloudSync.pull(url, mode);
       if (pullIndicator) {
         pullIndicator.style.background = '#10b981';
-        pullIndicator.innerHTML = `<i data-lucide="check" style="width:16px;"></i><span>Cloud Synced (${count})</span>`;
+        pullIndicator.innerHTML = `<i data-lucide="check" style="width:16px;"></i><span>Cloud ${mode === 'overwrite' ? 'Restored' : 'Synced'} (${count})</span>`;
       }
       if(window.lucide) window.lucide.createIcons();
       

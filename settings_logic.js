@@ -18,13 +18,7 @@ window.AVATAR_SVGS = [
 const APP_VERSION = 'v2.7.0';
 const BUILD_DATE = '2026.04.03';
 
-if (typeof window.SyncHub === 'undefined') {
-    window.SyncHub = {
-        start: (title, status) => console.log('SyncHub Start:', title, status),
-        update: (percent, status) => console.log('SyncHub Update:', percent, status),
-        finish: (msg) => alert(msg)
-    };
-}
+// settings_logic.js - Logic for settings.html
 
 let viewStack = ['p-view-main'];
 
@@ -786,10 +780,22 @@ function handlePinComplete() {
 }
 
 window.syncCloud = async (mode) => {
+  const btn = mode === 'pull' ? document.getElementById('pull-btn') : null;
+  if (btn) {
+    btn.style.opacity = '0.5';
+    btn.style.pointerEvents = 'none';
+  }
+  
   if (window.triggerCloudSync && mode === 'pull') {
-      window.triggerCloudSync(mode);
+      const syncMode = Array.from(document.getElementsByName('sync_strategy')).find(r => r.checked)?.value || 'merge';
+      await window.triggerCloudSync(syncMode);
   } else if (window.triggerCloudPush && mode === 'push') {
-      window.triggerCloudPush();
+      await window.triggerCloudPush();
+  }
+  
+  if (btn) {
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
   }
 };
 
