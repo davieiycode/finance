@@ -175,14 +175,17 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
 
   const currentAccounts = JSON.parse(localStorage.getItem('accounts') || '[]');
   const currentMerchants = JSON.parse(localStorage.getItem('merchants') || '[]');
+  const currentAuthors = JSON.parse(localStorage.getItem('authors') || '[]');
   const currentItems = JSON.parse(localStorage.getItem('items') || '[]');
 
   const accSet = new Set();
   const merSet = new Set();
+  const autSet = new Set();
   const itemSet = new Set();
 
   const newAccounts = mode === 'merge' ? [...currentAccounts] : [];
   const newMerchants = mode === 'merge' ? [...currentMerchants] : [];
+  const newAuthors = mode === 'merge' ? [...currentAuthors] : [];
   const newItems = mode === 'merge' ? [...currentItems] : [];
 
   // Stats for reporting
@@ -190,12 +193,14 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
     accounts: 0,
     merchants: 0,
     items: 0,
+    authors: 0,
     skipped: 0
   };
 
   // Track existing names for easy lookup
   newAccounts.forEach(a => accSet.add(a.name.toLowerCase()));
   newMerchants.forEach(m => merSet.add(m.name.toLowerCase()));
+  newAuthors.forEach(a => autSet.add(a.name.toLowerCase()));
   newItems.forEach(i => itemSet.add(i.name.toLowerCase()));
 
   txs.forEach(t => {
@@ -263,13 +268,31 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
         stats.skipped++;
       }
     }
+
+    // 4. Extraction of Authors
+    const authorName = t.author || t.Author || t['Author'] || t['Kreator'];
+    if (authorName && authorName.trim() && authorName !== '-') {
+      const cleanA = authorName.trim();
+      if (!autSet.has(cleanA.toLowerCase())) {
+        newAuthors.push({
+          id: Date.now() + Math.random(),
+          name: cleanA,
+          role: 'Member'
+        });
+        autSet.add(cleanA.toLowerCase());
+        stats.authors++;
+      } else {
+        stats.skipped++;
+      }
+    }
   });
 
   localStorage.setItem('accounts', JSON.stringify(newAccounts));
   localStorage.setItem('merchants', JSON.stringify(newMerchants));
   localStorage.setItem('items', JSON.stringify(newItems));
+  localStorage.setItem('authors', JSON.stringify(newAuthors));
   
-  const msg = `Auto-extraction: ${stats.accounts} Acc, ${stats.merchants} Mer, ${stats.items} Items. Duplicates: ${stats.skipped}`;
+  const msg = `Auto-extraction: ${stats.accounts} Acc, ${stats.merchants} Mer, ${stats.items} Items, ${stats.authors} Authors. Duplicates: ${stats.skipped}`;
   console.log(msg);
   return stats;
 }

@@ -314,8 +314,12 @@
         'Analytics Tags': 'tags',
         'Associated Project': 'projects',
         'Author': 'author',
+        'Kreator': 'author',
+        'User': 'author',
         'Discount': 'discount',
+        'Potongan': 'discount',
         'Additional Fee': 'fee',
+        'Biaya': 'fee',
         'Total': 'total',
         'Budget Amount': 'budgetAmount',
         'Budget Period': 'budgetPeriod',
@@ -332,7 +336,7 @@
         const data = await res.json();
 
         let count = 0;
-        const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
+        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
         const objectKeys = ['user_prefs']; // Keys that store objects, not arrays
         const reverseMap = (obj) => {
           const newObj = {};
@@ -456,7 +460,7 @@
           }
 
           // 2. Process Metadata Keys
-          const otherKeys = ['accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
+          const otherKeys = ['accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
           otherKeys.forEach(key => {
             if (data[key]) {
               SyncHub.update(80, `Updating ${key}...`);
@@ -516,7 +520,7 @@
       };
 
       try {
-        const keys = ['transactions', 'accounts', 'merchants', 'items', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
+        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
         const objectKeys = ['user_prefs'];
         const payload = { updateTime: new Date().toISOString() };
         
@@ -608,6 +612,7 @@
 
     let accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
     let merchants = JSON.parse(localStorage.getItem('merchants') || '[]');
+    let authors = JSON.parse(localStorage.getItem('authors') || '[]');
     let items = JSON.parse(localStorage.getItem('items') || '[]');
 
     let updated = false;
@@ -617,6 +622,7 @@
     // Quick Lookup Maps for O(1) exact match check
     const accMap = new Map(accounts.map(a => [a.name.toLowerCase(), a]));
     const merMap = new Map(merchants.map(m => [m.name.toLowerCase(), m]));
+    const autMap = new Map(authors.map(a => [a.name.toLowerCase(), a]));
     const itMap = new Map(items.map(i => [(i.name || '').toLowerCase(), i]));
 
     let suggestionCount = 0;
@@ -642,6 +648,16 @@
              merMap.set(mLower, { name: t.merchant });
              updated = true;
           }
+        }
+      }
+
+      // 1b. Author Sync
+      if (t.author && t.author !== '-') {
+        const aLower = t.author.toLowerCase();
+        if (!autMap.has(aLower)) {
+           authors.push({ id: Date.now() + Math.random(), name: t.author, role: 'Member' });
+           autMap.set(aLower, { name: t.author });
+           updated = true;
         }
       }
 
@@ -698,6 +714,7 @@
     if (updated) {
       localStorage.setItem('accounts', JSON.stringify(accounts));
       localStorage.setItem('merchants', JSON.stringify(merchants));
+      localStorage.setItem('authors', JSON.stringify(authors));
       localStorage.setItem('items', JSON.stringify(items));
       if (isDashboard && typeof window.renderDashboard === 'function') window.renderDashboard();
     }

@@ -252,7 +252,7 @@
       if (decodedText.startsWith('{') && (decodedText.includes('transactions') || decodedText.includes('items'))) {
         try {
           const data = JSON.parse(decodedText);
-          const keys = ['transactions', 'accounts', 'merchants', 'items', 'vault', 'budgets', 'goals', 'cloud_sheet_url'];
+          const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'cloud_sheet_url'];
 
           keys.forEach(k => {
             if (data[k]) localStorage.setItem(k, (typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k])));
