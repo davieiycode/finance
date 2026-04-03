@@ -15,7 +15,7 @@ window.AVATAR_SVGS = [
   `<svg viewBox="0 0 80 80"><defs><clipPath id="c12"><circle cx="40" cy="40" r="40" /></clipPath></defs><g clip-path="url(#c12)"><rect width="80" height="80" fill="#26215C" /><polygon points="0,0 80,0 0,80" fill="#3C3489" /><polygon points="80,0 80,80 0,80" fill="#085041" /><circle cx="26" cy="28" r="18" fill="#7F77DD" /><circle cx="56" cy="54" r="15" fill="#1D9E75" /><circle cx="26" cy="28" r="8" fill="#EEEDFE" /><circle cx="56" cy="54" r="7" fill="#9FE1CB" /></g></svg>`
 ];
 
-const APP_VERSION = 'v2.7.0';
+const APP_VERSION = 'v3.1.0';
 const BUILD_DATE = '2026.04.03';
 
 // settings_logic.js - Logic for settings.html
@@ -448,10 +448,18 @@ window.copyScriptCode = () => {
       return r;
     });
 
-    // Match app's expected keys
+    // Smart Sheet Name Mapping
     let finalKey = name + 's'; 
-    if (name === 'transaction') finalKey = 'transactions';
-    if (name === 'membership') finalKey = 'membership_cards';
+    if (name.includes('transaction') || name.includes('transaksi')) finalKey = 'transactions';
+    else if (name.includes('merchant') || name.includes('toko') || name.includes('penjual')) finalKey = 'merchants';
+    else if (name.includes('author') || name.includes('kreator') || name.includes('user') || name.includes('penulis') || name.includes('anggota')) finalKey = 'authors';
+    else if (name.includes('account') || name.includes('rekening') || name.includes('akun')) finalKey = 'accounts';
+    else if (name.includes('item') || name.includes('barang') || name.includes('produk')) finalKey = 'items';
+    else if (name.includes('membership')) finalKey = 'membership_cards';
+    else if (name.includes('vault') || name.includes('brankas')) finalKey = 'vault';
+    else if (name.includes('budget') || name.includes('anggaran')) finalKey = 'budgets';
+    else if (name.includes('goal') || name.includes('target')) finalKey = 'goals';
+    
     response[finalKey] = records;
   });
 

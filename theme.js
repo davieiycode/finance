@@ -260,18 +260,36 @@
     },
 
     finish(msg, success = true) {
+      if (!this.el) return;
       this.update(100, msg || 'Optimized!');
-      if (this.iconBox) this.iconBox.innerHTML = '<i data-lucide="check" style="width: 32px; height: 32px; color: #10b981;"></i>';
+      if (this.iconBox) {
+        this.iconBox.innerHTML = success 
+          ? '<i data-lucide="check-circle-2" style="width: 32px; height: 32px; color: #10b981;"></i>' 
+          : '<i data-lucide="alert-triangle" style="width: 32px; height: 32px; color: #ef4444;"></i>';
+      }
       if(window.lucide) window.lucide.createIcons();
-      setTimeout(() => {
+
+      // Ensure footer/button area for manual close
+      let footer = document.getElementById('sync-hub-footer');
+      if (!footer) {
+        footer = document.createElement('div');
+        footer.id = 'sync-hub-footer';
+        footer.style.marginTop = '2rem';
+        this.el.querySelector('div').appendChild(footer);
+      }
+      footer.innerHTML = `<button id="sync-hub-close-btn" style="background: var(--accent); color: white; border: none; padding: 0.8rem 2.5rem; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;">Close & Refresh</button>`;
+      
+      const closeBtn = document.getElementById('sync-hub-close-btn');
+      closeBtn.onclick = () => {
         this.el.style.opacity = '0';
         setTimeout(() => {
           this.el.style.display = 'none';
-          // Restore icon for next use
-          if (this.iconBox) this.iconBox.innerHTML = '<i data-lucide="cloud-lightning" style="width: 32px; height: 32px;"></i>';
-          if(window.lucide) window.lucide.createIcons();
+          if (success) {
+            // Force reload to refresh datalists (Merchant, Author, etc.)
+            window.location.reload();
+          }
         }, 600);
-      }, 1200);
+      };
     }
   };
 
