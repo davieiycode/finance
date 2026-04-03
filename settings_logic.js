@@ -432,7 +432,7 @@ window.copyScriptCode = () => {
         else if (hName === 'author') r.author = v;
         else r[hName] = v; // Capture all other columns as-is
         
-        // Transaction Specific Mapping
+        // Transaction Specific Time/Date Normalization
         if (name === 'transaction') {
           if (hName === 'date') {
             if (v instanceof Date) v = Utilities.formatDate(v, timezone, "yyyy-MM-dd");
@@ -443,16 +443,6 @@ window.copyScriptCode = () => {
             if (v instanceof Date) v = Utilities.formatDate(v, timezone, "HH:mm");
             r.time = v ? v.toString() : '';
           }
-          else if (hName === 'category') r.category = v;
-          else if (hName === 'type') r.type = v;
-          else if (hName === 'description') r.description = v;
-          else if (hName === 'amountperunit') r.amount = parseFloat(v) || 0;
-          else if (hName === 'quantity') r.qty = parseFloat(v) || 1;
-          else if (hName === 'paymentsourceaccount') r.accountPayment = v;
-          else if (hName === 'beneficiaryaccount') r.accountReceived = v;
-          else if (hName === 'merchant') r.merchant = v;
-          else if (hName === 'author') r.author = v;
-          else if (hName === 'total') r.total = parseFloat(v) || 0;
         }
       });
       return r;
