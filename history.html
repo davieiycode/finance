@@ -538,7 +538,7 @@
       const calcEl = document.getElementById('m-calculation');
       if (t.qty && t.qty > 0) {
         calcEl.style.display = 'block';
-        let formula = `(${t.qty} x Rp ${t.amount.toLocaleString('id-ID')})`;
+        let formula = `(${t.qty} ${t.scale || ''} x Rp ${t.amount.toLocaleString('id-ID')})`;
         if (t.discount > 0) formula += ` - Rp ${t.discount.toLocaleString('id-ID')}`;
         if (t.fee > 0) formula += ` + Rp ${t.fee.toLocaleString('id-ID')}`;
         formula += ` = Rp ${t.total.toLocaleString('id-ID')}`;

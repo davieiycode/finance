@@ -477,9 +477,10 @@
               t.projects = sanitizeArr(t.projects);
               t.cleared = (t.cleared === true || t.cleared === 'TRUE' || t.cleared === 'Yes');
               
-              // Robust extraction for Merchant and Author to avoid missing data from spreadsheet variations
+              // Robust extraction for Merchant, Author, and Scale to avoid missing data from spreadsheet variations
               t.merchant = t.merchant || t.Merchant || rawT['Merchant'] || rawT['merchant'] || rawT['Merchant Name'] || '-';
               t.author = t.author || t.Author || rawT['Author'] || rawT['author'] || rawT['Kreator'] || '-';
+              t.scale = t.scale || t.unit || t.unitscale || t.satuan || rawT['Unit Scale'] || rawT['Unit'] || rawT['Satuan'] || 'pcs';
               
               // Generate Derived Fields if missing
               if (t.date && !t.year) {
@@ -543,7 +544,19 @@
           otherKeys.forEach(key => {
             if (data[key]) {
               SyncHub.update(80, `Updating ${key}...`);
-              localStorage.setItem(key, typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]));
+              let entityData = data[key];
+              if (key === 'items' && Array.isArray(entityData)) {
+                // Specialized mapping for Items to ensure property consistency
+                entityData = entityData.map(i => {
+                   const mapped = reverseMap(i);
+                   // Ensure unit/scale is correctly assigned to 'unit' property for items
+                   mapped.unit = mapped.unit || mapped.scale || mapped.unitscale || mapped.satuan || i['Unit'] || i['Unit Scale'] || i['unit'] || 'pcs';
+                   // Ensure price is assigned back to 'price' if it was mapped to 'amount' by reverseMap
+                   mapped.price = mapped.price || mapped.amount || i['Price'] || i['Default Unit Price'] || 0;
+                   return mapped;
+                });
+              }
+              localStorage.setItem(key, typeof entityData === 'string' ? entityData : JSON.stringify(entityData));
             }
           });
 

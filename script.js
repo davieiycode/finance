@@ -258,7 +258,7 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
           name: cleanI,
           category: t.category || 'General',
           price: t.amount || 0,
-          unit: t.qtyScale || 'pcs',
+          unit: t.scale || 'pcs',
           status: 'Active',
           image: ''
         });
@@ -403,9 +403,14 @@ const initForm = () => {
           }
         }
         if (quantityInput) quantityInput.value = tx.qty || 1;
+        if (itemScaleInput) itemScaleInput.value = tx.scale || 'pcs';
         if (discountInput) discountInput.value = tx.discount || 0;
         if (feeInput) feeInput.value = tx.fee || 0;
         if (currencyInput) currencyInput.value = tx.currency || 'IDR';
+        if (receiptInput) {
+          receiptInput.value = tx.receipt || '';
+          updateReceiptPreview(tx.receipt);
+        }
         
         const rateInput = document.getElementById('exchange-rate-input');
         if (rateInput) rateInput.value = tx.exchangeRate || 1.00;
