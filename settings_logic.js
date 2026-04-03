@@ -428,6 +428,9 @@ window.copyScriptCode = () => {
         else if (hName === 'unit') r.unit = v;
         else if (hName === 'warrantyexpirydate' || hName === 'expirydate' || hName === 'expiry') r.expiry = v;
         else if (hName === 'notes') r.notes = v;
+        else if (hName === 'merchant') r.merchant = v;
+        else if (hName === 'author') r.author = v;
+        else r[hName] = v; // Capture all other columns as-is
         
         // Transaction Specific Mapping
         if (name === 'transaction') {
@@ -447,6 +450,8 @@ window.copyScriptCode = () => {
           else if (hName === 'quantity') r.qty = parseFloat(v) || 1;
           else if (hName === 'paymentsourceaccount') r.accountPayment = v;
           else if (hName === 'beneficiaryaccount') r.accountReceived = v;
+          else if (hName === 'merchant') r.merchant = v;
+          else if (hName === 'author') r.author = v;
           else if (hName === 'total') r.total = parseFloat(v) || 0;
         }
       });
@@ -491,6 +496,7 @@ function doPost(e) {
         'Manufacturer', 'Model', 'Unit', 'Default Unit Price', 'Currency', 
         'Warranty / Expiry Date', 'Stock Keeping Unit', 'Notes', 'Status', 'Update Time'
       ]},
+      { key: 'authors', sheetName: 'author', headers: ['ID', 'Author Name', 'Role/Type', 'Status', 'Notes', 'Update Time'] },
       { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] }
     ];
 
@@ -518,9 +524,13 @@ function doPost(e) {
           
           if (ent.key === 'merchants' && hNorm === 'category') return item.type || '';
           
+          if (ent.key === 'authors' && hNorm === 'authorname') return item.name;
+          
           if (ent.key === 'transactions') {
             if (h === 'Payment Source Account') return item.accountPayment || '';
             if (h === 'Beneficiary Account') return item.accountReceived || '';
+            if (h === 'Merchant') return item.merchant || '';
+            if (h === 'Author') return item.author || '';
             if (h === 'Amount (per Unit)') return item.amount || 0;
             if (h === 'Analytics Tags') return (item.tags || []).join(', ');
             if (h === 'Associated Project') return (item.projects || []).join(', ');
