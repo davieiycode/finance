@@ -443,6 +443,22 @@
               </div>
               <i data-lucide="chevron-right" style="opacity:0.2;"></i>
            </div>
+           <div class="sett-list-item" onclick="showPView('categories', 'Category Lab')">
+              <div class="sett-icon" style="background:var(--glass); color:var(--accent);"><i data-lucide="layers"></i></div>
+              <div style="flex:1;">
+                 <div class="sett-value">Category Database</div>
+                 <div class="sett-sub">Groupings, definitions & default types</div>
+              </div>
+              <i data-lucide="chevron-right" style="opacity:0.2;"></i>
+           </div>
+           <div class="sett-list-item" onclick="showPView('scales', 'Scale Matrix')">
+              <div class="sett-icon" style="background:var(--glass); color:#f59e0b;"><i data-lucide="scaling"></i></div>
+              <div style="flex:1;">
+                 <div class="sett-value">Unit Scale Database</div>
+                 <div class="sett-sub">Measurement units & detailed descriptions</div>
+              </div>
+              <i data-lucide="chevron-right" style="opacity:0.2;"></i>
+           </div>
         </div>
 
         <div class="section-title">System Internals</div>
@@ -459,7 +475,7 @@
               <div class="sett-icon" style="background:rgba(139,92,246,0.1); color:var(--accent);"><i data-lucide="zap"></i></div>
               <div style="flex:1;">
                  <div class="sett-value">Software Update</div>
-                 <div class="sett-sub" id="s-version-sub">v3.1.0 • Stable Channel</div>
+                 <div class="sett-sub" id="s-version-sub">v3.2.0 • Stable Channel</div>
               </div>
               <i data-lucide="chevron-right" style="opacity:0.2;"></i>
            </div>
@@ -677,6 +693,76 @@
             <div id="mapping-fields" style="display:flex; flex-direction:column; gap:1.25rem; margin-top:1.25rem;"></div>
          </div>
          <button onclick="executeImport()" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none; padding:1.25rem;"><span style="font-weight:800;">RECONSTRUCT DATABASE</span></button>
+      </div>
+
+      <!-- Categories View -->
+      <div id="p-view-categories" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="settings-list-card" style="padding:1.5rem; gap:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label class="sett-label">Category Manager</label>
+            <button onclick="newCategory()" class="btn btn-primary" style="padding:0.5rem 1rem; font-size:0.75rem; border-radius:0.75rem; background: var(--accent); border: none; color: white;">+ New</button>
+          </div>
+          <div id="categories-db-list" style="display:flex; flex-direction:column; gap:0.75rem; max-height:400px; overflow-y:auto; padding-right:0.5rem;"></div>
+        </div>
+      </div>
+
+      <!-- Category Editor -->
+      <div id="p-view-cat-editor" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="settings-list-card" style="padding:1.5rem; gap:1.5rem;">
+          <div>
+            <label class="sett-label">Category Name</label>
+            <input type="text" id="cat-name" class="f-input" style="margin-top:0.75rem;" placeholder="e.g. Food & Beverage">
+          </div>
+          <div>
+            <label class="sett-label">Category Group</label>
+            <input type="text" id="cat-group" class="f-input" style="margin-top:0.75rem;" placeholder="e.g. Life Needs">
+          </div>
+          <div>
+            <label class="sett-label">Type Mapping</label>
+            <select id="cat-type" class="f-input" style="margin-top:0.75rem;">
+              <option value="Expense">Expense</option>
+              <option value="Income">Income</option>
+              <option value="Transfer">Transfer</option>
+              <option value="Investment">Investment</option>
+              <option value="Savings">Savings</option>
+            </select>
+          </div>
+          <div>
+            <label class="sett-label">Description / Definition</label>
+            <textarea id="cat-desc" class="f-input" style="margin-top:0.75rem; height:80px; resize:none;" placeholder="What constitutes this category?"></textarea>
+          </div>
+        </div>
+        <button onclick="saveCategory()" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none; padding:1.25rem;">
+          <span style="font-weight:800;">Save Category</span>
+        </button>
+      </div>
+
+      <!-- Scales View -->
+      <div id="p-view-scales" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="settings-list-card" style="padding:1.5rem; gap:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label class="sett-label">Unit Scale Master</label>
+            <button onclick="newScale()" class="btn btn-primary" style="padding:0.5rem 1rem; font-size:0.75rem; border-radius:0.75rem; background: var(--accent); border: none; color: white;">+ New</button>
+          </div>
+          <div id="scales-db-list" style="display:flex; flex-direction:column; gap:0.75rem; max-height:400px; overflow-y:auto; padding-right:0.5rem;"></div>
+        </div>
+      </div>
+
+      <!-- Scale Editor -->
+      <div id="p-view-scale-editor" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="settings-list-card" style="padding:1.5rem; gap:1.5rem;">
+          <div>
+            <label class="sett-label">Scale Key (ID)</label>
+            <input type="text" id="scale-name" class="f-input" style="margin-top:0.75rem;" placeholder="e.g. kg, pcs, L">
+          </div>
+          <div>
+            <label class="sett-label">Full Description</label>
+            <textarea id="scale-desc" class="f-input" style="margin-top:0.75rem; height:80px; resize:none;" placeholder="Explain what this unit measures..."></textarea>
+          </div>
+        </div>
+        <button onclick="saveScale()" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none; padding:1.25rem;">
+          <span style="font-weight:800;">Save Scale</span>
+        </button>
       </div>
 
       <!-- PIN Setup -->

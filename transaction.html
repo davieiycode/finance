@@ -129,11 +129,20 @@
           <label class="label">Category<span>*</span></label>
           <div class="input-container">
             <input type="text" class="input input-with-icon" id="category-input" list="category-list"
-              placeholder="Select category...">
+              placeholder="Select category..." oninput="autoFillCategoryGroup()">
             <div id="category-icon-container" class="input-icon">
               <i data-lucide="box" style="width: 18px;"></i>
             </div>
             <datalist id="category-list"></datalist>
+          </div>
+          <div id="category-insight" class="insight-box" style="display: none; margin-top: 0.5rem; background: rgba(139, 92, 246, 0.05); padding: 0.75rem; border-radius: 0.75rem; font-size: 0.75rem; border: 1px solid var(--border);"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Category Group</label>
+          <div class="input-container">
+            <input type="text" class="input" id="category-group-input" list="group-list" placeholder="Auto-filled from category...">
+            <datalist id="group-list"></datalist>
           </div>
         </div>
 
@@ -161,7 +170,7 @@
           <div class="form-group">
             <label class="label">Unit Scale<span>*</span></label>
             <div class="input-container">
-              <input type="text" class="input" id="item-scale" list="scale-list" placeholder="Select scale..." value="pcs">
+              <input type="text" class="input" id="item-scale" list="scale-list" placeholder="Select scale..." value="pcs" oninput="showScaleDescription()">
               <i data-lucide="scaling" class="input-icon" style="width: 18px; opacity: 0.5;"></i>
               <datalist id="scale-list">
                 <option value="pcs">Pieces - Standard unit for individual items</option>
@@ -172,13 +181,9 @@
                 <option value="pack">Package - Wrapped or bundled items</option>
                 <option value="box">Box - Packaged sets or cartons</option>
                 <option value="btl">Bottle - Single beverage or liquid container</option>
-                <option value="m">Meter - Length measurement (cloth, cable)</option>
-                <option value="serv">Serving - Portion of food or meal</option>
-                <option value="trip">Trip - Transportation or travel distance</option>
-                <option value="hrs">Hours - Time-based services or labor</option>
-                <option value="pax">Person - Per head count for tickets/bookings</option>
               </datalist>
             </div>
+            <div id="scale-insight" class="insight-box" style="display: none; margin-top: 0.5rem; background: rgba(139, 92, 246, 0.05); padding: 0.75rem; border-radius: 0.75rem; font-size: 0.75rem; border: 1px solid var(--border);"></div>
           </div>
         </div>
 

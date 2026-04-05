@@ -15,22 +15,137 @@
       --bg-darker: var(--bg-secondary);
     }
 
-    .account-card {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: 1.25rem;
-      padding: 1.25rem;
+    .bank-card {
+      position: relative;
+      height: 190px;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+    }
+
+    .bank-card::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bank-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .card-top {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      cursor: pointer;
-      transition: all 0.3s;
+      align-items: flex-start;
+      z-index: 1;
     }
-    .account-card:hover { background: rgba(255, 255, 255, 0.06); transform: translateY(-2px); border-color: var(--violet); }
-    .acc-info { display: flex; align-items: center; gap: 1rem; }
-    .acc-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); background: var(--border2); }
-    
+
+    .card-logo {
+      width: 64px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    .card-logo img {
+      max-width: 85%;
+      max-height: 85%;
+      object-fit: contain;
+    }
+
+    .card-logo-placeholder {
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--violet);
+      letter-spacing: -0.02em;
+    }
+
+    .card-meta {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+
+    .card-status-label {
+      font-size: 0.6rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 30px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.15);
+      letter-spacing: 0.05em;
+    }
+
+    .card-type-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .card-middle {
+      z-index: 1;
+      margin: 1.5rem 0 auto;
+    }
+
+    .card-number {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 1.125rem;
+      letter-spacing: 0.12em;
+      opacity: 0.95;
+    }
+
+    .card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      z-index: 1;
+    }
+
+    .card-holder {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      max-width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-balance {
+      font-size: 1.25rem;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    /* Core Layout Styles (Restored) */
     .modal-backdrop {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.8); backdrop-filter: blur(25px);
@@ -81,7 +196,6 @@
 
     .btn-violet { background: var(--violet); color: var(--text-primary); border: none; font-weight: 700; padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; }
     .btn-cancel { background: rgba(255,255,255,0.08); color: var(--text-secondary); border: none; font-weight: 700; padding: 0.5rem 1.25rem; border-radius: 0.5rem; cursor: pointer; }
-    .back-btn { width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -195,8 +309,29 @@
           <div class="form-group"><label class="form-label">Number / ID</label><input type="text" id="acc-id" class="f-input"></div>
           <div class="form-group"><label class="form-label">Card Expiry</label><input type="month" id="acc-card-expiry" class="f-input"></div>
         </div>
-        <div class="form-group"><label class="form-label">Opening Balance</label><input type="number" id="acc-balance-init" class="f-input" placeholder="Rp 0"></div>
-        <div class="form-group"><label class="form-label">Opening Date</label><input type="date" id="acc-date" class="f-input"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group"><label class="form-label">Opening Balance</label><input type="number" id="acc-balance-init" class="f-input" placeholder="Rp 0"></div>
+          <div class="form-group"><label class="form-label">Opening Date</label><input type="date" id="acc-date" class="f-input"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Card Color</label>
+            <input type="color" id="acc-color" class="f-input" style="height: 50px; padding: 4px; cursor: pointer;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Logo Upload</label>
+            <button type="button" class="f-input" onclick="document.getElementById('acc-logo-file').click()" style="text-align: left; position: relative;">
+               <span id="logo-status">Upload Image</span>
+               <i data-lucide="image" style="position: absolute; right: 1rem; width: 16px; top: 1rem;"></i>
+            </button>
+            <input type="file" id="acc-logo-file" style="display: none;" accept="image/*" onchange="handleLogoUpload(this)">
+            <input type="hidden" id="acc-logo-data">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Logo URL (Alternative)</label>
+          <input type="text" id="acc-logo-url" class="f-input" placeholder="https://..." oninput="updateLogoLink(this.value)">
+        </div>
         <div class="form-group"><label class="form-label">Notes</label><textarea id="acc-notes" class="f-input" style="min-height: 80px;"></textarea></div>
       </div>
     </div>
@@ -250,9 +385,9 @@
     let accounts = JSON.parse(localStorage.getItem('accounts'));
     if (!accounts || accounts.length === 0) {
       accounts = [
-        { id: 1, name: 'Bank Mandiri', type: 'Savings', balance: 25750800, number: '124-00-****', status: 'Active', color: '#0ea5e9' },
-        { id: 2, name: 'Bank Central Asia', type: 'Savings', balance: 12400500, number: '802-11-****', status: 'Active', color: '#10b981' },
-        { id: 3, name: 'Gopay', type: 'E-Wallet', balance: 500000, number: '0812-****', status: 'Frozen', color: '#f59e0b' }
+        { id: 1, name: 'Bank Mandiri', type: 'Savings', balance: 25750800, number: '124-00-****', status: 'Active', color: '#053d71', logo: '' },
+        { id: 2, name: 'BCA Private', type: 'Savings', balance: 12400500, number: '802-11-****', status: 'Active', color: '#00479b', logo: '' },
+        { id: 3, name: 'Gopay', type: 'E-Wallet', balance: 500000, number: '0812-****', status: 'Frozen', color: '#009dcc', logo: '' }
       ];
       localStorage.setItem('accounts', JSON.stringify(accounts));
     }
@@ -278,20 +413,29 @@
 
         const cleanId = typeof acc.id === 'string' ? `'${acc.id}'` : acc.id;
         const name = acc.name || 'Unnamed Account';
+        const cardColor = acc.color || '#1e293b';
+        const logo = acc.logo || '';
 
         return `
-        <div class="account-card" onclick="openModal(${cleanId}, 'analysis')">
-          <div class="acc-info">
-            <div class="acc-icon" style="background:${acc.color}">${name.substring(0,2)}</div>
-            <div>
-              <div class="acc-name">${name}</div>
-              <div class="acc-type">${acc.type} • ${acc.number || '-'}</div>
-            </div>
-          </div>
-          <div style="text-align:right;">
-             <div style="font-weight:700; color:var(--text-primary);">Rp ${currentBalance.toLocaleString('id-ID')}</div>
-             <div style="font-size:0.65rem; color:${acc.status === 'Active' ? '#32D74B' : '#FF453A'}; font-weight:700;">${acc.status}</div>
-          </div>
+        <div class="bank-card" style="background: linear-gradient(135deg, ${cardColor}, ${cardColor}88);" onclick="openModal(${cleanId}, 'analysis')">
+           <div class="card-top">
+              <div class="card-logo">
+                 ${logo ? `<img src="${logo}" alt="Bank Logo">` : `<span class="card-logo-placeholder">${name.substring(0,2)}</span>`}
+              </div>
+              <div class="card-meta">
+                 <div class="card-status-label" style="color: ${acc.status === 'Active' ? '#10b981' : '#f87171'}">${acc.status}</div>
+                 <div class="card-type-label">${acc.type}</div>
+              </div>
+           </div>
+           
+           <div class="card-middle">
+              <div class="card-number">${acc.number || '**** **** **** ****'}</div>
+           </div>
+           
+           <div class="card-bottom">
+              <div class="card-holder">${name}</div>
+              <div class="card-balance">Rp ${currentBalance.toLocaleString('id-ID')}</div>
+           </div>
         </div>
       `}).join('');
     }
@@ -362,6 +506,24 @@
          document.getElementById('acc-balance-init').value = activeAcc.balance;
          document.getElementById('acc-provider').value = activeAcc.provider || '';
          document.getElementById('acc-card-expiry').value = activeAcc.cardExpiry || '';
+         document.getElementById('acc-color').value = activeAcc.color || '#1e293b';
+         
+         const isBase64 = (activeAcc.logo || '').startsWith('data:image');
+         document.getElementById('acc-logo-data').value = isBase64 ? activeAcc.logo : '';
+         document.getElementById('acc-logo-url').value = isBase64 ? '' : (activeAcc.logo || '');
+         document.getElementById('logo-status').textContent = activeAcc.logo ? (isBase64 ? 'Image Selected' : 'Link Provided') : 'Upload Image';
+      } else {
+         document.getElementById('acc-name-input').value = '';
+         document.getElementById('acc-id').value = '';
+         document.getElementById('acc-type').value = 'Bank';
+         document.getElementById('acc-balance-init').value = '';
+         document.getElementById('acc-provider').value = '';
+         document.getElementById('acc-card-expiry').value = '';
+         document.getElementById('acc-color').value = '#1e293b';
+         document.getElementById('acc-logo-data').value = '';
+         document.getElementById('acc-logo-url').value = '';
+         document.getElementById('logo-status').textContent = 'Upload Image';
+         document.querySelectorAll('.status-btn').forEach(b => b.classList.toggle('active', b.dataset.status === 'Active'));
       }
 
       modal.style.display = 'block';
@@ -474,7 +636,9 @@
         cardExpiry: document.getElementById('acc-card-expiry').value,
         balance: parseFloat(document.getElementById('acc-balance-init').value) || 0,
         status: document.querySelector('.status-btn.active').dataset.status,
-        color: activeAcc ? activeAcc.color : '#8b5cf6'
+        color: document.getElementById('acc-color').value,
+        logo: document.getElementById('acc-logo-url').value || document.getElementById('acc-logo-data').value || '',
+        updateTime: new Date().toISOString()
       };
 
       if (activeAcc) {
@@ -499,6 +663,27 @@
         renderAccounts('');
         if(typeof showToast === 'function') showToast('Account deleted successfully!', 'success', 'trash-2');
       });
+    }
+
+    function handleLogoUpload(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('acc-logo-data').value = e.target.result;
+          document.getElementById('acc-logo-url').value = ''; // Clear URL if image uploaded
+          document.getElementById('logo-status').textContent = 'Image Selected';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function updateLogoLink(val) {
+      if (val.trim()) {
+        document.getElementById('acc-logo-data').value = ''; // Clear uploaded image if URL provided
+        document.getElementById('logo-status').textContent = 'Link Provided';
+      } else {
+        document.getElementById('logo-status').textContent = 'Upload Image';
+      }
     }
 
     document.querySelectorAll('.status-btn').forEach(btn => {

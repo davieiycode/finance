@@ -15,7 +15,7 @@ window.AVATAR_SVGS = [
   `<svg viewBox="0 0 80 80"><defs><clipPath id="c12"><circle cx="40" cy="40" r="40" /></clipPath></defs><g clip-path="url(#c12)"><rect width="80" height="80" fill="#26215C" /><polygon points="0,0 80,0 0,80" fill="#3C3489" /><polygon points="80,0 80,80 0,80" fill="#085041" /><circle cx="26" cy="28" r="18" fill="#7F77DD" /><circle cx="56" cy="54" r="15" fill="#1D9E75" /><circle cx="26" cy="28" r="8" fill="#EEEDFE" /><circle cx="56" cy="54" r="7" fill="#9FE1CB" /></g></svg>`
 ];
 
-const APP_VERSION = 'v3.1.0';
+const APP_VERSION = 'v3.2.0';
 const BUILD_DATE = '2026.04.03';
 
 // settings_logic.js - Logic for settings.html
@@ -49,6 +49,9 @@ window.showPView = (vId, title) => {
   
   updateBreadcrumbs(vId, title);
   
+  if (vId === 'categories') window.renderCategoryList();
+  if (vId === 'scales') window.renderScaleList();
+
   if (vId === 'main') {
     viewStack = ['p-view-main'];
   } else {
@@ -85,9 +88,15 @@ window.goBack = (target) => {
       'p-view-security': 'Privacy Hub',
       'p-view-pin-setup': 'Setup PIN',
       'p-view-tutorial': 'Setup Guide',
-      'p-view-import-mapping': 'Matrix Mapping'
+      'p-view-import-mapping': 'Matrix Mapping',
+      'p-view-categories': 'Category Lab',
+      'p-view-cat-editor': 'Edit Category',
+      'p-view-scales': 'Scale Matrix',
+      'p-view-scale-editor': 'Edit Scale'
     };
     const vId = prevId.replace('p-view-', '');
+    if (vId === 'categories') window.renderCategoryList();
+    if (vId === 'scales') window.renderScaleList();
     updateBreadcrumbs(vId, titles[prevId]);
     if (window.lucide) window.lucide.createIcons();
   } else {
@@ -456,6 +465,8 @@ window.copyScriptCode = () => {
     else if (name.includes('account') || name.includes('rekening') || name.includes('akun')) finalKey = 'accounts';
     else if (name.includes('item') || name.includes('barang') || name.includes('produk')) finalKey = 'items';
     else if (name.includes('membership')) finalKey = 'membership_cards';
+    else if (name.includes('categories') || name.includes('category_db')) finalKey = 'categories_db';
+    else if (name.includes('scales') || name.includes('scale_db')) finalKey = 'scales_db';
     else if (name.includes('vault') || name.includes('brankas')) finalKey = 'vault';
     else if (name.includes('budget') || name.includes('anggaran')) finalKey = 'budgets';
     else if (name.includes('goal') || name.includes('target')) finalKey = 'goals';
@@ -482,7 +493,7 @@ function doPost(e) {
       { key: 'accounts', sheetName: 'account', headers: [
         'Account ID', 'Account Name', 'Account Type', 'Provider', 'Currency', 
         'Opening Balance', 'Opening Date', 'Current Balance', 'Status', 'Owner', 
-        'Account Number / ID', 'Branch / Location', 'Notes', 'Account Image', 'Update Time'
+        'Account Number / ID', 'Branch / Location', 'Notes', 'Card Color', 'Account Logo', 'Update Time'
       ]},
       { key: 'merchants', sheetName: 'merchant', headers: [
         'Merchant ID', 'Merchant Name', 'Category', 'Primary Contact Name', 'Phone Number', 
@@ -495,7 +506,9 @@ function doPost(e) {
         'Warranty / Expiry Date', 'Stock Keeping Unit', 'Notes', 'Status', 'Update Time'
       ]},
       { key: 'authors', sheetName: 'author', headers: ['ID', 'Author Name', 'Role/Type', 'Status', 'Notes', 'Update Time'] },
-      { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] }
+      { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] },
+      { key: 'categories_db', sheetName: 'categories', headers: ['ID', 'Category Name', 'Category Group', 'Type Mapping', 'Description'] },
+      { key: 'scales_db', sheetName: 'scales', headers: ['ID', 'Scale Key', 'Full Description'] }
     ];
 
     entities.forEach(ent => {
@@ -518,6 +531,12 @@ function doPost(e) {
           if (hNorm === 'warrantyexpirydate') return item.expiry || '';
           if (hNorm === 'manufacturer') return item.manu || '';
           if (hNorm === 'itemcategory') return item.category || '';
+          if (hNorm === 'categoryname' || hNorm === 'scalekey') return item.name;
+          if (hNorm === 'categorygroup') return item.group;
+          if (hNorm === 'typemapping') return item.type;
+          if (hNorm === 'fulldescription') return item.description;
+          if (hNorm === 'cardcolor') return item.color || '';
+          if (hNorm === 'accountlogo') return item.logo || '';
           if (hNorm === 'updatetime') return Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm");
           
           if (ent.key === 'merchants' && hNorm === 'category') return item.type || '';
@@ -788,22 +807,29 @@ function handlePinComplete() {
 }
 
 window.syncCloud = async (mode) => {
-  const btn = mode === 'pull' ? document.getElementById('pull-btn') : null;
-  if (btn) {
-    btn.style.opacity = '0.5';
-    btn.style.pointerEvents = 'none';
-  }
+  const btn = mode === 'pull' ? document.getElementById('pull-btn') : document.getElementById('push-btn');
+  if (!btn) return;
+
+  const originalHtml = btn.innerHTML;
+  btn.style.opacity = '0.7';
+  btn.style.pointerEvents = 'none';
+  btn.innerHTML = `<i data-lucide="refresh-cw" class="animate-spin" style="width:16px;"></i><span>${mode === 'pull' ? 'PULLING...' : 'PUSHING...'}</span>`;
+  if (window.lucide) window.lucide.createIcons();
   
-  if (window.triggerCloudSync && mode === 'pull') {
-      const syncMode = Array.from(document.getElementsByName('sync_strategy')).find(r => r.checked)?.value || 'merge';
-      await window.triggerCloudSync(syncMode);
-  } else if (window.triggerCloudPush && mode === 'push') {
-      await window.triggerCloudPush();
-  }
-  
-  if (btn) {
+  try {
+    if (window.triggerCloudSync && mode === 'pull') {
+        const syncMode = Array.from(document.getElementsByName('sync_strategy')).find(r => r.checked)?.value || 'merge';
+        await window.triggerCloudSync(syncMode);
+    } else if (window.triggerCloudPush && mode === 'push') {
+        await window.triggerCloudPush();
+    }
+  } catch (err) {
+    if (window.showToast) window.showToast('Sync process failed. Check your link.', 'error');
+  } finally {
     btn.style.opacity = '1';
     btn.style.pointerEvents = 'auto';
+    btn.innerHTML = originalHtml;
+    if (window.lucide) window.lucide.createIcons();
   }
 };
 
@@ -811,6 +837,173 @@ window.updateApp = () => {
     if (confirm('Clear cache and reload the application?')) {
         location.reload(true);
     }
+};
+
+// Database Management: Categories
+let editingCatId = null;
+window.renderCategoryList = () => {
+    const list = document.getElementById('categories-db-list');
+    if (!list) return;
+    const db = JSON.parse(localStorage.getItem('categories_db') || '[]');
+    if (db.length === 0) {
+        // Init with some defaults if empty
+        const defaults = [
+            { id: 1, name: 'Food & Beverage', group: 'Life Needs', type: 'Expense', description: 'Groceries, dining, drinks, and snacks.' },
+            { id: 2, name: 'Transportation', group: 'Mobility', type: 'Expense', description: 'Fuel, public transit, parking, and maintenance.' },
+            { id: 3, name: 'Shopping', group: 'Lifestyle', type: 'Expense', description: 'Clothes, electronics, and personal items.' },
+            { id: 4, name: 'Salary', group: 'Income', type: 'Income', description: 'Primary monthly income source.' }
+        ];
+        localStorage.setItem('categories_db', JSON.stringify(defaults));
+        return window.renderCategoryList();
+    }
+
+    list.innerHTML = db.map(c => `
+        <div class="sett-list-item" style="padding:0.75rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:1rem;">
+            <div style="flex:1;">
+                <div style="font-weight:700; font-size:0.9rem;">${c.name}</div>
+                <div style="font-size:0.65rem; color:var(--text-secondary); opacity:0.6;">${c.group} • ${c.type}</div>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+                <button onclick="editCategory(${c.id})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
+                <button onclick="deleteCategory(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+            </div>
+        </div>
+    `).join('');
+    if (window.lucide) window.lucide.createIcons();
+};
+
+window.newCategory = () => {
+    editingCatId = null;
+    document.getElementById('cat-name').value = '';
+    document.getElementById('cat-group').value = '';
+    document.getElementById('cat-type').value = 'Expense';
+    document.getElementById('cat-desc').value = '';
+    showPView('cat-editor', 'New Category');
+};
+
+window.editCategory = (id) => {
+    const db = JSON.parse(localStorage.getItem('categories_db') || '[]');
+    const cat = db.find(c => c.id === id);
+    if (!cat) return;
+    editingCatId = id;
+    document.getElementById('cat-name').value = cat.name;
+    document.getElementById('cat-group').value = cat.group;
+    document.getElementById('cat-type').value = cat.type;
+    document.getElementById('cat-desc').value = cat.description || '';
+    showPView('cat-editor', 'Edit Category');
+};
+
+window.saveCategory = () => {
+    const db = JSON.parse(localStorage.getItem('categories_db') || '[]');
+    const cat = {
+        id: editingCatId || Date.now(),
+        name: document.getElementById('cat-name').value.trim(),
+        group: document.getElementById('cat-group').value.trim(),
+        type: document.getElementById('cat-type').value,
+        description: document.getElementById('cat-desc').value.trim()
+    };
+    if (!cat.name || !cat.group) { alert('Name and Group are required'); return; }
+
+    if (editingCatId) {
+        const idx = db.findIndex(c => c.id === editingCatId);
+        db[idx] = cat;
+    } else {
+        db.push(cat);
+    }
+    localStorage.setItem('categories_db', JSON.stringify(db));
+    showToast('Category saved', 'success', 'check-circle');
+    goBack();
+};
+
+window.deleteCategory = (id) => {
+    window.showConfirm('Delete this category definition?', () => {
+        let db = JSON.parse(localStorage.getItem('categories_db') || '[]');
+        db = db.filter(c => c.id !== id);
+        localStorage.setItem('categories_db', JSON.stringify(db));
+        window.renderCategoryList();
+    });
+};
+
+// Database Management: Scales
+let editingScaleId = null;
+window.renderScaleList = () => {
+    const list = document.getElementById('scales-db-list');
+    if (!list) return;
+    const db = JSON.parse(localStorage.getItem('scales_db') || '[]');
+    if (db.length === 0) {
+        const defaults = [
+            { id: 1, name: 'pcs', description: 'Pieces - Standard unit for individual items.' },
+            { id: 2, name: 'kg', description: 'Kilogram - Mass/Weight for groceries or fuel.' },
+            { id: 3, name: 'gr', description: 'Gram - Precision weight for small items.' },
+            { id: 4, name: 'L', description: 'Liter - Volume for liquid items.' },
+            { id: 5, name: 'ml', description: 'Milliliter - Small volume precision for medicinal or cosmetic items.' },
+            { id: 6, name: 'pack', description: 'Package - Wrapped or bundled items.' },
+            { id: 7, name: 'box', description: 'Box - Packaged sets or cartons.' },
+            { id: 8, name: 'btl', description: 'Bottle - Single beverage or liquid container.' }
+        ];
+        localStorage.setItem('scales_db', JSON.stringify(defaults));
+        return window.renderScaleList();
+    }
+
+    list.innerHTML = db.map(s => `
+        <div class="sett-list-item" style="padding:0.75rem; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:1rem;">
+            <div style="flex:1;">
+                <div style="font-weight:700; font-size:0.9rem;">${s.name}</div>
+                <div style="font-size:0.6rem; color:var(--text-secondary); opacity:0.6; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">${s.description}</div>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+                <button onclick="editScale(${s.id})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
+                <button onclick="deleteScale(${s.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+            </div>
+        </div>
+    `).join('');
+    if (window.lucide) window.lucide.createIcons();
+};
+
+window.newScale = () => {
+    editingScaleId = null;
+    document.getElementById('scale-name').value = '';
+    document.getElementById('scale-desc').value = '';
+    showPView('scale-editor', 'New Unit Scale');
+};
+
+window.editScale = (id) => {
+    const db = JSON.parse(localStorage.getItem('scales_db') || '[]');
+    const s = db.find(x => x.id === id);
+    if (!s) return;
+    editingScaleId = id;
+    document.getElementById('scale-name').value = s.name;
+    document.getElementById('scale-desc').value = s.description;
+    showPView('scale-editor', 'Edit Scale');
+};
+
+window.saveScale = () => {
+    const db = JSON.parse(localStorage.getItem('scales_db') || '[]');
+    const s = {
+        id: editingScaleId || Date.now(),
+        name: document.getElementById('scale-name').value.trim(),
+        description: document.getElementById('scale-desc').value.trim()
+    };
+    if (!s.name) { alert('Scale ID is required'); return; }
+
+    if (editingScaleId) {
+        const idx = db.findIndex(x => x.id === editingScaleId);
+        db[idx] = s;
+    } else {
+        db.push(s);
+    }
+    localStorage.setItem('scales_db', JSON.stringify(db));
+    showToast('Scale saved', 'success', 'check-circle');
+    goBack();
+};
+
+window.deleteScale = (id) => {
+    window.showConfirm('Delete this scale definition?', () => {
+        let db = JSON.parse(localStorage.getItem('scales_db') || '[]');
+        db = db.filter(x => x.id !== id);
+        localStorage.setItem('scales_db', JSON.stringify(db));
+        window.renderScaleList();
+    });
 };
 
 document.addEventListener('DOMContentLoaded', initSettings);

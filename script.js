@@ -305,12 +305,33 @@ function populateDatalists() {
   const sets = {
     merchants: new Set(),
     items: new Set(),
-    categories: new Set(['Food & Beverage', 'Transportation', 'Shopping', 'Bills & Utilities', 'Entertainment', 'Health', 'Education', 'Investment', 'Other']),
+    categories: new Set(),
+    groups: new Set(),
+    scales: new Set(),
     accounts: new Set(),
     authors: new Set(['User']),
     tags: new Set(['Monthly', 'Priority']),
     projects: new Set(['General'])
   };
+
+  // 1. Pull from databases for high-fidelity master data
+  const catDB = JSON.parse(localStorage.getItem('categories_db') || '[]');
+  catDB.forEach(c => {
+    sets.categories.add(c.name.trim());
+    if (c.group) sets.groups.add(c.group.trim());
+  });
+
+  const scaleDB = JSON.parse(localStorage.getItem('scales_db') || '[]');
+  scaleDB.forEach(s => {
+    sets.scales.add(s.name.trim());
+  });
+
+  if (sets.categories.size === 0) {
+    ['Food & Beverage', 'Transportation', 'Shopping', 'Bills & Utilities', 'Entertainment', 'Health', 'Education', 'Investment', 'Other'].forEach(c => sets.categories.add(c));
+  }
+  if (sets.scales.size === 0) {
+    ['pcs', 'kg', 'gr', 'L', 'ml', 'pack', 'box', 'btl'].forEach(s => sets.scales.add(s));
+  }
 
   catalog.forEach(it => {
     if (it.name) sets.items.add(it.name.trim());
@@ -357,6 +378,8 @@ function populateDatalists() {
   fill('merchant-list', sets.merchants);
   fill('item-list', sets.items);
   fill('category-list', sets.categories);
+  fill('group-list', sets.groups);
+  fill('scale-list', sets.scales);
   fill('payment-list', sets.accounts);
   fill('received-list', sets.accounts);
   fill('author-list', sets.authors);
@@ -391,6 +414,9 @@ const initForm = () => {
         document.getElementById('item-input').value = tx.name || tx.Item || '';
         document.getElementById('merchant-input').value = tx.merchant || tx.Merchant || '';
         document.getElementById('category-input').value = tx.category || tx.Category || '';
+        if (document.getElementById('category-group-input')) {
+          document.getElementById('category-group-input').value = tx.categoryGroup || tx['Category Group'] || '';
+        }
         document.getElementById('transaction-description').value = tx.description || '';
         
         if (amountInput) {
@@ -497,6 +523,7 @@ if (nextBtn) {
       merchant: document.getElementById('merchant-input').value,
       type: document.querySelector('#type-selector .type-btn.active')?.dataset.type || 'Expense',
       category: document.getElementById('category-input').value,
+      categoryGroup: document.getElementById('category-group-input')?.value || '',
       amount: parseNum(document.getElementById('amount-input')?.value), // amount is unit price
       qty: parseNum(document.getElementById('quantity-input')?.value),
       discount: parseNum(document.getElementById('discount-input')?.value),
@@ -774,7 +801,16 @@ function autoFillFromItem(item) {
   const currencyInput = document.getElementById('currency-input');
 
   if (itemInput) itemInput.value = item.name || itemInput.value;
-  if (categoryInput && item.category) categoryInput.value = item.category;
+  if (categoryInput && item.category) {
+    categoryInput.value = item.category;
+    // Auto-fill category group if it exists in the item or database
+    const catGroupInput = document.getElementById('category-group-input');
+    if (catGroupInput) {
+      const categories = JSON.parse(localStorage.getItem('categories_db') || '[]');
+      const cat = categories.find(c => c.name.toLowerCase() === item.category.toLowerCase());
+      catGroupInput.value = item.categoryGroup || (cat ? cat.group : '');
+    }
+  }
   if (amountInput && item.price) {
     amountInput.value = new Intl.NumberFormat('id-ID').format(item.price);
     calculateTotal();
@@ -784,3 +820,43 @@ function autoFillFromItem(item) {
   
   showToast(`Loaded details for ${item.name}`, 'success', 'package');
 }
+
+// Global Category Group Auto-fill
+window.autoFillCategoryGroup = () => {
+  const catInput = document.getElementById('category-input');
+  const groupInput = document.getElementById('category-group-input');
+  if (!catInput || !groupInput) return;
+
+  const val = catInput.value.trim().toLowerCase();
+  const categories = JSON.parse(localStorage.getItem('categories_db') || '[]');
+  const match = categories.find(c => c.name.toLowerCase() === val);
+  
+  if (match) {
+    groupInput.value = match.group;
+    const insight = document.getElementById('category-insight');
+    if (insight) {
+      insight.style.display = 'block';
+      insight.innerHTML = `<strong>${match.group}</strong>: ${match.description || 'No description available'}`;
+    }
+  } else {
+    const insight = document.getElementById('category-insight');
+    if (insight) insight.style.display = 'none';
+  }
+};
+
+window.showScaleDescription = () => {
+  const scaleInput = document.getElementById('item-scale');
+  const insight = document.getElementById('scale-insight');
+  if (!scaleInput || !insight) return;
+
+  const val = scaleInput.value.trim().toLowerCase();
+  const scales = JSON.parse(localStorage.getItem('scales_db') || '[]');
+  const match = scales.find(s => s.name.toLowerCase() === val);
+
+  if (match) {
+    insight.style.display = 'block';
+    insight.innerHTML = `<strong>${match.name}</strong>: ${match.description || 'No description available'}`;
+  } else {
+    insight.style.display = 'none';
+  }
+};

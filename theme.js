@@ -405,7 +405,9 @@
         'month': 'month',
         'bulan': 'month',
         'updatetime': 'updateTime',
-        'xp': 'xp'
+        'xp': 'xp',
+        'cardcolor': 'color',
+        'accountlogo': 'logo'
       };
 
       try {
@@ -414,7 +416,7 @@
         const data = await res.json();
 
         let count = 0;
-        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
+        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled', 'categories_db', 'scales_db'];
         const objectKeys = ['user_prefs']; // Keys that store objects, not arrays
         const reverseMap = (obj) => {
           const newObj = {};
@@ -612,7 +614,7 @@
       };
 
       try {
-        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled'];
+        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'budgets', 'goals', 'membership_cards', 'user_prefs', 'pin_enabled', 'categories_db', 'scales_db'];
         const objectKeys = ['user_prefs'];
         const payload = { updateTime: new Date().toISOString() };
         
