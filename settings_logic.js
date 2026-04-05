@@ -16,7 +16,7 @@ window.AVATAR_SVGS = [
 ];
 
 const APP_VERSION = 'v3.2.0';
-const BUILD_DATE = '2026.04.03';
+const BUILD_DATE = '2026.04.06';
 
 // settings_logic.js - Logic for settings.html
 
@@ -470,6 +470,16 @@ window.copyScriptCode = () => {
     else if (name.includes('vault') || name.includes('brankas')) finalKey = 'vault';
     else if (name.includes('budget') || name.includes('anggaran')) finalKey = 'budgets';
     else if (name.includes('goal') || name.includes('target')) finalKey = 'goals';
+    else if (name.includes('voucher') || name.includes('kupon')) finalKey = 'vouchers';
+    else if (name.includes('setting') || name.includes('pref')) {
+      // Special Handling for Settings (Object instead of Array)
+      const settingsObj = {};
+      data.forEach(row => {
+        if (row[0]) settingsObj[row[0]] = row[1];
+      });
+      response['user_prefs'] = settingsObj;
+      return; 
+    }
     
     response[finalKey] = records;
   });
@@ -508,7 +518,12 @@ function doPost(e) {
       { key: 'authors', sheetName: 'author', headers: ['ID', 'Author Name', 'Role/Type', 'Status', 'Notes', 'Update Time'] },
       { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] },
       { key: 'categories_db', sheetName: 'categories', headers: ['ID', 'Category Name', 'Category Group', 'Type Mapping', 'Description'] },
-      { key: 'scales_db', sheetName: 'scales', headers: ['ID', 'Scale Key', 'Full Description'] }
+      { key: 'scales_db', sheetName: 'scales', headers: ['ID', 'Scale Key', 'Full Description'] },
+      { key: 'vouchers', sheetName: 'voucher', headers: ['ID', 'Voucher Name', 'Provider', 'Code', 'Expiry Date', 'Notes', 'Type', 'Status', 'Update Time'] },
+      { key: 'budgets', sheetName: 'budget', headers: ['ID', 'Category', 'Budget Amount', 'Period', 'Spent', 'Notes', 'Update Time'] },
+      { key: 'goals', sheetName: 'goal', headers: ['ID', 'Goal Name', 'Target Amount', 'Current Amount', 'Deadline', 'Icon', 'Status', 'Update Time'] },
+      { key: 'vault', sheetName: 'vault', headers: ['ID', 'File Name', 'Content/URL', 'Type', 'Date', 'Associated ID', 'Update Time'] },
+      { key: 'user_prefs', sheetName: 'settings', headers: ['Preference Key', 'Setting Value'] }
     ];
 
     entities.forEach(ent => {
@@ -519,16 +534,29 @@ function doPost(e) {
       if (!sheet) { sheet = ss.insertSheet(ent.sheetName); }
       
       const rows = [ent.headers];
+      
+      if (ent.key === 'user_prefs') {
+        if (typeof data === 'object' && !Array.isArray(data)) {
+           const sRows = [['Preference Key', 'Setting Value']];
+           for (let k in data) {
+             sRows.push([k, typeof data[k] === 'object' ? JSON.stringify(data[k]) : data[k]]);
+           }
+           sheet.getRange(1, 1, sheet.getLastRow() || 1, 2).clearContent();
+           sheet.getRange(1, 1, sRows.length, 2).setValues(sRows);
+           return; 
+        }
+      }
+
       data.forEach(item => {
         const row = ent.headers.map(h => {
           const hNorm = h.toLowerCase().replace(/[^a-z0-9]/g, '');
           
           if (hNorm === 'accountid' || hNorm === 'itemid' || hNorm === 'merchantid' || hNorm === 'transactionid') return item.id;
-          if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname') return item.name;
+          if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname' || hNorm === 'vouchername' || hNorm === 'goalname') return item.name;
           if (hNorm === 'currentbalance') return item.balance || 0;
           if (hNorm === 'defaultunitprice') return item.price || 0;
           if (hNorm === 'stockkeepingunit') return item.sku || '';
-          if (hNorm === 'warrantyexpirydate') return item.expiry || '';
+          if (hNorm === 'warrantyexpirydate' || hNorm === 'expirydate' || hNorm === 'deadline') return item.expiry || item.deadline || '';
           if (hNorm === 'manufacturer') return item.manu || '';
           if (hNorm === 'itemcategory') return item.category || '';
           if (hNorm === 'categoryname' || hNorm === 'scalekey') return item.name;
@@ -540,7 +568,6 @@ function doPost(e) {
           if (hNorm === 'updatetime') return Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm");
           
           if (ent.key === 'merchants' && hNorm === 'category') return item.type || '';
-          
           if (ent.key === 'authors' && hNorm === 'authorname') return item.name;
           
           if (ent.key === 'transactions') {
@@ -556,13 +583,13 @@ function doPost(e) {
             if (h === 'Year' && item.date) return item.date.split('-')[0];
             if (h === 'Month' && item.date) return item.date.split('-')[1];
           }
-          
+
           for (let k in item) {
-             if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === hNorm) {
+            if (k.toLowerCase().replace(/[^a-z0-9]/g, '') === hNorm) {
                 let v = item[k];
                 if (Array.isArray(v)) return v.join(', ');
                 return v;
-             }
+            }
           }
           return '';
         });
@@ -575,11 +602,12 @@ function doPost(e) {
       sheet.setFrozenRows(1);
     });
 
-    return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+    }
   }
-}`;
+`;
   navigator.clipboard.writeText(code);
   alert('Script code copied to clipboard!');
 };
