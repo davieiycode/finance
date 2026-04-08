@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Budget Manager - Liquid Glass</title>
+  <title>Ration Planner - Jurney</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -57,7 +57,7 @@
       <header class="header">
         <div style="display: flex; align-items: center; gap: 1rem;">
           <button onclick="window.location.href='index.html'" class="back-btn"><i data-lucide="chevron-left"></i></button>
-          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Budgeting</h1>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Ration Planning</h1>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
           <button onclick="toggleSearch()" class="back-btn"><i data-lucide="search"></i></button>
@@ -67,7 +67,7 @@
 
       <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideInSearch 0.3s ease-out;">
         <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
-        <input type="text" id="master-search" class="f-input" placeholder="Search categories..." style="padding-left: 2.75rem;" oninput="refreshList(this.value)">
+        <input type="text" id="master-search" class="f-input" placeholder="Scan supply paths..." style="padding-left: 2.75rem;" oninput="refreshList(this.value)">
       </div>
     </div>
 

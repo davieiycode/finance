@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Account Management - Finance</title>
+  <title>Outpost Roster - Jurney</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -206,7 +206,7 @@
           <button class="back-btn" onclick="window.location.href='index.html'">
             <i data-lucide="chevron-left"></i>
           </button>
-          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Accounts</h1>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Outpost Roster</h1>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
           <button onclick="toggleSearch()" class="back-btn">
@@ -220,7 +220,7 @@
 
       <div id="search-container" style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
         <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.8rem; width: 18px; color: var(--text-secondary);"></i>
-        <input type="text" id="master-search" class="f-input" placeholder="Search accounts..." style="padding-left: 2.75rem;" oninput="renderAccounts(this.value)">
+        <input type="text" id="master-search" class="f-input" placeholder="Scan outposts..." style="padding-left: 2.75rem;" oninput="renderAccounts(this.value)">
       </div>
     </div>
 

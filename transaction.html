@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transaction Details - Finance Pro</title>
+  <title>Expedition Details - Jurney Explorer</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,12 +18,12 @@
     <header class="header">
       <div class="header-title">
         <button id="dismiss-btn" class="close-btn" aria-label="Close">×</button>
-        <span>Transaction Details</span>
+        <span>Expedition Details</span>
       </div>
       <div class="header-actions">
         <button id="cancel-btn" class="btn btn-secondary">Cancel</button>
         <button id="next-btn" class="btn btn-primary" style="background: var(--success); border-color: var(--success);">
-          <i data-lucide="check" style="width: 16px;"></i> Save Transaction
+          <i data-lucide="check" style="width: 16px;"></i> Log Expedition
         </button>
       </div>
     </header>
@@ -32,7 +32,7 @@
       <!-- Section 1: Time & Identity -->
       <div class="step-content" id="step-1" style="display: flex;">
         <div class="section-header">
-           <i data-lucide="clock"></i> <span>1. Time & Identity</span>
+           <i data-lucide="clock"></i> <span>1. Temporal Coordinates</span>
         </div>
         <p class="section-subtitle">Set the chronological context for this entry.</p>
         
@@ -65,7 +65,7 @@
       <!-- Section 2: Item Definition -->
       <div class="step-content" id="step-2" style="display: flex;">
         <div class="section-header">
-           <i data-lucide="package"></i> <span>2. Item Definition</span>
+           <i data-lucide="package"></i> <span>2. Loot Identity</span>
         </div>
         <p class="section-subtitle">Define the product or service being logged.</p>
 
@@ -89,7 +89,7 @@
       <!-- Section 3: Core Details -->
       <div class="step-content" id="step-3" style="display: flex;">
         <div class="section-header">
-           <i data-lucide="info"></i> <span>3. Core Details</span>
+           <i data-lucide="info"></i> <span>3. Essence of Journey</span>
         </div>
         <p class="section-subtitle">Select the transaction type and category.</p>
 
@@ -97,10 +97,10 @@
           <label class="label">Transaction Type<span>*</span></label>
           <div class="type-btn-group" id="type-selector">
             <button type="button" class="type-btn type-btn-expense active" data-type="Expense">
-              <i data-lucide="trending-down"></i> <span class="type-label">Expense</span>
+              <i data-lucide="trending-down"></i> <span class="type-label">Supplies Used</span>
             </button>
             <button type="button" class="type-btn type-btn-income" data-type="Income">
-              <i data-lucide="trending-up"></i> <span class="type-label">Income</span>
+              <i data-lucide="trending-up"></i> <span class="type-label">Treasure Found</span>
             </button>
             <button type="button" class="type-btn type-btn-transfer" data-type="Transfer">
               <i data-lucide="repeat"></i> <span class="type-label">Transfer</span>
@@ -309,7 +309,7 @@
       <!-- Section 7: Verification -->
       <div class="step-content" id="step-7" style="display: flex;">
         <div class="section-header">
-           <i data-lucide="paperclip"></i> <span>7. Verification</span>
+           <i data-lucide="paperclip"></i> <span>7. Proof of Journey</span>
         </div>
         <p class="section-subtitle">Attach proof to finalize the record.</p>
 
@@ -386,7 +386,7 @@
           style="background: rgba(34, 197, 94, 0.1); color: #22c55e; margin-bottom: 0.5rem; width: 56px; height: 56px;">
           <i data-lucide="check-circle-2"></i>
         </div>
-        <h2 style="font-size: 1.5rem; color: var(--text-primary);">Transaction Saved!</h2>
+        <h2 style="font-size: 1.5rem; color: var(--text-primary);">Journey Logged!</h2>
         <p style="color: var(--text-secondary); font-size: 0.8125rem;">Your financial record has been securely logged.
         </p>
       </div>

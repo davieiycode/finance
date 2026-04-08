@@ -3,23 +3,23 @@
     const root = document.documentElement;
     root.style.setProperty('--card-radius', radius + 'px');
     
-    // Brand Specs Mapping — Dynamic Adaptation
+    // Jurney Expedition Aesthetics — Global Design Tokens
     const themeMap = {
       dark: { 
-        bg: '#121212', card: '#1a1a1a', input: '#121212', glass: 'rgba(255,255,255,0.04)', 
-        text: '#ffffff', border: 'rgba(255,255,255,0.1)', sub: '#888780', accent: '#1D9E75', sec: '#EF9F27' 
+        bg: '#000000', card: '#0D0D0D', input: '#050505', glass: 'rgba(255,255,255,0.03)', 
+        text: '#F5F5F0', border: '#1A1A1A', sub: '#A0A090', accent: '#EAB308', sec: '#CA8A04' 
       },
       obsidian: { 
-        bg: '#000000', card: '#0a0a0a', input: '#000000', glass: 'rgba(255,255,255,0.05)', 
-        text: '#ffffff', border: '#161616', sub: '#a1a1aa', accent: '#5DCAA5', sec: '#FAC775' 
+        bg: '#000000', card: '#080808', input: '#000000', glass: 'rgba(255,255,255,0.05)', 
+        text: '#ffffff', border: '#121212', sub: '#d1d5db', accent: '#6366f1', sec: '#818cf8' 
       },
-      night: { 
-        bg: '#04342C', card: '#085041', input: '#04342C', glass: 'rgba(255,255,255,0.02)', 
-        text: '#ffffff', border: 'rgba(255,255,255,0.05)', sub: '#9FE1CB', accent: '#5DCAA5', sec: '#FAC775' 
+      explorer: { 
+        bg: '#051614', card: '#0A2522', input: '#051614', glass: 'rgba(255,255,255,0.02)', 
+        text: '#E2E8F0', border: 'rgba(255,255,255,0.05)', sub: '#94A3B8', accent: '#10B981', sec: '#F59E0B' 
       },
       light: { 
-        bg: '#F1EFE8', card: '#ffffff', input: '#F1EFE8', glass: 'rgba(0,0,0,0.03)', 
-        text: '#2C2C2A', border: '#B4B2A9', sub: '#5F5E5A', accent: '#0F6E56', sec: '#BA7517' 
+        bg: '#FFFFF0', card: '#FFFFFF', input: '#FFFFF0', glass: 'rgba(0,0,0,0.02)', 
+        text: '#1C1917', border: '#E7E5E4', sub: '#57534E', accent: '#78350F', sec: '#A16207' 
       }
     };
 
