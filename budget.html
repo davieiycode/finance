@@ -106,55 +106,90 @@
 
   <!-- Add Budget Modal -->
   <div id="budget-modal" class="modal-backdrop" style="display: none;">
-    <div class="modal-card" style="padding: 1.5rem;">
+    <div class="modal-card" style="padding: 1.5rem; max-height:90vh; overflow-y:auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h3 style="font-weight: 800;">New Budget</h3>
+        <h3 id="modal-title" style="font-weight: 800;">New Budget</h3>
         <button onclick="closeModal()" class="close-btn"><i data-lucide="x"></i></button>
       </div>
       
       <div class="f-group">
         <label class="f-label">Category</label>
-        <select id="f-category" class="f-input">
-          <option>Food & Beverage</option>
-          <option>Transport</option>
-          <option>Lifestyle</option>
-          <option>Shopping</option>
-          <option>Entertainment</option>
-          <option>Bills & Utilities</option>
-          <option>Health</option>
-          <option>Education</option>
-          <option>Others</option>
+        <select id="f-category" class="f-input" onchange="autoFillCatDetails()">
+          <!-- Populated from categories_db -->
         </select>
       </div>
 
-      <div class="f-group">
-        <label class="f-label">Monthly Limit (Rp)</label>
-        <input type="number" id="f-limit" class="f-input" placeholder="e.g. 2000000">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+         <div class="f-group">
+           <label class="f-label">Period</label>
+           <select id="f-period" class="f-input">
+             <option value="Monthly">Monthly</option>
+             <option value="Weekly">Weekly</option>
+             <option value="Yearly">Yearly</option>
+           </select>
+         </div>
+         <div class="f-group">
+           <label class="f-label">Status</label>
+           <select id="f-status" class="f-input">
+             <option value="Active">Active</option>
+             <option value="Paused">Paused</option>
+           </select>
+         </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 2fr; gap:1rem;">
+         <div class="f-group">
+           <label class="f-label">Currency</label>
+           <input type="text" id="f-currency" class="f-input" value="IDR">
+         </div>
+         <div class="f-group">
+           <label class="f-label">Limit Amount</label>
+           <input type="number" id="f-limit" class="f-input" placeholder="0">
+         </div>
       </div>
 
       <div class="f-group">
-        <label class="f-label">Note</label>
-        <input type="text" id="f-note" class="f-input" placeholder="e.g. Maximize eating out for weekends only">
+        <label class="f-label">Notes</label>
+        <textarea id="f-note" class="f-input" style="height:80px; resize:none;" placeholder="Optional notes..."></textarea>
       </div>
 
-      <button onclick="saveBudget()" style="width: 100%; background: var(--accent); color: white; border: none; padding: 1.1rem; border-radius: 1rem; font-weight: 800; cursor: pointer; transition: 0.3s;">Set Budget</button>
+      <input type="hidden" id="f-cat-id">
+      <input type="hidden" id="f-cat-group">
+      <input type="hidden" id="f-cat-type">
+      <input type="hidden" id="editing-id">
+
+      <button onclick="saveBudget()" style="width: 100%; background: var(--accent); color: white; border: none; padding: 1.1rem; border-radius: 1rem; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top:0.5rem;">Set Budget</button>
     </div>
   </div>
 
+  <script src="script.js"></script>
   <script>
     lucide.createIcons();
     
     let budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
     let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+    const categories_db = JSON.parse(localStorage.getItem('categories_db') || '[]');
 
-    // Migration: Convert old structure (amount=Total) to new (total=Total, amount=UnitPrice)
-    txs = txs.map(t => {
-      if (t.total === undefined && t.amount !== undefined) {
-        t.total = t.amount;
-        t.amount = t.price || (t.total / (t.qty || 1));
-      }
-      return t;
-    });
+    function populateCategories() {
+      const sel = document.getElementById('f-category');
+      const cats = categories_db.length ? categories_db : [
+        { name: 'Food & Beverage', id: 'CAT-FB', group: 'Personal', type: 'Expense' },
+        { name: 'Transport', id: 'CAT-TR', group: 'Personal', type: 'Expense' },
+        { name: 'Lifestyle', id: 'CAT-LS', group: 'Personal', type: 'Expense' },
+        { name: 'Shopping', id: 'CAT-SH', group: 'Personal', type: 'Expense' },
+        { name: 'Bills & Utilities', id: 'CAT-BU', group: 'Home', type: 'Expense' }
+      ];
+      sel.innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+      autoFillCatDetails();
+    }
+
+    function autoFillCatDetails() {
+      const name = document.getElementById('f-category').value;
+      const c = categories_db.find(x => x.name === name) || { id:'', group:'', type:'' };
+      document.getElementById('f-cat-id').value = c.id || '';
+      document.getElementById('f-cat-group').value = c.group || '';
+      document.getElementById('f-cat-type').value = c.type || 'Expense';
+    }
 
     function refreshList(query = '') {
       const list = document.getElementById('budget-list');
@@ -163,8 +198,8 @@
       list.innerHTML = '';
       
       const filtered = budgets.filter(b => 
-        b.category.toLowerCase().includes(q) || 
-        (b.note || "").toLowerCase().includes(q)
+        (b.category || "").toLowerCase().includes(q) || 
+        (b.notes || "").toLowerCase().includes(q)
       );
 
       if (filtered.length === 0) {
@@ -175,78 +210,129 @@
       }
 
       filtered.forEach((b, idx) => {
-        // Calculate spent for this category in current month
         const now = new Date();
-        const monthStr = now.toISOString().substring(0, 7); // YYYY-MM
+        const monthStr = now.toISOString().substring(0, 7); 
         const spent = txs.filter(t => t.category === b.category && (t.date || "").startsWith(monthStr) && t.type === 'Expense')
-                         .reduce((s, t) => s + t.total, 0);
+                         .reduce((s, t) => s + (t.total || 0), 0);
         
-        const perc = Math.min((spent / b.limit) * 100, 100);
+        const limit = b.budget || b.limit || 0;
+        const perc = limit > 0 ? Math.min((spent / limit) * 100, 100) : 0;
         const color = perc > 90 ? '#ef4444' : (perc > 70 ? '#f59e0b' : '#22c55e');
 
         const card = document.createElement('div');
         card.className = 'budget-card';
         card.innerHTML = `
           <div class="budget-info">
-            <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;" onclick="editBudget('${b.id || idx}')">
                <div class="cat-icon"><i data-lucide="tag"></i></div>
                <div>
-                 <div style="font-weight: 700; font-size: 1rem;">${b.category}</div>
-                 ${b.note ? `<div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin: 0.1rem 0;">${b.note}</div>` : ''}
-                 <div style="font-size: 0.75rem; color: var(--text-secondary);">Rp ${spent.toLocaleString('id-ID')} of Rp ${b.limit.toLocaleString('id-ID')}</div>
+                 <div style="font-weight: 700; font-size: 1rem;">${b.category} <span style="font-size:0.6rem; opacity:0.5; vertical-align:middle;">${b.period || 'Monthly'}</span></div>
+                 ${b.notes ? `<div style="font-size: 0.7rem; opacity: 0.6; font-style: italic; margin: 0.1rem 0;">${b.notes}</div>` : ''}
+                 <div style="font-size: 0.75rem; color: var(--text-secondary);">${b.currency || 'IDR'} ${spent.toLocaleString()} of ${limit.toLocaleString()}</div>
                </div>
             </div>
-            <button onclick="deleteBudget(${idx})" style="background: none; border: none; color: #ef4444; opacity: 0.3; cursor: pointer;">
+            <button onclick="deleteBudget('${b.id || idx}')" style="background: none; border: none; color: #ef4444; opacity: 0.3; cursor: pointer;">
               <i data-lucide="trash-2" style="width: 16px;"></i>
             </button>
           </div>
-          <div class="progress-track">
+          <div class="progress-track" onclick="editBudget('${b.id || idx}')">
             <div class="progress-bar" style="width: ${perc}%; background: ${color};"></div>
           </div>
-          <div style="display:flex; justify-content: space-between; font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem;">
-             <span style="color: ${color}">${Math.round((spent/b.limit)*100)}% Used</span>
-             <span style="opacity: 0.5;">Rp ${(b.limit - spent).toLocaleString('id-ID')} Left</span>
+          <div style="display:flex; justify-content: space-between; font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem;" onclick="editBudget('${b.id || idx}')">
+             <span style="color: ${color}">${Math.round(perc)}% Used</span>
+             <span style="opacity: 0.5;">${b.currency || 'IDR'} ${(limit - spent).toLocaleString()} Left</span>
           </div>
         `;
         list.appendChild(card);
       });
-      lucide.createIcons();
+      if(window.lucide) lucide.createIcons();
     }
 
-    function showAddModal() { document.getElementById('budget-modal').style.display = 'flex'; }
+    function showAddModal() { 
+      document.getElementById('modal-title').innerText = 'New Budget';
+      document.getElementById('editing-id').value = '';
+      document.getElementById('f-limit').value = '';
+      document.getElementById('f-note').value = '';
+      document.getElementById('budget-modal').style.display = 'flex'; 
+    }
+
+    function editBudget(id) {
+       const b = budgets.find(x => (x.id || '') === id) || budgets[id];
+       if(!b) return;
+       document.getElementById('modal-title').innerText = 'Edit Budget';
+       document.getElementById('editing-id').value = b.id || '';
+       document.getElementById('f-category').value = b.category;
+       document.getElementById('f-limit').value = b.budget || b.limit;
+       document.getElementById('f-note').value = b.notes || b.note || '';
+       document.getElementById('f-period').value = b.period || 'Monthly';
+       document.getElementById('f-status').value = b.status || 'Active';
+       document.getElementById('f-currency').value = b.currency || 'IDR';
+       autoFillCatDetails();
+       document.getElementById('budget-modal').style.display = 'flex';
+    }
+
     function closeModal() { document.getElementById('budget-modal').style.display = 'none'; }
 
     function saveBudget() {
+      const eid = document.getElementById('editing-id').value;
       const cat = document.getElementById('f-category').value;
-      const limit = parseInt(document.getElementById('f-limit').value);
-      const note = document.getElementById('f-note').value;
+      const limit = parseFloat(document.getElementById('f-limit').value);
+      const notes = document.getElementById('f-note').value;
+      const period = document.getElementById('f-period').value;
+      const status = document.getElementById('f-status').value;
+      const currency = document.getElementById('f-currency').value;
       
       if (!limit) { alert('Please enter a limit'); return; }
 
-      // Update if exists or add new
-      const existing = budgets.findIndex(b => b.category === cat);
-      if (existing >= 0) {
-        budgets[existing].limit = limit;
-        budgets[existing].note = note;
+      const bData = {
+        id: eid || 'BUD' + Date.now(),
+        period: period,
+        categoryId: document.getElementById('f-cat-id').value,
+        category: cat,
+        categoryGroup: document.getElementById('f-cat-group').value,
+        type: document.getElementById('f-cat-type').value,
+        budget: limit,
+        currency: currency,
+        notes: notes,
+        status: status,
+        updateTime: new Date().toISOString()
+      };
+
+      if (eid) {
+        const idx = budgets.findIndex(x => x.id === eid);
+        if(idx >= 0) budgets[idx] = bData;
       } else {
-        budgets.push({ category: cat, limit, note });
+        // Unique category check for new budgets
+        const existing = budgets.findIndex(b => b.category === cat && b.period === period);
+        if (existing >= 0) {
+           budgets[existing] = bData;
+        } else {
+           budgets.push(bData);
+        }
       }
 
       localStorage.setItem('budgets', JSON.stringify(budgets));
       closeModal();
       refreshList();
+      if(window.showToast) showToast('Budget updated!', 'success', 'check-circle');
     }
 
-    function deleteBudget(idx) {
+    function deleteBudget(id) {
       showConfirm('Remove this budget?', () => {
-        budgets.splice(idx, 1);
+        const idx = budgets.findIndex(x => (x.id || '') === id);
+        if(idx >= 0) budgets.splice(idx, 1);
+        else budgets.splice(id, 1); // fallback to index
         localStorage.setItem('budgets', JSON.stringify(budgets));
         refreshList();
-        if(typeof showToast === 'function') showToast('Budget deleted successfully!', 'success', 'trash-2');
+        if(typeof showToast === 'function') showToast('Budget deleted correctly!', 'success', 'trash-2');
       });
     }
 
+    populateCategories();
     refreshList();
+  </script>
+</body>
+</html>
   </script>
 </body>
 </html>

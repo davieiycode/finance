@@ -15,8 +15,8 @@ window.AVATAR_SVGS = [
   `<svg viewBox="0 0 80 80"><defs><clipPath id="c12"><circle cx="40" cy="40" r="40" /></clipPath></defs><g clip-path="url(#c12)"><rect width="80" height="80" fill="#26215C" /><polygon points="0,0 80,0 0,80" fill="#3C3489" /><polygon points="80,0 80,80 0,80" fill="#085041" /><circle cx="26" cy="28" r="18" fill="#7F77DD" /><circle cx="56" cy="54" r="15" fill="#1D9E75" /><circle cx="26" cy="28" r="8" fill="#EEEDFE" /><circle cx="56" cy="54" r="7" fill="#9FE1CB" /></g></svg>`
 ];
 
-const APP_VERSION = 'v3.2.0';
-const BUILD_DATE = '2026.04.06';
+const APP_VERSION = 'v3.3.0';
+const BUILD_DATE = '2026.04.08';
 
 // settings_logic.js - Logic for settings.html
 
@@ -51,6 +51,8 @@ window.showPView = (vId, title) => {
   
   if (vId === 'categories') window.renderCategoryList();
   if (vId === 'scales') window.renderScaleList();
+  if (vId === 'tags') window.renderTagList();
+  if (vId === 'projects') window.renderProjectList();
 
   if (vId === 'main') {
     viewStack = ['p-view-main'];
@@ -92,11 +94,17 @@ window.goBack = (target) => {
       'p-view-categories': 'Category Lab',
       'p-view-cat-editor': 'Edit Category',
       'p-view-scales': 'Scale Matrix',
-      'p-view-scale-editor': 'Edit Scale'
+      'p-view-scale-editor': 'Edit Scale',
+      'p-view-tags': 'Tag Engine',
+      'p-view-tag-editor': 'Edit Tag',
+      'p-view-projects': 'Project Hub',
+      'p-view-project-editor': 'Edit Project'
     };
     const vId = prevId.replace('p-view-', '');
     if (vId === 'categories') window.renderCategoryList();
     if (vId === 'scales') window.renderScaleList();
+    if (vId === 'tags') window.renderTagList();
+    if (vId === 'projects') window.renderProjectList();
     updateBreadcrumbs(vId, titles[prevId]);
     if (window.lucide) window.lucide.createIcons();
   } else {
@@ -515,28 +523,31 @@ function doPost(e) {
         'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
       ]},
       { key: 'accounts', sheetName: 'account', headers: [
-        'Account ID', 'Account Name', 'Account Type', 'Provider', 'Currency', 
-        'Opening Balance', 'Opening Date', 'Current Balance', 'Status', 'Owner', 
-        'Account Number / ID', 'Branch / Location', 'Notes', 'Card Color', 'Account Logo', 'Update Time'
+        'Account ID', 'Account Name', 'Account Type', 'Owner', 'Account Number / ID', 
+        'Provider', 'Currency', 'Opening Date', 'Opening Balance', 'Current Balance', 
+        'Status', 'Branch / Location', 'Notes', 'Card Color', 'Account Logo', 'Update Time'
       ]},
       { key: 'merchants', sheetName: 'merchant', headers: [
-        'Merchant ID', 'Merchant Name', 'Category', 'Primary Contact Name', 'Phone Number', 
-        'Email', 'Website', 'Physical Address', 'City', 'Country', 
-        'Preferred Payment Method', 'Bank Account Details', 'Notes', 'Status', 'Update Time'
+        'Merchant ID', 'Merchant Name', 'Category', 'Status', 'Update Time', 
+        'Primary Contact Name', 'Phone Number', 'Email', 'Website', 'Physical Address', 
+        'City', 'Country', 'State', 'Preferred Payment Method', 'Bank Account Details', 
+        'Map Embed Link', 'Notes'
       ]},
       { key: 'items', sheetName: 'item', headers: [
-        'Item ID', 'Item Name', 'Item Category', 'Item Category Group', 'Item Image', 
-        'Manufacturer', 'Model', 'Unit', 'Default Unit Price', 'Currency', 
-        'Warranty / Expiry Date', 'Stock Keeping Unit', 'Notes', 'Status', 'Update Time'
+        'Item ID', 'Item Name', 'Item Category', 'Unit', 'Default Unit Price', 
+        'Update Time', 'Manufacturer', 'Model', 'Unit Scale', 'Currency', 
+        'Warranty / Expiry Date', 'Stock Keeping Unit', 'Notes', 'Status', 'Item Image'
       ]},
       { key: 'authors', sheetName: 'author', headers: ['ID', 'Author Name', 'Role/Type', 'Status', 'Notes', 'Update Time'] },
       { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] },
-      { key: 'categories_db', sheetName: 'categories', headers: ['ID', 'Category Name', 'Category Group', 'Type Mapping', 'Description'] },
+      { key: 'categories_db', sheetName: 'category', headers: ['Category ID', 'Category', 'Category Group', 'Type', 'Description', 'Update Time'] },
       { key: 'scales_db', sheetName: 'scales', headers: ['ID', 'Scale Key', 'Full Description'] },
       { key: 'vouchers', sheetName: 'voucher', headers: ['ID', 'Voucher Name', 'Provider', 'Code', 'Expiry Date', 'Notes', 'Type', 'Status', 'Update Time'] },
-      { key: 'budgets', sheetName: 'budget', headers: ['ID', 'Category', 'Budget Amount', 'Period', 'Spent', 'Notes', 'Update Time'] },
+      { key: 'budgets', sheetName: 'budget', headers: ['Budget ID', 'Period', 'Category ID', 'Category', 'Category Group', 'Type', 'Budget Amount', 'Currency', 'Notes', 'Status', 'Update Time'] },
       { key: 'goals', sheetName: 'goal', headers: ['ID', 'Goal Name', 'Target Amount', 'Current Amount', 'Deadline', 'Icon', 'Status', 'Update Time'] },
       { key: 'vault', sheetName: 'vault', headers: ['ID', 'File Name', 'Content/URL', 'Type', 'Date', 'Associated ID', 'Update Time'] },
+      { key: 'tags', sheetName: 'tag', headers: ['Tag ID', 'Tag Name', 'Tag Group', 'Description', 'Tag Image', 'Status', 'Update Time'] },
+      { key: 'projects', sheetName: 'project', headers: ['Project ID', 'Project Name', 'Project Category', 'Start Date', 'End Date', 'Budget Amount', 'Currency', 'Manager', 'Description', 'Status', 'Update Time'] },
       { key: 'user_prefs', sheetName: 'settings', headers: ['Preference Key', 'Setting Value'] }
     ];
 
@@ -565,20 +576,27 @@ function doPost(e) {
         const row = ent.headers.map(h => {
           const hNorm = h.toLowerCase().replace(/[^a-z0-9]/g, '');
           
-          if (hNorm === 'accountid' || hNorm === 'itemid' || hNorm === 'merchantid' || hNorm === 'transactionid') return item.id;
-          if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname' || hNorm === 'vouchername' || hNorm === 'goalname') return item.name;
+          if (hNorm === 'accountid' || hNorm === 'itemid' || hNorm === 'merchantid' || hNorm === 'transactionid' || hNorm === 'categoryid' || hNorm === 'tagid' || hNorm === 'projectid' || hNorm === 'budgetid' || hNorm === 'id') return item.id;
+          if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname' || hNorm === 'vouchername' || hNorm === 'goalname' || hNorm === 'tagname' || hNorm === 'projectname' || hNorm === 'name') return item.name;
+          if (hNorm === 'provider') return item.provider || '';
+          if (hNorm === 'since') return item.since || '';
+          if (hNorm === 'code') return item.code || '';
           if (hNorm === 'currentbalance') return item.balance || 0;
           if (hNorm === 'defaultunitprice') return item.price || 0;
           if (hNorm === 'stockkeepingunit') return item.sku || '';
-          if (hNorm === 'warrantyexpirydate' || hNorm === 'expirydate' || hNorm === 'deadline') return item.expiry || item.deadline || '';
+          if (hNorm === 'warrantyexpirydate' || hNorm === 'expirydate' || hNorm === 'deadline') return item.expiry || item.deadline || item.dueDate || '';
+          if (hNorm === 'targetamount') return item.target || 0;
+          if (hNorm === 'currentamount') return item.saved || 0;
           if (hNorm === 'manufacturer') return item.manu || '';
-          if (hNorm === 'itemcategory') return item.category || '';
-          if (hNorm === 'categoryname' || hNorm === 'scalekey') return item.name;
-          if (hNorm === 'categorygroup') return item.group;
-          if (hNorm === 'typemapping') return item.type;
-          if (hNorm === 'fulldescription') return item.description;
+          if (hNorm === 'itemcategory' || hNorm === 'projectcategory') return item.category || '';
+          if (hNorm === 'categoryid' && ent.key === 'budgets') return item.categoryId || '';
+          if (hNorm === 'categoryname' || hNorm === 'scalekey' || hNorm === 'category') return item.name;
+          if (hNorm === 'categorygroup' || hNorm === 'taggroup') return item.group;
+          if (hNorm === 'typemapping' || hNorm === 'type') return item.type;
+          if (hNorm === 'fulldescription' || hNorm === 'description' || hNorm === 'notes') return item.description || item.notes || item.note || '';
+          if (hNorm === 'budgetamount') return item.budget || item.amount || 0;
           if (hNorm === 'cardcolor') return item.color || '';
-          if (hNorm === 'accountlogo') return item.logo || '';
+          if (hNorm === 'accountlogo' || hNorm === 'tagimage') return item.logo || item.image || '';
           if (hNorm === 'updatetime') return Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm");
           
           if (ent.key === 'merchants' && hNorm === 'category') return item.type || '';
@@ -1045,6 +1063,181 @@ window.deleteScale = (id) => {
         db = db.filter(x => x.id !== id);
         localStorage.setItem('scales_db', JSON.stringify(db));
         window.renderScaleList();
+    });
+};
+
+// Tag Management
+let editingTagId = null;
+window.renderTagList = () => {
+    const db = JSON.parse(localStorage.getItem('tags') || '[]');
+    const list = document.getElementById('tags-db-list');
+    if (!db.length) {
+        list.innerHTML = '<div style="text-align:center; padding:2rem; opacity:0.5; font-size:0.8rem;">No tags defined</div>';
+        return;
+    }
+    list.innerHTML = db.map(t => `
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:1rem; padding:1rem; display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1;">
+                <div style="font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+                   <i data-lucide="tag" style="width:14px; color:#10b981;"></i> ${t.name}
+                   <span style="font-size:0.6rem; background:var(--accent); color:white; padding:2px 6px; border-radius:4px; font-weight:800;">${t.group || 'General'}</span>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">${t.description || 'No description'}</div>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+                <button onclick="editTag(${t.id})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
+                <button onclick="deleteTag(${t.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+            </div>
+        </div>
+    `).join('');
+    if (window.lucide) window.lucide.createIcons();
+};
+
+window.newTag = () => {
+    editingTagId = null;
+    document.getElementById('tag-name').value = '';
+    document.getElementById('tag-group').value = '';
+    document.getElementById('tag-desc').value = '';
+    document.getElementById('tag-status').value = 'Active';
+    showPView('tag-editor', 'New Analytics Tag');
+};
+
+window.editTag = (id) => {
+    const db = JSON.parse(localStorage.getItem('tags') || '[]');
+    const t = db.find(x => x.id === id);
+    if (!t) return;
+    editingTagId = id;
+    document.getElementById('tag-name').value = t.name;
+    document.getElementById('tag-group').value = t.group || '';
+    document.getElementById('tag-desc').value = t.description || '';
+    document.getElementById('tag-status').value = t.status || 'Active';
+    showPView('tag-editor', 'Edit Tag');
+};
+
+window.saveTag = () => {
+    const db = JSON.parse(localStorage.getItem('tags') || '[]');
+    const t = {
+        id: editingTagId || Date.now(),
+        name: document.getElementById('tag-name').value.trim(),
+        group: document.getElementById('tag-group').value.trim(),
+        description: document.getElementById('tag-desc').value.trim(),
+        status: document.getElementById('tag-status').value,
+        updateTime: new Date().toISOString()
+    };
+    if (!t.name) { alert('Tag Name is required'); return; }
+
+    if (editingTagId) {
+        const idx = db.findIndex(x => x.id === editingTagId);
+        db[idx] = t;
+    } else {
+        db.push(t);
+    }
+    localStorage.setItem('tags', JSON.stringify(db));
+    showToast('Tag saved', 'success', 'check-circle');
+    goBack();
+};
+
+window.deleteTag = (id) => {
+    window.showConfirm('Delete this tag definition?', () => {
+        let db = JSON.parse(localStorage.getItem('tags') || '[]');
+        db = db.filter(x => x.id !== id);
+        localStorage.setItem('tags', JSON.stringify(db));
+        window.renderTagList();
+    });
+};
+
+// Project Management
+let editingProjId = null;
+window.renderProjectList = () => {
+    const db = JSON.parse(localStorage.getItem('projects') || '[]');
+    const list = document.getElementById('projects-db-list');
+    if (!db.length) {
+        list.innerHTML = '<div style="text-align:center; padding:2rem; opacity:0.5; font-size:0.8rem;">No projects defined</div>';
+        return;
+    }
+    list.innerHTML = db.map(p => `
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:1rem; padding:1rem; display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1;">
+                <div style="font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.5rem;">
+                   <i data-lucide="briefcase" style="width:14px; color:#8b5cf6;"></i> ${p.name}
+                   <span style="font-size:0.6rem; background:rgba(139,92,246,0.1); color:var(--accent); padding:2px 6px; border-radius:4px; font-weight:800;">${p.category || 'Standard'}</span>
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Mgr: ${p.manager || '-'} | Budget: ${p.currency || 'IDR'} ${parseFloat(p.budget).toLocaleString()}</div>
+            </div>
+            <div style="display:flex; gap:0.5rem;">
+                <button onclick="editProject(${p.id})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
+                <button onclick="deleteProject(${p.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+            </div>
+        </div>
+    `).join('');
+    if (window.lucide) window.lucide.createIcons();
+};
+
+window.newProject = () => {
+    editingProjId = null;
+    document.getElementById('proj-name').value = '';
+    document.getElementById('proj-cat').value = '';
+    document.getElementById('proj-manager').value = '';
+    document.getElementById('proj-start').value = '';
+    document.getElementById('proj-end').value = '';
+    document.getElementById('proj-budget').value = '0';
+    document.getElementById('proj-currency').value = 'IDR';
+    document.getElementById('proj-desc').value = '';
+    document.getElementById('proj-status').value = 'Active';
+    showPView('project-editor', 'New Project Strategy');
+};
+
+window.editProject = (id) => {
+    const db = JSON.parse(localStorage.getItem('projects') || '[]');
+    const p = db.find(x => x.id === id);
+    if (!p) return;
+    editingProjId = id;
+    document.getElementById('proj-name').value = p.name;
+    document.getElementById('proj-cat').value = p.category || '';
+    document.getElementById('proj-manager').value = p.manager || '';
+    document.getElementById('proj-start').value = p.start || '';
+    document.getElementById('proj-end').value = p.end || '';
+    document.getElementById('proj-budget').value = p.budget || 0;
+    document.getElementById('proj-currency').value = p.currency || 'IDR';
+    document.getElementById('proj-desc').value = p.description || '';
+    document.getElementById('proj-status').value = p.status || 'Active';
+    showPView('project-editor', 'Edit Project');
+};
+
+window.saveProject = () => {
+    const db = JSON.parse(localStorage.getItem('projects') || '[]');
+    const p = {
+        id: editingProjId || Date.now(),
+        name: document.getElementById('proj-name').value.trim(),
+        category: document.getElementById('proj-cat').value.trim(),
+        manager: document.getElementById('proj-manager').value.trim(),
+        start: document.getElementById('proj-start').value,
+        end: document.getElementById('proj-end').value,
+        budget: parseFloat(document.getElementById('proj-budget').value) || 0,
+        currency: document.getElementById('proj-currency').value,
+        description: document.getElementById('proj-desc').value.trim(),
+        status: document.getElementById('proj-status').value,
+        updateTime: new Date().toISOString()
+    };
+    if (!p.name) { alert('Project Name is required'); return; }
+
+    if (editingProjId) {
+        const idx = db.findIndex(x => x.id === editingProjId);
+        db[idx] = p;
+    } else {
+        db.push(p);
+    }
+    localStorage.setItem('projects', JSON.stringify(db));
+    showToast('Project initiated', 'success', 'check-circle');
+    goBack();
+};
+
+window.deleteProject = (id) => {
+    window.showConfirm('Terminate this project record?', () => {
+        let db = JSON.parse(localStorage.getItem('projects') || '[]');
+        db = db.filter(x => x.id !== id);
+        localStorage.setItem('projects', JSON.stringify(db));
+        window.renderProjectList();
     });
 };
 

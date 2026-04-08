@@ -84,7 +84,7 @@
   <div id="goal-modal" class="modal-backdrop" style="display: none;">
     <div class="modal-card" style="padding: 1.5rem;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h3 style="font-weight: 800;">Set a Goal</h3>
+        <h3 id="modal-title" style="font-weight: 800;">Set a Goal</h3>
         <button onclick="closeModal()" class="close-btn"><i data-lucide="x"></i></button>
       </div>
       
@@ -93,30 +93,43 @@
         <input type="text" id="f-name" class="f-input" placeholder="e.g. New Macbook Air M3">
       </div>
 
-      <div class="f-group">
-        <label class="f-label">Target Amount (Rp)</label>
-        <input type="number" id="f-target" class="f-input" placeholder="e.g. 25000000">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="f-group">
+          <label class="f-label">Target (Rp)</label>
+          <input type="number" id="f-target" class="f-input" placeholder="0">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Initial (Rp)</label>
+          <input type="number" id="f-saved" class="f-input" placeholder="0">
+        </div>
       </div>
 
-      <div class="f-group">
-        <label class="f-label">Current Savings (Rp)</label>
-        <input type="number" id="f-saved" class="f-input" placeholder="e.g. 5000000">
-      </div>
-
-      <div class="f-group">
-        <label class="f-label">Due Date</label>
-        <input type="date" id="f-due" class="f-input">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="f-group">
+          <label class="f-label">Due Date</label>
+          <input type="date" id="f-due" class="f-input">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Status</label>
+          <select id="f-status" class="f-input">
+            <option value="In Progress">In Progress</option>
+            <option value="Achieved">Achieved</option>
+            <option value="Paused">Paused</option>
+          </select>
+        </div>
       </div>
 
       <div class="f-group">
         <label class="f-label">Note</label>
-        <input type="text" id="f-note" class="f-input" placeholder="e.g. For work and creative design">
+        <input type="text" id="f-note" class="f-input" placeholder="Optional details...">
       </div>
 
-      <button onclick="saveGoal()" style="width: 100%; background: #0ea5e9; color: white; border: none; padding: 1.1rem; border-radius: 1rem; font-weight: 800; cursor: pointer;">Add Goal</button>
+      <input type="hidden" id="editing-id">
+      <button onclick="saveGoal()" style="width: 100%; background: #0ea5e9; color: white; border: none; padding: 1.1rem; border-radius: 1rem; font-weight: 800; cursor: pointer;">Save Goal</button>
     </div>
   </div>
 
+  <script src="script.js"></script>
   <script>
     lucide.createIcons();
     let goals = JSON.parse(localStorage.getItem('goals') || '[]');
@@ -128,7 +141,7 @@
       list.innerHTML = '';
       
       const filtered = goals.filter(g => 
-        g.name.toLowerCase().includes(q) || 
+        (g.name || "").toLowerCase().includes(q) || 
         (g.note || "").toLowerCase().includes(q)
       );
 
@@ -140,21 +153,20 @@
       }
 
       filtered.forEach((g, idx) => {
-        const perc = Math.min((g.saved / g.target) * 100, 100);
+        const perc = Math.min(((g.saved || 0) / (g.target || 1)) * 100, 100);
         const card = document.createElement('div');
         card.className = 'goal-card';
         card.innerHTML = `
           <div class="goal-header">
-            <div class="goal-icon"><i data-lucide="mountain"></i></div>
-            <div style="flex: 1;">
+            <div class="goal-icon" onclick="editGoal('${g.id || idx}')"><i data-lucide="${g.status === 'Achieved' ? 'check-circle' : 'mountain'}"></i></div>
+            <div style="flex: 1;" onclick="editGoal('${g.id || idx}')">
               <div style="font-weight: 800; font-size: 1.125rem;">${g.name}</div>
               <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.2rem;">
                  ${g.dueDate ? `<div style="font-size: 0.65rem; color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600;">Due: ${g.dueDate}</div>` : ''}
-                 ${g.note ? `<div style="font-size: 0.65rem; color: var(--text-secondary); font-style: italic;">"${g.note}"</div>` : ''}
+                 <div style="font-size: 0.65rem; color: #0ea5e9; background: rgba(14, 165, 233, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600;">${g.status || 'In Progress'}</div>
               </div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">${Math.round(perc)}% Achieved</div>
             </div>
-            <button onclick="deleteGoal(${idx})" style="background: none; border: none; color: #ef4444; opacity: 0.3; cursor: pointer;">
+            <button onclick="deleteGoal('${g.id || idx}')" style="background: none; border: none; color: #ef4444; opacity: 0.3; cursor: pointer;">
               <i data-lucide="trash-2" style="width: 16px;"></i>
             </button>
           </div>
@@ -164,67 +176,115 @@
             <span>Target</span>
           </div>
           <div class="stat-row">
-            <span class="stat-val">Rp ${g.saved.toLocaleString('id-ID')}</span>
-            <span class="stat-val">Rp ${g.target.toLocaleString('id-ID')}</span>
+            <span class="stat-val">Rp ${(g.saved || 0).toLocaleString('id-ID')}</span>
+            <span class="stat-val">Rp ${(g.target || 0).toLocaleString('id-ID')}</span>
           </div>
 
-          <div class="progress-track"><div class="progress-bar" style="width: ${perc}%;"></div></div>
+          <div class="progress-track"><div class="progress-bar" style="width: ${perc}%; background: ${g.status === 'Achieved' ? '#10b981' : ''};"></div></div>
           
-          <div style="text-align: center; margin-top: 1rem;">
-             <button onclick="addFunds(${idx})" style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9; border: none; padding: 0.5rem 1rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+          <div style="display:flex; gap:1rem; margin-top: 1rem;">
+             <button onclick="addFunds('${g.id || idx}')" style="flex:1; background: rgba(14, 165, 233, 0.1); color: #0ea5e9; border: none; padding: 0.6rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
                 + Add Savings
+             </button>
+             <button onclick="editGoal('${g.id || idx}')" style="flex:1; background: rgba(255,255,255,0.05); color: var(--text-secondary); border: none; padding: 0.6rem; border-radius: 0.75rem; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+                Modify Goal
              </button>
           </div>
         `;
         list.appendChild(card);
       });
-      lucide.createIcons();
+      if(window.lucide) lucide.createIcons();
     }
 
-    function showModal() { document.getElementById('goal-modal').style.display = 'flex'; }
+    function showModal() { 
+      document.getElementById('modal-title').innerText = 'Set a Goal';
+      document.getElementById('editing-id').value = '';
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-target').value = '';
+      document.getElementById('f-saved').value = '';
+      document.getElementById('f-note').value = '';
+      document.getElementById('goal-modal').style.display = 'flex'; 
+    }
+
+    function editGoal(id) {
+       const g = goals.find(x => (x.id || '') === id) || goals[id];
+       if(!g) return;
+       document.getElementById('modal-title').innerText = 'Update Goal';
+       document.getElementById('editing-id').value = g.id || '';
+       document.getElementById('f-name').value = g.name;
+       document.getElementById('f-target').value = g.target;
+       document.getElementById('f-saved').value = g.saved;
+       document.getElementById('f-due').value = g.dueDate || '';
+       document.getElementById('f-status').value = g.status || 'In Progress';
+       document.getElementById('f-note').value = g.note || '';
+       document.getElementById('goal-modal').style.display = 'flex';
+    }
+
     function closeModal() { document.getElementById('goal-modal').style.display = 'none'; }
 
     function saveGoal() {
+      const eid = document.getElementById('editing-id').value;
       const name = document.getElementById('f-name').value;
       const target = parseInt(document.getElementById('f-target').value);
       const saved = parseInt(document.getElementById('f-saved').value) || 0;
       const dueDate = document.getElementById('f-due').value;
       const note = document.getElementById('f-note').value;
+      const status = document.getElementById('f-status').value;
       
       if (!name || !target) { alert('Please fill missing fields'); return; }
-      goals.push({ name, target, saved, dueDate, note });
+
+      const gData = {
+        id: eid || 'GOAL-' + Date.now(),
+        name, target, saved, dueDate, note, status,
+        updateTime: new Date().toISOString()
+      };
+
+      if (eid) {
+        const idx = goals.findIndex(x => x.id === eid);
+        if(idx >= 0) goals[idx] = gData;
+      } else {
+        goals.push(gData);
+      }
+
       localStorage.setItem('goals', JSON.stringify(goals));
       closeModal();
       refreshList();
+      if(window.showToast) showToast('Goal saved!', 'success', 'target');
     }
 
-    function addFunds(idx) {
+    function addFunds(id) {
+      const idx = goals.findIndex(x => (x.id || '') === id);
       const amt = parseInt(prompt("Amount to add (Rp):"));
-      if (amt) {
+      if (amt && idx >= 0) {
         goals[idx].saved += amt;
+        if(goals[idx].saved >= goals[idx].target) goals[idx].status = 'Achieved';
         localStorage.setItem('goals', JSON.stringify(goals));
         refreshList();
+        if(window.showToast) showToast('Savings added!', 'success', 'piggy-bank');
       }
     }
 
-    function deleteGoal(idx) {
-      if(typeof showConfirm === 'function') {
-        showConfirm('Cancel this goal?', () => {
-          goals.splice(idx, 1);
-          localStorage.setItem('goals', JSON.stringify(goals));
-          refreshList();
-          if(typeof showToast === 'function') showToast('Goal deleted successfully!', 'success', 'trash-2');
-        });
-      } else {
-        if (!confirm('Cancel this goal?')) return;
-        goals.splice(idx, 1);
+    function deleteGoal(id) {
+      const idx = goals.findIndex(x => (x.id || '') === id);
+      const action = () => {
+        if(idx >= 0) goals.splice(idx, 1);
+        else goals.splice(id, 1);
         localStorage.setItem('goals', JSON.stringify(goals));
         refreshList();
-        if(typeof showToast === 'function') showToast('Goal deleted successfully!', 'success', 'trash-2');
+        if(typeof showToast === 'function') showToast('Goal removed.', 'success', 'trash-2');
+      };
+
+      if(typeof showConfirm === 'function') {
+        showConfirm('Remove this goal?', action);
+      } else {
+        if (confirm('Remove this goal?')) action();
       }
     }
 
     refreshList();
+  </script>
+</body>
+</html>
   </script>
 </body>
 </html>

@@ -451,15 +451,31 @@
               </div>
               <i data-lucide="chevron-right" style="opacity:0.2;"></i>
            </div>
-           <div class="sett-list-item" onclick="showPView('scales', 'Scale Matrix')">
-              <div class="sett-icon" style="background:var(--glass); color:#f59e0b;"><i data-lucide="scaling"></i></div>
-              <div style="flex:1;">
-                 <div class="sett-value">Unit Scale Database</div>
-                 <div class="sett-sub">Measurement units & detailed descriptions</div>
-              </div>
-              <i data-lucide="chevron-right" style="opacity:0.2;"></i>
-           </div>
-        </div>
+            <div class="sett-list-item" onclick="showPView('scales', 'Scale Matrix')">
+               <div class="sett-icon" style="background:var(--glass); color:#f59e0b;"><i data-lucide="scaling"></i></div>
+               <div style="flex:1;">
+                  <div class="sett-value">Unit Scale Database</div>
+                  <div class="sett-sub">Measurement units & detailed descriptions</div>
+               </div>
+               <i data-lucide="chevron-right" style="opacity:0.2;"></i>
+            </div>
+            <div class="sett-list-item" onclick="showPView('tags', 'Tag Engine')">
+               <div class="sett-icon" style="background:var(--glass); color:#10b981;"><i data-lucide="tag"></i></div>
+               <div style="flex:1;">
+                  <div class="sett-value">Analytics Tag Matrix</div>
+                  <div class="sett-sub">Manage searchable labels & grouping categories</div>
+               </div>
+               <i data-lucide="chevron-right" style="opacity:0.2;"></i>
+            </div>
+            <div class="sett-list-item" onclick="showPView('projects', 'Project Hub')">
+               <div class="sett-icon" style="background:var(--glass); color:#8b5cf6;"><i data-lucide="briefcase"></i></div>
+               <div style="flex:1;">
+                  <div class="sett-value">Strategic Project Hub</div>
+                  <div class="sett-sub">Control timelines, budgets & project managers</div>
+               </div>
+               <i data-lucide="chevron-right" style="opacity:0.2;"></i>
+            </div>
+         </div>
 
         <div class="section-title">System Internals</div>
         <div class="settings-list-card">
@@ -475,7 +491,7 @@
               <div class="sett-icon" style="background:rgba(139,92,246,0.1); color:var(--accent);"><i data-lucide="zap"></i></div>
               <div style="flex:1;">
                  <div class="sett-value">Software Update</div>
-                 <div class="sett-sub" id="s-version-sub">v3.2.0 • Stable Channel</div>
+                 <div class="sett-sub" id="s-version-sub">v3.3.0 • Stable Channel</div>
               </div>
               <i data-lucide="chevron-right" style="opacity:0.2;"></i>
            </div>
@@ -763,6 +779,108 @@
         </div>
         <button onclick="saveScale()" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none; padding:1.25rem;">
           <span style="font-weight:800;">Save Scale</span>
+        </button>
+      </div>
+
+      <!-- Tags View -->
+      <div id="p-view-tags" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="settings-list-card" style="padding:1.5rem; gap:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label class="sett-label">Analytics Tag Master</label>
+            <button onclick="newTag()" class="btn btn-primary" style="padding:0.5rem 1rem; font-size:0.75rem; border-radius:0.75rem; background: var(--accent); border: none; color: white;">+ New</button>
+          </div>
+          <div id="tags-db-list" style="display:flex; flex-direction:column; gap:0.75rem; max-height:400px; overflow-y:auto; padding-right:0.5rem;"></div>
+        </div>
+      </div>
+
+      <!-- Tag Editor -->
+      <div id="p-view-tag-editor" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="settings-list-card" style="padding:1.5rem; gap:1.5rem;">
+          <div>
+            <label class="sett-label">Tag Name</label>
+            <input type="text" id="tag-name" class="f-input" style="margin-top:0.75rem;" placeholder="e.g. Urgent, Business, Private">
+          </div>
+          <div>
+            <label class="sett-label">Tag Group</label>
+            <input type="text" id="tag-group" class="f-input" style="margin-top:0.75rem;" placeholder="e.g. Priority, Category, Status">
+          </div>
+          <div>
+            <label class="sett-label">Description</label>
+            <textarea id="tag-desc" class="f-input" style="margin-top:0.75rem; height:80px; resize:none;" placeholder="Elaborate on tag usage..."></textarea>
+          </div>
+          <div>
+             <label class="sett-label">Tag Status</label>
+             <select id="tag-status" class="f-input" style="margin-top:0.75rem;">
+                <option value="Active">Active</option>
+                <option value="Archived">Archived</option>
+             </select>
+          </div>
+        </div>
+        <button onclick="saveTag()" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none; padding:1.25rem;">
+          <span style="font-weight:800;">Commit Tag</span>
+        </button>
+      </div>
+
+      <!-- Projects View -->
+      <div id="p-view-projects" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="settings-list-card" style="padding:1.5rem; gap:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label class="sett-label">Strategic Project Master</label>
+            <button onclick="newProject()" class="btn btn-primary" style="padding:0.5rem 1rem; font-size:0.75rem; border-radius:0.75rem; background: var(--accent); border: none; color: white;">+ New</button>
+          </div>
+          <div id="projects-db-list" style="display:flex; flex-direction:column; gap:0.75rem; max-height:400px; overflow-y:auto; padding-right:0.5rem;"></div>
+        </div>
+      </div>
+
+      <!-- Project Editor -->
+      <div id="p-view-project-editor" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="settings-list-card" style="padding:1.5rem; gap:1.5rem;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+             <div style="grid-column: span 2;">
+               <label class="sett-label">Project Name</label>
+               <input type="text" id="proj-name" class="f-input" style="margin-top:0.75rem;" placeholder="e.g. Q2 Marketing Campaign">
+             </div>
+             <div>
+               <label class="sett-label">Project Category</label>
+               <input type="text" id="proj-cat" class="f-input" style="margin-top:0.75rem;" placeholder="e.g. Marketing">
+             </div>
+             <div>
+                <label class="sett-label">Project Manager</label>
+                <input type="text" id="proj-manager" class="f-input" style="margin-top:0.75rem;" placeholder="e.g. John Doe">
+             </div>
+             <div>
+               <label class="sett-label">Start Date</label>
+               <input type="date" id="proj-start" class="f-input" style="margin-top:0.75rem;">
+             </div>
+             <div>
+               <label class="sett-label">End Date</label>
+               <input type="date" id="proj-end" class="f-input" style="margin-top:0.75rem;">
+             </div>
+             <div>
+               <label class="sett-label">Budget Amount</label>
+               <input type="number" id="proj-budget" class="f-input" style="margin-top:0.75rem;" placeholder="0">
+             </div>
+             <div>
+               <label class="sett-label">Currency</label>
+               <input type="text" id="proj-currency" class="f-input" list="currency-list" style="margin-top:0.75rem;" value="IDR">
+             </div>
+          </div>
+          <div>
+            <label class="sett-label">Description</label>
+            <textarea id="proj-desc" class="f-input" style="margin-top:0.75rem; height:80px; resize:none;" placeholder="Highlight project objectives..."></textarea>
+          </div>
+          <div>
+             <label class="sett-label">Project Status</label>
+             <select id="proj-status" class="f-input" style="margin-top:0.75rem;">
+                <option value="Active">Active</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+             </select>
+          </div>
+        </div>
+        <button onclick="saveProject()" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none; padding:1.25rem;">
+          <span style="font-weight:800;">Initiate Project</span>
         </button>
       </div>
 

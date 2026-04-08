@@ -121,13 +121,15 @@ window.addChip = (wrapperId, val) => {
 // Input Formatting (Live Thousand Separators + Decimals up to 10 places)
 function formatInputLocale(e) {
   const raw = e.target.value;
+  if (!raw) {
+    if (typeof calculateTotal === 'function') calculateTotal();
+    return;
+  }
 
-  // Allow typing a decimal point or trailing zeros (don't reformat mid-entry)
-  // Only reformat when there's no incomplete decimal being typed
-  const trailingDecimal = /[.,]\d{0,10}$/.test(raw) && !/[.,]$/.test(raw);
+  // If user is typing math (contains +, -, *, /), don't format yet
+  if (/[+\-*/]/.test(raw)) return;
 
   // Normalize: accept both '.' and ',' as decimal separator
-  // Detect decimal part: last '.' or ',' that isn't a thousands separator
   let intPart = raw;
   let decPart = '';
 
@@ -138,26 +140,26 @@ function formatInputLocale(e) {
 
   if (decIdx !== -1) {
     const afterDec = raw.slice(decIdx + 1);
-    // It's a decimal separator if what follows is ≤10 digits and not purely a thousands pattern
+    // It's a decimal separator if what follows is <=10 digits
     if (/^\d{0,10}$/.test(afterDec)) {
       intPart = raw.slice(0, decIdx);
-      decPart = afterDec.slice(0, 10); // max 10 decimal digits
+      decPart = afterDec.slice(0, 10);
     }
   }
 
   // Strip non-numeric from int part
   const intClean = intPart.replace(/[^0-9]/g, '');
 
-  if (!intClean && !decPart) {
+  if (!intClean && !decPart && !/[.,]$/.test(raw)) {
     e.target.value = '';
-    calculateTotal();
+    if (typeof calculateTotal === 'function') calculateTotal();
     return;
   }
 
   // Format integer part with ID locale thousands separator
   const intFormatted = intClean ? new Intl.NumberFormat('id-ID').format(intClean) : '0';
 
-  // If decimal point was just typed (trailing separator), preserve it so user can keep typing
+  // Preserve manual decimal typing
   if (/[.,]$/.test(raw)) {
     e.target.value = intFormatted + ',';
   } else if (decPart !== '') {
@@ -166,8 +168,116 @@ function formatInputLocale(e) {
     e.target.value = intFormatted;
   }
 
-  calculateTotal();
+  if (typeof calculateTotal === 'function') calculateTotal();
 }
+
+function evaluateMath(str) {
+  try {
+    // Basic santitization for math
+    let clean = str.replace(/,/g, '.').replace(/[^0-9.+\-*/()]/g, '');
+    if (!clean) return 0;
+    // Simple eval alternative for basic arithmetic
+    const result = new Function(`return ${clean}`)();
+    return isFinite(result) ? result : 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+const Calculator = {
+  activeInput: null,
+  expr: '',
+  val: '0',
+  isNew: true,
+
+  init() {
+    document.querySelectorAll('.calc-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        this.activeInput = document.getElementById(btn.dataset.target);
+        this.open();
+      };
+    });
+
+    document.querySelectorAll('.calc-key').forEach(key => {
+      key.onclick = () => this.handleKey(key.dataset.val);
+    });
+
+    const closeBtn = document.getElementById('close-calc');
+    if (closeBtn) closeBtn.onclick = () => this.close();
+
+    const applyBtn = document.getElementById('calc-use-val');
+    if (applyBtn) applyBtn.onclick = () => this.apply();
+  },
+
+  open() {
+    const modal = document.getElementById('calculator-modal');
+    if (modal) modal.style.display = 'flex';
+    this.expr = '';
+    // Pull current value from input
+    if (this.activeInput) {
+       const v = parseNum(this.activeInput.value);
+       this.val = v.toString().replace('.', ',');
+    }
+    this.isNew = true;
+    this.updateDisplay();
+  },
+
+  handleKey(k) {
+    if (k === 'C') {
+      this.val = '0';
+      this.expr = '';
+      this.isNew = true;
+    } else if (k === 'DEL') {
+      if (this.val.length > 1) this.val = this.val.slice(0, -1);
+      else this.val = '0';
+    } else if (['+', '-', '*', '/'].includes(k)) {
+      this.expr = this.val + ' ' + k;
+      this.isNew = true;
+    } else if (k === '=') {
+      if (this.expr) {
+        const fullExpr = this.expr + ' ' + this.val;
+        const result = evaluateMath(fullExpr);
+        this.val = result.toString().replace('.', ',');
+        this.expr = '';
+        this.isNew = true;
+      }
+    } else if (k === ',') {
+      if (!this.val.includes(',')) this.val += ',';
+    } else {
+      // Number
+      if (this.isNew) {
+        this.val = k;
+        this.isNew = false;
+      } else {
+        this.val += k;
+      }
+    }
+    this.updateDisplay();
+  },
+
+  updateDisplay() {
+    const curEl = document.getElementById('calc-current-val');
+    const prevEl = document.getElementById('calc-prev-expr');
+    if (curEl) curEl.innerText = this.val;
+    if (prevEl) prevEl.innerText = this.expr;
+  },
+
+  apply() {
+    if (this.expr) this.handleKey('=');
+    if (this.activeInput) {
+      this.activeInput.value = this.val;
+      // Trigger formatting and total calculation
+      const event = { target: this.activeInput };
+      formatInputLocale(event);
+    }
+    this.close();
+  },
+
+  close() {
+    const modal = document.getElementById('calculator-modal');
+    if (modal) modal.style.display = 'none';
+  }
+};
 
 // Rebuild/Sync Metadata (Accounts, Merchants, Items) from Transactions
 function rebuildMetadataFromTransactions(txs, mode = 'merge') {
@@ -602,6 +712,29 @@ window.onload = () => {
       }
     };
   });
+
+  // Numeric fields math support (Blur to evaluate)
+  const numFields = ['quantity-input', 'amount-input', 'discount-input', 'fee-input', 'exchange-rate-input'];
+  numFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('blur', () => {
+      if (/[+\-*/]/.test(el.value)) {
+        const result = evaluateMath(el.value);
+        el.value = result.toString().replace('.', ',');
+        formatInputLocale({ target: el });
+      }
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && /[+\-*/]/.test(el.value)) {
+        e.preventDefault();
+        el.blur();
+      }
+    });
+  });
+
+  // Initialize Calculator
+  Calculator.init();
 
   const clearedBtns = document.querySelectorAll('#cleared-selector .type-btn');
   clearedBtns.forEach(btn => {

@@ -165,6 +165,7 @@
             <label class="label">Quantity<span>*</span></label>
             <div class="input-container">
               <input type="text" class="input num-input" id="quantity-input" value="1">
+              <button type="button" class="calc-btn" data-target="quantity-input"><i data-lucide="calculator"></i></button>
             </div>
           </div>
           <div class="form-group">
@@ -212,7 +213,8 @@
           <div class="form-group">
             <label class="label">Amount (per Unit)<span>*</span></label>
             <div class="input-container">
-              <input type="text" class="input input-amount" id="amount-input" placeholder="0" style="font-size: 1.25rem; font-weight: 800; text-align: right; padding-right: 1.25rem;" oninput="calculateTotal()">
+              <input type="text" class="input input-amount" id="amount-input" placeholder="0" style="font-size: 1.25rem; font-weight: 800; text-align: right; padding-right: 3rem;" oninput="calculateTotal()">
+              <button type="button" class="calc-btn" data-target="amount-input"><i data-lucide="calculator"></i></button>
             </div>
           </div>
         </div>
@@ -222,8 +224,9 @@
         <div class="form-group" id="exchange-rate-group" style="display: none; margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 1rem; border: 1px dashed var(--border);">
           <label class="label">Exchange Rate (to IDR)<span>*</span></label>
           <div class="input-container">
-            <input type="text" class="input num-input" id="exchange-rate-input" placeholder="1.00" value="1.00">
-            <i data-lucide="refresh-cw" class="input-icon" style="width: 18px; opacity: 0.5;"></i>
+            <input type="text" class="input num-input" id="exchange-rate-input" placeholder="1" value="1" style="padding-right: 3rem;">
+            <button type="button" class="calc-btn" data-target="exchange-rate-input"><i data-lucide="calculator"></i></button>
+            <i data-lucide="refresh-cw" class="input-icon" style="width: 18px; opacity: 0.5; right: 3rem;"></i>
           </div>
           <p class="section-subtitle" style="margin-top: 0.5rem; font-size: 0.75rem;">Specify the conversion factor to your base currency (IDR).</p>
         </div>
@@ -231,18 +234,24 @@
         <div class="form-group-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div class="form-group">
             <label class="label">Discount</label>
-            <input type="text" class="input input-amount" id="discount-input" placeholder="0" style="text-align: right;">
+            <div class="input-container">
+              <input type="text" class="input input-amount" id="discount-input" placeholder="0" style="text-align: right; padding-right: 2.75rem;">
+              <button type="button" class="calc-btn" data-target="discount-input"><i data-lucide="calculator"></i></button>
+            </div>
           </div>
           <div class="form-group">
             <label class="label">Additional Fee</label>
-            <input type="text" class="input input-amount" id="fee-input" placeholder="0" style="text-align: right;">
+            <div class="input-container">
+              <input type="text" class="input input-amount" id="fee-input" placeholder="0" style="text-align: right; padding-right: 2.75rem;">
+              <button type="button" class="calc-btn" data-target="fee-input"><i data-lucide="calculator"></i></button>
+            </div>
           </div>
         </div>
 
         <div id="summary-card" class="summary-card" style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); margin-top: 1rem;">
           <div class="summary-row" style="padding: 1rem;">
             <span style="font-weight: 600;">Calculated total</span>
-            <span id="total-display" class="total-value" style="font-size: 1.75rem; font-weight: 800; color: var(--accent);">Rp 0.00</span>
+            <span id="total-display" class="total-value" style="font-size: 1.75rem; font-weight: 800; color: var(--accent);">Rp 0</span>
           </div>
         </div>
       </div>
@@ -501,6 +510,48 @@
     <button type="button" id="close-scanner" class="btn btn-secondary" style="margin-top:2rem; width:100%; max-width:400px; padding:1rem; font-weight:700;">Cancel Scanning</button>
   </div>
   <script src="script.js"></script>
+
+  <!-- Universal Calculator Modal -->
+  <div id="calculator-modal" class="modal-backdrop" style="display: none; padding: 1.5rem;">
+    <div class="modal-card" style="max-width: 320px; padding: 1.5rem; background: var(--bg-secondary);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <span style="font-weight: 700; color: var(--accent);">Quick Calc</span>
+        <button id="close-calc" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.25rem;">×</button>
+      </div>
+      
+      <div id="calc-display-wrapper" style="background: rgba(0,0,0,0.3); border-radius: 1rem; padding: 1rem; margin-bottom: 1.5rem; text-align: right; border: 1px solid var(--border);">
+        <div id="calc-prev-expr" style="font-size: 0.75rem; color: var(--text-secondary); height: 1.2rem; opacity: 0.6;"></div>
+        <div id="calc-current-val" style="font-size: 1.5rem; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">0</div>
+      </div>
+
+      <div class="calc-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;">
+        <button class="calc-key op" data-val="C" style="background: var(--red-soft); color: var(--red);">C</button>
+        <button class="calc-key op" data-val="/" style="background: var(--bg-input);">÷</button>
+        <button class="calc-key op" data-val="*" style="background: var(--bg-input);">×</button>
+        <button class="calc-key op" data-val="DEL" style="background: var(--bg-input);"><i data-lucide="delete" style="width:16px"></i></button>
+        
+        <button class="calc-key num" data-val="7">7</button>
+        <button class="calc-key num" data-val="8">8</button>
+        <button class="calc-key num" data-val="9">9</button>
+        <button class="calc-key op" data-val="-" style="background: var(--bg-input);">−</button>
+        
+        <button class="calc-key num" data-val="4">4</button>
+        <button class="calc-key num" data-val="5">5</button>
+        <button class="calc-key num" data-val="6">6</button>
+        <button class="calc-key op" data-val="+" style="background: var(--bg-input);">+</button>
+        
+        <button class="calc-key num" data-val="1">1</button>
+        <button class="calc-key num" data-val="2">2</button>
+        <button class="calc-key num" data-val="3">3</button>
+        <button class="calc-key op" data-val="=" style="background: var(--accent); color: white; grid-row: span 2;">=</button>
+        
+        <button class="calc-key num" data-val="0" style="grid-column: span 2;">0</button>
+        <button class="calc-key num" data-val=",">,</button>
+      </div>
+
+      <button id="calc-use-val" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem; justify-content: center; font-weight: 800;">Apply Result</button>
+    </div>
+  </div>
 </body>
 
 </html>

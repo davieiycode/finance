@@ -517,9 +517,9 @@
       <div id="view-form" class="view-content">
         <div class="form-group"><label class="form-label">Merchant Name<span>*</span></label><input type="text"
             id="f-name" class="f-input" placeholder="e.g. Starbucks Solo" oninput="autoSave()"></div>
-        <div class="form-group">
-          <label class="form-label">Merchant Type<span>*</span></label>
-          <div class="select-wrapper">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label class="form-label">Merchant Type<span>*</span></label>
             <input type="text" class="f-input" id="f-type" list="type-list" oninput="autoSave()">
             <datalist id="type-list">
               <option value="Supermarket">Large retailers like Indogrosir, Hypermart</option>
@@ -531,6 +531,14 @@
               <option value="Pharmacy">Health & medicine</option>
               <option value="Other">Miscellaneous merchants</option>
             </datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select id="f-status" class="f-input" onchange="autoSave()">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Blacklisted">Blacklisted</option>
+            </select>
           </div>
         </div>
 
@@ -598,6 +606,21 @@
 
         <div class="form-group"><label class="form-label">Map Embed Link / URL</label><input type="text" id="f-map"
             class="f-input" placeholder="https://..." oninput="autoSave()"></div>
+
+        <div class="form-group">
+          <label class="form-label">Preferred Payment Method</label>
+          <input type="text" id="f-payment" class="f-input" placeholder="e.g. Bank Transfer, Cash, CC" oninput="autoSave()">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Bank Account Details</label>
+          <input type="text" id="f-bank" class="f-input" placeholder="Bank Name, Acc Number" oninput="autoSave()">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea id="f-notes" class="f-input" style="min-height: 80px;" oninput="autoSave()"></textarea>
+        </div>
       </div>
     </div>
   </div>
@@ -743,6 +766,10 @@
         document.getElementById('f-city').value = m.city || '';
         document.getElementById('f-state').value = m.state || '';
         document.getElementById('f-country').value = m.country || '';
+        document.getElementById('f-status').value = m.status || 'Active';
+        document.getElementById('f-payment').value = m.paymentMethod || '';
+        document.getElementById('f-bank').value = m.bankDetails || '';
+        document.getElementById('f-notes').value = m.notes || '';
         document.getElementById('f-map').value = m.map || '';
       } else {
         document.getElementById('f-name').value = '';
@@ -755,6 +782,10 @@
         document.getElementById('f-city').value = '';
         document.getElementById('f-state').value = '';
         document.getElementById('f-country').value = '';
+        document.getElementById('f-status').value = 'Active';
+        document.getElementById('f-payment').value = '';
+        document.getElementById('f-bank').value = '';
+        document.getElementById('f-notes').value = '';
         document.getElementById('f-map').value = '';
         refreshMap(null);
       }
@@ -888,6 +919,10 @@
       const city = document.getElementById('f-city').value;
       const state = document.getElementById('f-state').value;
       const country = document.getElementById('f-country').value;
+      const status = document.getElementById('f-status').value;
+      const paymentMethod = document.getElementById('f-payment').value;
+      const bankDetails = document.getElementById('f-bank').value;
+      const notes = document.getElementById('f-notes').value;
       let map = document.getElementById('f-map').value;
 
       // Auto-generate map from address
@@ -895,7 +930,7 @@
         map = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
       }
 
-      const obj = { id: currentEditId || Date.now(), name, type, contact, phone, email, website, address, city, state, country, map };
+      const obj = { id: currentEditId || Date.now(), name, type, contact, phone, email, website, address, city, state, country, status, paymentMethod, bankDetails, notes, map, updateTime: new Date().toISOString() };
 
       const idx = merchants.findIndex(m => m.id === obj.id);
       if (idx !== -1) {

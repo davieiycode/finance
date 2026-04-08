@@ -290,7 +290,7 @@
         </div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
            <div class="form-group">
-              <label class="form-label">Scale<span>*</span></label>
+              <label class="form-label">Unit<span>*</span></label>
               <div class="select-wrapper">
                 <input type="text" class="f-input" id="f-unit" list="scale-list" oninput="autoSave()">
                 <datalist id="scale-list">
@@ -310,6 +310,10 @@
                 </datalist>
               </div>
            </div>
+            <div class="form-group">
+               <label class="form-label">Unit Scale</label>
+               <input type="number" id="f-unit-scale" class="f-input" value="1" step="0.01" oninput="autoSave()">
+            </div>
            <div class="form-group">
               <label class="form-label">Currency</label>
               <div class="select-wrapper">
@@ -644,6 +648,7 @@
          document.getElementById('f-manu').value = it.manu || '';
          document.getElementById('f-model').value = it.model || '';
          document.getElementById('f-unit').value = it.unit || 'pcs';
+         document.getElementById('f-unit-scale').value = it.unitScale || 1;
          document.getElementById('f-currency').value = it.currency || 'IDR';
          document.getElementById('f-price').value = it.price || 0;
          document.getElementById('f-sku').value = it.sku || '';
@@ -665,6 +670,8 @@
          document.getElementById('f-manu').value = '';
          document.getElementById('f-model').value = '';
          document.getElementById('f-price').value = 0;
+         document.getElementById('f-unit').value = 'pcs';
+         document.getElementById('f-unit-scale').value = 1;
          document.getElementById('f-sku').value = '';
          document.getElementById('f-expiry').value = '';
          document.getElementById('f-notes').value = '';
@@ -849,6 +856,7 @@
       const cat = document.getElementById('f-category').value;
       const price = parseFloat(document.getElementById('f-price').value) || 0;
       const unit = document.getElementById('f-unit').value;
+      const unitScale = parseFloat(document.getElementById('f-unit-scale').value) || 1;
       const currency = document.getElementById('f-currency').value;
       const manu = document.getElementById('f-manu').value;
       const model = document.getElementById('f-model').value;
@@ -857,7 +865,7 @@
       const notes = document.getElementById('f-notes').value;
       const image = document.getElementById('f-img-preview').style.display === 'block' ? document.getElementById('f-img-preview').src : '';
 
-      const obj = { id: currentEditId || Date.now(), name, category: cat, price, unit, currency, manu, model, sku, expiry, notes, status: currentStatus, image };
+      const obj = { id: currentEditId || Date.now(), name, category: cat, price, unit, unitScale, currency, manu, model, sku, expiry, notes, status: currentStatus, image, updateTime: new Date().toISOString() };
 
       const idx = items.findIndex(i => i.id === obj.id);
       if (idx !== -1) {
