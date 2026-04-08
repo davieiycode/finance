@@ -408,11 +408,25 @@ window.copyScriptCode = () => {
   const sheets = ss.getSheets();
   const timezone = ss.getSpreadsheetTimeZone();
   const response = { status: 'success' };
+  const relevantKeywords = ['transaction', 'transaksi', 'merchant', 'toko', 'penjual', 'author', 'kreator', 'user', 'penulis', 'anggota', 'account', 'rekening', 'akun', 'item', 'barang', 'produk', 'membership', 'categories', 'scales', 'vault', 'brankas', 'budget', 'anggaran', 'goal', 'target', 'voucher', 'kupon', 'setting', 'pref'];
 
   sheets.forEach(sh => {
     const name = sh.getName().toLowerCase().trim();
+    const isRelevant = relevantKeywords.some(key => name.includes(key));
+    if (!isRelevant) return;
+
     const data = sh.getDataRange().getValues();
-    if (data.length < 2) { response[name + 's'] = []; return; }
+    if (data.length < 2 && !name.includes('setting') && !name.includes('pref')) { 
+      // Map empty data to correct keys to avoid app errors
+      let emptyKey = name + 's';
+      if (name.includes('transaction') || name.includes('transaksi')) emptyKey = 'transactions';
+      else if (name.includes('merchant') || name.includes('toko') || name.includes('penjual')) emptyKey = 'merchants';
+      else if (name.includes('author') || name.includes('kreator') || name.includes('user') || name.includes('penulis')) emptyKey = 'authors';
+      else if (name.includes('account') || name.includes('rekening') || name.includes('akun')) emptyKey = 'accounts';
+      else if (name.includes('item') || name.includes('barang') || name.includes('produk')) emptyKey = 'items';
+      response[emptyKey] = []; 
+      return; 
+    }
 
     const headers = data.shift();
     const records = data.map(row => {
