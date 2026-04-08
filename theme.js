@@ -416,7 +416,7 @@
         const data = await res.json();
 
         let count = 0;
-        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'vouchers', 'membership_cards', 'user_prefs', 'pin_enabled', 'categories_db', 'scales_db'];
+        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'vouchers', 'membership_cards', 'user_prefs', 'pin_enabled', 'categories_db', 'scales_db', 'tags', 'projects'];
         const objectKeys = ['user_prefs']; // Keys that store objects, not arrays
         const reverseMap = (obj) => {
           const newObj = {};
@@ -542,7 +542,7 @@
           }
 
           // 2. Process Metadata Keys
-          const otherKeys = ['accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'vouchers', 'membership_cards', 'user_prefs', 'pin_enabled'];
+          const otherKeys = ['accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'vouchers', 'membership_cards', 'user_prefs', 'pin_enabled', 'categories_db', 'scales_db', 'tags', 'projects'];
           otherKeys.forEach(key => {
             if (data[key]) {
               SyncHub.update(80, `Updating ${key}...`);
@@ -614,7 +614,7 @@
       };
 
       try {
-        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'budgets', 'goals', 'vouchers', 'membership_cards', 'user_prefs', 'pin_enabled', 'categories_db', 'scales_db'];
+        const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'budgets', 'goals', 'vouchers', 'membership_cards', 'user_prefs', 'pin_enabled', 'categories_db', 'scales_db', 'tags', 'projects', 'vault'];
         const objectKeys = ['user_prefs'];
         const payload = { updateTime: new Date().toISOString() };
         
