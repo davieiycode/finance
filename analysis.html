@@ -11,11 +11,19 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
-    .chart-container { background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.5rem; margin-bottom: 2rem; }
-    .back-btn { width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: none; color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .tab-btn { min-width: 80px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.5rem; border-radius: 0.75rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .tab-btn.active { background: var(--border) !important; color: var(--text-primary) !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-    .stat-card { background: var(--glass); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.75rem; }
+    .chart-container { background: var(--glass); border: 1px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3); }
+    .back-btn { width: 40px; height: 40px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .back-btn:hover { background: var(--border); transform: scale(1.05); }
+    .tab-btn { min-width: 90px; flex: 1; border: none; background: none; color: var(--text-secondary); padding: 0.65rem; border-radius: 0.85rem; font-size: 0.725rem; font-weight: 700; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .tab-btn.active { background: var(--border) !important; color: var(--text-primary) !important; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); }
+    .stat-card { background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem; position: relative; overflow: hidden; transition: all 0.3s; }
+    .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .trend-indicator { font-size: 0.6rem; font-weight: 800; display: flex; align-items: center; gap: 2px; }
+    .trend-up { color: #ef4444; }
+    .trend-down { color: #10b981; }
+    .insight-card { background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.02)); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem; margin-bottom: 1.5rem; animation: pulse-glow 3s infinite alternate; }
+    @keyframes pulse-glow { from { box-shadow: 0 0 0px var(--accent); } to { box-shadow: 0 0 15px rgba(139, 92, 246, 0.15); } }
+    .health-badge { font-size: 0.55rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -45,31 +53,46 @@
       <button id="next-period" class="back-btn" style="width: 36px; height: 36px; background: rgba(255,255,255,0.05);"><i data-lucide="chevron-right" style="width: 18px;"></i></button>
     </div>
 
-    <div class="tabs-container" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1rem; padding: 0.35rem; display: flex; gap: 0.35rem; margin-bottom: 1.5rem; overflow-x: auto; scrollbar-width: none;">
-      <button class="tab-btn active" data-tab="flow">Treasure Flow</button>
-      <button class="tab-btn" data-tab="spending">Supplies Used</button>
-      <button class="tab-btn" data-tab="income">Treasure Found</button>
+    <div id="insight-box" class="insight-card">
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+        <div style="background: var(--accent); width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+          <i data-lucide="sparkles" style="width: 16px; color: white;"></i>
+        </div>
+        <div>
+          <h3 style="font-size: 0.875rem; font-weight: 800; color: var(--text-primary);">Explorer's Insight</h3>
+          <p id="insight-date" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.1rem;">Current Cycle Report</p>
+        </div>
+      </div>
+      <p id="insight-text" style="font-size: 0.8125rem; line-height: 1.5; color: var(--text-secondary);">Analyzing transaction patterns and treasure flow... Sit tight!</p>
+    </div>
+
+    <div class="tabs-container" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 0.35rem; display: flex; gap: 0.35rem; margin-bottom: 1.5rem; overflow-x: auto; scrollbar-width: none;">
+      <button class="tab-btn active" data-tab="flow">Balance</button>
+      <button class="tab-btn" data-tab="spending">Usage</button>
+      <button class="tab-btn" data-tab="income">Treasure</button>
       <button class="tab-btn" data-tab="tags">Tags</button>
       <button class="tab-btn" data-tab="projects">Projects</button>
     </div>
 
     <div id="tab-flow" class="tab-content">
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
-        <div class="stat-card" style="text-align: center; background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.2);">
-          <span style="font-size: 1.125rem; font-weight: 800; color: #32D74B;">Rp 0</span>
-          <span style="font-size: 0.65rem; color: #32D74B; text-transform: uppercase; font-weight: 700; opacity: 0.8;">Treasure Found</span>
+        <div class="stat-card" style="background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.2);">
+          <span style="font-size: 1.25rem; font-weight: 800; color: #32D74B;">Rp 0</span>
+          <span style="font-size: 0.65rem; color: #32D74B; text-transform: uppercase; font-weight: 700; opacity: 0.8;">Found</span>
+          <div id="found-trend" class="trend-indicator trend-down"></div>
         </div>
-        <div class="stat-card" style="text-align: center; background: rgba(255, 69, 58, 0.05); border-color: rgba(255, 69, 58, 0.2);">
-          <span style="font-size: 1.125rem; font-weight: 800; color: #FF453A;">Rp 0</span>
-          <span style="font-size: 0.65rem; color: #FF453A; text-transform: uppercase; font-weight: 700; opacity: 0.8;">Supplies Consumed</span>
+        <div class="stat-card" style="background: rgba(255, 69, 58, 0.05); border-color: rgba(255, 69, 58, 0.2);">
+          <span style="font-size: 1.25rem; font-weight: 800; color: #FF453A;">Rp 0</span>
+          <span style="font-size: 0.65rem; color: #FF453A; text-transform: uppercase; font-weight: 700; opacity: 0.8;">Consumed</span>
+          <div id="spent-trend" class="trend-indicator trend-up"></div>
         </div>
-        <div class="stat-card" style="text-align: center; background: rgba(255, 255, 255, 0.02);">
-          <span style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Rp 0</span>
-          <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; opacity: 0.6;">Expedition Profit</span>
+        <div class="stat-card">
+          <span style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Rp 0</span>
+          <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; opacity: 0.6;">Profit</span>
         </div>
-        <div class="stat-card" style="text-align: center; background: rgba(255, 255, 255, 0.02);">
-          <span style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">0%</span>
-          <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; opacity: 0.6;">Retention Rate</span>
+        <div class="stat-card">
+          <span style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">0%</span>
+          <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; opacity: 0.6;">Savings Rate</span>
         </div>
       </div>
       <div class="chart-container" style="height: 500px; padding: 1.5rem; background: rgba(255,255,255,0.015);">
@@ -80,23 +103,19 @@
     </div>
 
     <div id="tab-spending" class="tab-content" style="display: none;">
-      <div class="chart-container" style="height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
-        <canvas id="spendingDoughnutChart"></canvas>
-        <div style="position: absolute; text-align: center;">
-          <div id="spend-total-val" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Rp 0</div>
-          <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">TOTAL SPENT</div>
-        </div>
+      <div class="chart-container" style="height: 400px; padding: 1.5rem;">
+        <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 0.5rem;">Supply Distribution Map</h3>
+        <p id="spend-total-val" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem;">Rp 0</p>
+        <div id="spendingTreeMap" style="width: 100%; height: 280px;"></div>
       </div>
       <div id="spending-parent-list"></div>
     </div>
 
     <div id="tab-income" class="tab-content" style="display: none;">
-      <div class="chart-container" style="height: 300px; display: flex; align-items: center; justify-content: center; position: relative;">
-        <canvas id="incomeDoughnutChart"></canvas>
-        <div style="position: absolute; text-align: center;">
-          <div id="income-total-val" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Rp 0</div>
-          <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">TOTAL INCOME</div>
-        </div>
+      <div class="chart-container" style="height: 400px; padding: 1.5rem;">
+        <h3 style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 0.5rem;">Treasure Discovery Map</h3>
+        <p id="income-total-val" style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem;">Rp 0</p>
+        <div id="incomeTreeMap" style="width: 100%; height: 280px;"></div>
       </div>
       <div id="income-parent-list"></div>
     </div>
@@ -140,7 +159,6 @@
     const analysisTabs = document.querySelectorAll('.tabs-container .tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     let sankeyChartInstance = null;
-    let spendChart = null, incomeChart = null;
     let tagChartInst = null, projChartInst = null;
     let activeDate = new Date(); 
     let analysisMode = 'monthly';
@@ -168,17 +186,15 @@
         
         // Resize ECharts
         setTimeout(() => {
-          const sankey = echarts.getInstanceByDom(document.getElementById('sankeyChart'));
-          if (sankey) sankey.resize();
-          const tags = echarts.getInstanceByDom(document.getElementById('tagsChart'));
-          if (tags) tags.resize();
-          const projs = echarts.getInstanceByDom(document.getElementById('projectsChart'));
-          if (projs) projs.resize();
+          ['sankeyChart', 'spendingTreeMap', 'incomeTreeMap', 'tagsChart', 'projectsChart'].forEach(id => {
+            const inst = echarts.getInstanceByDom(document.getElementById(id));
+            if (inst) inst.resize();
+          });
         }, 100);
       };
     });
 
-    const colors = ['#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#0ea5e9', '#06b6d4', '#6366f1', '#fb923c', '#facc15'];
+    const colors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#0ea5e9', '#06b6d4', '#6366f1', '#fb923c', '#facc15'];
     
     function initData() {
       let allTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
@@ -248,6 +264,60 @@
       const rate = totalInc > 0 ? (net / totalInc) * 100 : 0;
       const fmt = (v) => 'Rp ' + Math.floor(v).toLocaleString('id-ID');
 
+      // Comparison logic
+      const getPrevFilter = () => {
+         const prevDate = new Date(activeDate);
+         if (analysisMode === 'monthly') prevDate.setMonth(prevDate.getMonth() - 1);
+         else prevDate.setFullYear(prevDate.getFullYear() - 1);
+         return analysisMode === 'monthly' ? `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2,'0')}` : `${prevDate.getFullYear()}`;
+      };
+      const prevFilter = getPrevFilter();
+      const prevTxs = allTxs.filter(t => (t.date || "").startsWith(prevFilter));
+      const prevInc = getAgg(prevTxs, 'Income').reduce((s, a) => s + a.value, 0);
+      const prevExp = getAgg(prevTxs, 'Expense').reduce((s, a) => s + a.value, 0);
+
+      const renderTrend = (cur, prev, id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (!prev) { el.innerHTML = ''; return; }
+        const diff = ((cur - prev) / prev) * 100;
+        const isUp = cur > prev;
+        el.className = `trend-indicator ${isUp ? 'trend-up' : 'trend-down'}`;
+        el.innerHTML = `<i data-lucide="trending-${isUp ? 'up' : 'down'}" style="width:10px;"></i> ${Math.abs(diff).toFixed(1)}% vs Last Period`;
+        lucide.createIcons();
+      };
+
+      renderTrend(totalInc, prevInc, 'found-trend');
+      renderTrend(totalExp, prevExp, 'spent-trend');
+
+      // Insights Generation
+      const generateInsight = () => {
+        const box = document.getElementById('insight-box');
+        const text = document.getElementById('insight-text');
+        const dateEl = document.getElementById('insight-date');
+        if (!text) return;
+
+        let msg = "";
+        const diffExp = prevExp > 0 ? ((totalExp - prevExp) / prevExp) * 100 : 0;
+        
+        if (totalExp > totalInc) {
+          msg = `Captain, we are consuming more supplies than treasure found this cycle. Recommendation: Audit high-cost routes.`;
+        } else if (diffExp > 20) {
+          msg = `Warning: Supply consumption has spiked by ${diffExp.toFixed(1)}% compared to the previous cycle. Investigate unexpected outlays.`;
+        } else if (net > totalInc * 0.4) {
+          msg = `Excellent exploration! We've retained over 40% of our findings. The vault is growing faster than expected.`;
+        } else {
+          msg = `Steady travels. Treasure flow is stable, and resource consumption is within nominal explorer limits.`;
+        }
+
+        const topCat = spendAgg[0];
+        if (topCat) msg += ` The most significant supply drain remains ${topCat.name}.`;
+
+        text.innerText = msg;
+        dateEl.innerText = `${analysisMode.toUpperCase()} CYCLE REPORT`;
+      };
+      generateInsight();
+
       document.querySelectorAll('#tab-flow .stat-card span:first-child').forEach((el, i) => {
         if(i===0) el.innerText = fmt(totalInc);
         if(i===1) el.innerText = fmt(totalExp);
@@ -279,29 +349,39 @@
         const l = document.getElementById(cid);
         if (!l) return;
         l.innerHTML = data.length ? data.map((item, i) => {
-          const budget = (contextType === 'Project' || (contextType === 'Expense' && (item.name.toLowerCase().includes('food') || item.name.toLowerCase().includes('transport')))) ? getProjectBudget(item.name) : 0;
+          const budget = getProjectBudget(item.name);
           const perc = budget ? Math.min((item.value / budget) * 100, 100) : 0;
           const color = colors[i % colors.length];
+          
+          let health = '';
+          if (contextType === 'Project' || budget > 0) {
+            if (perc > 100) health = '<span class="health-badge" style="background: #ef4444; color: white;">Critical</span>';
+            else if (perc > 85) health = '<span class="health-badge" style="background: #f59e0b; color: white;">Warning</span>';
+            else if (perc > 0) health = '<span class="health-badge" style="background: #10b981; color: white;">Healthy</span>';
+          }
 
           return `
           <div class="stat-card" style="cursor: pointer; transition: transform 0.1s;" onclick="showCatDetails('${item.name}', '${contextType}')" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: ${perc > 0 ? '0.5rem' : '0'};">
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: ${color};"></div>
-                <span style="font-size: 0.8125rem; font-weight: 600;">${item.name}</span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: ${perc > 0 ? '0.75rem' : '0'};">
+              <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                   <div style="width: 8px; height: 8px; border-radius: 50%; background: ${color};"></div>
+                   <span style="font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); line-height: 1;">${item.name}</span>
+                </div>
+                ${health}
               </div>
               <div style="text-align: right;">
-                <span style="font-size: 0.8125rem; font-weight: 700;">${fmt(item.value)}</span>
-                ${perc > 0 ? `<div style="font-size: 0.6rem; color: var(--text-secondary);">${Math.round(perc)}% of budget</div>` : ''}
+                <span style="font-size: 0.875rem; font-weight: 800; color: var(--text-primary);">${fmt(item.value)}</span>
+                ${perc > 0 ? `<div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 600;">MAX ${fmt(budget)}</div>` : ''}
               </div>
             </div>
             ${perc > 0 ? `
-            <div style="height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
-              <div style="height: 100%; width: ${perc}%; background: ${color}; border-radius: 2px;"></div>
+            <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.02);">
+              <div style="height: 100%; width: ${perc}%; background: ${perc > 100 ? '#ef4444' : color}; border-radius: 3px; transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);"></div>
             </div>
             ` : ''}
           </div>`;
-        }).join('') : '<p style="text-align:center; opacity:0.5; padding:2rem; font-size:0.8rem;">No entries found</p>';
+        }).join('') : '<p style="text-align:center; opacity:0.5; padding:2rem; font-size:0.8rem;">No trails recorded in this sector</p>';
       };
 
       renderL(spendAgg, 'spending-parent-list', 'Expense');
@@ -353,12 +433,25 @@
         series: [{ type: 'sankey', layout: 'none', data: nodes.length > 2 ? nodes : [{name:'No Data'}], links: links.length ? links : [{source:'Income',target:'No Data',value:0.1}], label: { color: '#eee', fontSize: 10 } }] 
       });
 
-      // 2. SPENDING/INCOME DONUTS (Chart.js)
-      const donutBase = { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } };
-      if (incomeChart) incomeChart.destroy();
-      incomeChart = new Chart(document.getElementById('incomeDoughnutChart'), { type: 'doughnut', data: { labels: incomeAgg.map(i => i.name), datasets: [{ data: incomeAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
-      if (spendChart) spendChart.destroy();
-      spendChart = new Chart(document.getElementById('spendingDoughnutChart'), { type: 'doughnut', data: { labels: spendAgg.map(i => i.name), datasets: [{ data: spendAgg.map(i => i.value), backgroundColor: colors, borderWidth: 0 }] }, options: donutBase });
+      // 2. SPENDING & INCOME TREEMAPS
+      const renderTM = (id, data, colorPalette) => {
+         const inst = getEChart(id);
+         if (!inst) return;
+         inst.setOption({
+            backgroundColor: 'transparent',
+            tooltip: { formatter: info => `${info.name}: ${fmt(info.value)}` },
+            series: [{
+               type: 'treemap',
+               data: data.length ? data : [{name: 'No Data', value: 0}],
+               breadcrumb: { show: false },
+               itemStyle: { borderColor: 'rgba(0,0,0,0.2)', borderWidth: 1, gapWidth: 1 },
+               label: { show: true, formatter: '{b}\n{c}', fontSize: 9, fontWeight: '700' },
+               levels: [{ itemStyle: { color: colorPalette[0], borderColor: '#1e293b', borderWidth: 1, gapWidth: 1 } }]
+            }]
+         });
+      };
+      renderTM('spendingTreeMap', spendAgg, ['#ef4444']);
+      renderTM('incomeTreeMap', incomeAgg, ['#10b981']);
 
       // ---------------------------------------------------------
       // ADVANCED TAGS & PROJECTS ANALYSIS (ECharts)
