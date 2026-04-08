@@ -261,11 +261,18 @@
       const getProjectBudget = (name) => {
         const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
         const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+        const projects = JSON.parse(localStorage.getItem('projects') || '[]');
+        
         const b = budgets.find(x => x.category === name);
-        if (b) return b.limit;
+        if (b) return b.limit || b.budget || 0;
+        
         const g = goals.find(x => x.name === name);
-        if (g) return g.target;
-        return 10000000;
+        if (g) return g.target || 0;
+        
+        const p = projects.find(x => x.name === name);
+        if (p) return p.budget || p.amount || 0;
+        
+        return 0;
       };
 
       const renderL = (data, cid, contextType) => {
@@ -300,14 +307,21 @@
       renderL(spendAgg, 'spending-parent-list', 'Expense');
       renderL(incomeAgg, 'income-parent-list', 'Income');
 
+      const masterTags = JSON.parse(localStorage.getItem('tags') || '[]');
+      const masterProjects = JSON.parse(localStorage.getItem('projects') || '[]');
+
       const tagMap = {}, projMap = {};
+      // Initialize with Master Data if present
+      masterTags.forEach(tg => { if(tg.name) tagMap[tg.name] = 0; });
+      masterProjects.forEach(pj => { if(pj.name) projMap[pj.name] = 0; });
+
       txs.forEach(t => {
          const amt = t.total || 0;
          (t.tags || []).forEach(tg => { if (tg) tagMap[tg] = (tagMap[tg] || 0) + amt; });
          (t.projects || []).forEach(pj => { if (pj) projMap[pj] = (projMap[pj] || 0) + amt; });
       });
-      const tagDataSummary = Object.entries(tagMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
-      const projDataSummary = Object.entries(projMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value}));
+      const tagDataSummary = Object.entries(tagMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value})).filter(x => x.value > 0 || masterTags.some(mt => mt.name === x.name));
+      const projDataSummary = Object.entries(projMap).sort((a,b) => b[1] - a[1]).map(([name, value]) => ({name, value})).filter(x => x.value > 0 || masterProjects.some(mp => mp.name === x.name));
 
       renderL(tagDataSummary, 'tags-list', 'Tag');
       renderL(projDataSummary, 'projects-list', 'Project');
@@ -352,20 +366,25 @@
       
       // Helper: Get data for multiple months
       const getMultiMonthData = (txList, startMonth, endMonth, field) => {
-        const monthMap = {}; // { 'YYYY-MM': { 'TagA': 100, 'TagB': 200 } }
+        const monthMap = {}; 
         const allItems = new Set();
         
         txList.forEach(t => {
-          if (t.type !== 'Expense') return;
           const month = (t.date || '').substring(0, 7);
           if (month < startMonth || month > endMonth) return;
           
           if (!monthMap[month]) monthMap[month] = {};
           const items = Array.isArray(t[field]) ? t[field] : (t[field] ? [t[field]] : []);
+          
           items.forEach(it => {
             if (!it) return;
             allItems.add(it);
-            monthMap[month][it] = (monthMap[month][it] || 0) + (t.total || 0);
+            // Use spending (Expense) as primary metric for trends, but allow others if needed
+            const amt = (t.type === 'Expense') ? (t.total || 0) : (t.type === 'Transfer' ? 0 : -(t.total || 0)); 
+            // Better logic: Sum absolute value of expenses for trends, ignore income or handle separately.
+            // For now, let's just make sure all items are tracked and show spending contribution.
+            const flowAmt = t.type === 'Expense' ? (t.total || 0) : 0;
+            monthMap[month][it] = (monthMap[month][it] || 0) + flowAmt;
           });
         });
         
