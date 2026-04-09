@@ -416,22 +416,29 @@ window.copyScriptCode = () => {
   const sheets = ss.getSheets();
   const timezone = ss.getSpreadsheetTimeZone();
   const response = { status: 'success' };
-  const relevantKeywords = ['transaction', 'transaksi', 'merchant', 'toko', 'penjual', 'author', 'kreator', 'user', 'penulis', 'anggota', 'account', 'rekening', 'akun', 'item', 'barang', 'produk', 'membership', 'categories', 'scales', 'vault', 'brankas', 'budget', 'anggaran', 'goal', 'target', 'voucher', 'kupon', 'setting', 'pref'];
+  const relevantKeywords = ['transaction', 'transaksi', 'merchant', 'toko', 'penjual', 'author', 'kreator', 'user', 'penulis', 'anggota', 'account', 'rekening', 'akun', 'item', 'barang', 'produk', 'membership', 'categories', 'scales', 'vault', 'brankas', 'budget', 'anggaran', 'goal', 'target', 'voucher', 'kupon', 'setting', 'pref', 'tag', 'project'];
 
   sheets.forEach(sh => {
-    const name = sh.getName().toLowerCase().trim();
-    const isRelevant = relevantKeywords.some(key => name.includes(key));
-    if (!isRelevant) return;
+    const name = sh.getName().toLowerCase();
+    if (!relevantKeywords.some(k => name.includes(k))) return;
 
     const data = sh.getDataRange().getValues();
     if (data.length < 2 && !name.includes('setting') && !name.includes('pref')) { 
-      // Map empty data to correct keys to avoid app errors
       let emptyKey = name + 's';
       if (name.includes('transaction') || name.includes('transaksi')) emptyKey = 'transactions';
       else if (name.includes('merchant') || name.includes('toko') || name.includes('penjual')) emptyKey = 'merchants';
       else if (name.includes('author') || name.includes('kreator') || name.includes('user') || name.includes('penulis')) emptyKey = 'authors';
       else if (name.includes('account') || name.includes('rekening') || name.includes('akun')) emptyKey = 'accounts';
       else if (name.includes('item') || name.includes('barang') || name.includes('produk')) emptyKey = 'items';
+      else if (name.includes('membership')) emptyKey = 'membership_cards';
+      else if (name.includes('category') || name.includes('categories')) emptyKey = 'categories_db';
+      else if (name.includes('scale')) emptyKey = 'scales_db';
+      else if (name.includes('tag')) emptyKey = 'tags';
+      else if (name.includes('project')) emptyKey = 'projects';
+      else if (name.includes('budget')) emptyKey = 'budgets';
+      else if (name.includes('goal') || name.includes('target')) emptyKey = 'goals';
+      else if (name.includes('voucher') || name.includes('kupon')) emptyKey = 'vouchers';
+      
       response[emptyKey] = []; 
       return; 
     }
@@ -446,7 +453,7 @@ window.copyScriptCode = () => {
 
         // Normalization Mapping
         if (hName === 'accountid' || hName === 'itemid' || hName === 'merchantid' || hName === 'transactionid' || hName === 'categoryid' || hName === 'tagid' || hName === 'projectid' || hName === 'budgetid' || hName === 'goalid' || hName === 'memberid' || hName === 'voucherid' || hName === 'authorid') r.id = v;
-        else if (hName === 'accountname' || hName === 'itemname' || hName === 'merchantname' || hName === 'category' || hName === 'tagname' || hName === 'projectname' || hName === 'goalname' || hName === 'membername' || hName === 'vouchername' || hName === 'authorname') r.name = v;
+        else if (hName === 'accountname' || hName === 'itemname' || hName === 'merchantname' || hName === 'category' || hName === 'tagname' || hName === 'projectname' || hName === 'goalname' || hName === 'membername' || hName === 'authorname') r.name = v;
         else if (hName === 'accounttype' || hName === 'type' || (hName === 'category' && name === 'merchant')) r.type = v;
         else if (hName === 'provider') r.provider = v;
         else if (hName === 'currentbalance' || hName === 'balance' || hName === 'currentamount') r.balance = parseFloat(v) || 0;
@@ -459,7 +466,7 @@ window.copyScriptCode = () => {
         else if (hName === 'defaultunitprice' || hName === 'price' || hName === 'amountperunit') r.price = parseFloat(v) || 0;
         else if (hName === 'unit' || hName === 'unitscale') r.unit = v;
         else if (hName === 'warrantyexpirydate' || hName === 'expirydate' || hName === 'expiry' || hName === 'deadline') r.expiry = v;
-        else if (hName === 'notes' || hName === 'description') r.notes = v;
+        else if (hName === 'notes') r.notes = v;
         else if (hName === 'merchant') r.merchant = v;
         else if (hName === 'author') r.author = v;
         else if (hName === 'preferencekey') r.key = v;
@@ -491,7 +498,9 @@ window.copyScriptCode = () => {
     else if (name.includes('item') || name.includes('barang') || name.includes('produk')) finalKey = 'items';
     else if (name.includes('membership')) finalKey = 'membership_cards';
     else if (name.includes('categories') || name.includes('category_db')) finalKey = 'categories_db';
-    else if (name.includes('scales') || name.includes('scale_db')) finalKey = 'scales_db';
+    else if (name.includes('scale')) finalKey = 'scales_db';
+    else if (name.includes('tag')) finalKey = 'tags';
+    else if (name.includes('project')) finalKey = 'projects';
     else if (name.includes('vault') || name.includes('brankas')) finalKey = 'vault';
     else if (name.includes('budget') || name.includes('anggaran')) finalKey = 'budgets';
     else if (name.includes('goal') || name.includes('target')) finalKey = 'goals';
