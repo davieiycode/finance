@@ -532,12 +532,12 @@
               const unitPrice = sanitizeNum(t.amount, 0);
               
               t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
-              t.merchant = t.merchant || t.Merchant || rawT['Merchant'] || rawT['merchant'] || rawT['Merchant Name'] || '-';
-              t.author = t.author || t.Author || rawT['Author'] || rawT['author'] || rawT['Kreator'] || '-';
-              t.description = t.description || t.Description || t.deskripsi || t.keterangan || rawT['Description'] || rawT['Deskripsi'] || rawT['Keterangan'] || '';
-              t.currency = t.currency || t.Currency || t.matauang || rawT['Currency'] || rawT['Mata Uang'] || 'IDR';
-              t.exchangeRate = t.exchangeRate || t.exchangerate || t.kurs || rawT['Exchange Rate'] || rawT['Kurs'] || ex;
-              t.scale = t.scale || t.unit || t.unitscale || t.satuan || rawT['Unit Scale'] || rawT['Unit'] || rawT['Satuan'] || 'pcs';
+              t.merchant = t.merchant || t.merchantName || t.Merchant || rawT['merchantName'] || rawT['Merchant Name'] || '-';
+              t.author = t.author || t.Author || t.authorName || rawT['authorName'] || rawT['Author Name'] || '-';
+              t.description = t.description || t.Description || t.deskripsi || t.keterangan || rawT['Description'] || rawT['Deskripsi'] || '';
+              t.currency = t.currency || t.Currency || t.matauang || rawT['Currency'] || 'IDR';
+              t.exchangeRate = t.exchangeRate || t.exchangerate || t.kurs || rawT['exchangeRate'] || rawT['Exchange Rate'] || ex;
+              t.scale = t.scale || t.unit || t.unitscale || t.unitScale || rawT['unitScale'] || rawT['Unit Scale'] || 'pcs';
               
               const finalEx = sanitizeNum(t.exchangeRate, 1);
               t.amount = unitPrice;
@@ -702,13 +702,20 @@
           SyncHub.update(stepLoad, `Gathering ${key}...`);
           const raw = localStorage.getItem(key);
           let data = objectKeys.includes(key) ? JSON.parse(raw || '{}') : JSON.parse(raw || '[]');
-          
           if (key === 'transactions') {
+            const TX_MAP = {
+              'id': 'transactionID', 'date': 'date', 'time': 'time', 'category': 'category', 'merchant': 'merchant',
+              'name': 'itemName', 'description': 'description', 'amount': 'amountPerUnit', 'currency': 'currency',
+              'exchangeRate': 'exchangeRate', 'qty': 'quantity', 'scale': 'unitScale', 'type': 'type',
+              'cleared': 'cleared', 'accountPayment': 'paymentSourceAccount', 'accountReceived': 'beneficiaryAccount',
+              'receipt': 'receipt', 'tags': 'tags', 'projects': 'projects', 'author': 'author',
+              'discount': 'discount', 'fee': 'fee', 'total': 'total', 'updateTime': 'updateTime'
+            };
             // Map to spreadsheet columns
             data = data.map(t => {
               const mapped = {};
               Object.keys(t).forEach(k => {
-                const sheetKey = COLUMN_MAP[k] || k;
+                const sheetKey = TX_MAP[k] || k;
                 mapped[sheetKey] = t[k];
               });
               
@@ -720,7 +727,7 @@
                 }
               }
               if (!mapped['flow']) {
-                const type = (t.type || 'Expense').toLowerCase();
+                const type = String(t.type || 'Expense').toLowerCase();
                 mapped['flow'] = ['income', 'inflow', 'received'].includes(type) ? 'Inflow' : 'Outflow';
               }
               mapped['updateTime'] = t.updateTime || new Date().toISOString();

@@ -521,13 +521,13 @@ const initForm = () => {
         document.getElementById('transaction-date').value = tx.date || '';
         document.getElementById('transaction-time').value = tx.time || '';
         document.getElementById('author-input').value = tx.author || tx.Author || '';
-        document.getElementById('item-input').value = tx.name || tx.Item || '';
-        document.getElementById('merchant-input').value = tx.merchant || tx.Merchant || '';
+        document.getElementById('item-input').value = tx.name || tx.itemName || tx.Item || '';
+        document.getElementById('merchant-input').value = tx.merchant || tx.merchantName || tx.Merchant || '';
         document.getElementById('category-input').value = tx.category || tx.Category || '';
         if (document.getElementById('category-group-input')) {
-          document.getElementById('category-group-input').value = tx.categoryGroup || tx['Category Group'] || '';
+          document.getElementById('category-group-input').value = tx.categoryGroup || tx.group || tx['Category Group'] || '';
         }
-        document.getElementById('transaction-description').value = tx.description || '';
+        document.getElementById('transaction-description').value = tx.description || tx.notes || '';
         
         if (amountInput) {
           // Migration: In old structure, tx.amount was Total and tx.price was Unit Price
@@ -538,8 +538,8 @@ const initForm = () => {
              amountInput.value = tx.amount || 0;
           }
         }
-        if (quantityInput) quantityInput.value = tx.qty || 1;
-        if (itemScaleInput) itemScaleInput.value = tx.scale || 'pcs';
+        if (quantityInput) quantityInput.value = tx.qty || tx.quantity || 1;
+        if (itemScaleInput) itemScaleInput.value = tx.scale || tx.unitScale || tx.unit || 'pcs';
         if (discountInput) discountInput.value = tx.discount || 0;
         if (feeInput) feeInput.value = tx.fee || 0;
         if (currencyInput) currencyInput.value = tx.currency || 'IDR';
@@ -552,9 +552,9 @@ const initForm = () => {
         if (rateInput) rateInput.value = tx.exchangeRate || 1.00;
 
         const pAcc = document.getElementById('payment-account');
-        if (pAcc) pAcc.value = tx.accountPayment || '';
+        if (pAcc) pAcc.value = tx.accountPayment || tx.paymentSourceAccount || '';
         const rAcc = document.getElementById('received-account');
-        if (rAcc) rAcc.value = tx.accountReceived || '';
+        if (rAcc) rAcc.value = tx.accountReceived || tx.beneficiaryAccount || '';
         
         const txType = (tx.type || 'Expense').toLowerCase();
         typeButtons.forEach(btn => {

@@ -670,16 +670,30 @@
       </div>
 
       <!-- Tutorial View -->
-      <div id="p-view-tutorial" class="settings-view" style="display:none; flex-direction:column; gap:2rem;">
-        <div class="sett-card" style="background:rgba(139, 92, 246, 0.05); border: 2px dashed var(--accent); padding: 2.5rem;">
+      <div id="p-view-tutorial" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
+        <div class="sett-card" style="background:rgba(139, 92, 246, 0.05); border: 1px solid var(--accent); padding: 1.5rem; flex-direction:column; align-items:stretch;">
            <div style="text-align:center; margin-bottom:1.5rem;">
-              <div class="sett-icon" style="width:64px; height:64px; margin:0 auto 1.5rem; background:var(--accent); color:white;"><i data-lucide="binary"></i></div>
-              <div class="sett-value" style="font-size:1.25rem;">App Connector Script</div>
-              <p class="sett-sub" style="margin-top:0.5rem;">Required for Google Spreadsheet bridge.</p>
+              <div class="sett-icon" style="width:48px; height:48px; margin:0 auto 1rem; background:var(--accent); color:white;"><i data-lucide="binary"></i></div>
+              <div class="sett-value">App Connector v3.3.3</div>
+              <p class="sett-sub" style="margin-top:0.25rem;">Deploy this in Google Apps Script</p>
            </div>
-           <button onclick="copyScriptCode()" class="sett-card" style="align-items:center; background:var(--accent); color:white; border:none; padding:1.25rem; flex-direction:row; justify-content:center; gap:0.75rem;">
-              <i data-lucide="copy" style="width:20px;"></i>
-              <span style="font-weight:800;">COPY SCRIPT SOURCE</span>
+           
+           <div style="background:#0F172A; border-radius:1rem; padding:1rem; position:relative; margin-bottom:1rem;">
+              <pre id="script-display" style="margin:0; font-size:0.6rem; color:#94a3b8; max-height:200px; overflow-y:auto; line-height:1.4; white-space:pre-wrap; font-family:monospace;"></pre>
+              <button onclick="copyScriptCode()" style="position:absolute; top:0.5rem; right:0.5rem; background:rgba(255,255,255,0.1); border:none; color:white; padding:0.5rem; border-radius:0.5rem; cursor:pointer;" title="Copy to Clipboard">
+                 <i data-lucide="copy" style="width:16px; height:16px;"></i>
+              </button>
+           </div>
+
+           <p class="sett-sub" style="font-size:0.65rem; margin-bottom:1rem; line-height:1.5;">
+              1. Buka Google Sheets Anda.<br>
+              2. Extensions > Apps Script.<br>
+              3. Paste kode di atas, simpan.<br>
+              4. Deploy > New Deployment > Web App (Anyone).
+           </p>
+
+           <button onclick="copyScriptCode()" class="btn btn-primary" style="width:100%; padding:1rem; background:var(--accent); border:none; color:white; font-weight:800; border-radius:1rem;">
+              COPY FULL SOURCE
            </button>
         </div>
       </div>

@@ -59,6 +59,7 @@ window.showPView = (vId, title) => {
   } else {
     viewStack.push(targetId);
   }
+  if (vId === 'tutorial') window.copyScriptCode();
   if (window.lucide) window.lucide.createIcons();
 };
 
@@ -642,8 +643,12 @@ function doPost(e) {
     }
   }
 `;
+  if (document.getElementById('script-display')) {
+     document.getElementById('script-display').innerText = code;
+  }
   navigator.clipboard.writeText(code);
-  alert('Script code copied to clipboard!');
+  if (window.showToast) window.showToast('Script code copied!', 'success', 'copy');
+  else alert('Script code copied to clipboard!');
 };
 
 window.setupBiometric = async (enabled) => {
