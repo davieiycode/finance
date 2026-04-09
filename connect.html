@@ -296,19 +296,30 @@
       localStorage.setItem('last_version_sync', APP_VERSION);
 
       try {
-        if (window.SyncHub) window.SyncHub.start('Cloud Connection', `Contacting ledger server (${APP_VERSION})...`);
+        if (window.SyncHub) {
+          window.SyncHub.start('Cloud Connection', `Verifying explorer key...`);
+        }
+
+        // Add a small delay for SyncHub to mount
+        await new Promise(r => setTimeout(r, 500));
+        
         const count = await window.CloudSync.pull(scriptUrl, 'overwrite');
 
         if (count >= 0) {
-          if (window.showToast) window.showToast(`Synced Successfully (${APP_VERSION})!`, 'success', 'cloud-check');
+          if (window.showToast) window.showToast(`Map synchronized! Found ${count} records.`, 'success', 'cloud-check');
           setTimeout(() => {
             window.location.href = 'index.html';
           }, 800);
+        } else {
+          throw new Error("No data returned from ledger.");
         }
       } catch (err) {
         console.error("Initial Sync Failed:", err);
-        if (window.showToast) window.showToast('Sync Failed. Check URL or script settings.', 'error');
-        setTimeout(() => location.reload(), 2500);
+        const errMsg = err.message || 'Check URL or Apps Script permissions.';
+        if (window.showToast) window.showToast(`Sync Failed: ${errMsg}`, 'error', 'alert-circle');
+        
+        // Don't reload immediately, let them see the error
+        if (window.SyncHub) window.SyncHub.finish(`Failure: ${errMsg}`, false);
       }
     }
 

@@ -464,9 +464,21 @@
       };
 
       try {
+        if (!url || !url.startsWith('http')) {
+          console.warn('Sync aborted: Invalid Cloud URL');
+          return 0;
+        }
+
         SyncHub.update(15, 'Fetching remote ledger...');
         const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'get=data');
-        const data = await res.json();
+        
+        let data;
+        try {
+          data = await res.json();
+        } catch (jsonErr) {
+          console.error('Invalid JSON response from Cloud:', jsonErr);
+          throw new Error('Cloud response was not valid JSON. Check your Apps Script deployment.');
+        }
 
         let count = 0;
         const keys = ['transactions', 'accounts', 'merchants', 'authors', 'items', 'vault', 'budgets', 'goals', 'vouchers', 'membership_cards', 'user_prefs', 'pin_enabled', 'categories_db', 'scales_db', 'tags', 'projects'];
@@ -641,7 +653,7 @@
           throw new Error(data.message || 'Cloud returned error status');
         }
       } catch (err) {
-        SyncHub.finish('Pull failed. Check connection.', false);
+        SyncHub.finish(`Pull failed: ${err.message || 'Check connection'}`, false);
         console.error('Cloud Sync Error:', err);
         throw err;
       }

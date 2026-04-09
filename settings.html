@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -87,7 +89,7 @@
     }
 
     .sett-label {
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       color: var(--text-secondary);
       font-weight: 800;
       text-transform: uppercase;
@@ -602,12 +604,18 @@
       <div id="p-view-cloud" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">
         <div class="settings-list-card" style="padding:1.75rem;">
            <label class="sett-label">ENDPOINT ADDRESS</label>
-           <div style="display:flex; align-items:center; gap:1rem; margin-top:0.75rem;">
-             <div class="sett-icon" style="background:rgba(14,165,233,0.1); color:#0ea5e9;"><i data-lucide="link-2"></i></div>
-             <input type="text" id="cloud-url" class="f-input" style="flex:1; background:transparent; border:none; padding:0; font-size:0.9rem;" placeholder="Paste Apps Script URL here...">
-             <button onclick="saveSyncSettings()" style="background:var(--accent); color:white; border:none; border-radius:8px; padding:6px 12px; font-size:0.7rem; font-weight:700; cursor:pointer;">SAVE</button>
+           <div style="position: relative; display: flex; align-items: center; gap: 0.5rem; width: 100%; margin-top: 0.75rem;">
+              <input type="password" id="s-cloud-url" class="f-input" placeholder="https://script.google.com/macros/s/.../exec" style="padding-right: 5.5rem; flex: 1;">
+              <div style="position: absolute; right: 0.5rem; display: flex; gap: 0.4rem;">
+                 <button onclick="toggleUrlVisibility()" class="action-mini-btn" title="Show/Hide URL"><i data-lucide="eye" id="eye-icon" style="width:16px;"></i></button>
+                 <button onclick="showConnectionQR()" class="action-mini-btn" style="background: var(--bg-secondary); color: var(--accent); border-color: var(--accent);" title="Show Connection QR"><i data-lucide="qr-code" style="width:16px;"></i></button>
+                 <button onclick="scanCloudQR()" class="action-mini-btn" style="background: var(--accent); color: white; border-color: var(--accent);" title="Scan URL QR"><i data-lucide="maximize" style="width:16px;"></i></button>
+              </div>
            </div>
-           <p style="font-size:0.65rem; color:var(--text-secondary); margin-top:1rem; opacity:0.5;">Secured via Peer-to-Peer Encryption</p>
+           <p style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.4;">
+              Pastikan URL berakhiran <b>/exec</b>. Gunakan tombol scan untuk menginput URL dari QR Code jika tersedia di perangkat lain.
+           </p>
+           <button onclick="saveSyncSettings()" style="background:var(--accent); color:white; border:none; border-radius:8px; padding:10px; font-size:0.8rem; font-weight:700; cursor:pointer; margin-top: 1rem; width: 100%;">SAVE CONFIGURATION</button>
         </div>
 
         <div class="settings-list-card">
@@ -729,6 +737,27 @@
           <div id="categories-db-list" style="display:flex; flex-direction:column; gap:0.75rem; max-height:400px; overflow-y:auto; padding-right:0.5rem;"></div>
         </div>
       </div>
+
+      <!-- Scanner Overlay -->
+      <div id="scanner-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+          <div id="reader" style="width: 320px; border-radius: 20px; overflow: hidden; border: 2px solid var(--accent);"></div>
+          <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+               <button onclick="stopScanner()" style="padding: 0.75rem 2rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--glass); color: white; font-weight: 700;">Cancel</button>
+          </div>
+      </div>
+
+      <!-- Connection QR Overlay -->
+      <div id="qr-display-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5500; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+          <div style="background: white; padding: 2rem; border-radius: 2rem; box-shadow: 0 0 50px rgba(139, 92, 246, 0.5);">
+             <div id="connection-qrcode"></div>
+          </div>
+          <p style="color: white; font-weight: 800; margin-top: 2rem; letter-spacing: 0.1em;">SCAN TO CONNECT DEVICE</p>
+          <button onclick="document.getElementById('qr-display-overlay').style.display='none'" style="margin-top: 2rem; padding: 0.75rem 2rem; border-radius: 1rem; border: 1px solid var(--border); background: var(--glass); color: white; font-weight: 700;">Close</button>
+      </div>
+      <style>
+         .action-mini-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+         .action-mini-btn:hover { background: var(--glass); transform: scale(1.05); }
+      </style>
 
       <!-- Category Editor -->
       <div id="p-view-cat-editor" class="settings-view" style="display:none; flex-direction:column; gap:1.5rem;">

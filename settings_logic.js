@@ -1244,3 +1244,74 @@ window.deleteProject = (id) => {
 };
 
 document.addEventListener('DOMContentLoaded', initSettings);
+
+// QR Cloud Setup Functions
+function toggleUrlVisibility() {
+  const input = document.getElementById('s-cloud-url');
+  const icon = document.getElementById('eye-icon');
+  if (!input || !icon) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    input.type = 'password';
+    icon.setAttribute('data-lucide', 'eye');
+  }
+  if (window.lucide) window.lucide.createIcons();
+}
+
+let html5QrCode = null;
+function scanCloudQR() {
+  const reader = document.getElementById('reader');
+  if (!reader) return;
+  
+  document.getElementById('scanner-overlay').style.display = 'flex';
+  html5QrCode = new Html5Qrcode("reader");
+  const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+  html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+    document.getElementById('s-cloud-url').value = decodedText;
+    localStorage.setItem('cloud_sheet_url', decodedText);
+    showToast('Cloud URL updated via QR', 'success', 'check-circle');
+    stopScanner();
+    if (typeof renderCloudStatus === 'function') renderCloudStatus();
+  }).catch(err => {
+    console.error(err);
+    stopScanner();
+    showToast('Camera error or blocked', 'error', 'camera-off');
+  });
+}
+
+function stopScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      document.getElementById('scanner-overlay').style.display = 'none';
+    }).catch(() => {
+      document.getElementById('scanner-overlay').style.display = 'none';
+    });
+  } else {
+    document.getElementById('scanner-overlay').style.display = 'none';
+  }
+}
+
+function showConnectionQR() {
+  const url = localStorage.getItem('cloud_sheet_url');
+  if (!url) {
+    showToast('Setup Cloud Node first', 'error', 'alert-circle');
+    return;
+  }
+  
+  const qrDiv = document.getElementById('connection-qrcode');
+  if (!qrDiv) return;
+  
+  qrDiv.innerHTML = '';
+  new QRCode(qrDiv, {
+    text: url,
+    width: 256,
+    height: 256,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+  });
+  
+  document.getElementById('qr-display-overlay').style.display = 'flex';
+}
