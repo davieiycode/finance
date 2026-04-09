@@ -416,7 +416,7 @@ window.copyScriptCode = () => {
   const sheets = ss.getSheets();
   const timezone = ss.getSpreadsheetTimeZone();
   const response = { status: 'success' };
-  const relevantKeywords = ['transaction', 'transaksi', 'merchant', 'toko', 'penjual', 'author', 'kreator', 'user', 'penulis', 'anggota', 'account', 'rekening', 'akun', 'item', 'barang', 'produk', 'membership', 'categories', 'scales', 'unitscale', 'vault', 'brankas', 'budget', 'anggaran', 'goal', 'target', 'voucher', 'kupon', 'setting', 'pref', 'tag', 'project'];
+  const relevantKeywords = ['transaction', 'transaksi', 'merchant', 'toko', 'penjual', 'author', 'kreator', 'user', 'penulis', 'anggota', 'account', 'rekening', 'akun', 'item', 'barang', 'produk', 'member', 'membership', 'categories', 'scales', 'unitscale', 'vault', 'brankas', 'budget', 'anggaran', 'goal', 'target', 'voucher', 'kupon', 'setting', 'pref', 'tag', 'project'];
 
   sheets.forEach(sh => {
     const name = sh.getName().toLowerCase();
@@ -430,7 +430,7 @@ window.copyScriptCode = () => {
       else if (name.includes('author') || name.includes('kreator') || name.includes('user') || name.includes('penulis')) emptyKey = 'authors';
       else if (name.includes('account') || name.includes('rekening') || name.includes('akun')) emptyKey = 'accounts';
       else if (name.includes('item') || name.includes('barang') || name.includes('produk')) emptyKey = 'items';
-      else if (name.includes('membership')) emptyKey = 'membership_cards';
+      else if (name.includes('membership') || name.includes('member')) emptyKey = 'membership_cards';
       else if (name.includes('category') || name.includes('categories')) emptyKey = 'categories_db';
       else if (name.includes('scale')) emptyKey = 'scales_db';
       else if (name.includes('tag')) emptyKey = 'tags';
@@ -496,7 +496,7 @@ window.copyScriptCode = () => {
     else if (name.includes('author') || name.includes('kreator') || name.includes('user') || name.includes('penulis') || name.includes('anggota')) finalKey = 'authors';
     else if (name.includes('account') || name.includes('rekening') || name.includes('akun')) finalKey = 'accounts';
     else if (name.includes('item') || name.includes('barang') || name.includes('produk')) finalKey = 'items';
-    else if (name.includes('membership')) finalKey = 'membership_cards';
+    else if (name.includes('membership') || name.includes('member')) finalKey = 'membership_cards';
     else if (name.includes('categories') || name.includes('category_db')) finalKey = 'categories_db';
     else if (name.includes('scale')) finalKey = 'scales_db';
     else if (name.includes('tag')) finalKey = 'tags';
@@ -562,7 +562,7 @@ function doPost(e) {
       
       if (ent.key === 'user_prefs') {
         if (typeof data === 'object' && !Array.isArray(data)) {
-           const sRows = [['Preference Key', 'Setting Value']];
+           const sRows = [['preferenceKey', 'settingValue']];
            for (let k in data) {
              sRows.push([k, typeof data[k] === 'object' ? JSON.stringify(data[k]) : data[k]]);
            }

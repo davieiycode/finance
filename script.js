@@ -308,10 +308,10 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
   };
 
   // Track existing names for easy lookup
-  newAccounts.forEach(a => accSet.add(a.name.toLowerCase()));
-  newMerchants.forEach(m => merSet.add(m.name.toLowerCase()));
-  newAuthors.forEach(a => autSet.add(a.name.toLowerCase()));
-  newItems.forEach(i => itemSet.add(i.name.toLowerCase()));
+  newAccounts.forEach(a => accSet.add((a.name || '').toLowerCase()));
+  newMerchants.forEach(m => merSet.add((m.name || '').toLowerCase()));
+  newAuthors.forEach(a => autSet.add((a.name || '').toLowerCase()));
+  newItems.forEach(i => itemSet.add((i.name || '').toLowerCase()));
 
   txs.forEach(t => {
     // 1. Extraction of Accounts
@@ -697,7 +697,7 @@ window.onload = () => {
       // Interactive Account Display based on Type
       const pGroup = document.getElementById('payment-account-group');
       const rGroup = document.getElementById('received-account-group');
-      const type = btn.dataset.type.toLowerCase();
+      const type = (btn.dataset.type || '').toLowerCase();
       const multiAccount = ['transfer', 'savings', 'investment'].includes(type);
 
       if (multiAccount) {
@@ -907,8 +907,8 @@ window.validateItemName = () => {
   const suggestionBox = document.getElementById('item-suggestion');
   const suggestedName = document.getElementById('suggested-item-name');
   if (val.length > 2) {
-    const fuzzy = catalog.find(it => (it.name && it.name.toLowerCase().includes(val.toLowerCase())) || (it.sku && it.sku.toLowerCase().includes(val.toLowerCase())));
-    if (fuzzy && fuzzy.name.toLowerCase() !== val.toLowerCase()) {
+    const fuzzy = catalog.find(it => ((it.name || '').toLowerCase().includes((val || '').toLowerCase())) || ((it.sku || '').toLowerCase().includes((val || '').toLowerCase())));
+    if (fuzzy && (fuzzy.name || '').toLowerCase() !== (val || '').toLowerCase()) {
       if (suggestionBox && suggestedName) {
         suggestionBox.style.display = 'block';
         suggestedName.innerText = fuzzy.name;
@@ -940,7 +940,7 @@ function autoFillFromItem(item) {
     const catGroupInput = document.getElementById('category-group-input');
     if (catGroupInput) {
       const categories = JSON.parse(localStorage.getItem('categories_db') || '[]');
-      const cat = categories.find(c => c.name.toLowerCase() === item.category.toLowerCase());
+      const cat = categories.find(c => (c.name || '').toLowerCase() === (item.category || '').toLowerCase());
       catGroupInput.value = item.categoryGroup || (cat ? cat.group : '');
     }
   }

@@ -667,7 +667,6 @@
         'date': 'date',
         'time': 'time',
         'category': 'category',
-        'categoryGroup': 'categoryGroup',
         'merchant': 'merchant',
         'name': 'itemName',
         'description': 'description',
@@ -687,8 +686,7 @@
         'discount': 'discount',
         'fee': 'fee',
         'total': 'total',
-        'updateTime': 'updateTime',
-        'xp': 'xp'
+        'updateTime': 'updateTime'
       };
 
       try {
@@ -838,9 +836,9 @@
     const isItems = window.location.pathname.includes('items.html');
     
     // Quick Lookup Maps for O(1) exact match check
-    const accMap = new Map(accounts.map(a => [a.name.toLowerCase(), a]));
-    const merMap = new Map(merchants.map(m => [m.name.toLowerCase(), m]));
-    const autMap = new Map(authors.map(a => [a.name.toLowerCase(), a]));
+    const accMap = new Map(accounts.map(a => [(a.name || '').toLowerCase(), a]));
+    const merMap = new Map(merchants.map(m => [(m.name || '').toLowerCase(), m]));
+    const autMap = new Map(authors.map(a => [(a.name || '').toLowerCase(), a]));
     const itMap = new Map(items.map(i => [(i.name || '').toLowerCase(), i]));
 
     let suggestionCount = 0;
@@ -855,7 +853,7 @@
 
       // 1. Merchant Sync
       if (t.merchant && t.merchant !== '-') {
-        const mLower = t.merchant.toLowerCase();
+        const mLower = (t.merchant || '').toLowerCase();
         if (!merMap.has(mLower)) {
           const similar = (suggestionCount < MAX_SUGGESTIONS && isDashboard) ? merchants.find(m => getSimilarity(m.name, t.merchant) > 0.45) : null;
           if (similar) {
@@ -871,7 +869,7 @@
 
       // 1b. Author Sync
       if (t.author && t.author !== '-') {
-        const aLower = t.author.toLowerCase();
+        const aLower = (t.author || '').toLowerCase();
         if (!autMap.has(aLower)) {
            authors.push({ id: Date.now() + Math.random(), name: t.author, role: 'Member' });
            autMap.set(aLower, { name: t.author });
@@ -915,7 +913,7 @@
       // 4. Category, Scale, Tag, Project Sync (Harvest from transactions)
       if (t.category && t.category !== '-') {
         const catDb = JSON.parse(localStorage.getItem('categories_db') || '[]');
-        if (!catDb.find(c => c.name.toLowerCase() === t.category.toLowerCase())) {
+        if (!catDb.find(c => (c.name || '').toLowerCase() === (t.category || '').toLowerCase())) {
           catDb.push({ id: Date.now() + Math.random(), name: t.category, group: 'Imported', type: t.flow === 'Inflow' ? 'Income' : 'Expense' });
           localStorage.setItem('categories_db', JSON.stringify(catDb));
           updated = true;
@@ -923,7 +921,7 @@
       }
       if (t.scale && t.scale !== '-') {
         const scaleDb = JSON.parse(localStorage.getItem('scales_db') || '[]');
-        if (!scaleDb.find(s => s.name.toLowerCase() === t.scale.toLowerCase())) {
+        if (!scaleDb.find(s => (s.name || '').toLowerCase() === (t.scale || '').toLowerCase())) {
           scaleDb.push({ id: Date.now() + Math.random(), name: t.scale, description: 'Harvested from transaction' });
           localStorage.setItem('scales_db', JSON.stringify(scaleDb));
           updated = true;
@@ -932,7 +930,7 @@
       if (Array.isArray(t.tags) && t.tags.length > 0) {
         const tagDb = JSON.parse(localStorage.getItem('tags') || '[]');
         t.tags.forEach(tag => {
-          if (!tagDb.find(g => g.name.toLowerCase() === tag.toLowerCase())) {
+          if (!tagDb.find(g => (g.name || '').toLowerCase() === (tag || '').toLowerCase())) {
             tagDb.push({ id: Date.now() + Math.random(), name: tag, group: 'General', status: 'Active' });
             updated = true;
           }
@@ -942,7 +940,7 @@
       if (Array.isArray(t.projects) && t.projects.length > 0) {
         const projDb = JSON.parse(localStorage.getItem('projects') || '[]');
         t.projects.forEach(p => {
-          if (!projDb.find(x => x.name.toLowerCase() === p.toLowerCase())) {
+          if (!projDb.find(x => (x.name || '').toLowerCase() === (p || '').toLowerCase())) {
             projDb.push({ id: Date.now() + Math.random(), name: p, status: 'Active', category: 'General' });
             updated = true;
           }
