@@ -1,6 +1,7 @@
 // Service Worker for Jurney Explorer (Standalone App Support)
 
-const CACHE_NAME = 'jurney-v3.3.2';
+const CACHE_NAME = 'jurney-v3.3.3';
+
 const ASSETS = [
   '/',
   '/index.html',
@@ -13,6 +14,7 @@ const ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      // v3.3.3 (Build 2026.04.09)
       return cache.addAll(ASSETS);
     })
   );
