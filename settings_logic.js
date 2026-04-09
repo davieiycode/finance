@@ -15,7 +15,7 @@ window.AVATAR_SVGS = [
   `<svg viewBox="0 0 80 80"><defs><clipPath id="c12"><circle cx="40" cy="40" r="40" /></clipPath></defs><g clip-path="url(#c12)"><rect width="80" height="80" fill="#26215C" /><polygon points="0,0 80,0 0,80" fill="#3C3489" /><polygon points="80,0 80,80 0,80" fill="#085041" /><circle cx="26" cy="28" r="18" fill="#7F77DD" /><circle cx="56" cy="54" r="15" fill="#1D9E75" /><circle cx="26" cy="28" r="8" fill="#EEEDFE" /><circle cx="56" cy="54" r="7" fill="#9FE1CB" /></g></svg>`
 ];
 
-const APP_VERSION = 'v3.3.3';
+const APP_VERSION = 'v3.3.4';
 const BUILD_DATE = '2026.04.09';
 
 // settings_logic.js - Logic for settings.html
