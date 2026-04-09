@@ -344,8 +344,12 @@
         'hargasatuan': 'amount',
         'currency': 'currency',
         'matauang': 'currency',
+        'curr': 'currency',
         'exchangerate': 'exchangeRate',
         'kurs': 'exchangeRate',
+        'rate': 'exchangeRate',
+        'exrate': 'exchangeRate',
+        'conversion': 'exchangeRate',
         'qty': 'qty',
         'quantity': 'qty',
         'jumlah': 'qty',
@@ -407,7 +411,41 @@
         'updatetime': 'updateTime',
         'xp': 'xp',
         'cardcolor': 'color',
-        'accountlogo': 'logo'
+        'accountlogo': 'logo',
+        'accountid': 'id',
+        'accountname': 'name',
+        'accounttype': 'type',
+        'accountnumber': 'number',
+        'merchantid': 'id',
+        'merchantname': 'name',
+        'itemid': 'id',
+        'itemname': 'name',
+        'itemcategory': 'category',
+        'categoryid': 'id',
+        'categorygroup': 'categoryGroup',
+        'unitscale': 'scale',
+        'tagid': 'id',
+        'tagname': 'name',
+        'taggroup': 'tagGroup',
+        'projectid': 'id',
+        'projectname': 'name',
+        'budgetid': 'id',
+        'budgetamount': 'amount',
+        'goalid': 'id',
+        'goalname': 'name',
+        'targetamount': 'target',
+        'currentamount': 'saved',
+        'memberid': 'id',
+        'membername': 'name',
+        'voucherid': 'id',
+        'vouchername': 'name',
+        'vouchercode': 'code',
+        'expirydate': 'expiry',
+        'authorid': 'id',
+        'authorname': 'name',
+        'roletype': 'role',
+        'preferencekey': 'key',
+        'settingvalue': 'value'
       };
 
       try {
@@ -467,22 +505,26 @@
               const unitPrice = sanitizeNum(t.amount, 0);
               
               t.id = t.id ? t.id.toString() : 'CLOUD-' + Date.now() + Math.random();
-              const calcTotal = ((q * unitPrice) - d + f) * ex;
-              t.total = (t.total !== undefined) ? sanitizeNum(t.total) : calcTotal;
+              t.merchant = t.merchant || t.Merchant || rawT['Merchant'] || rawT['merchant'] || rawT['Merchant Name'] || '-';
+              t.author = t.author || t.Author || rawT['Author'] || rawT['author'] || rawT['Kreator'] || '-';
+              t.description = t.description || t.Description || t.deskripsi || t.keterangan || rawT['Description'] || rawT['Deskripsi'] || rawT['Keterangan'] || '';
+              t.currency = t.currency || t.Currency || t.matauang || rawT['Currency'] || rawT['Mata Uang'] || 'IDR';
+              t.exchangeRate = t.exchangeRate || t.exchangerate || t.kurs || rawT['Exchange Rate'] || rawT['Kurs'] || ex;
+              t.scale = t.scale || t.unit || t.unitscale || t.satuan || rawT['Unit Scale'] || rawT['Unit'] || rawT['Satuan'] || 'pcs';
+              
+              const finalEx = sanitizeNum(t.exchangeRate, 1);
               t.amount = unitPrice;
               t.qty = q;
               t.discount = d;
               t.fee = f;
-              t.exchangeRate = ex;
+              t.exchangeRate = finalEx;
               t.xp = sanitizeNum(t.xp, 10);
               t.tags = sanitizeArr(t.tags);
               t.projects = sanitizeArr(t.projects);
               t.cleared = (t.cleared === true || t.cleared === 'TRUE' || t.cleared === 'Yes');
               
-              // Robust extraction for Merchant, Author, and Scale to avoid missing data from spreadsheet variations
-              t.merchant = t.merchant || t.Merchant || rawT['Merchant'] || rawT['merchant'] || rawT['Merchant Name'] || '-';
-              t.author = t.author || t.Author || rawT['Author'] || rawT['author'] || rawT['Kreator'] || '-';
-              t.scale = t.scale || t.unit || t.unitscale || t.satuan || rawT['Unit Scale'] || rawT['Unit'] || rawT['Satuan'] || 'pcs';
+              const calcTotal = ((q * unitPrice) - d + f) * finalEx;
+              t.total = (t.total !== undefined) ? sanitizeNum(t.total) : calcTotal;
               
               // Generate Derived Fields if missing
               if (t.date && !t.year) {
@@ -580,37 +622,32 @@
       SyncHub.start('Cloud Push', 'Preparing complete ledger backup...');
       
       const COLUMN_MAP = {
-        'id': 'Transaction ID',
-        'date': 'Date',
-        'time': 'Time',
-        'category': 'Category',
-        'categoryGroup': 'Category Group',
-        'merchant': 'Merchant',
-        'name': 'Item Name',
-        'description': 'Description',
-        'amount': 'Amount (per Unit)',
-        'currency': 'Currency',
-        'exchangeRate': 'Exchange Rate',
-        'qty': 'Quantity',
-        'scale': 'Unit Scale',
-        'type': 'Type',
-        'cleared': 'Cleared',
-        'accountPayment': 'Payment Source Account',
-        'accountReceived': 'Beneficiary Account',
-        'receipt': 'Receipt',
-        'tags': 'Analytics Tags',
-        'projects': 'Associated Project',
-        'author': 'Author',
-        'discount': 'Discount',
-        'fee': 'Additional Fee',
-        'total': 'Total',
-        'budgetAmount': 'Budget Amount',
-        'budgetPeriod': 'Budget Period',
-        'flow': 'Flow',
-        'year': 'Year',
-        'month': 'Month',
-        'updateTime': 'Update Time',
-        'xp': 'XP'
+        'id': 'transactionID',
+        'date': 'date',
+        'time': 'time',
+        'category': 'category',
+        'categoryGroup': 'categoryGroup',
+        'merchant': 'merchant',
+        'name': 'itemName',
+        'description': 'description',
+        'amount': 'amountPerUnit',
+        'currency': 'currency',
+        'exchangeRate': 'exchangeRate',
+        'qty': 'quantity',
+        'scale': 'unitScale',
+        'type': 'type',
+        'cleared': 'cleared',
+        'accountPayment': 'paymentSourceAccount',
+        'accountReceived': 'beneficiaryAccount',
+        'receipt': 'receipt',
+        'tags': 'tags',
+        'projects': 'projects',
+        'author': 'author',
+        'discount': 'discount',
+        'fee': 'fee',
+        'total': 'total',
+        'updateTime': 'updateTime',
+        'xp': 'xp'
       };
 
       try {
@@ -636,23 +673,56 @@
                 mapped[sheetKey] = t[k];
               });
               
-              // Ensure Derived Fields are present for Spreadsheet
               if (t.date) {
                 const dateObj = new Date(t.date);
                 if (!isNaN(dateObj)) {
-                  mapped['Year'] = mapped['Year'] || dateObj.getFullYear();
-                  mapped['Month'] = mapped['Month'] || dateObj.getMonth() + 1;
+                  mapped['year'] = mapped['year'] || dateObj.getFullYear();
+                  mapped['month'] = mapped['month'] || dateObj.getMonth() + 1;
                 }
               }
-              if (!mapped['Flow']) {
+              if (!mapped['flow']) {
                 const type = (t.type || 'Expense').toLowerCase();
-                mapped['Flow'] = ['income', 'inflow', 'received'].includes(type) ? 'Inflow' : 'Outflow';
+                mapped['flow'] = ['income', 'inflow', 'received'].includes(type) ? 'Inflow' : 'Outflow';
               }
-              mapped['Update Time'] = t.updateTime || new Date().toISOString();
+              mapped['updateTime'] = t.updateTime || new Date().toISOString();
               
-              // Formatting for spreadsheet visibility
-              if (Array.isArray(t.tags)) mapped['Analytics Tags'] = t.tags.join(', ');
-              if (Array.isArray(t.projects)) mapped['Associated Project'] = t.projects.join(', ');
+              if (Array.isArray(t.tags)) mapped['tags'] = t.tags.join(', ');
+              if (Array.isArray(t.projects)) mapped['projects'] = t.projects.join(', ');
+              
+              return mapped;
+            });
+          } else if (Array.isArray(data)) {
+            // Generic Mapping for other sheets if necessary
+            data = data.map(item => {
+              const mapped = {};
+              const ENTITY_MAPS = {
+                'accounts': { 'id': 'accountID', 'name': 'accountName', 'type': 'accountType', 'balance': 'openingBalance', 'color': 'cardColor', 'number': 'accountNumber', 'logo': 'accountImage' },
+                'merchants': { 'id': 'merchantID', 'name': 'merchantName', 'logo': 'merchantImage', 'location': 'address' },
+                'items': { 'id': 'itemID', 'name': 'itemName', 'category': 'itemCategory', 'scale': 'unitScale', 'amount': 'amountPerUnit', 'price': 'amountPerUnit', 'logo': 'itemImage', 'sku': 'SKU' },
+                'budgets': { 'id': 'budgetID', 'amount': 'budgetAmount' },
+                'goals': { 'id': 'goalID', 'name': 'goalName', 'target': 'targetAmount', 'saved': 'currentAmount' },
+                'vouchers': { 'id': 'voucherID', 'name': 'voucherName', 'code': 'voucherCode' },
+                'membership_cards': { 'id': 'memberID', 'name': 'memberName', 'logo': 'memberImage' },
+                'authors': { 'id': 'authorID', 'name': 'authorName', 'role': 'roleType' },
+                'categories_db': { 'id': 'categoryID' },
+                'scales_db': { 'id': 'unitScale' },
+                'tags': { 'id': 'tagID', 'name': 'tagName', 'group': 'tagGroup' },
+                'projects': { 'id': 'projectID', 'name': 'projectName' }
+              };
+              const map = ENTITY_MAPS[key] || {};
+              Object.keys(item).forEach(k => {
+                const sheetKey = map[k] || k;
+                mapped[sheetKey] = item[k];
+              });
+              
+              // Special logic for calculated fields if needed
+              if (key === 'accounts') {
+                const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+                const accName = (item.name || '').toLowerCase();
+                const inSum = txs.filter(t => (t.accountReceived || '').toLowerCase() === accName).reduce((s,t) => s + (t.total || t.amount || 0), 0);
+                const outSum = txs.filter(t => (t.accountPayment || '').toLowerCase() === accName).reduce((s,t) => s + (t.total || t.amount || 0), 0);
+                mapped['currentBalance'] = (item.balance || 0) + inSum - outSum;
+              }
               
               return mapped;
             });

@@ -15,8 +15,8 @@ window.AVATAR_SVGS = [
   `<svg viewBox="0 0 80 80"><defs><clipPath id="c12"><circle cx="40" cy="40" r="40" /></clipPath></defs><g clip-path="url(#c12)"><rect width="80" height="80" fill="#26215C" /><polygon points="0,0 80,0 0,80" fill="#3C3489" /><polygon points="80,0 80,80 0,80" fill="#085041" /><circle cx="26" cy="28" r="18" fill="#7F77DD" /><circle cx="56" cy="54" r="15" fill="#1D9E75" /><circle cx="26" cy="28" r="8" fill="#EEEDFE" /><circle cx="56" cy="54" r="7" fill="#9FE1CB" /></g></svg>`
 ];
 
-const APP_VERSION = 'v3.3.0';
-const BUILD_DATE = '2026.04.08';
+const APP_VERSION = 'v3.3.1';
+const BUILD_DATE = '2026.04.09';
 
 // settings_logic.js - Logic for settings.html
 
@@ -445,22 +445,25 @@ window.copyScriptCode = () => {
         if (!hName) return;
 
         // Normalization Mapping
-        if (hName === 'accountid' || hName === 'itemid' || hName === 'merchantid' || hName === 'transactionid') r.id = v;
-        else if (hName === 'accountname' || hName === 'itemname' || hName === 'merchantname') r.name = v;
+        if (hName === 'accountid' || hName === 'itemid' || hName === 'merchantid' || hName === 'transactionid' || hName === 'categoryid' || hName === 'tagid' || hName === 'projectid' || hName === 'budgetid' || hName === 'goalid' || hName === 'memberid' || hName === 'voucherid' || hName === 'authorid') r.id = v;
+        else if (hName === 'accountname' || hName === 'itemname' || hName === 'merchantname' || hName === 'category' || hName === 'tagname' || hName === 'projectname' || hName === 'goalname' || hName === 'membername' || hName === 'vouchername' || hName === 'authorname') r.name = v;
         else if (hName === 'accounttype' || hName === 'type' || (hName === 'category' && name === 'merchant')) r.type = v;
         else if (hName === 'provider') r.provider = v;
-        else if (hName === 'currentbalance' || hName === 'balance') r.balance = parseFloat(v) || 0;
+        else if (hName === 'currentbalance' || hName === 'balance' || hName === 'currentamount') r.balance = parseFloat(v) || 0;
+        else if (hName === 'openingbalance') r.openingBalance = parseFloat(v) || 0;
         else if (hName === 'status') r.status = v;
-        else if (hName === 'itemcategory' || hName === 'category') r.category = v;
+        else if (hName === 'itemcategory' || hName === 'projectcategory') r.category = v;
         else if (hName === 'manufacturer') r.manu = v;
         else if (hName === 'model') r.model = v;
         else if (hName === 'stockkeepingunit' || hName === 'sku') r.sku = v;
-        else if (hName === 'defaultunitprice' || hName === 'price') r.price = parseFloat(v) || 0;
-        else if (hName === 'unit') r.unit = v;
-        else if (hName === 'warrantyexpirydate' || hName === 'expirydate' || hName === 'expiry') r.expiry = v;
-        else if (hName === 'notes') r.notes = v;
+        else if (hName === 'defaultunitprice' || hName === 'price' || hName === 'amountperunit') r.price = parseFloat(v) || 0;
+        else if (hName === 'unit' || hName === 'unitscale') r.unit = v;
+        else if (hName === 'warrantyexpirydate' || hName === 'expirydate' || hName === 'expiry' || hName === 'deadline') r.expiry = v;
+        else if (hName === 'notes' || hName === 'description') r.notes = v;
         else if (hName === 'merchant') r.merchant = v;
         else if (hName === 'author') r.author = v;
+        else if (hName === 'preferencekey') r.key = v;
+        else if (hName === 'settingvalue') r.value = v;
         else r[hName] = v; // Capture all other columns as-is
         
         // Transaction Specific Time/Date Normalization
@@ -516,39 +519,27 @@ function doPost(e) {
     
     const entities = [
       { key: 'transactions', sheetName: 'transaction', headers: [
-        'Transaction ID', 'Date', 'Time', 'Category', 'Category Group', 
-        'Merchant', 'Item Name', 'Description', 'Amount (per Unit)', 'Currency', 
-        'Exchange Rate', 'Quantity', 'Unit Scale', 'Type', 'Cleared', 
-        'Payment Source Account', 'Beneficiary Account', 'Receipt', 'Analytics Tags', 'Associated Project', 
-        'Author', 'Discount', 'Additional Fee', 'Total', 'Budget Amount', 'Budget Period', 'Flow', 'Year', 'Month', 'Update Time', 'XP'
+        'transactionID', 'date', 'time', 'category', 'merchant', 'itemName', 'amountPerUnit', 'quantity', 'unitScale', 'type', 'cleared', 'paymentSourceAccount', 'beneficiaryAccount', 'receipt', 'tags', 'projects', 'author', 'discount', 'fee', 'total', 'updateTime', 'description', 'currency', 'exchangeRate'
       ]},
       { key: 'accounts', sheetName: 'account', headers: [
-        'Account ID', 'Account Name', 'Account Type', 'Owner', 'Account Number / ID', 
-        'Provider', 'Currency', 'Opening Date', 'Opening Balance', 'Current Balance', 
-        'Status', 'Branch / Location', 'Notes', 'Card Color', 'Account Logo', 'Update Time'
+        'accountID', 'accountName', 'accountType', 'currency', 'openingBalance', 'currentBalance', 'status', 'notes', 'cardColor', 'updateTime', 'accountNumber', 'accountImage'
       ]},
       { key: 'merchants', sheetName: 'merchant', headers: [
-        'Merchant ID', 'Merchant Name', 'Category', 'Status', 'Update Time', 
-        'Primary Contact Name', 'Phone Number', 'Email', 'Website', 'Physical Address', 
-        'City', 'Country', 'State', 'Preferred Payment Method', 'Bank Account Details', 
-        'Map Embed Link', 'Notes'
+        'merchantID', 'merchantName', 'category', 'status', 'phone', 'address', 'updateTime', 'email', 'website', 'bankAccountDetails', 'notes', 'gMapsLink'
       ]},
       { key: 'items', sheetName: 'item', headers: [
-        'Item ID', 'Item Name', 'Item Category', 'Unit', 'Default Unit Price', 
-        'Update Time', 'Manufacturer', 'Model', 'Unit Scale', 'Currency', 
-        'Warranty / Expiry Date', 'Stock Keeping Unit', 'Notes', 'Status', 'Item Image'
+        'itemID', 'itemName', 'itemCategory', 'unitScale', 'amountPerUnit', 'manufacturer', 'model', 'SKU', 'updateTime', 'currency', 'warrantyExpiryDate', 'notes', 'itemImage'
       ]},
-      { key: 'authors', sheetName: 'author', headers: ['ID', 'Author Name', 'Role/Type', 'Status', 'Notes', 'Update Time'] },
-      { key: 'membership_cards', sheetName: 'membership', headers: ['ID', 'Name', 'Code', 'Expiry', 'Since', 'Notes', 'Type', 'Color'] },
-      { key: 'categories_db', sheetName: 'category', headers: ['Category ID', 'Category', 'Category Group', 'Type', 'Description', 'Update Time'] },
-      { key: 'scales_db', sheetName: 'scales', headers: ['ID', 'Scale Key', 'Full Description'] },
-      { key: 'vouchers', sheetName: 'voucher', headers: ['ID', 'Voucher Name', 'Provider', 'Code', 'Expiry Date', 'Notes', 'Type', 'Status', 'Update Time'] },
-      { key: 'budgets', sheetName: 'budget', headers: ['Budget ID', 'Period', 'Category ID', 'Category', 'Category Group', 'Type', 'Budget Amount', 'Currency', 'Notes', 'Status', 'Update Time'] },
-      { key: 'goals', sheetName: 'goal', headers: ['ID', 'Goal Name', 'Target Amount', 'Current Amount', 'Deadline', 'Icon', 'Status', 'Update Time'] },
-      { key: 'vault', sheetName: 'vault', headers: ['ID', 'File Name', 'Content/URL', 'Type', 'Date', 'Associated ID', 'Update Time'] },
-      { key: 'tags', sheetName: 'tag', headers: ['Tag ID', 'Tag Name', 'Tag Group', 'Description', 'Tag Image', 'Status', 'Update Time'] },
-      { key: 'projects', sheetName: 'project', headers: ['Project ID', 'Project Name', 'Project Category', 'Start Date', 'End Date', 'Budget Amount', 'Currency', 'Manager', 'Description', 'Status', 'Update Time'] },
-      { key: 'user_prefs', sheetName: 'settings', headers: ['Preference Key', 'Setting Value'] }
+      { key: 'authors', sheetName: 'author', headers: ['authorID', 'authorName', 'roleType', 'updateTime'] },
+      { key: 'membership_cards', sheetName: 'member', headers: ['memberID', 'memberName', 'code', 'expiryDate', 'type', 'color', 'notes', 'memberImage'] },
+      { key: 'categories_db', sheetName: 'category', headers: ['categoryID', 'category', 'categoryGroup', 'type', 'description', 'updateTime'] },
+      { key: 'scales_db', sheetName: 'scales', headers: ['unitScale', 'description'] },
+      { key: 'vouchers', sheetName: 'voucher', headers: ['voucherID', 'voucherName', 'provider', 'voucherCode', 'expiryDate', 'status', 'updateTime', 'notes'] },
+      { key: 'budgets', sheetName: 'budget', headers: ['budgetID', 'category', 'type', 'budgetAmount', 'currency', 'status', 'updateTime'] },
+      { key: 'goals', sheetName: 'goal', headers: ['goalID', 'goalName', 'targetAmount', 'currentAmount', 'deadline', 'status', 'updateTime'] },
+      { key: 'tags', sheetName: 'tag', headers: ['tagID', 'tagName', 'tagGroup', 'description', 'updateTime'] },
+      { key: 'projects', sheetName: 'project', headers: ['projectID', 'projectName', 'startDate', 'endDate', 'budgetAmount', 'status', 'updateTime', 'author', 'description'] },
+      { key: 'user_prefs', sheetName: 'settings', headers: ['preferenceKey', 'settingValue'] }
     ];
 
     entities.forEach(ent => {
@@ -576,44 +567,43 @@ function doPost(e) {
         const row = ent.headers.map(h => {
           const hNorm = h.toLowerCase().replace(/[^a-z0-9]/g, '');
           
-          if (hNorm === 'accountid' || hNorm === 'itemid' || hNorm === 'merchantid' || hNorm === 'transactionid' || hNorm === 'categoryid' || hNorm === 'tagid' || hNorm === 'projectid' || hNorm === 'budgetid' || hNorm === 'id') return item.id;
-          if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname' || hNorm === 'vouchername' || hNorm === 'goalname' || hNorm === 'tagname' || hNorm === 'projectname' || hNorm === 'name') return item.name;
-          if (hNorm === 'provider') return item.provider || '';
-          if (hNorm === 'since') return item.since || '';
-          if (hNorm === 'code') return item.code || '';
-          if (hNorm === 'currentbalance') return item.balance || 0;
-          if (hNorm === 'defaultunitprice') return item.price || 0;
-          if (hNorm === 'stockkeepingunit') return item.sku || '';
-          if (hNorm === 'warrantyexpirydate' || hNorm === 'expirydate' || hNorm === 'deadline') return item.expiry || item.deadline || item.dueDate || '';
-          if (hNorm === 'targetamount') return item.target || 0;
-          if (hNorm === 'currentamount') return item.saved || 0;
-          if (hNorm === 'manufacturer') return item.manu || '';
-          if (hNorm === 'itemcategory' || hNorm === 'projectcategory') return item.category || '';
-          if (hNorm === 'categoryid' && ent.key === 'budgets') return item.categoryId || '';
-          if (hNorm === 'categoryname' || hNorm === 'scalekey' || hNorm === 'category') return item.name;
-          if (hNorm === 'categorygroup' || hNorm === 'taggroup') return item.group;
-          if (hNorm === 'typemapping' || hNorm === 'type') return item.type;
-          if (hNorm === 'fulldescription' || hNorm === 'description' || hNorm === 'notes') return item.description || item.notes || item.note || '';
-          if (hNorm === 'budgetamount') return item.budget || item.amount || 0;
-          if (hNorm === 'cardcolor') return item.color || '';
-          if (hNorm === 'accountlogo' || hNorm === 'tagimage') return item.logo || item.image || '';
+          if (hNorm === 'accountid' || hNorm === 'itemid' || hNorm === 'merchantid' || hNorm === 'transactionid' || hNorm === 'categoryid' || hNorm === 'tagid' || hNorm === 'projectid' || hNorm === 'budgetid' || hNorm === 'goalid' || hNorm === 'memberid' || hNorm === 'voucherid' || hNorm === 'authorid' || hNorm === 'id') return item.id || item[h] || '';
+          if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname' || hNorm === 'vouchername' || hNorm === 'goalname' || hNorm === 'tagname' || hNorm === 'projectname' || hNorm === 'membername' || hNorm === 'authorname' || hNorm === 'category' || hNorm === 'name') return item.name || item[h] || '';
+          if (hNorm === 'provider') return item.provider || item[h] || '';
+          if (hNorm === 'code' || hNorm === 'vouchercode') return item.code || item[h] || '';
+          if (hNorm === 'currentbalance' || hNorm === 'currentamount') return item.balance !== undefined ? item.balance : (item.saved !== undefined ? item.saved : (item[h] !== undefined ? item[h] : 0));
+          if (hNorm === 'openingbalance') return item.openingBalance !== undefined ? item.openingBalance : (item.balance !== undefined ? item.balance : (item[h] !== undefined ? item[h] : 0));
+          if (hNorm === 'defaultunitprice' || hNorm === 'amountperunit') return item.price !== undefined ? item.price : (item.amount !== undefined ? item.amount : (item[h] !== undefined ? item[h] : 0));
+          if (hNorm === 'stockkeepingunit') return item.sku || item[h] || '';
+          if (hNorm === 'warrantyexpirydate' || hNorm === 'expirydate' || hNorm === 'deadline') return item.expiry || item.deadline || item.dueDate || item[h] || '';
+          if (hNorm === 'targetamount') return item.target !== undefined ? item.target : (item[h] !== undefined ? item[h] : 0);
+          if (hNorm === 'currentamount') return item.saved !== undefined ? item.saved : (item[h] !== undefined ? item[h] : 0);
+          if (hNorm === 'manufacturer') return item.manu || item[h] || '';
+          if (hNorm === 'itemcategory' || hNorm === 'projectcategory' || hNorm === 'category') return item.category || item[h] || '';
+          if (hNorm === 'categorygroup' || hNorm === 'taggroup') return item.group || item[h] || '';
+          if (hNorm === 'type' || hNorm === 'roletype') return item.type || item.role || item[h] || '';
+          if (hNorm === 'description' || hNorm === 'notes') return item.description || item.notes || item[h] || '';
+          if (hNorm === 'budgetamount') return item.budget !== undefined ? item.budget : (item.amount !== undefined ? item.amount : (item[h] !== undefined ? item[h] : 0));
+          if (hNorm === 'cardcolor' || hNorm === 'color') return item.color || item[h] || '';
+          if (hNorm === 'accountimage' || hNorm === 'merchantimage' || hNorm === 'itemimage' || hNorm === 'memberimage' || hNorm === 'logo') return item.logo || item.image || item[h] || '';
+          if (hNorm === 'currency') return item.currency || item[h] || '';
+          if (hNorm === 'exchangerate') return item.exchangeRate || item.exchangerate || item[h] || 1;
           if (hNorm === 'updatetime') return Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "yyyy-MM-dd HH:mm");
           
-          if (ent.key === 'merchants' && hNorm === 'category') return item.type || '';
-          if (ent.key === 'authors' && hNorm === 'authorname') return item.name;
+          if (ent.key === 'merchants' && hNorm === 'category') return item.type || item[h] || '';
+          if (ent.key === 'authors' && hNorm === 'authorname') return item.name || item[h] || '';
           
           if (ent.key === 'transactions') {
-            if (h === 'Payment Source Account') return item.accountPayment || '';
-            if (h === 'Beneficiary Account') return item.accountReceived || '';
-            if (h === 'Merchant') return item.merchant || '';
-            if (h === 'Author') return item.author || '';
-            if (h === 'Amount (per Unit)') return item.amount || 0;
-            if (h === 'Analytics Tags') return (item.tags || []).join(', ');
-            if (h === 'Associated Project') return (item.projects || []).join(', ');
-            if (h === 'Cleared') return item.cleared ? 'Yes' : 'No';
-            if (h === 'Flow') return item.type === 'Income' ? 'IN' : 'OUT';
-            if (h === 'Year' && item.date) return item.date.split('-')[0];
-            if (h === 'Month' && item.date) return item.date.split('-')[1];
+            if (h === 'paymentSourceAccount') return item.accountPayment || item[h] || '';
+            if (h === 'beneficiaryAccount') return item.accountReceived || item[h] || '';
+            if (h === 'merchant') return item.merchant || item[h] || '';
+            if (h === 'author') return item.author || item[h] || '';
+            if (h === 'amountPerUnit') return item.amount !== undefined ? item.amount : (item[h] !== undefined ? item[h] : 0);
+            if (h === 'tags') return Array.isArray(item.tags) ? item.tags.join(', ') : (item[h] || '');
+            if (h === 'projects') return Array.isArray(item.projects) ? item.projects.join(', ') : (item[h] || '');
+            if (h === 'cleared') return (item.cleared !== undefined) ? (item.cleared ? 'Yes' : 'No') : (item[h] || 'No');
+            if (h === 'year' && item.date) return item.date.split('-')[0];
+            if (h === 'month' && item.date) return item.date.split('-')[1];
           }
 
           for (let k in item) {
