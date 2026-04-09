@@ -428,8 +428,9 @@
         'itemname': 'name',
         'itemcategory': 'category',
         'itemimage': 'image',
-        'amountperunit': 'price',
-        'unitscale': 'unitScale',
+        'amountperunit': 'amount',
+        'quantity': 'qty',
+        'unitscale': 'scale',
         'warrantyexpirydate': 'expiry',
         'manufacturer': 'manu',
         'model': 'model',
@@ -503,11 +504,11 @@
           return [];
         };
 
-        if (data.status === 'success') {
+        if (data && data.status === 'success') {
           SyncHub.update(40, 'Parsing cloud data entities...');
 
           // 1. Process Transactions with Column Mapping & Field Derivation
-          if (data.transactions) {
+          if (Array.isArray(data.transactions)) {
             SyncHub.update(50, 'Merging transactions...');
             const remoteTxs = data.transactions.map(rawT => {
               const t = reverseMap(rawT);
@@ -616,6 +617,16 @@
                   }
                   return mapped;
                 });
+              }
+
+              if (key === 'user_prefs' && Array.isArray(entityData)) {
+                const prefsObj = {};
+                entityData.forEach(p => {
+                  const k = p.preferenceKey || p.key || p.item || '';
+                  const v = p.settingValue || p.value || p.val || '';
+                  if (k) prefsObj[k] = v;
+                });
+                entityData = prefsObj;
               }
               
               localStorage.setItem(key, typeof entityData === 'string' ? entityData : JSON.stringify(entityData));
