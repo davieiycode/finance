@@ -587,10 +587,15 @@
       
       const filtered = items.filter(i => {
         const matchCat = activeCat === 'All' || i.category === activeCat;
-        const matchSearch = i.name.toLowerCase().includes(s) || 
-                          (i.sku || '').toLowerCase().includes(s) ||
-                          (i.model || '').toLowerCase().includes(s) ||
-                          (i.manu || '').toLowerCase().includes(s);
+        if (!searchTerm) return matchCat;
+        
+        const q = searchTerm.toLowerCase().trim();
+        const keywords = q.split(/\s+/);
+        const searchPool = [
+          i.name, i.category, i.sku, i.model, i.manu, i.notes, i.status
+        ].map(val => String(val || '').toLowerCase());
+        
+        const matchSearch = keywords.every(key => searchPool.some(val => val.includes(key)));
         return matchCat && matchSearch;
       }).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
       

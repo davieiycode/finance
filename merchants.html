@@ -676,8 +676,19 @@
     }
 
     function renderMerchants() {
-      const filtered = (merchants || []).filter(m => (activeType === 'All' || m.type === activeType) && (m.name || '').toLowerCase().includes(searchTerm))
-        .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      const filtered = (merchants || []).filter(m => {
+        const matchType = activeType === 'All' || m.type === activeType;
+        if (!searchTerm) return matchType;
+        
+        const q = searchTerm.toLowerCase().trim();
+        const keywords = q.split(/\s+/);
+        const searchPool = [
+          m.name, m.type, m.address, m.phone, m.email, m.website, m.bankDetails, m.notes, m.status
+        ].map(val => String(val || '').toLowerCase());
+        
+        const matchSearch = keywords.every(key => searchPool.some(val => val.includes(key)));
+        return matchType && matchSearch;
+      }).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
       const list = document.getElementById('merchant-list');
       const empty = document.getElementById('empty-state');
 

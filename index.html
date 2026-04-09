@@ -692,7 +692,7 @@
     <div class="drawer-header">
       <div>
         <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Scout Report</h2>
-        <p style="font-size: 0.65rem; color: var(--text-secondary);">v3.3.4 (Build 2026.04.09)</p>
+        <p style="font-size: 0.65rem; color: var(--text-secondary);">v3.3.5 (Build 2026.04.09)</p>
       </div>
       <button class="close-btn" onclick="closeMaintenanceHub()"><i data-lucide="x"></i></button>
     </div>
@@ -1047,15 +1047,20 @@
         return t;
       });
 
-      const q = query.toLowerCase();
+      const q = query.toLowerCase().trim();
       const filtered = txs.filter(t => {
         if (!q) return true;
         const searchPool = [
-          t.name, t.merchant, t.category, t.type, t.description, t.author, t.currency, t.scale, t.accountPayment, t.accountReceived,
+          t.name, t.merchant, t.category, t.type, t.description, t.author, t.currency, 
+          t.scale, t.accountPayment, t.accountReceived, t.sku, t.date, t.time,
           ...(t.tags || []), ...(t.projects || []),
-          t.total.toString(), (t.cleared ? 'cleared' : 'uncleared')
-        ].map(s => (s || '').toLowerCase());
-        return searchPool.some(s => s.includes(q));
+          t.total.toString(), (t.cleared ? 'cleared' : 'uncleared'),
+          t.amount.toString(), (t.id || '').toString()
+        ].map(s => String(s || '').toLowerCase());
+        
+        // Split query into keywords for AND search
+        const keywords = q.split(/\s+/);
+        return keywords.every(key => searchPool.some(s => s.includes(key)));
       });
 
       // Stats based on ALL filtered (or just relevant) - usually stats show total ledger
