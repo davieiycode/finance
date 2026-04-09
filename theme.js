@@ -853,9 +853,9 @@
 
       // 1. Merchant Sync
       if (t.merchant && t.merchant !== '-') {
-        const mLower = (t.merchant || '').toLowerCase();
+        const mLower = String(t.merchant || '').toLowerCase();
         if (!merMap.has(mLower)) {
-          const similar = (suggestionCount < MAX_SUGGESTIONS && isDashboard) ? merchants.find(m => getSimilarity(m.name, t.merchant) > 0.45) : null;
+          const similar = (suggestionCount < MAX_SUGGESTIONS && isDashboard) ? merchants.find(m => getSimilarity(String(m.name || ''), String(t.merchant || '')) > 0.45) : null;
           if (similar) {
              showMergeCard('merchant', t.merchant, similar);
              suggestionCount++;
@@ -869,7 +869,7 @@
 
       // 1b. Author Sync
       if (t.author && t.author !== '-') {
-        const aLower = (t.author || '').toLowerCase();
+        const aLower = String(t.author || '').toLowerCase();
         if (!autMap.has(aLower)) {
            authors.push({ id: Date.now() + Math.random(), name: t.author, role: 'Member' });
            autMap.set(aLower, { name: t.author });
@@ -880,9 +880,9 @@
       // 2. Account Sync
       const tAccs = [t.accountPayment, t.accountReceived].filter(a => a && a !== '-');
       tAccs.forEach(name => {
-        const aLower = name.toLowerCase();
+        const aLower = String(name || '').toLowerCase();
         if (!accMap.has(aLower)) {
-          const similar = (suggestionCount < MAX_SUGGESTIONS && isDashboard) ? accounts.find(a => getSimilarity(a.name, name) > 0.45) : null;
+          const similar = (suggestionCount < MAX_SUGGESTIONS && isDashboard) ? accounts.find(a => getSimilarity(String(a.name || ''), String(name || '')) > 0.45) : null;
           if (similar) {
              showMergeCard('account', name, similar);
              suggestionCount++;
@@ -896,9 +896,9 @@
 
       // 3. Item Sync
       if (t.name && t.name !== '-') {
-        const iLower = (t.name || '').toLowerCase();
+        const iLower = String(t.name || '').toLowerCase();
         if (!itMap.has(iLower)) {
-          const similar = (suggestionCount < MAX_SUGGESTIONS && (isDashboard || isItems)) ? items.find(i => getSimilarity(i.name, t.name) > 0.45) : null;
+          const similar = (suggestionCount < MAX_SUGGESTIONS && (isDashboard || isItems)) ? items.find(i => getSimilarity(String(i.name || ''), String(t.name || '')) > 0.45) : null;
           if (similar) {
              showMergeCard('item', t.name, similar);
              suggestionCount++;
@@ -913,7 +913,7 @@
       // 4. Category, Scale, Tag, Project Sync (Harvest from transactions)
       if (t.category && t.category !== '-') {
         const catDb = JSON.parse(localStorage.getItem('categories_db') || '[]');
-        if (!catDb.find(c => (c.name || '').toLowerCase() === (t.category || '').toLowerCase())) {
+        if (!catDb.find(c => String(c.name || '').toLowerCase() === String(t.category || '').toLowerCase())) {
           catDb.push({ id: Date.now() + Math.random(), name: t.category, group: 'Imported', type: t.flow === 'Inflow' ? 'Income' : 'Expense' });
           localStorage.setItem('categories_db', JSON.stringify(catDb));
           updated = true;
@@ -921,7 +921,7 @@
       }
       if (t.scale && t.scale !== '-') {
         const scaleDb = JSON.parse(localStorage.getItem('scales_db') || '[]');
-        if (!scaleDb.find(s => (s.name || '').toLowerCase() === (t.scale || '').toLowerCase())) {
+        if (!scaleDb.find(s => String(s.name || '').toLowerCase() === String(t.scale || '').toLowerCase())) {
           scaleDb.push({ id: Date.now() + Math.random(), name: t.scale, description: 'Harvested from transaction' });
           localStorage.setItem('scales_db', JSON.stringify(scaleDb));
           updated = true;
@@ -930,7 +930,7 @@
       if (Array.isArray(t.tags) && t.tags.length > 0) {
         const tagDb = JSON.parse(localStorage.getItem('tags') || '[]');
         t.tags.forEach(tag => {
-          if (!tagDb.find(g => (g.name || '').toLowerCase() === (tag || '').toLowerCase())) {
+          if (!tagDb.find(g => String(g.name || '').toLowerCase() === String(tag || '').toLowerCase())) {
             tagDb.push({ id: Date.now() + Math.random(), name: tag, group: 'General', status: 'Active' });
             updated = true;
           }
@@ -940,7 +940,7 @@
       if (Array.isArray(t.projects) && t.projects.length > 0) {
         const projDb = JSON.parse(localStorage.getItem('projects') || '[]');
         t.projects.forEach(p => {
-          if (!projDb.find(x => (x.name || '').toLowerCase() === (p || '').toLowerCase())) {
+          if (!projDb.find(x => String(x.name || '').toLowerCase() === String(p || '').toLowerCase())) {
             projDb.push({ id: Date.now() + Math.random(), name: p, status: 'Active', category: 'General' });
             updated = true;
           }
