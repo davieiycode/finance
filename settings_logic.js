@@ -15,7 +15,7 @@ window.AVATAR_SVGS = [
   `<svg viewBox="0 0 80 80"><defs><clipPath id="c12"><circle cx="40" cy="40" r="40" /></clipPath></defs><g clip-path="url(#c12)"><rect width="80" height="80" fill="#26215C" /><polygon points="0,0 80,0 0,80" fill="#3C3489" /><polygon points="80,0 80,80 0,80" fill="#085041" /><circle cx="26" cy="28" r="18" fill="#7F77DD" /><circle cx="56" cy="54" r="15" fill="#1D9E75" /><circle cx="26" cy="28" r="8" fill="#EEEDFE" /><circle cx="56" cy="54" r="7" fill="#9FE1CB" /></g></svg>`
 ];
 
-const APP_VERSION = 'v3.3.1';
+const APP_VERSION = 'v3.3.2';
 const BUILD_DATE = '2026.04.09';
 
 // settings_logic.js - Logic for settings.html
@@ -416,7 +416,7 @@ window.copyScriptCode = () => {
   const sheets = ss.getSheets();
   const timezone = ss.getSpreadsheetTimeZone();
   const response = { status: 'success' };
-  const relevantKeywords = ['transaction', 'transaksi', 'merchant', 'toko', 'penjual', 'author', 'kreator', 'user', 'penulis', 'anggota', 'account', 'rekening', 'akun', 'item', 'barang', 'produk', 'membership', 'categories', 'scales', 'vault', 'brankas', 'budget', 'anggaran', 'goal', 'target', 'voucher', 'kupon', 'setting', 'pref', 'tag', 'project'];
+  const relevantKeywords = ['transaction', 'transaksi', 'merchant', 'toko', 'penjual', 'author', 'kreator', 'user', 'penulis', 'anggota', 'account', 'rekening', 'akun', 'item', 'barang', 'produk', 'membership', 'categories', 'scales', 'unitscale', 'vault', 'brankas', 'budget', 'anggaran', 'goal', 'target', 'voucher', 'kupon', 'setting', 'pref', 'tag', 'project'];
 
   sheets.forEach(sh => {
     const name = sh.getName().toLowerCase();
@@ -542,7 +542,7 @@ function doPost(e) {
       { key: 'authors', sheetName: 'author', headers: ['authorID', 'authorName', 'roleType', 'updateTime'] },
       { key: 'membership_cards', sheetName: 'member', headers: ['memberID', 'memberName', 'code', 'expiryDate', 'type', 'color', 'notes', 'memberImage'] },
       { key: 'categories_db', sheetName: 'category', headers: ['categoryID', 'category', 'categoryGroup', 'type', 'description', 'updateTime'] },
-      { key: 'scales_db', sheetName: 'scales', headers: ['unitScale', 'description'] },
+      { key: 'scales_db', sheetName: 'unitScale', headers: ['unitScale', 'description'] },
       { key: 'vouchers', sheetName: 'voucher', headers: ['voucherID', 'voucherName', 'provider', 'voucherCode', 'expiryDate', 'status', 'updateTime', 'notes'] },
       { key: 'budgets', sheetName: 'budget', headers: ['budgetID', 'category', 'type', 'budgetAmount', 'currency', 'status', 'updateTime'] },
       { key: 'goals', sheetName: 'goal', headers: ['goalID', 'goalName', 'targetAmount', 'currentAmount', 'deadline', 'status', 'updateTime'] },
@@ -578,6 +578,7 @@ function doPost(e) {
           
           if (hNorm === 'accountid' || hNorm === 'itemid' || hNorm === 'merchantid' || hNorm === 'transactionid' || hNorm === 'categoryid' || hNorm === 'tagid' || hNorm === 'projectid' || hNorm === 'budgetid' || hNorm === 'goalid' || hNorm === 'memberid' || hNorm === 'voucherid' || hNorm === 'authorid' || hNorm === 'id') return item.id || item[h] || '';
           if (hNorm === 'accountname' || hNorm === 'itemname' || hNorm === 'merchantname' || hNorm === 'vouchername' || hNorm === 'goalname' || hNorm === 'tagname' || hNorm === 'projectname' || hNorm === 'membername' || hNorm === 'authorname' || hNorm === 'category' || hNorm === 'name') return item.name || item[h] || '';
+          if (hNorm === 'unitscale' || hNorm === 'unit') return item.name || item.unit || item[h] || '';
           if (hNorm === 'provider') return item.provider || item[h] || '';
           if (hNorm === 'code' || hNorm === 'vouchercode') return item.code || item[h] || '';
           if (hNorm === 'currentbalance' || hNorm === 'currentamount') return item.balance !== undefined ? item.balance : (item.saved !== undefined ? item.saved : (item[h] !== undefined ? item[h] : 0));
@@ -585,6 +586,8 @@ function doPost(e) {
           if (hNorm === 'defaultunitprice' || hNorm === 'amountperunit') return item.price !== undefined ? item.price : (item.amount !== undefined ? item.amount : (item[h] !== undefined ? item[h] : 0));
           if (hNorm === 'stockkeepingunit') return item.sku || item[h] || '';
           if (hNorm === 'warrantyexpirydate' || hNorm === 'expirydate' || hNorm === 'deadline') return item.expiry || item.deadline || item.dueDate || item[h] || '';
+          if (hNorm === 'startdate') return item.start || item[h] || '';
+          if (hNorm === 'enddate') return item.end || item[h] || '';
           if (hNorm === 'targetamount') return item.target !== undefined ? item.target : (item[h] !== undefined ? item[h] : 0);
           if (hNorm === 'currentamount') return item.saved !== undefined ? item.saved : (item[h] !== undefined ? item[h] : 0);
           if (hNorm === 'manufacturer') return item.manu || item[h] || '';
@@ -592,7 +595,7 @@ function doPost(e) {
           if (hNorm === 'categorygroup' || hNorm === 'taggroup') return item.group || item[h] || '';
           if (hNorm === 'type' || hNorm === 'roletype') return item.type || item.role || item[h] || '';
           if (hNorm === 'description' || hNorm === 'notes') return item.description || item.notes || item[h] || '';
-          if (hNorm === 'budgetamount') return item.budget !== undefined ? item.budget : (item.amount !== undefined ? item.amount : (item[h] !== undefined ? item[h] : 0));
+          if (hNorm === 'budgetamount') return item.budget !== undefined ? item.budget : (item.amount !== undefined ? item.amount : (item.budgetAmount !== undefined ? item.budgetAmount : (item[h] !== undefined ? item[h] : 0)));
           if (hNorm === 'cardcolor' || hNorm === 'color') return item.color || item[h] || '';
           if (hNorm === 'accountimage' || hNorm === 'merchantimage' || hNorm === 'itemimage' || hNorm === 'memberimage' || hNorm === 'logo') return item.logo || item.image || item[h] || '';
           if (hNorm === 'currency') return item.currency || item[h] || '';
@@ -923,8 +926,8 @@ window.renderCategoryList = () => {
                 <div style="font-size:0.65rem; color:var(--text-secondary); opacity:0.6;">${c.group} • ${c.type}</div>
             </div>
             <div style="display:flex; gap:0.5rem;">
-                <button onclick="editCategory(${c.id})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
-                <button onclick="deleteCategory(${c.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+                <button onclick="editCategory('${c.id}')" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
+                <button onclick="deleteCategory('${c.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
             </div>
         </div>
     `).join('');
@@ -942,7 +945,7 @@ window.newCategory = () => {
 
 window.editCategory = (id) => {
     const db = JSON.parse(localStorage.getItem('categories_db') || '[]');
-    const cat = db.find(c => c.id === id);
+    const cat = db.find(c => c.id == id);
     if (!cat) return;
     editingCatId = id;
     document.getElementById('cat-name').value = cat.name;
@@ -977,7 +980,7 @@ window.saveCategory = () => {
 window.deleteCategory = (id) => {
     window.showConfirm('Delete this category definition?', () => {
         let db = JSON.parse(localStorage.getItem('categories_db') || '[]');
-        db = db.filter(c => c.id !== id);
+        db = db.filter(c => c.id != id);
         localStorage.setItem('categories_db', JSON.stringify(db));
         window.renderCategoryList();
     });
@@ -1011,8 +1014,8 @@ window.renderScaleList = () => {
                 <div style="font-size:0.6rem; color:var(--text-secondary); opacity:0.6; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;">${s.description}</div>
             </div>
             <div style="display:flex; gap:0.5rem;">
-                <button onclick="editScale(${s.id})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
-                <button onclick="deleteScale(${s.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+                <button onclick="editScale('${s.id}')" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
+                <button onclick="deleteScale('${s.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
             </div>
         </div>
     `).join('');
@@ -1028,7 +1031,7 @@ window.newScale = () => {
 
 window.editScale = (id) => {
     const db = JSON.parse(localStorage.getItem('scales_db') || '[]');
-    const s = db.find(x => x.id === id);
+    const s = db.find(x => x.id == id);
     if (!s) return;
     editingScaleId = id;
     document.getElementById('scale-name').value = s.name;
@@ -1059,7 +1062,7 @@ window.saveScale = () => {
 window.deleteScale = (id) => {
     window.showConfirm('Delete this scale definition?', () => {
         let db = JSON.parse(localStorage.getItem('scales_db') || '[]');
-        db = db.filter(x => x.id !== id);
+        db = db.filter(x => x.id != id);
         localStorage.setItem('scales_db', JSON.stringify(db));
         window.renderScaleList();
     });
@@ -1084,8 +1087,8 @@ window.renderTagList = () => {
                 <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">${t.description || 'No description'}</div>
             </div>
             <div style="display:flex; gap:0.5rem;">
-                <button onclick="editTag(${t.id})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
-                <button onclick="deleteTag(${t.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+                <button onclick="editTag('${t.id}')" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
+                <button onclick="deleteTag('${t.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
             </div>
         </div>
     `).join('');
@@ -1103,7 +1106,7 @@ window.newTag = () => {
 
 window.editTag = (id) => {
     const db = JSON.parse(localStorage.getItem('tags') || '[]');
-    const t = db.find(x => x.id === id);
+    const t = db.find(x => x.id == id);
     if (!t) return;
     editingTagId = id;
     document.getElementById('tag-name').value = t.name;
@@ -1139,7 +1142,7 @@ window.saveTag = () => {
 window.deleteTag = (id) => {
     window.showConfirm('Delete this tag definition?', () => {
         let db = JSON.parse(localStorage.getItem('tags') || '[]');
-        db = db.filter(x => x.id !== id);
+        db = db.filter(x => x.id != id);
         localStorage.setItem('tags', JSON.stringify(db));
         window.renderTagList();
     });
@@ -1164,8 +1167,8 @@ window.renderProjectList = () => {
                 <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.25rem;">Mgr: ${p.manager || '-'} | Budget: ${p.currency || 'IDR'} ${parseFloat(p.budget).toLocaleString()}</div>
             </div>
             <div style="display:flex; gap:0.5rem;">
-                <button onclick="editProject(${p.id})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
-                <button onclick="deleteProject(${p.id})" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+                <button onclick="editProject('${p.id}')" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i data-lucide="edit-3" style="width:16px;"></i></button>
+                <button onclick="deleteProject('${p.id}')" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
             </div>
         </div>
     `).join('');
@@ -1188,7 +1191,7 @@ window.newProject = () => {
 
 window.editProject = (id) => {
     const db = JSON.parse(localStorage.getItem('projects') || '[]');
-    const p = db.find(x => x.id === id);
+    const p = db.find(x => x.id == id);
     if (!p) return;
     editingProjId = id;
     document.getElementById('proj-name').value = p.name;
@@ -1234,7 +1237,7 @@ window.saveProject = () => {
 window.deleteProject = (id) => {
     window.showConfirm('Terminate this project record?', () => {
         let db = JSON.parse(localStorage.getItem('projects') || '[]');
-        db = db.filter(x => x.id !== id);
+        db = db.filter(x => x.id != id);
         localStorage.setItem('projects', JSON.stringify(db));
         window.renderProjectList();
     });

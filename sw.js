@@ -1,6 +1,6 @@
 // Service Worker for Jurney Explorer (Standalone App Support)
 
-const CACHE_NAME = 'jurney-v3.3.1';
+const CACHE_NAME = 'jurney-v3.3.2';
 const ASSETS = [
   '/',
   '/index.html',

@@ -626,7 +626,7 @@ if (nextBtn) {
     const db = JSON.parse(localStorage.getItem('transactions') || '[]');
     const existingTx = (mode === 'edit' && editId) ? db.find(t => t.id == editId) : null;
     const tx = {
-      id: mode === 'edit' ? parseInt(editId) : Date.now(),
+      id: mode === 'edit' ? editId : Date.now(),
       date: document.getElementById('transaction-date').value,
       time: document.getElementById('transaction-time').value,
       name: document.getElementById('item-input').value,

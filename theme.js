@@ -322,7 +322,8 @@
         'jam': 'time',
         'category': 'category',
         'kategori': 'category',
-        'categorygroup': 'categoryGroup',
+        'categorygroup': 'group',
+        'category_group': 'group',
         'merchant': 'merchant',
         'merchantname': 'merchant',
         'toko': 'merchant',
@@ -402,6 +403,8 @@
         'ongkir': 'fee',
         'total': 'total',
         'budgetamount': 'budgetAmount',
+        'targetamount': 'targetAmount',
+        'currentamount': 'currentAmount',
         'budgetperiod': 'budgetPeriod',
         'flow': 'flow',
         'year': 'year',
@@ -411,39 +414,50 @@
         'updatetime': 'updateTime',
         'xp': 'xp',
         'cardcolor': 'color',
-        'accountlogo': 'logo',
         'accountid': 'id',
         'accountname': 'name',
         'accounttype': 'type',
         'accountnumber': 'number',
+        'accountimage': 'logo',
+        'openingbalance': 'balance',
         'merchantid': 'id',
         'merchantname': 'name',
+        'gmapslink': 'map',
+        'bankaccountdetails': 'bankDetails',
         'itemid': 'id',
         'itemname': 'name',
         'itemcategory': 'category',
+        'itemimage': 'image',
+        'amountperunit': 'price',
+        'unitscale': 'unitScale',
+        'warrantyexpirydate': 'expiry',
+        'manufacturer': 'manu',
+        'model': 'model',
+        'sku': 'sku',
         'categoryid': 'id',
+        'category': 'category',
         'categorygroup': 'categoryGroup',
-        'unitscale': 'scale',
+        'unitscale_id': 'unitScale',
         'tagid': 'id',
         'tagname': 'name',
-        'taggroup': 'tagGroup',
+        'taggroup': 'group',
         'projectid': 'id',
         'projectname': 'name',
+        'startdate': 'startDate',
+        'enddate': 'endDate',
         'budgetid': 'id',
-        'budgetamount': 'amount',
         'goalid': 'id',
         'goalname': 'name',
-        'targetamount': 'target',
-        'currentamount': 'saved',
         'memberid': 'id',
         'membername': 'name',
+        'memberimage': 'image',
+        'expirydate': 'expiry',
         'voucherid': 'id',
         'vouchername': 'name',
         'vouchercode': 'code',
-        'expirydate': 'expiry',
         'authorid': 'id',
         'authorname': 'name',
-        'roletype': 'role',
+        'roletype': 'type',
         'preferencekey': 'key',
         'settingvalue': 'value'
       };
@@ -589,17 +603,21 @@
             if (data[key]) {
               SyncHub.update(80, `Updating ${key}...`);
               let entityData = data[key];
-              if (key === 'items' && Array.isArray(entityData)) {
-                // Specialized mapping for Items to ensure property consistency
-                entityData = entityData.map(i => {
-                   const mapped = reverseMap(i);
-                   // Ensure unit/scale is correctly assigned to 'unit' property for items
-                   mapped.unit = mapped.unit || mapped.scale || mapped.unitscale || mapped.satuan || i['Unit'] || i['Unit Scale'] || i['unit'] || 'pcs';
-                   // Ensure price is assigned back to 'price' if it was mapped to 'amount' by reverseMap
-                   mapped.price = mapped.price || mapped.amount || i['Price'] || i['Default Unit Price'] || 0;
-                   return mapped;
+              
+              if (Array.isArray(entityData)) {
+                entityData = entityData.map(item => {
+                  const mapped = reverseMap(item);
+                  if (key === 'items') {
+                     mapped.unit = mapped.unit || mapped.scale || item['Unit Scale'] || 'pcs';
+                     mapped.price = mapped.price || mapped.amount || item['Price'] || 0;
+                  }
+                  if (key === 'scales_db') {
+                     mapped.name = mapped.name || mapped.scale || item['Unit Scale'] || item['unitScale'] || '';
+                  }
+                  return mapped;
                 });
               }
+              
               localStorage.setItem(key, typeof entityData === 'string' ? entityData : JSON.stringify(entityData));
             }
           });
@@ -696,18 +714,31 @@
             data = data.map(item => {
               const mapped = {};
               const ENTITY_MAPS = {
-                'accounts': { 'id': 'accountID', 'name': 'accountName', 'type': 'accountType', 'balance': 'openingBalance', 'color': 'cardColor', 'number': 'accountNumber', 'logo': 'accountImage' },
-                'merchants': { 'id': 'merchantID', 'name': 'merchantName', 'logo': 'merchantImage', 'location': 'address' },
-                'items': { 'id': 'itemID', 'name': 'itemName', 'category': 'itemCategory', 'scale': 'unitScale', 'amount': 'amountPerUnit', 'price': 'amountPerUnit', 'logo': 'itemImage', 'sku': 'SKU' },
-                'budgets': { 'id': 'budgetID', 'amount': 'budgetAmount' },
-                'goals': { 'id': 'goalID', 'name': 'goalName', 'target': 'targetAmount', 'saved': 'currentAmount' },
-                'vouchers': { 'id': 'voucherID', 'name': 'voucherName', 'code': 'voucherCode' },
-                'membership_cards': { 'id': 'memberID', 'name': 'memberName', 'logo': 'memberImage' },
-                'authors': { 'id': 'authorID', 'name': 'authorName', 'role': 'roleType' },
-                'categories_db': { 'id': 'categoryID' },
-                'scales_db': { 'id': 'unitScale' },
-                'tags': { 'id': 'tagID', 'name': 'tagName', 'group': 'tagGroup' },
-                'projects': { 'id': 'projectID', 'name': 'projectName' }
+                'accounts': { 
+                  'id': 'accountID', 'name': 'accountName', 'type': 'accountType', 'balance': 'openingBalance', 
+                  'color': 'cardColor', 'number': 'accountNumber', 'logo': 'accountImage', 'updateTime': 'updateTime',
+                  'status': 'status', 'notes': 'notes', 'currency': 'currency'
+                },
+                'merchants': { 
+                  'id': 'merchantID', 'name': 'merchantName', 'type': 'category', 'status': 'status', 
+                  'phone': 'phone', 'address': 'address', 'email': 'email', 'website': 'website', 
+                  'bankDetails': 'bankAccountDetails', 'notes': 'notes', 'map': 'gMapsLink', 'updateTime': 'updateTime'
+                },
+                'items': { 
+                  'id': 'itemID', 'name': 'itemName', 'category': 'itemCategory', 'unitScale': 'unitScale', 
+                  'price': 'amountPerUnit', 'manu': 'manufacturer', 'model': 'model', 'sku': 'SKU', 
+                  'image': 'itemImage', 'expiry': 'warrantyExpiryDate', 'notes': 'notes', 'status': 'status',
+                  'currency': 'currency', 'updateTime': 'updateTime'
+                },
+                'budgets': { 'id': 'budgetID', 'amount': 'budgetAmount', 'category': 'category', 'type': 'type', 'status': 'status', 'updateTime': 'updateTime', 'currency': 'currency' },
+                'goals': { 'id': 'goalID', 'name': 'goalName', 'target': 'targetAmount', 'saved': 'currentAmount', 'deadline': 'deadline', 'status': 'status', 'updateTime': 'updateTime' },
+                'vouchers': { 'id': 'voucherID', 'name': 'voucherName', 'provider': 'provider', 'code': 'voucherCode', 'expiry': 'expiryDate', 'status': 'status', 'updateTime': 'updateTime', 'notes': 'notes' },
+                'membership_cards': { 'id': 'memberID', 'name': 'memberName', 'code': 'code', 'expiry': 'expiryDate', 'type': 'type', 'color': 'color', 'notes': 'notes', 'image': 'memberImage' },
+                'authors': { 'id': 'authorID', 'name': 'authorName', 'role': 'roleType', 'updateTime': 'updateTime' },
+                'categories_db': { 'id': 'categoryID', 'name': 'category', 'group': 'categoryGroup', 'type': 'type', 'description': 'description', 'updateTime': 'updateTime' },
+                'scales_db': { 'unitScale': 'unitScale', 'description': 'description' },
+                'tags': { 'id': 'tagID', 'name': 'tagName', 'group': 'tagGroup', 'description': 'description', 'updateTime': 'updateTime' },
+                'projects': { 'id': 'projectID', 'name': 'projectName', 'startDate': 'startDate', 'endDate': 'endDate', 'budgetAmount': 'budgetAmount', 'status': 'status', 'author': 'author', 'description': 'description', 'updateTime': 'updateTime' }
               };
               const map = ENTITY_MAPS[key] || {};
               Object.keys(item).forEach(k => {
@@ -856,6 +887,44 @@
              updated = true;
           }
         }
+      }
+
+      // 4. Category, Scale, Tag, Project Sync (Harvest from transactions)
+      if (t.category && t.category !== '-') {
+        const catDb = JSON.parse(localStorage.getItem('categories_db') || '[]');
+        if (!catDb.find(c => c.name.toLowerCase() === t.category.toLowerCase())) {
+          catDb.push({ id: Date.now() + Math.random(), name: t.category, group: 'Imported', type: t.flow === 'Inflow' ? 'Income' : 'Expense' });
+          localStorage.setItem('categories_db', JSON.stringify(catDb));
+          updated = true;
+        }
+      }
+      if (t.scale && t.scale !== '-') {
+        const scaleDb = JSON.parse(localStorage.getItem('scales_db') || '[]');
+        if (!scaleDb.find(s => s.name.toLowerCase() === t.scale.toLowerCase())) {
+          scaleDb.push({ id: Date.now() + Math.random(), name: t.scale, description: 'Harvested from transaction' });
+          localStorage.setItem('scales_db', JSON.stringify(scaleDb));
+          updated = true;
+        }
+      }
+      if (Array.isArray(t.tags) && t.tags.length > 0) {
+        const tagDb = JSON.parse(localStorage.getItem('tags') || '[]');
+        t.tags.forEach(tag => {
+          if (!tagDb.find(g => g.name.toLowerCase() === tag.toLowerCase())) {
+            tagDb.push({ id: Date.now() + Math.random(), name: tag, group: 'General', status: 'Active' });
+            updated = true;
+          }
+        });
+        if (updated) localStorage.setItem('tags', JSON.stringify(tagDb));
+      }
+      if (Array.isArray(t.projects) && t.projects.length > 0) {
+        const projDb = JSON.parse(localStorage.getItem('projects') || '[]');
+        t.projects.forEach(p => {
+          if (!projDb.find(x => x.name.toLowerCase() === p.toLowerCase())) {
+            projDb.push({ id: Date.now() + Math.random(), name: p, status: 'Active', category: 'General' });
+            updated = true;
+          }
+        });
+        if (updated) localStorage.setItem('projects', JSON.stringify(projDb));
       }
     }
 
