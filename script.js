@@ -408,93 +408,95 @@ function rebuildMetadataFromTransactions(txs, mode = 'merge') {
 }
 
 function populateDatalists() {
-  const db = JSON.parse(localStorage.getItem('transactions') || '[]');
-  const catalog = JSON.parse(localStorage.getItem('items') || '[]');
-  console.log(`Populating datalists from ${db.length} transactions and ${catalog.length} catalog items...`);
-  
-  const sets = {
-    merchants: new Set(),
-    items: new Set(),
-    categories: new Set(),
-    groups: new Set(),
-    scales: new Set(),
-    accounts: new Set(),
-    authors: new Set(['User']),
-    tags: new Set(['Monthly', 'Priority']),
-    projects: new Set(['General'])
-  };
-
-  // 1. Pull from databases for high-fidelity master data
-  const catDB = JSON.parse(localStorage.getItem('categories_db') || '[]');
-  catDB.forEach(c => {
-    sets.categories.add(c.name.trim());
-    if (c.group) sets.groups.add(c.group.trim());
-  });
-
-  const scaleDB = JSON.parse(localStorage.getItem('scales_db') || '[]');
-  scaleDB.forEach(s => {
-    sets.scales.add(s.name.trim());
-  });
-
-  if (sets.categories.size === 0) {
-    ['Food & Beverage', 'Transportation', 'Shopping', 'Bills & Utilities', 'Entertainment', 'Health', 'Education', 'Investment', 'Other'].forEach(c => sets.categories.add(c));
-  }
-  if (sets.scales.size === 0) {
-    ['pcs', 'kg', 'gr', 'L', 'ml', 'pack', 'box', 'btl'].forEach(s => sets.scales.add(s));
-  }
-
-  catalog.forEach(it => {
-    if (it.name) sets.items.add(it.name.trim());
-    if (it.sku) sets.items.add(it.sku.trim());
-    if (it.category) sets.categories.add(it.category.trim());
-  });
-
-  db.forEach(t => {
-    // Aggressive extraction from all possible key variations
-    const m = t.merchant || t.Merchant || t['Merchant Name'] || t['Merchant'];
-    if (m && m !== '-') sets.merchants.add(m.toString().trim());
-
-    const n = t.name || t.Name || t['Item Name'] || t['Item'] || t.item;
-    if (n && n !== '-' && n !== 'Imported Transaction') sets.items.add(n.toString().trim());
-
-    const c = t.category || t.Category || t['Category'];
-    if (c && c !== '-') sets.categories.add(c.toString().trim());
-
-    const ap = t.accountPayment || t['Payment Source Account'] || t.account;
-    if (ap && ap !== '-') sets.accounts.add(ap.toString().trim());
-
-    const ar = t.accountReceived || t['Beneficiary Account'];
-    if (ar && ar !== '-') sets.accounts.add(ar.toString().trim());
-
-    const au = t.author || t.Author || t['Author'];
-    if (au && au !== '-') sets.authors.add(au.toString().trim());
+  try {
+    const db = JSON.parse(localStorage.getItem('transactions') || '[]');
+    const catalog = JSON.parse(localStorage.getItem('items') || '[]');
+    console.log(`Populating datalists from ${db.length} transactions and ${catalog.length} catalog items...`);
     
-    if (t.tags && Array.isArray(t.tags)) t.tags.forEach(tg => sets.tags.add(tg.toString().trim()));
-    if (t.projects && Array.isArray(t.projects)) t.projects.forEach(pj => sets.projects.add(pj.toString().trim()));
-  });
+    const sets = {
+      merchants: new Set(),
+      items: new Set(),
+      categories: new Set(),
+      groups: new Set(),
+      scales: new Set(),
+      accounts: new Set(),
+      authors: new Set(['User']),
+      tags: new Set(['Monthly', 'Priority']),
+      projects: new Set(['General'])
+    };
 
-  // If sync yielded accounts, use them exclusively to avoid default confusion
-  if (sets.accounts.size === 0) {
-    ['Cash', 'Bank Account', 'Credit Card', 'E-Wallet'].forEach(a => sets.accounts.add(a));
-  }
+    // 1. Pull from databases for high-fidelity master data
+    const catDB = JSON.parse(localStorage.getItem('categories_db') || '[]');
+    catDB.forEach(c => {
+      if (c && c.name) {
+        sets.categories.add(String(c.name).trim());
+        if (c.group) sets.groups.add(String(c.group).trim());
+      }
+    });
 
-  const fill = (id, items) => {
-    const dl = document.getElementById(id);
-    if (dl) {
-      dl.innerHTML = Array.from(items).sort().map(i => `<option value="${i}">`).join('');
+    const scaleDB = JSON.parse(localStorage.getItem('scales_db') || '[]');
+    scaleDB.forEach(s => {
+      if (s && s.name) sets.scales.add(String(s.name).trim());
+    });
+
+    if (sets.categories.size === 0) {
+      ['Food & Beverage', 'Transportation', 'Shopping', 'Bills & Utilities', 'Entertainment', 'Health', 'Education', 'Investment', 'Other'].forEach(c => sets.categories.add(c));
     }
-  };
+    if (sets.scales.size === 0) {
+      ['pcs', 'kg', 'gr', 'L', 'ml', 'pack', 'box', 'btl'].forEach(s => sets.scales.add(s));
+    }
 
-  fill('merchant-list', sets.merchants);
-  fill('item-list', sets.items);
-  fill('category-list', sets.categories);
-  fill('group-list', sets.groups);
-  fill('scale-list', sets.scales);
-  fill('payment-list', sets.accounts);
-  fill('received-list', sets.accounts);
-  fill('author-list', sets.authors);
-  fill('tag-suggestions', sets.tags);
-  fill('project-suggestions', sets.projects);
+    catalog.forEach(it => {
+      if (it && it.name) sets.items.add(String(it.name).trim());
+      if (it && it.sku) sets.items.add(String(it.sku).trim());
+      if (it && it.category) sets.categories.add(String(it.category).trim());
+    });
+
+    db.forEach(t => {
+      if (!t) return;
+      // Aggressive extraction from all possible key variations
+      const m = t.merchant || t.Merchant || t['Merchant Name'] || t['Merchant'];
+      if (m && m !== '-') sets.merchants.add(String(m).trim());
+
+      const n = t.name || t.Name || t['Item Name'] || t['Item'] || t.item;
+      if (n && n !== '-' && n !== 'Imported Transaction') sets.items.add(String(n).trim());
+
+      const c = t.category || t.Category || t['Category'];
+      if (c && c !== '-') sets.categories.add(String(c).trim());
+
+      const ap = t.accountPayment || t['Payment Source Account'] || t.account;
+      if (ap && ap !== '-') sets.accounts.add(String(ap).trim());
+
+      const ar = t.accountReceived || t['Beneficiary Account'];
+      if (ar && ar !== '-') sets.accounts.add(String(ar).trim());
+
+      const au = t.author || t.Author || t['Author'];
+      if (au && au !== '-') sets.authors.add(String(au).trim());
+      
+      if (t.tags && Array.isArray(t.tags)) t.tags.forEach(tg => { if(tg) sets.tags.add(String(tg).trim()); });
+      if (t.projects && Array.isArray(t.projects)) t.projects.forEach(pj => { if(pj) sets.projects.add(String(pj).trim()); });
+    });
+
+    const fill = (id, items) => {
+      const dl = document.getElementById(id);
+      if (dl) {
+        dl.innerHTML = Array.from(items).filter(i => i !== null && i !== undefined).sort().map(i => `<option value="${i}">`).join('');
+      }
+    };
+
+    fill('merchant-list', sets.merchants);
+    fill('item-list', sets.items);
+    fill('category-list', sets.categories);
+    fill('group-list', sets.groups);
+    fill('scale-list', sets.scales);
+    fill('payment-list', sets.accounts);
+    fill('received-list', sets.accounts);
+    fill('author-list', sets.authors);
+    fill('tag-suggestions', sets.tags);
+    fill('project-suggestions', sets.projects);
+  } catch (e) {
+    console.error("Error in populateDatalists:", e);
+  }
 }
 
 window.updateReceiptPreview = (val) => {
@@ -515,46 +517,59 @@ window.updateReceiptPreview = (val) => {
 const initForm = () => {
   try {
     const db = JSON.parse(localStorage.getItem('transactions') || '[]');
+    console.log(`Initializing form. Mode: ${mode}, ID: ${editId}, DB records: ${db.length}`);
+    
     if ((mode === 'edit' || mode === 'duplicate') && editId) {
+      // Use loose equality == to find by string or numeric ID
       const tx = db.find(t => t.id == editId);
+      
       if (tx) {
-        document.getElementById('transaction-date').value = tx.date || '';
-        document.getElementById('transaction-time').value = tx.time || '';
-        document.getElementById('author-input').value = tx.author || tx.Author || '';
-        document.getElementById('item-input').value = tx.name || tx.itemName || tx.Item || '';
-        document.getElementById('merchant-input').value = tx.merchant || tx.merchantName || tx.Merchant || '';
-        document.getElementById('category-input').value = tx.category || tx.Category || '';
-        if (document.getElementById('category-group-input')) {
-          document.getElementById('category-group-input').value = tx.categoryGroup || tx.group || tx['Category Group'] || '';
-        }
-        document.getElementById('transaction-description').value = tx.description || tx.notes || '';
+        console.log("Transaction found, populating fields...", tx);
         
-        if (amountInput) {
-          // Migration: In old structure, tx.amount was Total and tx.price was Unit Price
-          // In new structure, tx.amount is Unit Price and tx.total is Total
-          if (tx.total === undefined && tx.amount !== undefined) {
-             amountInput.value = tx.price || (tx.amount / (tx.qty || 1));
-          } else {
-             amountInput.value = tx.amount || 0;
-          }
+        // Helper to set value and trigger formatting
+        const setVal = (id, val) => {
+           const el = document.getElementById(id);
+           if (el) {
+             el.value = (val === undefined || val === null) ? '' : val;
+             // If it's a numeric field, trigger formatting
+             if (['amount-input', 'quantity-input', 'discount-input', 'fee-input', 'exchange-rate-input'].includes(id)) {
+                formatInputLocale({ target: el });
+             }
+           }
+        };
+
+        setVal('transaction-date', tx.date);
+        setVal('transaction-time', tx.time);
+        setVal('author-input', tx.author || tx.Author);
+        setVal('item-input', tx.name || tx.itemName || tx.Item);
+        setVal('merchant-input', tx.merchant || tx.merchantName || tx.Merchant);
+        setVal('category-input', tx.category || tx.Category);
+        setVal('category-group-input', tx.categoryGroup || tx.group || tx['Category Group']);
+        setVal('transaction-description', tx.description || tx.notes);
+        
+        // Numeric handling with migration support
+        let amt = 0;
+        if (tx.total === undefined && tx.amount !== undefined) {
+           amt = tx.price || (tx.amount / (tx.qty || 1));
+        } else {
+           amt = tx.amount || 0;
         }
-        if (quantityInput) quantityInput.value = tx.qty || tx.quantity || 1;
-        if (itemScaleInput) itemScaleInput.value = tx.scale || tx.unitScale || tx.unit || 'pcs';
-        if (discountInput) discountInput.value = tx.discount || 0;
-        if (feeInput) feeInput.value = tx.fee || 0;
-        if (currencyInput) currencyInput.value = tx.currency || 'IDR';
+        setVal('amount-input', amt);
+        
+        setVal('quantity-input', tx.qty || tx.quantity || 1);
+        setVal('item-scale', tx.scale || tx.unitScale || tx.unit || 'pcs');
+        setVal('discount-input', tx.discount || 0);
+        setVal('fee-input', tx.fee || 0);
+        setVal('currency-input', tx.currency || 'IDR');
+        setVal('exchange-rate-input', tx.exchangeRate || 1.00);
+        
         if (receiptInput) {
           receiptInput.value = tx.receipt || '';
           updateReceiptPreview(tx.receipt);
         }
-        
-        const rateInput = document.getElementById('exchange-rate-input');
-        if (rateInput) rateInput.value = tx.exchangeRate || 1.00;
 
-        const pAcc = document.getElementById('payment-account');
-        if (pAcc) pAcc.value = tx.accountPayment || tx.paymentSourceAccount || '';
-        const rAcc = document.getElementById('received-account');
-        if (rAcc) rAcc.value = tx.accountReceived || tx.beneficiaryAccount || '';
+        setVal('payment-account', tx.accountPayment || tx.paymentSourceAccount);
+        setVal('received-account', tx.accountReceived || tx.beneficiaryAccount);
         
         const txType = (tx.type || 'Expense').toLowerCase();
         typeButtons.forEach(btn => {
@@ -575,6 +590,17 @@ const initForm = () => {
           }
         });
         
+        // Clear existing chips before adding
+        const clearChips = (id) => {
+          const w = document.getElementById(id);
+          if (w) {
+            const l = w.querySelector('.chips-list');
+            if (l) l.innerHTML = '';
+          }
+        };
+        clearChips('tags-wrapper');
+        clearChips('projects-wrapper');
+
         if (tx.tags) (Array.isArray(tx.tags) ? tx.tags : []).forEach(tg => addChip('tags-wrapper', tg));
         if (tx.projects) (Array.isArray(tx.projects) ? tx.projects : []).forEach(pj => addChip('projects-wrapper', pj));
         
@@ -600,9 +626,13 @@ const initForm = () => {
           if (pGroup) pGroup.style.display = 'block';
           if (rGroup) rGroup.style.display = 'none';
         }
+      } else {
+        console.warn(`Transaction with ID ${editId} not found in database.`);
       }
     }
-  } catch (e) { console.error(e); }
+  } catch (e) { 
+    console.error("Error in initForm:", e); 
+  }
 };
 
 // Listeners for inputs (With live formatting for currency/qty + decimal support)
@@ -962,14 +992,14 @@ window.autoFillCategoryGroup = () => {
 
   const val = catInput.value.trim().toLowerCase();
   const categories = JSON.parse(localStorage.getItem('categories_db') || '[]');
-  const match = categories.find(c => c.name.toLowerCase() === val);
+  const match = categories.find(c => c && c.name && c.name.toLowerCase() === val);
   
   if (match) {
-    groupInput.value = match.group;
+    groupInput.value = match.group || '';
     const insight = document.getElementById('category-insight');
     if (insight) {
       insight.style.display = 'block';
-      insight.innerHTML = `<strong>${match.group}</strong>: ${match.description || 'No description available'}`;
+      insight.innerHTML = `<strong>${match.group || ''}</strong>: ${match.description || 'No description available'}`;
     }
   } else {
     const insight = document.getElementById('category-insight');
@@ -984,7 +1014,7 @@ window.showScaleDescription = () => {
 
   const val = scaleInput.value.trim().toLowerCase();
   const scales = JSON.parse(localStorage.getItem('scales_db') || '[]');
-  const match = scales.find(s => s.name.toLowerCase() === val);
+  const match = scales.find(s => s && s.name && s.name.toLowerCase() === val);
 
   if (match) {
     insight.style.display = 'block';
