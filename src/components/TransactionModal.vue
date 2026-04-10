@@ -1,0 +1,141 @@
+<template>
+  <div v-if="tx" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(10px);">
+    <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; position: relative; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+        <button @click="$emit('close')" style="position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(255,255,255,0.05); border: none; color: white; cursor: pointer; width: 32px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; z-index: 10;">
+           <i data-lucide="x" style="width: 18px;"></i>
+        </button>
+        
+        <div style="text-align: center; margin-bottom: 2rem; margin-top: 1rem;">
+          <div style="background: rgba(139, 92, 246, 0.1); color: var(--accent); margin: 0 auto 0.75rem auto; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i v-if="tx.type === 'Income'" data-lucide="arrow-down-left" style="width: 28px;"></i>
+            <i v-else-if="tx.type === 'Transfer'" data-lucide="repeat" style="width: 28px;"></i>
+            <i v-else data-lucide="shopping-cart" style="width: 28px;"></i>
+          </div>
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;">Expedition Summary</h2>
+          <div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em; margin-top: 0.25rem;">ID: {{ tx.transactionID }}</div>
+        </div>
+
+         <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+               <div style="font-size: 0.875rem; font-weight: 700; color: white; opacity: 0.9;">{{ tx.itemName }}</div>
+            </div>
+
+            <!-- Calculation Breakdown -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px dashed var(--border); padding-bottom: 1.5rem;">
+               <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                  <span style="color: var(--text-secondary);">Quantity</span>
+                  <span style="font-weight: 700; color: white;">{{ tx.quantity }} {{ tx.unitScale }}</span>
+               </div>
+               <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                  <span style="color: var(--text-secondary);">Price/Unit</span>
+                  <span style="font-weight: 700; color: white;">{{ (tx.amountPerUnit || 0).toLocaleString('id-ID') }}</span>
+               </div>
+               <div v-if="tx.discount" style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                  <span style="color: var(--success);">Discount (-)</span>
+                  <span style="font-weight: 700; color: var(--success);">-{{ (tx.discount || 0).toLocaleString('id-ID') }}</span>
+               </div>
+               <div v-if="tx.fee" style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                  <span style="color: #ef4444;">Fee (+)</span>
+                  <span style="font-weight: 700; color: #ef4444;">+{{ (tx.fee || 0).toLocaleString('id-ID') }}</span>
+               </div>
+               <div v-if="tx.currency !== 'IDR' || tx.exchangeRate !== 1" style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.05); pt: 0.5rem;">
+                  <span style="color: var(--text-secondary);">Currency / Rate</span>
+                  <span style="font-weight: 700; color: white;">{{ tx.currency }} @ {{ tx.exchangeRate }}</span>
+               </div>
+            </div>
+
+            <div style="text-align: center;">
+               <div style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.25rem;">TOTAL AUTHORIZATION</div>
+               <div style="font-size: 2.25rem; font-weight: 950; color: var(--accent); letter-spacing: -0.02em;">
+                  Rp {{ (tx.total || 0).toLocaleString('id-ID') }}
+               </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; border-top: 1px dashed var(--border); padding-top: 1.5rem; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+               <div>
+                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">CATEGORY</label>
+                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.category || 'Unclassified' }}</div>
+               </div>
+               <div>
+                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">MERCHANT</label>
+                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.merchant || 'Unknown' }}</div>
+               </div>
+               <div>
+                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">SOURCE</label>
+                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.paymentSourceAccount || '-' }}</div>
+               </div>
+               <div>
+                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">BENEFICIARY</label>
+                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.beneficiaryAccount || '-' }}</div>
+               </div>
+               <div style="grid-column: span 2;">
+                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">TEMPORAL COORDINATES</label>
+                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.date }} • {{ tx.time }}</div>
+               </div>
+               <div v-if="tx.description" style="grid-column: span 2;">
+                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">LOG ENTRY</label>
+                 <div style="font-weight: 500; font-size: 0.75rem; line-height: 1.5; color: var(--text-secondary);">{{ tx.description }}</div>
+               </div>
+            </div>
+         </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+           <button @click="editTx" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <i data-lucide="edit-3" style="width: 14px;"></i> EDIT
+           </button>
+           <button @click="duplicateTx" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <i data-lucide="copy" style="width: 14px;"></i> DUPE
+           </button>
+           <button @click="mergeTx" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <i data-lucide="combine" style="width: 14px;"></i> MERGE
+           </button>
+           <button @click="deleteTx" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
+           </button>
+        </div>
+        <button @click="$emit('close')" style="width: 100%; margin-top: 1rem; padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer;">DISMISS</button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useFinanceStore } from '../stores/finance'
+
+const store = useFinanceStore()
+const router = useRouter()
+const props = defineProps({
+  tx: Object
+})
+const emit = defineEmits(['close'])
+
+const editTx = () => {
+  router.push(`/transaction?id=${props.tx.transactionID}`)
+  emit('close')
+}
+
+const duplicateTx = () => {
+  router.push(`/transaction?duplicate=${props.tx.transactionID}`)
+  emit('close')
+}
+
+const mergeTx = () => {
+  alert('Merge Engine coming soon for Transactions.')
+}
+
+const deleteTx = () => {
+  if (confirm('Permanently delete this expedition log?')) {
+    store.deleteTransaction(props.tx.transactionID)
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  if (window.lucide) window.lucide.createIcons()
+})
+</script>
+
+<style scoped>
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>

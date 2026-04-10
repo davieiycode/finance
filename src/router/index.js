@@ -13,6 +13,7 @@ import Merchants from '../views/Merchants.vue'
 import Memberships from '../views/Memberships.vue'
 import Vouchers from '../views/Vouchers.vue'
 import Receipts from '../views/Receipts.vue'
+import Metadata from '../views/Metadata.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,8 +30,22 @@ const router = createRouter({
     { path: '/merchants', name: 'merchants', component: Merchants },
     { path: '/memberships', name: 'memberships', component: Memberships },
     { path: '/vouchers', name: 'vouchers', component: Vouchers },
-    { path: '/receipts', name: 'receipts', component: Receipts }
+    { path: '/receipts', name: 'receipts', component: Receipts },
+    { path: '/metadata', name: 'metadata', component: Metadata },
+    { path: '/audit', name: 'audit', component: () => import('../views/Audit.vue') },
+    { path: '/setup', name: 'setup', component: () => import('../views/Setup.vue'), meta: { hideNav: true } }
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  const hasCloudUrl = !!localStorage.getItem('cloud_sheet_url')
+  if (!hasCloudUrl && to.name !== 'setup') {
+    next({ name: 'setup' })
+  } else if (hasCloudUrl && to.name === 'setup') {
+    next({ name: 'dashboard' })
+  } else {
+    next()
+  }
 })
 
 export default router

@@ -1,0 +1,211 @@
+<template>
+  <div class="setup-container">
+    <div v-if="!scanning && !syncing" class="welcome-screen">
+       <div class="logo-orb">
+          <i data-lucide="shield-check" style="width: 48px; height: 48px; color: var(--accent);"></i>
+       </div>
+       <h1 style="font-weight: 1000; letter-spacing: -0.05em; margin: 2rem 0 0.5rem 0;">INITIALIZE CORE</h1>
+       <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; max-width: 280px; margin-bottom: 3rem;">
+          Establish a secure resonance with your Universal Core infrastructure to begin the journey.
+       </p>
+       <button @click="startSetup" class="setup-btn">
+          <i data-lucide="qr-code"></i>
+          SCAN CORE UPLINK
+       </button>
+       <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">FINANCE PROTOCOL V4.0.0</p>
+    </div>
+
+    <!-- QR Scanner View -->
+    <div v-if="scanning" class="scanner-wrap">
+       <div class="scanner-header">
+          <button @click="scanning = false" style="background:none; border:none; color:white;"><i data-lucide="arrow-left"></i></button>
+          <span style="font-weight: 800; font-size: 0.8rem; letter-spacing: 0.1em;">LOCATING CORE UPLINK</span>
+          <div style="width: 24px;"></div>
+       </div>
+       <div id="setup-reader" class="scanner-preview"></div>
+       <div class="scanner-overlay">
+          <div class="scan-frame"></div>
+       </div>
+       <p style="color: var(--text-secondary); font-size: 0.75rem; padding: 2rem; text-align: center;">Point camera at your Secure Jurney Access Key (QR)</p>
+    </div>
+
+    <!-- Post-Scan Sync State -->
+    <div v-if="syncing" class="sync-state">
+       <div class="pulse-loader"></div>
+       <h2 style="font-weight: 950; letter-spacing: 0.1em; margin-top: 2rem;">INGESTING DATA...</h2>
+       <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem;">Allocating local vault resources</p>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { useFinanceStore } from '../stores/finance'
+
+const router = useRouter()
+const store = useFinanceStore()
+const scanning = ref(false)
+const syncing = ref(false)
+let html5QrCode = null
+
+const startSetup = () => {
+  scanning.value = true
+  nextTick(() => {
+    initScanner()
+  })
+}
+
+const initScanner = async () => {
+  if (window.lucide) window.lucide.createIcons()
+  try {
+    html5QrCode = new window.Html5Qrcode("setup-reader")
+    await html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      async (decodedText) => {
+        if (decodedText.startsWith('http')) {
+           await stopScanner()
+           completeSetup(decodedText)
+        }
+      },
+      () => {}
+    )
+  } catch (err) {
+    console.error(err)
+    alert("Camera access denied.")
+    scanning.value = false
+  }
+}
+
+const stopScanner = async () => {
+  if (html5QrCode) {
+     try {
+        await html5QrCode.stop()
+        await html5QrCode.clear()
+     } catch (e) { console.warn(e) }
+     html5QrCode = null
+  }
+}
+
+const completeSetup = async (url) => {
+  localStorage.setItem('cloud_sheet_url', url)
+  scanning.value = false
+  syncing.value = true
+  
+  const success = await store.pullFromCloud('overwrite')
+  if (success) {
+     store.notify('System Initialized', 'success')
+     router.push('/')
+  } else {
+     store.notify('Sync Failure', 'error')
+     localStorage.removeItem('cloud_sheet_url')
+     syncing.value = false
+  }
+}
+
+onBeforeUnmount(() => { stopScanner() })
+onMounted(() => {
+  if (window.lucide) window.lucide.createIcons()
+})
+</script>
+
+<style scoped>
+.setup-container {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  z-index: 10000;
+  overflow: hidden;
+}
+
+.welcome-screen, .sync-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  animation: fadeIn 0.8s ease;
+}
+
+.logo-orb {
+  width: 120px;
+  height: 120px;
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 50px rgba(139, 92, 246, 0.1);
+}
+
+.setup-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 1.25rem 2rem;
+  border-radius: 1.5rem;
+  font-weight: 1000;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+}
+
+.scanner-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #000;
+}
+
+.scanner-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.scanner-preview {
+  flex: 1;
+  width: 100%;
+}
+
+.scanner-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.scan-frame {
+  width: 250px;
+  height: 250px;
+  border: 2px solid var(--accent);
+  border-radius: 2rem;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
+}
+
+.pulse-loader {
+  width: 80px;
+  height: 80px;
+  border: 4px solid var(--accent);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>

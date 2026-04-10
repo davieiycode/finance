@@ -1,18 +1,13 @@
 <template>
   <div class="app-layout">
     <router-view />
-    <BottomNav v-if="showNav" />
+    <StatusHub />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import BottomNav from './components/BottomNav.vue'
 import './assets/style.css' // Import CSS Global
-
-const route = useRoute()
-const showNav = computed(() => route.meta.hideNav !== true)
+import StatusHub from './components/StatusHub.vue'
 </script>
 
 <style>

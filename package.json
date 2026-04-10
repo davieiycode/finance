@@ -1,6 +1,6 @@
 {
-  "name": "finance-pwa-vue",
-  "version": "1.0.0",
+  "name": "jurney",
+  "version": "3.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

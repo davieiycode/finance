@@ -9,15 +9,18 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.png', 'avatars/*'],
       manifest: {
-        name: 'Finance Tracker',
-        short_name: 'Finance',
-        description: 'Personal Finance Organizer',
-        theme_color: '#0f172a',
+        name: 'JURNEY Command Center',
+        short_name: 'Jurney',
+        description: 'Elite Financial Data Hub',
+        theme_color: '#000000',
+        background_color: '#000000',
+        display: 'standalone',
         icons: [
           {
             src: 'icon.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       }

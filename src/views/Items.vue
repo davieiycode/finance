@@ -1,7 +1,272 @@
 <template>
-  <div style="padding: 2rem; text-align: center;">
-    <h1 style="font-size: 1.5rem; color: var(--text-primary); font-weight: 800;">Items</h1>
-    <p style="color: var(--text-secondary); margin-top: 1rem;">This catalog page is currently being migrated to Vue SPA...</p>
-    <button @click="$router.push('/')" style="margin-top: 2rem; padding: 0.75rem 1.5rem; border-radius: 1rem; background: var(--accent); color: white; border: none; font-weight: 700; cursor: pointer;">Back to Dashboard</button>
+  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 2rem; position: relative;">
+    <div class="sticky-nav" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: -1px; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
+      <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+        <div style="display: flex; align-items: center; gap: 1rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
+          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:24px;"></i></button>
+          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin:0; white-space: nowrap;">Item Catalog</h1>
+        </div>
+        
+        <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
+          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="search" style="width: 18px;"></i>
+          </button>
+          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 12px; height: 36px; padding: 0 1rem; font-weight: 700; display:flex; align-items:center; gap: 0.4rem; cursor:pointer;">
+            <i data-lucide="plus" style="width: 16px;"></i> New
+          </button>
+        </div>
+
+        <!-- Expanding Search Bar -->
+        <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
+           <div style="position: relative; width: 100%; height: 36px; display: flex; align-items: center; min-width: 250px;">
+              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
+              <input type="text" v-model="searchQuery" placeholder="Search item name, category, or SKU..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
+              <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
+                 <i data-lucide="x" style="width: 16px;"></i>
+              </button>
+           </div>
+        </div>
+      </header>
+    </div>
+
+    <div class="item-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
+      <div v-for="item in filteredItems" :key="item.itemID" @click="openModal(item)" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.2s;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: rgba(139,92,246,0.1); color: var(--accent); font-weight: 700; flex-shrink: 0; overflow: hidden;">
+           <img v-if="item.itemImage" :src="item.itemImage" style="width: 100%; height: 100%; object-fit: cover;">
+           <span v-else>{{ (item.itemName || 'I')[0].toUpperCase() }}</span>
+        </div>
+        <div style="flex: 1;">
+          <div style="font-weight: 700; color: white; display: flex; justify-content: space-between;">
+             {{ item.itemName }}
+             <span>{{ item.currency }} {{ (item.amountPerUnit || 0).toLocaleString('id-ID') }}</span>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
+             {{ item.itemCategory || 'General' }} • {{ item.unitScale || 'pcs' }} • {{ item.SKU || 'No SKU' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scanner Overlay -->
+    <div v-if="showScanner" style="position: fixed; inset: 0; background: #000; z-index: 2000; display: flex; flex-direction: column;">
+       <div style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+          <span style="font-weight: 800;">Scan SKU / Barcode</span>
+          <button @click="stopScanner" style="background: none; border: none; color: white;"><i data-lucide="x"></i></button>
+       </div>
+       <div style="flex: 1; display: flex; align-items: center; justify-content: center; position: relative; background: #000;">
+          <div id="reader" style="width: 100%; max-width: 500px; border-radius: 1rem; overflow: hidden;"></div>
+          <!-- Scanning Frame Overlay -->
+          <div style="position: absolute; width: 250px; height: 180px; border: 2px solid var(--accent); border-radius: 1rem; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); pointer-events: none;">
+             <div style="position: absolute; top: 0; left: 0; width: 40px; height: 40px; border-top: 4px solid var(--accent); border-left: 4px solid var(--accent); border-top-left-radius: 12px;"></div>
+             <div style="position: absolute; top: 0; right: 0; width: 40px; height: 40px; border-top: 4px solid var(--accent); border-right: 4px solid var(--accent); border-top-right-radius: 12px;"></div>
+             <div style="position: absolute; bottom: 0; left: 0; width: 40px; height: 40px; border-bottom: 4px solid var(--accent); border-left: 4px solid var(--accent); border-bottom-left-radius: 12px;"></div>
+             <div style="position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; border-bottom: 4px solid var(--accent); border-right: 4px solid var(--accent); border-bottom-right-radius: 12px;"></div>
+             <div style="position: absolute; left: 0; top: 50%; width: 100%; height: 2px; background: rgba(139, 92, 246, 0.5); animation: scanLine 2s linear infinite;"></div>
+          </div>
+       </div>
+       <div style="padding: 2rem; text-align: center; color: var(--text-secondary); font-size: 0.875rem;">
+          Place barcode / QR code inside the frame
+       </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+      <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
+         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
+            <span style="font-weight: 800;">Item Detail</span>
+            <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
+         </div>
+         <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+            <div><label class="f-label">Item Name</label><input type="text" v-model="formData.itemName" class="f-input"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+               <div>
+                  <label class="f-label">Category</label>
+                  <select v-model="formData.itemCategory" class="f-input">
+                     <option value="">Select Category...</option>
+                     <option v-for="c in store.categories" :key="c.categoryID" :value="c.category">{{ c.category }}</option>
+                  </select>
+               </div>
+               <div>
+                  <label class="f-label">Unit Scale</label>
+                  <select v-model="formData.unitScale" class="f-input">
+                     <option value="">Select Unit...</option>
+                     <option v-for="u in store.unitScales" :key="u.unitScale" :value="u.unitScale">{{ u.unitScale }}</option>
+                  </select>
+               </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+               <div><label class="f-label">Amount per Unit</label><input type="number" v-model.number="formData.amountPerUnit" class="f-input"></div>
+               <div><label class="f-label">Currency</label><input type="text" v-model="formData.currency" class="f-input"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+               <div><label class="f-label">Manufacturer</label><input type="text" v-model="formData.manufacturer" class="f-input"></div>
+               <div><label class="f-label">Model</label><input type="text" v-model="formData.model" class="f-input"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+               <div style="grid-column: span 2;">
+                  <label class="f-label">SKU</label>
+                  <div style="display: flex; gap: 0.5rem;">
+                     <input type="text" v-model="formData.SKU" class="f-input" placeholder="Scan or type SKU">
+                     <button @click="startScanner" style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 0 1rem; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                        <i data-lucide="scan" style="width: 16px;"></i>
+                        <span style="font-weight: 700; font-size: 0.75rem;">SCAN</span>
+                     </button>
+                  </div>
+               </div>
+               <div style="grid-column: span 2;"><label class="f-label">Warranty Expire</label><input type="date" v-model="formData.warrantyExpiryDate" class="f-input"></div>
+            </div>
+            <div><label class="f-label">Image URL</label><input type="text" v-model="formData.itemImage" class="f-input"></div>
+
+            <!-- Intelligence Analysis -->
+            <div v-if="editingItem.itemID" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem; margin-top: 0.5rem;">
+               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                  <i data-lucide="line-chart" style="width: 14px; color: var(--accent);"></i>
+                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Intelligence Analysis</span>
+               </div>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Outflow</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ itemAnalysis.totalSpend.toLocaleString('id-ID') }}</div>
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Quantity Harvested</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: white; margin-top: 0.25rem;">{{ itemAnalysis.totalQty }} <span style="font-size: 0.6rem; opacity: 0.4;">{{ formData.unitScale }}</span></div>
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Avg Acquisition Cost</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: var(--accent); margin-top: 0.25rem;">Rp {{ itemAnalysis.avgPrice.toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.4;">/ UNIT</span></div>
+                  </div>
+               </div>
+            </div>
+
+            <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
+               <button @click="saveItem" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE ITEM
+               </button>
+               <button v-if="editingItem.itemID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                  <i data-lucide="copy" style="width: 14px;"></i> DUPE
+               </button>
+               <button v-if="editingItem.itemID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                  <i data-lucide="combine" style="width: 14px;"></i> MERGE
+               </button>
+               <button v-if="editingItem.itemID" @click="deleteItem" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+                  <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
+               </button>
+            </div>
+         </div>
+      </div>
+    </div>
   </div>
 </template>
+
+<script setup>
+import { ref, computed, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { useFinanceStore } from '../stores/finance'
+
+const store = useFinanceStore()
+const isModalOpen = ref(false)
+const editingItem = ref({})
+const formData = ref({})
+
+const showSearch = ref(false)
+const searchQuery = ref('')
+const showScanner = ref(false)
+let html5QrCode = null
+
+const itemAnalysis = computed(() => {
+  if (!editingItem.value.itemID) return { totalSpend: 0, totalQty: 0, avgPrice: 0 }
+  const txs = store.transactions.filter(t => t.itemName === editingItem.value.itemName)
+  const totalSpend = txs.filter(t => t.type === 'Expense').reduce((sum, t) => sum + (Number(t.total) || 0), 0)
+  const totalQty = txs.reduce((sum, t) => sum + (Number(t.quantity) || 0), 0)
+  const avgPrice = totalQty > 0 ? totalSpend / totalQty : 0
+  return { totalSpend, totalQty, avgPrice }
+})
+
+const filteredItems = computed(() => {
+  if (!searchQuery.value) return store.items
+  const q = searchQuery.value.toLowerCase()
+  return store.items.filter(i => 
+    (i.itemName || '').toLowerCase().includes(q) ||
+    (i.itemCategory || '').toLowerCase().includes(q) ||
+    (i.SKU || '').toLowerCase().includes(q) ||
+    (i.manufacturer || '').toLowerCase().includes(q)
+  )
+})
+
+const openModal = (item) => {
+  if (item) { editingItem.value = { ...item }; formData.value = { ...item } }
+  else { editingItem.value = {}; formData.value = { itemName: '', itemCategory: 'Food & Groceries', unitScale: 'pcs', amountPerUnit: 0, currency: 'IDR', manufacturer: '', model: '', SKU: '', warrantyExpiryDate: '', notes: '', itemImage: '' } }
+  isModalOpen.value = true
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+}
+
+const saveItem = () => {
+  if (!formData.value.itemName) return alert('Name required')
+  if (editingItem.value.itemID) store.updateItem({ ...formData.value })
+  else store.addItem({ ...formData.value })
+  isModalOpen.value = false
+}
+
+const deleteItem = () => { if (confirm('Delete this item?')) { store.deleteItem(editingItem.value.itemID); isModalOpen.value = false } }
+
+const handleDuplicate = () => {
+  const data = { ...formData.value }
+  delete data.itemID
+  editingItem.value = {}
+  formData.value = data
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+}
+
+const handleMerge = () => {
+  alert('ITEM Merge Engine coming soon.')
+}
+
+const startScanner = async () => {
+  showScanner.value = true
+  nextTick(async () => {
+    if (window.lucide) window.lucide.createIcons()
+    try {
+      html5QrCode = new window.Html5Qrcode("reader")
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 180 } },
+        (decodedText) => {
+          formData.value.SKU = decodedText
+          stopScanner()
+        },
+        () => {} // silent error for frame mismatch
+      )
+    } catch (err) {
+      console.error("Scanner error:", err)
+      alert("Search camera access failed.")
+      showScanner.value = false
+    }
+  })
+}
+
+const stopScanner = async () => {
+  if (html5QrCode) {
+    try {
+      await html5QrCode.stop()
+      await html5QrCode.clear()
+    } catch (err) { console.warn(err) }
+    html5QrCode = null
+  }
+  showScanner.value = false
+}
+
+onBeforeUnmount(() => { stopScanner() })
+onMounted(() => { if (window.lucide) window.lucide.createIcons() })
+</script>
+
+<style scoped>
+.f-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem; }
+.f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
+@keyframes scanLine { 0% { top: 0; } 100% { top: 100%; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+#reader { border: none !important; }
+#reader video { border-radius: 1rem; }
+</style>
