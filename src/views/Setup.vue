@@ -1,19 +1,50 @@
 <template>
   <div class="setup-container">
-    <div v-if="!scanning && !syncing" class="welcome-screen">
-       <div class="logo-orb">
-          <i data-lucide="shield-check" style="width: 48px; height: 48px; color: var(--accent);"></i>
-       </div>
-       <h1 style="font-weight: 1000; letter-spacing: -0.05em; margin: 2rem 0 0.5rem 0;">INITIALIZE CORE</h1>
-       <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; max-width: 280px; margin-bottom: 3rem;">
-          Establish a secure resonance with your Universal Core infrastructure to begin the journey.
-       </p>
-       <button @click="startSetup" class="setup-btn">
-          <i data-lucide="qr-code"></i>
-          SCAN CORE UPLINK
-       </button>
-       <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">FINANCE PROTOCOL V4.0.0</p>
-    </div>
+     <div v-if="!scanning && !syncing && !showManual" class="welcome-screen">
+        <div class="logo-orb">
+           <i data-lucide="shield-check" style="width: 48px; height: 48px; color: var(--accent);"></i>
+        </div>
+        <h1 style="font-weight: 1000; letter-spacing: -0.05em; margin: 2rem 0 0.5rem 0;">INITIALIZE CORE</h1>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; max-width: 280px; margin-bottom: 3rem;">
+           Establish a secure resonance with your Universal Core infrastructure to begin the journey.
+        </p>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%; max-width: 320px;">
+          <button @click="startSetup" class="setup-btn">
+             <i data-lucide="qr-code"></i>
+             SCAN CORE UPLINK
+          </button>
+          
+          <button @click="showManual = true" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border); padding: 1rem; border-radius: 1.25rem; font-weight: 700; font-size: 0.8rem; cursor: pointer;">
+             ENTER SCRIPT MANUALLY
+          </button>
+        </div>
+        
+        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">FINANCE PROTOCOL V4.0.0</p>
+     </div>
+
+     <!-- Manual Entry View -->
+     <div v-if="showManual && !syncing" class="welcome-screen">
+        <div class="logo-orb">
+           <i data-lucide="terminal" style="width: 48px; height: 48px; color: var(--accent);"></i>
+        </div>
+        <h1 style="font-weight: 1000; letter-spacing: -0.05em; margin: 2rem 0 0.5rem 0;">MANUAL UPLINK</h1>
+        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 2rem;">Paste your Core Script URL (Google Apps Script) below.</p>
+        
+        <div style="width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 1rem;">
+          <input 
+            v-model="manualUrl" 
+            type="text" 
+            placeholder="https://script.google.com/macros/s/..." 
+            style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 1rem; color: white; outline: none; font-size: 0.8rem;"
+          >
+          
+          <div style="display: flex; gap: 0.75rem;">
+            <button @click="showManual = false" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; padding: 1rem; border-radius: 1rem; font-weight: 700;">BACK</button>
+            <button @click="submitManual" :disabled="!manualUrl.startsWith('http')" style="flex: 2; background: var(--accent); color: white; border: none; padding: 1rem; border-radius: 1rem; font-weight: 700; cursor: pointer;" :style="{ opacity: manualUrl.startsWith('http') ? 1 : 0.5 }">CONNECT</button>
+          </div>
+        </div>
+     </div>
 
     <!-- QR Scanner View -->
     <div v-if="scanning" class="scanner-wrap">
@@ -47,6 +78,8 @@ const router = useRouter()
 const store = useFinanceStore()
 const scanning = ref(false)
 const syncing = ref(false)
+const showManual = ref(false)
+const manualUrl = ref('')
 let html5QrCode = null
 
 const startSetup = () => {
@@ -91,6 +124,7 @@ const stopScanner = async () => {
 const completeSetup = async (url) => {
   localStorage.setItem('cloud_sheet_url', url)
   scanning.value = false
+  showManual.value = false
   syncing.value = true
   
   const success = await store.pullFromCloud('overwrite')
@@ -101,6 +135,12 @@ const completeSetup = async (url) => {
      store.notify('Sync Failure', 'error')
      localStorage.removeItem('cloud_sheet_url')
      syncing.value = false
+  }
+}
+
+const submitManual = () => {
+  if (manualUrl.value.startsWith('http')) {
+    completeSetup(manualUrl.value.trim())
   }
 }
 
