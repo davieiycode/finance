@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jurney Explorer</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="theme.js"></script>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#8b5cf6">
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .stat-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-5px);
+      border-color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .transaction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--card-radius) * 0.8);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .transaction-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .item-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    .item-info {
+      flex: 1;
+    }
+
+    .item-name {
+      font-weight: 600;
+      font-size: 0.9375rem;
+      color: var(--text-primary);
+    }
+
+    .item-meta {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .item-amount {
+      text-align: right;
+      font-weight: 700;
+      font-size: 0.9375rem;
+    }
+
+    /* Swipe Gestures */
+    .transaction-swipe-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: calc(var(--card-radius) * 0.8);
+      margin-bottom: 0.75rem;
+      background: var(--bg-secondary);
+      touch-action: pan-y;
+    }
+
+    .swipe-actions {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      z-index: 1;
+      height: 100%;
+    }
+
+    .swipe-actions-left {
+      left: 0;
+    }
+
+    .swipe-actions-right {
+      right: 0;
+    }
+
+    .swipe-btn {
+      height: 100%;
+      min-width: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: white !important;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s;
+      text-decoration: none;
+    }
+
+    .swipe-btn i {
+      width: 18px;
+      height: 18px;
+    }
+
+    .swipe-btn span {
+      font-size: 0.55rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .bg-edit {
+      background: var(--accent);
+    }
+
+    .bg-duplicate {
+      background: #3b82f6;
+    }
+
+    .bg-cleared {
+      background: #10b981;
+    }
+
+    .bg-merge {
+      background: #f59e0b;
+    }
+
+    .transaction-item {
+      margin-bottom: 0 !important;
+      position: relative;
+      z-index: 2;
+      background: var(--bg-secondary) !important;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 28px;
+      background: var(--accent);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 100;
+    }
+
+    .fab:hover {
+      transform: scale(1.1) rotate(90deg);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5000;
+    }
+
+    .modal-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      width: 100%;
+      max-width: 400px;
+      overflow: hidden;
+    }
+
+    .action-h-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--card-radius) * 2);
+      cursor: pointer;
+      transition: all 0.3s;
+      overflow: hidden;
+      font-weight: 600;
+      font-size: 0.8125rem;
+    }
+
+    .action-h-label {
+      width: 0;
+      opacity: 0;
+      transition: all 0.3s;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .action-h-btn:hover {
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border-color: var(--btn-color);
+    }
+
+    .action-h-btn:hover .action-h-label {
+      width: auto;
+      opacity: 1;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .p-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: calc(var(--card-radius) * 0.7);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .p-menu-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--accent);
+    }
+
+    .p-menu-item.active,
+    .p-menu-item:has(input:checked) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent);
+    }
+
+
+    /* Maintenance Drawer (Redesigned for Premium Feel) */
+    .maintenance-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 85%;
+      max-width: 400px;
+      background: var(--bg-secondary);
+      backdrop-filter: blur(25px);
+      z-index: 20000;
+      transform: translateX(-100%);
+      transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      box-shadow: 20px 0 60px rgba(0, 0, 0, 0.8);
+    }
+
+    .maintenance-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(15px);
+      z-index: 19999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .drawer-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .drawer-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .issue-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .issue-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    #edge-swipe-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 100vh;
+      z-index: 1000;
+    }
+
+    .header-btn {
+      transition: 0.3s;
+      color: var(--text-secondary);
+    }
+
+    .header-btn:hover {
+      background: var(--border2) !important;
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .header-btn.problematic i {
+      color: #f59e0b;
+      animation: pulse-ring 2s infinite;
+    }
+
+    @keyframes pulse-ring {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @keyframes pulse-hint {
+
+      0%,
+      100% {
+        opacity: 0.3;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+      }
+    }
+
+    .hint-active {
+      animation: pulse-hint 1.5s infinite;
+    }
+
+    .audit-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 2px solid var(--bg-primary);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+      z-index: 5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container" style="max-width: 600px; padding: 1.5rem;">
+    <div class="sticky-nav">
+      <header class="header">
+        <div>
+          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary);">Jurney</h1>
+          <p id="welcome-msg" style="font-size: 0.8125rem; color: var(--text-secondary);">Safe travels, Explorer</p>
+          <div id="xp-container" style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
+            <div
+              style="font-size: 0.6rem; font-weight: 800; color: var(--accent); background: rgba(139, 92, 246, 0.1); padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em;">
+              RANK <span id="user-level">1</span></div>
+            <div
+              style="flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; position: relative;">
+              <div id="xp-bar"
+                style="position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--accent); transition: width 1s ease;">
+              </div>
+            </div>
+            <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 600;"><span id="user-xp">0</span>
+              AP</div>
+          </div>
+          <div id="dash-sync-info"
+            style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; font-size: 0.65rem; color: var(--text-secondary); opacity: 0.8;">
+            <i data-lucide="cloud-check" style="width: 12px; color: #10b981;"></i>
+            <span id="dash-last-sync">Cloud: Never Synced</span>
+            <button onclick="triggerCloudPush()"
+              style="background:none; border:none; padding:0; cursor:pointer; color:var(--accent); display:flex; align-items:center;">
+              <i data-lucide="refresh-cw" style="width: 12px; margin-left: 2px;"></i>
+            </button>
+            <span style="margin-left:auto; opacity:0.6;">v3.3.2</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <div onclick="toggleDashboardSearch()" class="profile-icon"
+            style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i data-lucide="search" style="width: 20px;"></i>
+          </div>
+          <div class="user-meta" style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="header-btn" onclick="openMaintenanceHub()" id="audit-trigger" title="Scout Report"
+              style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;">
+              <i data-lucide="map" style="width: 20px;"></i>
+              <div id="audit-badge" class="audit-badge" style="display: none;">0</div>
+            </div>
+            <div id="profile-trigger" class="profile-icon" onclick="window.location.href='settings.html'"
+              style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+              <i data-lucide="user" style="width: 20px;"></i>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div id="dashboard-search-container"
+        style="position: relative; display: none; transform-origin: top; animation: slideDown 0.3s ease-out;">
+        <i data-lucide="search"
+          style="position: absolute; left: 1rem; top: 0.8rem; width: 16px; color: var(--text-secondary);"></i>
+        <input type="text" id="dashboard-search" class="search-bar" placeholder="Scan expeditions..."
+          style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 1rem; padding: 0.75rem 1rem 0.75rem 2.5rem; color: var(--text-primary); outline: none; font-size: 0.875rem;"
+          oninput="refreshDashboard(this.value)">
+      </div>
+    </div>
+
+    <style>
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: scaleY(0);
+        }
+
+        to {
+          opacity: 1;
+          transform: scaleY(1);
+        }
+      }
+    </style>
+
+    <script>
+      window.toggleDashboardSearch = () => {
+        const s = document.getElementById('dashboard-search-container');
+        const inp = document.getElementById('dashboard-search');
+        if (s.style.display === 'none') {
+          s.style.display = 'block';
+          inp.focus();
+        } else {
+          s.style.display = 'none';
+          inp.value = '';
+          refreshDashboard('');
+        }
+      };
+    </script>
+
+    <div id="expiry-reminders" style="display: none; margin-bottom: 1.5rem;">
+      <h3
+        style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+        <i data-lucide="bell-ring" style="width: 18px; color: #ef4444;"></i>
+        Expiring Soon
+      </h3>
+      <div id="reminder-list"
+        style="display: flex; gap: 1rem; overflow-x: auto; padding: 0.5rem 0; scrollbar-width: none;">
+        <!-- Reminder cards go here -->
+      </div>
+    </div>
+
+    <div class="dashboard-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="stat-card" onclick="window.location.href='accounts.html'">
+        <i data-lucide="wallet" style="width: 14px; color: var(--accent); margin-bottom: 0.2rem;"></i>
+        <span class="stat-label">Treasure Vault</span>
+        <span id="stat-balance" class="stat-value">Rp 0</span>
+      </div>
+      <div class="stat-card" onclick="window.location.href='analysis.html'">
+        <i data-lucide="line-chart" style="width: 14px; color: #ef4444; margin-bottom: 0.2rem;"></i>
+        <span class="stat-label">Supplies Used</span>
+        <span id="stat-spent" class="stat-value" style="color: #ef4444;">Rp 0</span>
+      </div>
+      <div class="stat-card" onclick="window.location.href='budget.html'">
+        <i data-lucide="pie-chart" style="width: 14px; color: #22c55e; margin-bottom: 0.2rem;"></i>
+        <span class="stat-label">Ration Limit</span>
+        <span id="stat-budget" class="stat-value" style="color: #22c55e;">Rp 0</span>
+      </div>
+      <div class="stat-card" onclick="window.location.href='goals.html'">
+        <i data-lucide="target" style="width: 14px; color: #0ea5e9; margin-bottom: 0.2rem;"></i>
+        <span class="stat-label">Destinations</span>
+        <span id="stat-goals" class="stat-value" style="color: #0ea5e9;">0% Done</span>
+      </div>
+    </div>
+
+    <section>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1rem; font-weight: 700;">Recent Expeditions</h3>
+        <a href="history.html"
+          style="font-size: 0.75rem; color: var(--accent); font-weight: 600; text-decoration: none;">See All</a>
+      </div>
+      <div id="merge-center" style="margin-bottom: 1.5rem;"></div>
+      <div id="recent-list" class="transaction-list">
+        <!-- Dynamic list -->
+      </div>
+    </section>
+
+    <!-- Uncleared Alert Banner (Relocated) -->
+    <div id="stat-uncleared-banner" class="alert-card"
+      style="display:none; margin-top: 1.5rem; margin-bottom: 1.5rem; cursor: pointer; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 1.25rem; padding: 1.25rem; align-items: center; gap: 1.25rem;"
+      onclick="window.location.href='history.html?status=uncleared'">
+      <div
+        style="width: 50px; height: 50px; border-radius: 12px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #f59e0b;">
+        <i data-lucide="clock-10" style="width: 24px; height: 24px;"></i>
+      </div>
+      <div style="flex: 1;">
+        <div
+          style="font-size: 0.875rem; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 0.4rem;">
+          Pending Settlements
+        </div>
+        <p id="stat-uncleared-text" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.1rem;">You
+          have 0 transactions waiting to be cleared.</p>
+      </div>
+      <i data-lucide="chevron-right" style="color: #f59e0b; width: 18px; opacity: 0.6;"></i>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 5rem;">
+      <div onclick="window.location.href='items.html'"
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0;">
+          <i data-lucide="package" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Items</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Manage Catalog</p>
+        </div>
+      </div>
+      <div onclick="window.location.href='merchants.html'"
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(249, 115, 22, 0.1); display: flex; align-items: center; justify-content: center; color: #f97316; flex-shrink: 0;">
+          <i data-lucide="building-2" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vendors</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Store Locations</p>
+        </div>
+      </div>
+      <div onclick="window.location.href='memberships.html'"
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0;">
+          <i data-lucide="credit-card" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Cards</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Loyalty Points</p>
+        </div>
+      </div>
+      <div onclick="window.location.href='vouchers.html'"
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #f59e0b; flex-shrink: 0;">
+          <i data-lucide="ticket" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vouchers</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Shopping Rewards</p>
+        </div>
+      </div>
+      <div onclick="window.location.href='receipts.html'"
+        style="background: var(--glass); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; grid-column: span 2;">
+        <div
+          style="width: 44px; height: 44px; border-radius: 14px; background: rgba(14, 165, 233, 0.1); display: flex; align-items: center; justify-content: center; color: #0ea5e9; flex-shrink: 0;">
+          <i data-lucide="file-text" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vault Receipts</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2;">Cloud Backup Archive</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Bar & FAB Overlay -->
+    <button class="fab" onclick="window.location.href='transaction.html'">
+      <i data-lucide="plus"></i>
+    </button>
+
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </div>
+
+  <!-- Maintenance Hub Drawer -->
+  <div id="m-drawer-backdrop" class="drawer-backdrop" onclick="closeMaintenanceHub()"></div>
+  <div id="m-drawer" class="maintenance-drawer">
+    <div class="drawer-header">
+      <div>
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary);">Scout Report</h2>
+        <p style="font-size: 0.65rem; color: var(--text-secondary);">v3.3.5 (Build 2026.04.09)</p>
+      </div>
+      <button class="close-btn" onclick="closeMaintenanceHub()"><i data-lucide="x"></i></button>
+    </div>
+    <div class="drawer-content">
+      <div id="m-hub-status"
+        style="padding: 1.25rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 1rem; text-align: center;">
+        <i data-lucide="check-circle" style="width: 32px; height: 32px; color: #10b981; margin-bottom: 0.5rem;"></i>
+        <h6 style="font-weight: 700;">Everything Looks Good</h6>
+        <p style="font-size: 0.65rem; color: var(--text-secondary);">No critical issues detected in your ledger.</p>
+      </div>
+
+      <div id="m-issues-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Issues will populate here -->
+      </div>
+
+      <div
+        style="margin-top: auto; padding: 1rem; background: var(--bg-input); border-radius: 1rem; font-size: 0.6rem; color: var(--text-secondary); line-height: 1.5;">
+        <i data-lucide="info" style="width: 12px; display: inline-block; vertical-align: middle;"></i> Tip: Duplicates
+        are analyzed by comparing Date, Merchant, Amount, and Type. Merges are suggested based on 80% string similarity.
+      </div>
+    </div>
+  </div>
+
+  <!-- Edge Swipe Detector -->
+  <div id="edge-swipe-indicator"></div>
+
+  <script>
+
+    let mDrawerStartX = 0;
+    let mDrawerCurrentX = 0;
+    let isEdgeSwiping = false;
+    const mDrawer = document.getElementById('m-drawer');
+    const mBackdrop = document.getElementById('m-drawer-backdrop');
+
+    window.addEventListener('touchstart', e => {
+      if (e.touches[0].clientX < 40) {
+        isEdgeSwiping = true;
+        mDrawerStartX = e.touches[0].clientX;
+        mDrawer.style.transition = 'none';
+        mBackdrop.style.visibility = 'visible';
+        mBackdrop.style.transition = 'none';
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', e => {
+      if (!isEdgeSwiping) return;
+      mDrawerCurrentX = e.touches[0].clientX;
+      let dx = mDrawerCurrentX - mDrawerStartX;
+      let p = Math.min(100, Math.max(-100, (dx / 320) * 100 - 100));
+      mDrawer.style.transform = `translateX(${p}%)`;
+      mBackdrop.style.opacity = Math.min(1, dx / 380);
+    }, { passive: true });
+
+    window.addEventListener('touchend', e => {
+      if (!isEdgeSwiping) return;
+      isEdgeSwiping = false;
+      let dx = mDrawerCurrentX - mDrawerStartX;
+      mDrawer.style.transition = '';
+      mBackdrop.style.transition = '';
+      if (dx > 120) {
+        openMaintenanceHub();
+      } else {
+        closeMaintenanceHub();
+      }
+    });
+
+    window.openMaintenanceHub = () => {
+      mDrawer.classList.add('open');
+      mDrawer.style.transform = '';
+      mBackdrop.classList.add('active');
+      mBackdrop.style.opacity = '';
+      refreshMaintenanceHub();
+      lucide.createIcons();
+    };
+
+    window.closeMaintenanceHub = () => {
+      mDrawer.classList.remove('open');
+      mDrawer.style.transform = '';
+      mBackdrop.classList.remove('active');
+      mBackdrop.style.opacity = '';
+    };
+
+    function refreshMaintenanceHub() {
+      const issuesList = document.getElementById('m-issues-list');
+      const statusBox = document.getElementById('m-hub-status');
+      issuesList.innerHTML = '';
+
+      const badge = document.getElementById('audit-badge');
+      const trigger = document.getElementById('audit-trigger');
+
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const currentMonth = new Date().toISOString().slice(0, 7);
+
+      // 1. DUPLICATES
+      const duplicates = [];
+      const seen = new Map();
+      txs.forEach(t => {
+        const key = `${t.date}-${t.merchant}-${t.total}-${t.type}`;
+        if (seen.has(key)) {
+          duplicates.push({ source: t, target: seen.get(key) });
+        } else {
+          seen.set(key, t);
+        }
+      });
+
+      // 2. UNCLEARED OLD RECORDS
+      const uncleared = txs.filter(t => t.cleared === false && (t.date || '').slice(0, 7) < currentMonth);
+
+      // 3. CLEANUP SUGGESTIONS
+      const dashboardMerges = document.getElementById('merge-center');
+      const cleanupCount = dashboardMerges ? dashboardMerges.children.length : 0;
+
+      let totalIssues = duplicates.length + uncleared.length + cleanupCount;
+
+      if (badge) {
+        badge.innerText = totalIssues;
+        badge.style.display = totalIssues > 0 ? 'flex' : 'none';
+        if (trigger) trigger.classList.toggle('problematic', totalIssues > 0);
+      }
+
+      if (totalIssues === 0) {
+        statusBox.style.display = 'block';
+      } else {
+        statusBox.style.display = 'none';
+
+        if (duplicates.length > 0) {
+          const group = document.createElement('div');
+          group.className = 'issue-group';
+          group.innerHTML = `<div class="issue-title" style="color:#ef4444; opacity:0.8; font-size:0.65rem; margin-top:1rem;">Possible Duplicates (${duplicates.length})</div>`;
+          duplicates.forEach(d => {
+            const card = document.createElement('div');
+            card.style.cssText = 'background:rgba(239,68,68,0.03); border:1px solid rgba(239,68,68,0.1); border-radius:1.25rem; padding:1.25rem; display:flex; flex-direction:column; gap:0.75rem; transition:all 0.3s ease;';
+            card.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; flex-direction:column;">
+                  <span style="font-weight:800; font-size:0.9375rem; color:var(--text-primary);">${d.source.merchant || 'Unknown Merchant'}</span>
+                  <span style="font-size:0.7rem; color:var(--text-secondary); opacity:0.7; margin-top: 0.1rem;">${d.source.date} • ${d.source.name}</span>
+                </div>
+                <span style="font-weight:900; color:#ef4444; font-size:1.125rem;">Rp ${d.source.total.toLocaleString('id-ID')}</span>
+              </div>
+              <div style="display:flex; gap:0.75rem;">
+                 <button onclick="deleteTx('${d.source.id}')" style="flex:1; background:#ef4444; color:white; border:none; padding:0.75rem; border-radius:0.875rem; font-size:0.75rem; font-weight:800; cursor:pointer; box-shadow:0 8px 16px rgba(239,68,68,0.2);">ELIMINATE</button>
+                 <button onclick="ignoreDuplicate('${d.source.id}')" style="flex:1; background:rgba(255,255,255,0.05); color:var(--text-secondary); border:1px solid var(--border); padding:0.75rem; border-radius:0.875rem; font-size:0.75rem; font-weight:700; cursor:pointer;">IGNORE</button>
+              </div>
+            `;
+            group.appendChild(card);
+          });
+          issuesList.appendChild(group);
+        }
+
+        if (uncleared.length > 0) {
+          const group = document.createElement('div');
+          group.className = 'issue-group';
+          group.innerHTML = `<div class="issue-title" style="color:var(--accent); opacity:0.8; font-size:0.65rem; margin-top:1rem;">Uncleared Old Records (${uncleared.length})</div>`;
+          uncleared.forEach(t => {
+            const card = document.createElement('div');
+            card.style.cssText = 'background:rgba(16,185,129,0.03); border:1px solid rgba(16,185,129,0.1); border-radius:1.25rem; padding:1.25rem; display:flex; justify-content:space-between; align-items:center; transition:all 0.3s ease;';
+            card.innerHTML = `
+               <div style="display:flex; flex-direction:column; gap:0.2rem;">
+                  <div style="font-weight:800; font-size:0.9375rem; color:var(--text-primary); text-transform:capitalize;">${t.merchant || t.name}</div>
+                  <div style="font-size:0.7rem; color:var(--text-secondary); opacity:0.7;">${t.date} • Rp ${t.total.toLocaleString('id-ID')}</div>
+               </div>
+               <button onclick="clearTx('${t.id}')" style="background:#10b981; color:white; border:none; width:44px; height:44px; border-radius:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 16px rgba(16,185,129,0.2); transition:transform 0.2s active;"><i data-lucide="check" style="width:20px;"></i></button>
+             `;
+            group.appendChild(card);
+          });
+          issuesList.appendChild(group);
+        }
+      }
+
+      // Attach merge cards from dashboard to hub
+      const dashboardMergesHub = document.getElementById('merge-center');
+      if (dashboardMergesHub && dashboardMergesHub.children.length > 0) {
+        const group = document.createElement('div');
+        group.className = 'issue-group';
+        group.innerHTML = `<div class="issue-title">Data Cleanup Suggestions (${dashboardMergesHub.children.length})</div>`;
+        while (dashboardMergesHub.firstChild) {
+          const item = dashboardMergesHub.firstChild;
+          item.style.marginBottom = '0.75rem';
+          group.appendChild(item);
+        }
+        issuesList.appendChild(group);
+      }
+      lucide.createIcons();
+    }
+
+    window.refreshMaintenanceHub = refreshMaintenanceHub; // Export to window for access from other functions
+
+    window.deleteTx = (id) => {
+      showConfirm('Permanently delete this duplicate transaction?', () => {
+        let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+        txs = txs.filter(t => t.id != id);
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        showToast('Record erased', 'success', 'trash-2');
+        refreshMaintenanceHub();
+        refreshDashboard();
+      }, 'Data Cleanup');
+    };
+
+    window.clearTx = (id) => {
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const t = txs.find(t => t.id == id);
+      if (t) {
+        t.cleared = true;
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        showToast('Transaction cleared!', 'success');
+        refreshMaintenanceHub();
+      }
+    };
+
+    window.ignoreDuplicate = (id) => {
+      showToast('Instance ignored for this session.', 'info');
+      refreshMaintenanceHub();
+    };
+  </script>
+
+  <!-- Detail Modal (Redesigned for Premium Look) -->
+  <div id="detail-modal" class="modal-backdrop" style="display: none; padding: 1.5rem; backdrop-filter: blur(12px);">
+    <div class="modal-card" style="max-width: 500px; width: 100%; max-height: 90vh; border-radius: 2rem; display: flex; flex-direction: column; background: var(--bg-secondary); border: 1px solid var(--border); overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); animation: modal-slide-in 0.4s cubic-bezier(0.19, 1, 0.22, 1);">
+      <header style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+         <div>
+            <h3 style="font-weight: 800; font-size: 1.125rem; color: var(--text-primary);">Transaction Details</h3>
+            <p id="m-date-header" style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; margin-top: 0.1rem;">Analytical Record</p>
+         </div>
+         <button id="close-modal-btn" class="close-btn" style="width: 32px; height: 32px; border-radius: 16px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); border: none; cursor: pointer;">
+            <i data-lucide="x" style="width: 18px;"></i>
+         </button>
+      </header>
+
+      <div style="flex: 1; padding: 2rem; overflow-y: auto; scrollbar-width: none;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h2 id="m-item-name" style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.25rem;">-</h2>
+          <div id="m-total" style="font-size: 2.25rem; font-weight: 800; color: var(--accent); letter-spacing: -0.02em;">Rp 0</div>
+          <div id="m-calculation" style="display: none;"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="detail-field">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Category</span>
+            <div id="m-category" style="font-weight: 700; font-size: 0.875rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">-</div>
+          </div>
+          <div class="detail-field">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Merchant</span>
+            <div id="m-merchant" style="font-weight: 700; font-size: 0.875rem; color: var(--text-primary); margin-top: 0.25rem;">-</div>
+          </div>
+          
+          <div style="grid-column: span 2;" id="m-payment-group">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;" id="m-payment-label">Payment Account</span>
+            <div id="m-payment-account" style="font-weight: 700; font-size: 0.875rem; color: var(--text-primary); margin-top: 0.25rem;">-</div>
+          </div>
+          
+          <div style="grid-column: span 2; display:none;" id="m-beneficiary-group">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Beneficiary Account</span>
+            <div id="m-beneficiary-account" style="font-weight: 700; font-size: 0.875rem; color: var(--text-primary); margin-top: 0.25rem;">-</div>
+          </div>
+
+          <div class="detail-field">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Status</span>
+            <div id="m-status" style="font-weight: 800; font-size: 0.875rem; margin-top: 0.25rem;">-</div>
+          </div>
+          <div class="detail-field">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Author</span>
+            <div id="m-author" style="font-weight: 700; font-size: 0.875rem; color: var(--text-primary); margin-top: 0.25rem;">-</div>
+          </div>
+
+          <div style="grid-column: span 2; display: none;" id="m-chips-box">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Associated Tags & Projects</span>
+            <div id="m-chips" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.6rem;"></div>
+          </div>
+          
+          <div style="grid-column: span 2;">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Timestamp</span>
+            <div id="m-date" style="font-weight: 700; font-size: 0.875rem; color: var(--text-primary); margin-top: 0.25rem;">-</div>
+          </div>
+
+          <div style="grid-column: span 2; display:none;" id="m-desc-box">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Notes & Details</span>
+            <div id="m-description" style="font-size: 0.875rem; color: var(--text-primary); line-height: 1.7; margin-top: 0.6rem; padding: 1.5rem; background: rgba(0,0,0,0.2); border-radius: 1.5rem; border: 1px solid var(--border); white-space: pre-wrap; font-family: inherit;">
+              -
+            </div>
+          </div>
+
+          <div style="grid-column: span 2; display:none; margin-top: 0.5rem;" id="m-receipt-box">
+            <span class="label" style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Proof of Transaction</span>
+            <div style="margin-top: 0.75rem; border-radius: 1.5rem; overflow: hidden; border: 1px solid var(--border); background: var(--bg-input); box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+              <img id="m-receipt-img" src="" style="width: 100%; display: block; cursor: pointer; transition: transform 0.3s;" onclick="this.style.transform = this.style.transform === 'scale(1.5)' ? 'scale(1)' : 'scale(1.5)'">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 1.5rem; background: rgba(255,255,255,0.015); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.75rem;">
+        <button id="m-clear-btn" class="btn" style="width: 100%; padding: 1rem; border-radius: 1rem; border: none; background: #10b981; color: white; font-weight: 800; font-size: 0.875rem; cursor: pointer; display: none; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">
+          <i data-lucide="check-circle" style="width: 18px;"></i> Clear Transaction
+        </button>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="m-edit" class="btn" style="flex: 1; background: rgba(139, 92, 246, 0.1); color: var(--accent); border: 1px solid rgba(139, 92, 246, 0.2); font-weight: 700; height: 48px;">
+            <i data-lucide="edit-3" style="width: 16px;"></i> Edit
+          </button>
+          <button id="m-duplicate" class="btn" style="flex: 1; background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); font-weight: 700; height: 48px;">
+            <i data-lucide="copy" style="width: 16px;"></i> Duplicate
+          </button>
+          <button id="m-delete" class="btn" style="width: 48px; min-width: 48px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); height: 48px; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="trash-2" style="width: 18px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes modal-slide-in {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+
+  <script>
+    const APP_VERSION = 'v3.3.1';
+    const BUILD_DATE = '2026.04.09';
+
+    lucide.createIcons();
+
+    const recentList = document.getElementById('recent-list');
+    const detailModal = document.getElementById('detail-modal');
+    let activeTx = null;
+    function refreshDashboard(query = '') {
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+
+      // Migration & Sanitization: Ensure all fields have the correct types (numbers and arrays)
+      txs = txs.map(t => {
+        const parseF = (v, def = 0) => {
+          if (v === undefined || v === null || v === '') return def;
+          if (typeof v === 'number') return v;
+          let s = v.toString().replace(/Rp/g, '').trim();
+          return parseFloat(s.replace(/[^0-9.-]+/g, "")) || def;
+        };
+        const parseA = (v) => {
+          if (Array.isArray(v)) return v;
+          if (typeof v === 'string') return v.split(',').map(s => s.trim()).filter(s => s);
+          return [];
+        };
+
+        t.total = parseF(t.total ?? t.amount);
+        t.amount = parseF(t.amount);
+        t.qty = parseF(t.qty, 1);
+        t.xp = parseF(t.xp, 10);
+        t.tags = parseA(t.tags);
+        t.projects = parseA(t.projects);
+        return t;
+      });
+
+      const q = query.toLowerCase().trim();
+      const filtered = txs.filter(t => {
+        if (!q) return true;
+        const searchPool = [
+          t.name, t.merchant, t.category, t.type, t.description, t.author, t.currency, 
+          t.scale, t.accountPayment, t.accountReceived, t.sku, t.date, t.time,
+          ...(t.tags || []), ...(t.projects || []),
+          t.total.toString(), (t.cleared ? 'cleared' : 'uncleared'),
+          t.amount.toString(), (t.id || '').toString()
+        ].map(s => String(s || '').toLowerCase());
+        
+        // Split query into keywords for AND search
+        const keywords = q.split(/\s+/);
+        return keywords.every(key => searchPool.some(s => s.includes(key)));
+      });
+
+      // Stats based on ALL filtered (or just relevant) - usually stats show total ledger
+      const now = new Date();
+      const currentMonth = now.toISOString().slice(0, 7); // "YYYY-MM"
+
+      // Monthly Spent (Current Month Expenses only)
+      const monthlySpent = txs.filter(t => t.type === 'Expense' && (t.date || '').startsWith(currentMonth))
+        .reduce((s, t) => s + t.total, 0);
+
+      // Refresh Audit Hub badge
+      if (typeof refreshMaintenanceHub === 'function') refreshMaintenanceHub();
+
+      // Lifetime Totals for Balance Calculation (Fallback)
+      const totalSpent = txs.filter(t => t.type === 'Expense').reduce((s, t) => s + t.total, 0);
+      const totalIncome = txs.filter(t => t.type === 'Income').reduce((s, t) => s + t.total, 0);
+
+      let totalBalance = 0;
+      const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+
+      if (accounts.length > 0) {
+        totalBalance = accounts.reduce((sum, acc) => {
+          if (!acc || !acc.name) return sum + (acc?.balance || 0);
+          const inSum = txs.filter(t => (t.accountReceived || '').toLowerCase() === acc.name.toLowerCase())
+            .reduce((s, t) => s + (t.total || 0), 0);
+          const outSum = txs.filter(t => (t.accountPayment || '').toLowerCase() === acc.name.toLowerCase())
+            .reduce((s, t) => s + (t.total || 0), 0);
+          return sum + (acc.balance || 0) + inSum - outSum;
+        }, 0);
+      } else {
+        const baseBalance = parseFloat(localStorage.getItem('base_balance') || '0');
+        totalBalance = baseBalance + totalIncome - totalSpent;
+      }
+
+      // Update UI
+      document.getElementById('stat-balance').innerText = 'Rp ' + totalBalance.toLocaleString('id-ID');
+      document.getElementById('stat-spent').innerText = 'Rp ' + monthlySpent.toLocaleString('id-ID');
+
+      // Sync for PDF Export
+      localStorage.setItem('total_balance', totalBalance);
+
+      const uncleared = txs.filter(t => t.cleared === false).length;
+
+      // Budgets & Goals logic
+      const budgets = JSON.parse(localStorage.getItem('budgets') || '[]');
+      const totalLimit = budgets.reduce((s, b) => s + (b.limit || 0), 0);
+      document.getElementById('stat-budget').innerText = 'Rp ' + totalLimit.toLocaleString('id-ID');
+
+      const goals = JSON.parse(localStorage.getItem('goals') || '[]');
+      const totalTarget = goals.reduce((s, g) => s + (g.target || 0), 0);
+      const totalSaved = goals.reduce((s, g) => s + (g.saved || 0), 0);
+      const progress = totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0;
+      document.getElementById('stat-goals').innerText = progress + '% Done';
+
+      const banner = document.getElementById('stat-uncleared-banner');
+      if (uncleared > 0) {
+        banner.style.display = 'flex';
+        document.getElementById('stat-uncleared-text').innerText = `You have ${uncleared} transaction${uncleared > 1 ? 's' : ''} waiting to be cleared across your accounts.`;
+      } else {
+        banner.style.display = 'none';
+      }
+
+      // XP & Level Logic (Gamification)
+      const totalXP = txs.reduce((s, t) => s + (parseInt(t.xp) || 0), 0);
+      const level = Math.floor(totalXP / 100) + 1;
+      const currentLevelXP = totalXP % 100;
+
+      const lvlEl = document.getElementById('user-level');
+      const xpEl = document.getElementById('user-xp');
+      const barEl = document.getElementById('xp-bar');
+
+      if (lvlEl) lvlEl.innerText = level;
+      if (xpEl) xpEl.innerText = totalXP.toLocaleString();
+      if (barEl) barEl.style.width = currentLevelXP + '%';
+
+      // List
+      const recent = [...filtered].sort((a, b) => {
+        const dtA = (a.date || "") + " " + (a.time || "00:00");
+        const dtB = (b.date || "") + " " + (b.time || "00:00");
+        return dtB.localeCompare(dtA);
+      }).slice(0, 5);
+      recentList.innerHTML = recent.length === 0 ? '<p style="text-align:center; padding:2rem; opacity:0.5; font-size:0.875rem;">No results found.</p>' : '';
+
+      recent.forEach(t => {
+        const isExp = t.type === 'Expense';
+        const wrapper = document.createElement('div');
+        wrapper.className = 'transaction-swipe-wrapper';
+
+        wrapper.innerHTML = `
+          <div class="swipe-actions swipe-actions-left">
+            <button class="swipe-btn bg-cleared" onclick="showDetailById('${t.id}')">
+              <i data-lucide="eye"></i><span>Summary</span>
+            </button>
+          </div>
+          <div class="swipe-actions swipe-actions-right">
+            <button class="swipe-btn bg-merge" onclick="swipeMerge('${t.id}')">
+              <i data-lucide="git-merge"></i><span>Merge</span>
+            </button>
+            <button class="swipe-btn bg-duplicate" onclick="swipeDuplicate('${t.id}')">
+              <i data-lucide="copy"></i><span>Dup</span>
+            </button>
+            <button class="swipe-btn bg-edit" onclick="swipeEdit('${t.id}')">
+              <i data-lucide="edit-3"></i><span>Edit</span>
+            </button>
+          </div>
+          <div class="transaction-item" onclick="if(this.dataset.swiping !== 'true') showDetailById('${t.id}')">
+            <div class="item-icon" style="background: ${isExp ? 'var(--red-soft)' : 'var(--green-soft)'}; color: ${isExp ? 'var(--red)' : 'var(--green)'};">
+              <i data-lucide="${isExp ? 'shopping-cart' : 'banknote'}"></i>
+            </div>
+            <div class="item-info">
+              <div class="item-name">${t.name}</div>
+              <div class="item-meta">${t.merchant ? t.merchant + ' • ' : ''}${t.category} • ${t.date}</div>
+            </div>
+            <div class="item-amount" style="color: ${isExp ? 'var(--red)' : 'var(--green)'};">
+              ${isExp ? '-' : '+'}Rp ${t.total.toLocaleString('id-ID')}
+            </div>
+          </div>
+        `;
+        recentList.appendChild(wrapper);
+      });
+      lucide.createIcons();
+      setupSwipeListeners();
+      checkAuditIssues();
+    }
+
+    function checkAuditIssues() {
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const seen = new Map();
+      let hasIssues = false;
+      txs.forEach(t => {
+        const key = `${t.date}-${t.merchant}-${t.total}-${t.type}`;
+        if (seen.has(key)) hasIssues = true;
+        seen.set(key, t);
+      });
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      if (txs.some(t => t.cleared === false && (t.date || '').slice(0, 7) < currentMonth)) hasIssues = true;
+
+      const trigger = document.getElementById('audit-trigger');
+      if (trigger) trigger.classList.toggle('problematic', hasIssues);
+    }
+
+    // Helper for form parsing
+    function parseFormNum(val) {
+      if (val === undefined || val === null || val === '') return 0;
+      if (typeof val === 'number') return val;
+      let clean = val.toString().replace(/Rp/g, '').trim();
+      if (!clean) return 0;
+      const dots = (clean.match(/\./g) || []).length;
+      const commas = (clean.match(/,/g) || []).length;
+      if (dots > 1) {
+        clean = clean.replace(/\./g, '').replace(/,/g, '.');
+      } else if (commas > 1) {
+        clean = clean.replace(/,/g, '');
+      } else if (dots === 1 && commas === 1) {
+        if (clean.indexOf('.') < clean.indexOf(',')) clean = clean.replace(/\./g, '').replace(/,/g, '.');
+        else clean = clean.replace(/,/g, '');
+      } else if (dots === 1) {
+        if (clean.split('.')[1].length === 3) clean = clean.replace(/\./g, '');
+      } else if (commas === 1) {
+        clean = clean.replace(/,/g, '.');
+      }
+      return parseFloat(clean.replace(/[^0-9.-]+/g, "")) || 0;
+    }
+
+    window.showDetailById = (id) => {
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const t = txs.find(tx => tx.id == id);
+      if (t) showDetail(t);
+    };
+
+    function showDetail(t) {
+      activeTx = t;
+      document.getElementById('m-item-name').innerText = t.name;
+      document.getElementById('m-total').innerText = (t.type === 'Expense' ? '-Rp ' : '+Rp ') + t.total.toLocaleString('id-ID');
+      document.getElementById('m-category').innerText = t.category;
+      document.getElementById('m-merchant').innerText = t.merchant || '-';
+      document.getElementById('m-date').innerText = `${t.date} ${t.time || ''}`;
+      document.getElementById('m-author').innerText = t.author || '-';
+      const txType = (t.type || 'Expense').toLowerCase();
+      const multiAccount = ['transfer', 'savings', 'investment'].includes(txType);
+
+      const pGroup = document.getElementById('m-payment-group');
+      const bGroup = document.getElementById('m-beneficiary-group');
+
+      if (txType === 'income') {
+        pGroup.style.display = 'none';
+        bGroup.style.display = 'block';
+        document.getElementById('m-beneficiary-account').innerText = t.accountReceived || t.accountPayment || '-';
+      } else if (multiAccount) {
+        pGroup.style.display = 'block';
+        document.getElementById('m-payment-account').innerText = t.accountPayment || '-';
+        bGroup.style.display = 'block';
+        document.getElementById('m-beneficiary-account').innerText = t.accountReceived || '-';
+      } else {
+        pGroup.style.display = 'block';
+        document.getElementById('m-payment-account').innerText = t.accountPayment || '-';
+        bGroup.style.display = 'none';
+      }
+
+      const statusEl = document.getElementById('m-status');
+      const isCleared = t.cleared !== false;
+      statusEl.innerText = isCleared ? 'Cleared' : 'Uncleared';
+      statusEl.style.color = isCleared ? 'var(--green)' : 'var(--amber-400)';
+
+      const clearBtn = document.getElementById('m-clear-btn');
+      if (clearBtn) {
+        clearBtn.style.display = isCleared ? 'none' : 'flex';
+        clearBtn.onclick = () => confirmClear();
+      }
+
+      const calcEl = document.getElementById('m-calculation');
+      let hasExtraCalc = (t.currency && t.currency !== 'IDR') || (t.qty && t.qty > 1) || (t.discount > 0) || (t.fee > 0) || (t.scale);
+
+      if (hasExtraCalc) {
+        let calcHTML = `<div style="display:flex; flex-direction:column; gap:0.5rem; width:100%; text-align:left; font-family:var(--font-mono, monospace); font-size:0.75rem;">`;
+        
+        if (t.currency && t.currency !== 'IDR') {
+            calcHTML += `<div style="display:flex; justify-content:space-between; gap:1rem;"><span style="opacity:0.7;">Currency</span><span style="font-weight:700; color:var(--text-primary);">${t.currency}</span></div>`;
+            if (t.exchangeRate) {
+                calcHTML += `<div style="display:flex; justify-content:space-between; gap:1rem;"><span style="opacity:0.7;">Exchange Rate</span><span style="font-weight:700; color:var(--text-primary);">Rp ${t.exchangeRate.toLocaleString('id-ID')}</span></div>`;
+            }
+        }
+        
+        if (t.qty && t.qty > 0) {
+            calcHTML += `<div style="display:flex; justify-content:space-between; gap:1rem;"><span style="opacity:0.7;">Quantity</span><span style="font-weight:700; color:var(--text-primary);">${t.qty}</span></div>`;
+        }
+        if (t.scale) {
+            calcHTML += `<div style="display:flex; justify-content:space-between; gap:1rem;"><span style="opacity:0.7;">Unit Scale</span><span style="font-weight:700; color:var(--text-primary);">${t.scale}</span></div>`;
+        }
+
+        if (t.amount !== undefined) {
+            calcHTML += `<div style="display:flex; justify-content:space-between; gap:1rem;"><span style="opacity:0.7;">Amount Per Item</span><span style="font-weight:700; color:var(--text-primary);">Rp ${t.amount.toLocaleString('id-ID')}</span></div>`;
+        }
+
+        if (t.discount > 0) {
+            calcHTML += `<div style="display:flex; justify-content:space-between; gap:1rem;"><span style="opacity:0.7;">Discount</span><span style="font-weight:700; color:#ef4444;">- Rp ${t.discount.toLocaleString('id-ID')}</span></div>`;
+        }
+        if (t.fee > 0) {
+            calcHTML += `<div style="display:flex; justify-content:space-between; gap:1rem;"><span style="opacity:0.7;">Fee</span><span style="font-weight:700; color:var(--text-primary);">+ Rp ${t.fee.toLocaleString('id-ID')}</span></div>`;
+        }
+        
+        calcHTML += `<div style="display:flex; justify-content:space-between; gap:1rem; border-top:1px dashed rgba(255,255,255,0.1); padding-top:0.5rem; margin-top:0.25rem;"><span style="opacity:0.7;">Total</span><span style="font-weight:800; color:var(--accent);">Rp ${t.total.toLocaleString('id-ID')}</span></div>`;
+        calcHTML += `</div>`;
+        
+        calcEl.innerHTML = calcHTML;
+        calcEl.style.cssText = 'display: block; width: 100%; max-width: 320px; margin: 1.5rem auto 0 auto; padding: 1rem 1.25rem; border-radius: 1.25rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);';
+      } else {
+        calcEl.style.display = 'none';
+        calcEl.innerHTML = '';
+      }
+
+      // Description
+      const descBox = document.getElementById('m-desc-box');
+      if (t.description) {
+        descBox.style.display = 'block';
+        document.getElementById('m-description').innerText = t.description;
+      } else {
+        descBox.style.display = 'none';
+      }
+
+      // Chips and Tag Visibility
+      const chipBox = document.getElementById('m-chips');
+      const chipContainer = document.getElementById('m-chips-box');
+      chipBox.innerHTML = '';
+      let hasChips = false;
+      
+      if (t.tags && t.tags.length > 0) {
+        hasChips = true;
+        t.tags.forEach(tag => {
+          chipBox.innerHTML += `<div class="chip" style="background:rgba(139,92,246,0.1); color:var(--accent); font-size:0.65rem; padding:0.25rem 0.6rem; border-radius:1rem; border:1px solid rgba(139,92,246,0.15); font-weight:700;">${tag}</div>`;
+        });
+      }
+      if (t.projects && t.projects.length > 0) {
+        hasChips = true;
+        t.projects.forEach(p => {
+          chipBox.innerHTML += `<div class="chip" style="background:rgba(16,185,129,0.1); color:#10b981; font-size:0.65rem; padding:0.25rem 0.6rem; border-radius:1rem; border:1px solid rgba(16,185,129,0.15); font-weight:700;">#${p}</div>`;
+        });
+      }
+      
+      if (chipContainer) chipContainer.style.display = hasChips ? 'block' : 'none';
+
+      // Receipt
+      const receiptBox = document.getElementById('m-receipt-box');
+      const receiptImg = document.getElementById('m-receipt-img');
+      if (t.receipt) {
+        receiptBox.style.display = 'block';
+        receiptImg.src = t.receipt;
+      } else {
+        receiptBox.style.display = 'none';
+      }
+
+      detailModal.style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    document.getElementById('close-modal-btn').onclick = () => detailModal.style.display = 'none';
+
+    function confirmClear() {
+      if (!activeTx) return;
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const idx = txs.findIndex(t => t.id == activeTx.id);
+      if (idx !== -1) {
+        txs[idx].cleared = true;
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        if (typeof showToast === 'function') showToast('Transaction marked as Cleared!', 'success', 'check-circle');
+        detailModal.style.display = 'none';
+        refreshDashboard();
+      }
+    }
+
+    document.getElementById('m-delete').onclick = () => {
+      if (!activeTx || !activeTx.id) { detailModal.style.display = 'none'; return; }
+      showConfirm('Are you sure you want to permanently delete this transaction from your history?', () => {
+        let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+        txs = txs.filter(t => t.id != activeTx.id);
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        detailModal.style.display = 'none';
+        showToast('Transaction removed permanently', 'success', 'trash-2');
+        refreshDashboard();
+      }, 'Delete Transaction');
+    };
+
+    document.getElementById('m-duplicate').onclick = () => {
+      window.location.href = `transaction.html?mode=duplicate&id=${activeTx.id}`;
+    };
+
+    document.getElementById('m-edit').onclick = () => {
+      window.location.href = `transaction.html?mode=edit&id=${activeTx.id}`;
+    };
+
+    detailModal.onclick = (e) => { if (e.target === detailModal) detailModal.style.display = 'none'; };
+
+    function setupSwipeListeners() {
+      const list = document.getElementById('recent-list');
+      let startX, startY;
+      let currentItem = null;
+      let dx = 0;
+      let isHorizontal = false;
+
+      list.onmousedown = list.ontouchstart = (e) => {
+        const item = e.target.closest('.transaction-item');
+        if (!item) return;
+        currentItem = item;
+        startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        item.style.transition = 'none';
+        isHorizontal = false;
+
+        // Reset others
+        document.querySelectorAll('.transaction-item').forEach(el => {
+          if (el !== item) el.style.transform = '';
+        });
+      };
+
+      list.onmousemove = list.ontouchmove = (e) => {
+        if (!currentItem) return;
+        const curX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const curY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        dx = curX - startX;
+        const dy = curY - startY;
+
+        if (!isHorizontal && Math.abs(dx) > Math.abs(dy)) {
+          isHorizontal = true;
+        }
+
+        if (isHorizontal) {
+          if (dx > 100) dx = 70 + (dx - 70) * 0.2;
+          if (dx < -250) dx = -210 + (dx + 210) * 0.2;
+          currentItem.style.transform = `translateX(${dx}px)`;
+        }
+      };
+
+      window.onmouseup = window.ontouchend = (e) => {
+        if (!currentItem) return;
+        currentItem.style.transition = 'transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+
+        if (dx < -60) {
+          currentItem.style.transform = 'translateX(-210px)';
+        } else if (dx > 60) {
+          currentItem.style.transform = 'translateX(70px)';
+        } else {
+          currentItem.style.transform = '';
+        }
+
+        if (Math.abs(dx) > 10) {
+          currentItem.dataset.swiping = 'true';
+          const it = currentItem;
+          setTimeout(() => { if (it) it.dataset.swiping = 'false'; }, 300);
+        }
+
+        currentItem = null;
+        dx = 0;
+      };
+    }
+
+    function swipeCleared(id) {
+      let txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const idx = txs.findIndex(t => t.id == id);
+      if (idx !== -1) {
+        txs[idx].cleared = !txs[idx].cleared;
+        localStorage.setItem('transactions', JSON.stringify(txs));
+        if (typeof showToast === 'function') showToast(txs[idx].cleared ? 'Cleared!' : 'Uncleared!', 'success', 'check-circle');
+        refreshDashboard();
+      }
+    }
+    function swipeDuplicate(id) { window.location.href = `transaction.html?mode=duplicate&id=${id}`; }
+    function swipeEdit(id) { window.location.href = `transaction.html?mode=edit&id=${id}`; }
+    function swipeMerge(id) {
+      if (typeof showToast === 'function') showToast("Visit Merchant page to Merge.", "info", "git-merge");
+    }
+
+    try { refreshDashboard(); } catch (e) { console.error("Dashboard Load Error:", e); }
+
+
+    window.syncCloud = async (action) => {
+      const url = localStorage.getItem('cloud_sheet_url');
+      if (!url) { 
+        showToast('System configuration missing: Cloud Script URL', 'error', 'alert-triangle'); 
+        return; 
+      }
+      try {
+        if (action === 'push') {
+          showConfirm('Encrypt and backup current data to your protected cloud sheet?', async () => {
+            await CloudSync.push(url);
+            localStorage.setItem('last_cloud_sync', new Date().toLocaleString('id-ID'));
+            showToast('Cloud database synchronized', 'success', 'cloud-check');
+            refreshDashboard();
+          }, 'Cloud Backup');
+        } else {
+          await CloudSync.pull(url, currentSyncMode || 'merge');
+          showToast('Data retrieved from cloud', 'success', 'cloud-download');
+          refreshDashboard();
+        }
+      } catch (e) {
+        console.error(e);
+        showToast('Sync Operation Hub Error', 'error', 'wifi-off');
+      }
+    };
+
+    let pdfThemeColor = [139, 92, 246];
+    window.setPdfColor = (rgbOrHex, el) => {
+      if (typeof rgbOrHex === 'string' && rgbOrHex.startsWith('#')) {
+        const r = parseInt(rgbOrHex.slice(1, 3), 16);
+        const g = parseInt(rgbOrHex.slice(3, 5), 16);
+        const b = parseInt(rgbOrHex.slice(5, 7), 16);
+        pdfThemeColor = [r, g, b];
+      } else {
+        pdfThemeColor = rgbOrHex;
+      }
+      document.querySelectorAll('#p-view-report .color-bubble').forEach(b => b.classList.remove('active'));
+      if (el) el.classList.add('active');
+    };
+
+    window.exportToPDF = () => {
+      SyncHub.start('Exporting PDF', 'Drawing document canvas...');
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const tableStartY = 85;
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      const prefs = JSON.parse(localStorage.getItem('user_prefs') || '{}');
+      const userName = prefs.name || 'User';
+      const reportTitle = document.getElementById('pdf-title').value || 'Financial Audit Report';
+
+      SyncHub.update(20, 'Generating header and summary...');
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(pdfThemeColor[0], pdfThemeColor[1], pdfThemeColor[2]);
+      doc.text(reportTitle, 14, 22);
+
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated for: ${userName}`, 14, 30);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 35);
+
+      // Summary Box
+      doc.setDrawColor(240);
+      doc.setFillColor(249, 250, 251);
+      doc.rect(14, 45, 182, 30, 'F');
+
+      doc.setFontSize(11);
+      doc.setTextColor(0);
+      const totalBal = parseInt(localStorage.getItem('total_balance') || '0');
+      doc.text(`Current Total Balance: Rp ${totalBal.toLocaleString('id-ID')}`, 20, 55);
+      doc.text(`Total Records: ${txs.length} transactions`, 20, 65);
+
+      // Dynamic Column Mapping
+      const columns = [];
+      const headCols = [];
+      if (document.getElementById('col-date').checked) { columns.push('date'); headCols.push('Date'); }
+      if (document.getElementById('col-merch').checked) { columns.push('merchant'); headCols.push('Merchant'); }
+      if (document.getElementById('col-item').checked) { columns.push('name'); headCols.push('Item'); }
+      if (document.getElementById('col-cat').checked) { columns.push('category'); headCols.push('Category'); }
+      if (document.getElementById('col-total').checked) { columns.push('amountDisplay'); headCols.push('Amount'); }
+
+      const tableData = txs.map(t => {
+        const row = [];
+        t.amountDisplay = t.type === 'Expense' ? `-Rp ${t.total.toLocaleString('id-ID')}` : `+Rp ${t.total.toLocaleString('id-ID')}`;
+        columns.forEach(col => row.push(t[col] || '-'));
+        return row;
+      });
+
+      SyncHub.update(50, 'Processing row data...');
+      doc.autoTable({
+        startY: tableStartY,
+        head: [headCols],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: pdfThemeColor },
+        alternateRowStyles: { fillColor: [250, 250, 250] },
+        margin: { top: tableStartY }
+      });
+
+      SyncHub.update(90, 'Saving file to device...');
+      doc.save(`${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`);
+      SyncHub.finish('PDF Generated Successfully!');
+    };
+
+    window.exportToDataFormat = (type) => {
+      SyncHub.start(`Exporting ${type.toUpperCase()}`, 'Parsing records...');
+      const txs = JSON.parse(localStorage.getItem('transactions') || '[]');
+      if (txs.length === 0) { SyncHub.finish('No data found.', false); return; }
+
+      const reportTitle = document.getElementById('pdf-title').value || 'Finance_Ledger';
+      const fileName = `${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.${type}`;
+
+      // Column selection logic
+      const columns = [];
+      const labels = [];
+      if (document.getElementById('col-date').checked) { columns.push('date'); labels.push('Date'); }
+      if (document.getElementById('col-merch').checked) { columns.push('merchant'); labels.push('Merchant'); }
+      if (document.getElementById('col-item').checked) { columns.push('name'); labels.push('Item'); }
+      if (document.getElementById('col-cat').checked) { columns.push('category'); labels.push('Category'); }
+      if (document.getElementById('col-total').checked) { columns.push('total'); labels.push('Amount'); }
+
+      const exportData = txs.map(t => {
+        const item = {};
+        columns.forEach((col, idx) => {
+          item[labels[idx]] = t[col];
+        });
+        return item;
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      if (type === 'xlsx') {
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Ledger");
+        XLSX.writeFile(workbook, fileName);
+      } else {
+        const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
+        const blob = new Blob([csvOutput], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    };
+
+    let importRawData = [];
+    let importHeaders = [];
+
+    window.handleImport = (input) => {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.SheetNames[0];
+        const raw = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+        if (raw.length === 0) { alert('No data found in file.'); return; }
+
+        importRawData = raw;
+        importHeaders = Object.keys(raw[0]);
+
+        showImportMapping();
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    function showImportMapping() {
+      const fields = [
+        { id: 'm-date', label: 'Date', terms: ['date', 'tanggal', 'waktu'] },
+        { id: 'm-merchant', label: 'Merchant', terms: ['merchant', 'toko', 'vendor', 'payee'] },
+        { id: 'm-item', label: 'Item / Name', terms: ['item', 'name', 'nama', 'barang', 'keterangan'] },
+        { id: 'm-category', label: 'Category', terms: ['category', 'kategori', 'jenis'] },
+        { id: 'm-amount', label: 'Unit Price', terms: ['price', 'harga', 'cost', 'unit price'] },
+        { id: 'm-qty', label: 'Quantity', terms: ['qty', 'jumlah', 'quantity', 'volume'] },
+        { id: 'm-discount', label: 'Discount', terms: ['discount', 'diskon', 'potongan'] },
+        { id: 'm-fee', label: 'Additional Fee', terms: ['fee', 'biaya', 'admin'] },
+        { id: 'm-scale', label: 'Unit / Scale', terms: ['unit', 'scale', 'satuan'] },
+        { id: 'm-payment', label: 'Payment Source Account', terms: ['payment', 'source', 'akun', 'bank', 'sumber'] },
+        { id: 'm-received', label: 'Beneficiary Account', terms: ['received', 'beneficiary', 'tujuan', 'penerima'] },
+        { id: 'm-id', label: 'Transaction ID (Unique)', terms: ['id', 'uuid', 'transaction id', 'no'] }
+      ];
+
+      const container = document.getElementById('mapping-fields');
+      container.innerHTML = '';
+
+      fields.forEach(f => {
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.innerHTML = `
+          <label class="label" style="font-size:0.7rem; opacity:0.6; margin-bottom:0.3rem; display:block;">${f.label.toUpperCase()}</label>
+          <div class="select-wrapper">
+            <select id="${f.id}" class="f-input" style="width:100%; appearance:none; background:var(--bg-input); border:1px solid var(--border); border-radius:0.75rem; padding:0.8rem; color:white;">
+              <option value="">-- Ignore Field --</option>
+              ${importHeaders.map(h => `<option value="${h}">${h}</option>`).join('')}
+            </select>
+          </div>
+        `;
+        container.appendChild(div);
+
+        // Auto-match
+        const select = div.querySelector('select');
+        const match = importHeaders.find(h => f.terms.some(t => h.toLowerCase().includes(t)));
+        if (match) select.value = match;
+      });
+
+      showPView('import-mapping', 'Map File Columns');
+    }
+
+    window.executeImport = () => {
+      SyncHub.start('Importing Data', 'Mapping columns and preparing workspace...');
+      const mapping = {
+        date: document.getElementById('m-date').value,
+        merchant: document.getElementById('m-merchant').value,
+        name: document.getElementById('m-item').value,
+        category: document.getElementById('m-category').value,
+        amount: document.getElementById('m-amount').value,
+        qty: document.getElementById('m-qty').value,
+        discount: document.getElementById('m-discount').value,
+        fee: document.getElementById('m-fee').value,
+        scale: document.getElementById('m-scale').value,
+        payment: document.getElementById('m-payment').value,
+        received: document.getElementById('m-received').value,
+        txId: document.getElementById('m-id').value
+      };
+
+      const currentTxs = JSON.parse(localStorage.getItem('transactions') || '[]');
+
+      SyncHub.update(25, `Parsing ${importRawData.length} records...`);
+      const imported = importRawData.map((row, idx) => {
+        if (idx % 100 === 0 && importRawData.length > 200) {
+          SyncHub.update(25 + (idx / importRawData.length * 40), `Processing row ${idx}/${importRawData.length}...`);
+        }
+        const parseRowVal = (key) => {
+          let val = row[mapping[key]];
+          if (val === undefined || val === null || val === '') return 0;
+          if (typeof val === 'number') return val;
+
+          let clean = val.toString().replace(/Rp/g, '').trim();
+          if (clean.includes(',') && !clean.includes('.')) {
+            clean = clean.replace(/,/g, '.');
+          } else if (clean.includes('.')) {
+            clean = clean.replace(/\./g, '').replace(/,/g, '.');
+          } else {
+            clean = clean.replace(/[^0-9.-]+/g, "");
+          }
+          return parseFloat(clean) || 0;
+        };
+
+        const unitPrice = Math.abs(parseRowVal('amount'));
+        const quantity = parseRowVal('qty') || 1;
+        const discount = parseRowVal('discount') || 0;
+        const fee = parseRowVal('fee') || 0;
+        const total = (quantity * unitPrice) - discount + fee;
+        const rowId = row[mapping.txId] || ('IMP-' + btoa(unescape(encodeURIComponent((row[mapping.date] || '') + (row[mapping.name] || '') + (row[mapping.merchant] || '') + total))).substring(0, 16));
+
+        return {
+          id: rowId,
+          date: (row[mapping.date] || new Date().toISOString().split('T')[0]).toString().split('T')[0],
+          merchant: row[mapping.merchant] || '-',
+          name: row[mapping.name] || 'Imported Transaction',
+          amount: unitPrice,
+          total: total,
+          qty: quantity,
+          discount: discount,
+          fee: fee,
+          scale: row[mapping.scale] || 'pcs',
+          category: row[mapping.category] || 'Uncategorized',
+          accountPayment: row[mapping.payment] || '',
+          accountReceived: row[mapping.received] || '',
+          type: row.Type || row.type || (total < 0 ? 'Income' : 'Expense'),
+          cleared: true,
+          author: 'System (Import)'
+        };
+      });
+
+      SyncHub.update(70, 'Merging imported data with local ledger...');
+      let finalData = [];
+      let skippedCount = 0;
+      if (currentImportMode === 'merge') {
+        const existingIds = new Set(currentTxs.map(t => t.id));
+        const filteredNew = imported.filter(t => {
+          if (existingIds.has(t.id)) {
+            skippedCount++;
+            return false;
+          }
+          return true;
+        });
+        finalData = [...filteredNew, ...currentTxs];
+      } else {
+        finalData = imported;
+      }
+      localStorage.setItem('transactions', JSON.stringify(finalData));
+
+      SyncHub.update(85, 'Extracting merchant & category intelligence...');
+      let extractMsg = '';
+      if (typeof rebuildMetadataFromTransactions === 'function') {
+        const stats = rebuildMetadataFromTransactions(finalData, currentImportMode);
+        extractMsg = ` | Extracted: ${stats.merchants} Mer, ${stats.items} Items`;
+      }
+
+      SyncHub.finish(`Imported ${imported.length} tx. Skipped ${skippedCount} dups.${extractMsg}`);
+      setTimeout(() => location.reload(), 1500);
+    };
+
+    function initDashboardState() {
+      const ps = JSON.parse(localStorage.getItem('user_prefs') || '{"name":"User","avatar":"👤"}');
+      const nameVal = ps.name || 'User';
+      document.getElementById('welcome-msg').innerText = 'Welcome back, ' + nameVal;
+
+      if (ps.avatar) {
+        const trigger = document.getElementById('profile-trigger');
+        const av = ps.avatar;
+        if (av.startsWith('svg:')) {
+          const idx = parseInt(av.split(':')[1]);
+          trigger.innerHTML = window.AVATAR_SVGS[idx] || '👤';
+        } else if (av.startsWith('http') || av.startsWith('file')) {
+          trigger.innerHTML = `<img src="${av}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        } else {
+          trigger.innerHTML = av;
+        }
+      }
+      updateSyncUI(localStorage.getItem('last_cloud_sync'));
+    }
+
+    initDashboardState();
+    try { checkExpiries(); } catch (e) { console.error("ExpiryCheck Error:", e); }
+    const savedUrl = localStorage.getItem('cloud_sheet_url');
+    if (savedUrl && document.getElementById('cloud-url')) {
+      document.getElementById('cloud-url').value = savedUrl;
+    }
+
+    window.onload = () => {
+      refreshDashboard('');
+      checkExpiries();
+      refreshMaintenanceHub();
+      populateBatchDatalists();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+
+    function checkExpiries() {
+      const reminders = [];
+      const now = new Date();
+      const in30Days = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+
+      // 1. Memberships
+      const members = JSON.parse(localStorage.getItem('membership_cards') || '[]');
+      members.forEach(m => {
+        if (m.expiry) {
+          const exp = parseDate(m.expiry);
+          if (exp < in30Days) reminders.push({ id: m.id, type: 'Card', name: m.name, date: m.expiry, expired: exp < now, link: `memberships.html?id=${m.id}`, color: 'var(--purple)' });
+        }
+      });
+
+      // 2. Vouchers
+      const vouchers = JSON.parse(localStorage.getItem('vouchers') || '[]');
+      vouchers.forEach(v => {
+        if (v.expiry) {
+          const exp = parseDate(v.expiry);
+          if (exp < in30Days) reminders.push({ id: v.id, type: 'Voucher', name: v.name, date: v.expiry, expired: exp < now, link: `vouchers.html?id=${v.id}`, color: 'var(--amber-400)' });
+        }
+      });
+
+      // 3. Items
+      const items = JSON.parse(localStorage.getItem('items') || '[]');
+      items.forEach(i => {
+        if (i.expiry) {
+          const exp = parseDate(i.expiry);
+          if (exp < in30Days) reminders.push({ id: i.id, type: 'Item', name: i.name, date: i.expiry, expired: exp < now, link: `items.html?id=${i.id}`, color: 'var(--green)' });
+        }
+      });
+
+      // 4. Bank Cards
+      const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+      accounts.forEach(a => {
+        if (a.cardExpiry) {
+          const exp = parseDate(a.cardExpiry);
+          if (exp < in30Days) reminders.push({ id: a.id, type: 'Bank Card', name: a.name, date: a.cardExpiry, expired: exp < now, link: `accounts.html?id=${a.id}`, color: 'var(--blue)' });
+        }
+      });
+
+      renderReminders(reminders);
+    }
+
+    function parseDate(str) {
+      if (!str || typeof str !== 'string') return new Date();
+      const parts = str.split('-');
+      if (parts.length === 2) return new Date(parts[0], parts[1] - 1, 28);
+      return new Date(str);
+    }
+
+    function rebuildMetadataFromTransactions(txs, mode = 'merge') {
+      const merchants = JSON.parse(localStorage.getItem('merchants') || '[]');
+      const items = JSON.parse(localStorage.getItem('items') || '[]');
+      const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+
+      const mNames = new Set(merchants.map(m => m.name.toLowerCase()));
+      const iNames = new Set(items.map(i => i.name.toLowerCase()));
+      const aNames = new Set(accounts.map(a => a.name.toLowerCase()));
+
+      let newM = 0; let newI = 0; let newA = 0;
+
+      txs.forEach(t => {
+        // Merchant
+        if (t.merchant && !mNames.has(t.merchant.toLowerCase())) {
+          merchants.push({ id: 'M-' + Date.now() + Math.random(), name: t.merchant, type: 'Retail' });
+          mNames.add(t.merchant.toLowerCase());
+          newM++;
+        }
+        // Item
+        if (t.name && !iNames.has(t.name.toLowerCase())) {
+          items.push({ id: 'I-' + Date.now() + Math.random(), name: t.name, category: t.category || 'General', manu: t.manu || '', price: t.amount || 0 });
+          iNames.add(t.name.toLowerCase());
+          newI++;
+        }
+        // Accounts (Payment & Received)
+        [t.accountPayment, t.accountReceived].forEach(accName => {
+          if (accName && !aNames.has(accName.toLowerCase())) {
+            accounts.push({ id: 'ACC-' + Date.now() + Math.random(), name: accName, type: 'Cash', balance: 0, status: 'Active', color: 'var(--teal-400)' });
+            aNames.add(accName.toLowerCase());
+            newA++;
+          }
+        });
+      });
+
+      localStorage.setItem('merchants', JSON.stringify(merchants));
+      localStorage.setItem('items', JSON.stringify(items));
+      localStorage.setItem('accounts', JSON.stringify(accounts));
+
+      return { merchants: newM, items: newI, accounts: newA };
+    }
+
+    function renderReminders(reminders) {
+      const container = document.getElementById('expiry-reminders');
+      const list = document.getElementById('reminder-list');
+      if (reminders.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      list.innerHTML = reminders.map(r => `
+        <div onclick="window.location.href='${r.link}'" style="min-width: 160px; background: var(--glass); border: 1px solid ${r.expired ? 'var(--red)' : 'var(--border)'}; border-radius: 1rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: ${r.color};"></div>
+          <div style="font-size: 0.6rem; font-weight: 800; color: ${r.color}; text-transform: uppercase; letter-spacing: 0.05em;">${r.type}</div>
+          <div style="font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.name}</div>
+          <div style="font-size: 0.7rem; color: ${r.expired ? 'var(--red)' : 'var(--text-secondary)'}; font-weight: 600;">
+            ${r.expired ? 'Expired' : 'Expires'}: ${r.date}
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+  <div id="reader-container" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem;">
+    <div id="reader" style="width:100%; max-width:400px; border-radius:1rem; overflow:hidden; background:white;"></div>
+    <button type="button" onclick="stopBatchScanner()" class="btn btn-secondary" style="margin-top:2rem; width:100%; max-width:400px; padding:1rem; font-weight:700; color:white; border:1px solid var(--border); background:rgba(255,255,255,0.05);">Cancel Scanning</button>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('SW Registered'))
+            .catch(err => console.log('SW Failed', err));
+        });
+      }
+    </script>
+  </body>
+
+</html>
