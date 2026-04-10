@@ -62,6 +62,55 @@
       </div>
     </section>
 
+    <!-- Supplemental Nav Grid -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; margin-bottom: 2rem;">
+      <div @click="$router.push('/items')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0;">
+          <i data-lucide="package" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Items</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Manage Catalog</p>
+        </div>
+      </div>
+      <div @click="$router.push('/merchants')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(249, 115, 22, 0.1); display: flex; align-items: center; justify-content: center; color: #f97316; flex-shrink: 0;">
+          <i data-lucide="building-2" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vendors</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Store Locations</p>
+        </div>
+      </div>
+      <div @click="$router.push('/memberships')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0;">
+          <i data-lucide="credit-card" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Cards</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Loyalty Points</p>
+        </div>
+      </div>
+      <div @click="$router.push('/vouchers')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #f59e0b; flex-shrink: 0;">
+          <i data-lucide="ticket" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vouchers</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Shopping Rewards</p>
+        </div>
+      </div>
+      <div @click="$router.push('/receipts')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; grid-column: span 2;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(14, 165, 233, 0.1); display: flex; align-items: center; justify-content: center; color: #0ea5e9; flex-shrink: 0;">
+          <i data-lucide="file-text" style="width: 22px;"></i>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Vault Receipts</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Cloud Backup Archive</p>
+        </div>
+      </div>
+    </div>
+
     <!-- FAB -->
     <button @click="$router.push('/transaction')" class="fab" style="position: fixed; bottom: 5rem; right: 2rem; width: 56px; height: 56px; border-radius: 28px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); cursor: pointer; z-index: 100;">
       <i data-lucide="plus"></i>
