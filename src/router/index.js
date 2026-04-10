@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import Accounts from '../views/Accounts.vue'
 import History from '../views/History.vue'
@@ -16,7 +16,7 @@ import Receipts from '../views/Receipts.vue'
 import Metadata from '../views/Metadata.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', name: 'dashboard', component: Dashboard },
     { path: '/accounts', name: 'accounts', component: Accounts },
