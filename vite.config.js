@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: './',
+  base: '/finance/',
   plugins: [
     vue(),
     VitePWA({
@@ -17,8 +17,8 @@ export default defineConfig({
         background_color: '#000000',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: './',
-        scope: './',
+        start_url: '/finance/',
+        scope: '/finance/',
         icons: [
           {
             src: 'icon.png',
