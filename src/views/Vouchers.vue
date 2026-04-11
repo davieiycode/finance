@@ -52,55 +52,84 @@
 
     <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
-         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
-            <span style="font-weight: 800;">Voucher Detail</span>
+         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
+            <span style="font-weight: 800;">{{ editingVoucher.voucherID ? (modalMode === 'analysis' ? 'Voucher Intelligence' : 'Modify Asset') : 'New Asset' }}</span>
             <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
          </div>
-         <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+
+         <!-- MODE: ANALYSIS -->
+         <div v-if="modalMode === 'analysis' && editingVoucher.voucherID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+            <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 1.5rem; border-radius: 20px; color: white; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); position: relative; overflow: hidden;">
+               <div style="position: absolute; right: -20px; top: -20px; opacity: 0.2;"><i data-lucide="ticket" style="width: 120px; height: 120px;"></i></div>
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 1;">
+                  <span style="font-size: 0.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em;">Asset Protocol</span>
+                  <div style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">{{ editingVoucher.status }}</div>
+               </div>
+               <div style="font-size: 1.5rem; font-weight: 950; position: relative; z-index: 1;">{{ editingVoucher.voucherName }}</div>
+               <div style="font-family: monospace; font-size: 0.9rem; margin-top: 0.5rem; letter-spacing: 0.1em; position: relative; z-index: 1;">{{ editingVoucher.code }}</div>
+            </div>
+
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
+               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                  <i data-lucide="bar-chart-3" style="width: 14px; color: #10b981;"></i>
+                  <span style="font-size: 0.7rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.1em;">Redemption Analytics</span>
+               </div>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Discount Power</div>
+                     <div style="font-size: 1.25rem; font-weight: 950; color: #10b981; margin-top: 0.25rem;">
+                        {{ editingVoucher.discountType === 'Percent' ? editingVoucher.discountValue + '%' : 'Rp ' + Number(editingVoucher.discountValue).toLocaleString('id-ID') }}
+                     </div>
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Remaining Potency</div>
+                     <div style="font-size: 1.25rem; font-weight: 950; margin-top: 0.25rem;">Rp {{ Number(editingVoucher.balance).toLocaleString('id-ID') }}</div>
+                  </div>
+               </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+               <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 950; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                  <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY ASSET
+               </button>
+               <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
+                  CLOSE INTELLIGENCE
+               </button>
+            </div>
+         </div>
+
+         <!-- MODE: EDIT -->
+         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
             <div><label class="f-label">Voucher Name</label><input type="text" v-model="formData.voucherName" class="f-input"></div>
-            <div><label class="f-label">Provider</label><input type="text" v-model="formData.provider" class="f-input"></div>
+            <div><label class="f-label">Voucher Code</label><input type="text" v-model="formData.code" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Voucher Code</label><input type="text" v-model="formData.voucherCode" class="f-input"></div>
+               <div><label class="f-label">Discount Type</label><select v-model="formData.discountType" class="f-input"><option>Percent</option><option>Nominal</option></select></div>
+               <div><label class="f-label">Discount Value</label><input type="number" v-model.number="formData.discountValue" class="f-input"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+               <div><label class="f-label">Current Balance / Max Discount</label><input type="number" v-model.number="formData.balance" class="f-input"></div>
                <div><label class="f-label">Expiry Date</label><input type="date" v-model="formData.expiryDate" class="f-input"></div>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Used</option><option>Exhausted</option><option>Expired</option></select></div>
-               <div>
-                  <label class="f-label">Usage Type</label>
-                  <button type="button" @click="formData.isSingleUse = !formData.isSingleUse" :style="{ background: formData.isSingleUse ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: formData.isSingleUse ? '#ef4444' : '#10b981' }" style="width: 100%; border: 1px solid var(--border); border-radius: 12px; height: 44px; font-weight: 800; cursor: pointer;">
-                      {{ formData.isSingleUse ? 'SINGLE USE' : 'BALANCE-BASED' }}
-                  </button>
+               <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Used</option><option>Expired</option><option>Exhausted</option></select></div>
+               <div style="display: flex; align-items: center; gap: 0.5rem; height: 50px;">
+                  <input type="checkbox" v-model="formData.isSingleUse" id="chkSingle">
+                  <label for="chkSingle" class="f-label" style="margin: 0;">Single Use Only</label>
                </div>
             </div>
-            
-            <div v-if="!formData.isSingleUse" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
-               <div><label class="f-label">Current Balance</label><input type="number" v-model.number="formData.balance" class="f-input"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Discount Value</label><input type="number" v-model.number="formData.discountValue" class="f-input"></div>
-               <div>
-                  <label class="f-label">Type</label>
-                  <select v-model="formData.discountType" class="f-input">
-                     <option>Amount</option>
-                     <option>Percent</option>
-                  </select>
-               </div>
-            </div>
-
             <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
                <button @click="saveVou" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE VOUCHER
+                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE ASSET
                </button>
-               <button v-if="editingVou.voucherID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+               <button v-if="editingVoucher.voucherID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <i data-lucide="copy" style="width: 14px;"></i> DUPE
                </button>
-               <button v-if="editingVou.voucherID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+               <button v-if="editingVoucher.voucherID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <i data-lucide="combine" style="width: 14px;"></i> MERGE
                </button>
-               <button v-if="editingVou.voucherID" @click="deleteVou" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+               <button v-if="editingVoucher.voucherID" @click="deleteVou" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
                   <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
                </button>
             </div>
@@ -116,7 +145,8 @@ import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
 const isModalOpen = ref(false)
-const editingVou = ref({})
+const modalMode = ref('analysis')
+const editingVoucher = ref({})
 const formData = ref({})
 
 const showSearch = ref(false)
@@ -134,14 +164,19 @@ const filteredVouchers = computed(() => {
 
 const openModal = (v) => {
   if (v) { 
-    editingVou.value = { ...v }
+    editingVoucher.value = { ...v }
     formData.value = { 
       ...v,
       balance: Number(v.balance) || 0,
       discountValue: Number(v.discountValue) || 0
     } 
+    modalMode.value = 'analysis'
   }
-  else { editingVou.value = {}; formData.value = { voucherName: '', provider: '', voucherCode: '', expiryDate: '', status: 'Active', notes: '', isSingleUse: true, balance: 0, discountType: 'Amount', discountValue: 0 } }
+  else { 
+    editingVoucher.value = {}
+    formData.value = { voucherName: '', code: '', discountType: 'Nominal', discountValue: 0, balance: 0, expiryDate: '', status: 'Active', isSingleUse: false, notes: '' } 
+    modalMode.value = 'edit'
+  }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }

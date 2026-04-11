@@ -51,11 +51,51 @@
 
     <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
-         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
-            <span style="font-weight: 800;">Member Detail</span>
+         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
+            <span style="font-weight: 800;">{{ editingMember.memberID ? (modalMode === 'analysis' ? 'Membership Intel' : 'Modify Privilege') : 'New Privilege' }}</span>
             <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
          </div>
-         <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+
+         <!-- MODE: ANALYSIS -->
+         <div v-if="modalMode === 'analysis' && editingMember.memberID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+            <div style="background: linear-gradient(135deg, var(--accent), #7c3aed); padding: 1.5rem; border-radius: 20px; color: white; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);">
+               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <span style="font-size: 0.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em;">Member Protocol</span>
+                  <i data-lucide="award" style="width: 20px;"></i>
+               </div>
+               <div style="font-size: 1.5rem; font-weight: 950;">{{ editingMember.memberName }}</div>
+               <div style="font-size: 0.8rem; font-weight: 700; margin-top: 0.5rem; opacity: 0.8;">{{ editingMember.membershipType }} Class</div>
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
+               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                  <i data-lucide="zap" style="width: 14px; color: var(--accent);"></i>
+                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Yield Analysis</span>
+               </div>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Benefit Ratio</div>
+                     <div style="font-size: 1.25rem; font-weight: 950; color: #10b981; margin-top: 0.25rem;">{{ editingMember.membershipDiscount }}% Off</div>
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Protocol Cost</div>
+                     <div style="font-size: 1.25rem; font-weight: 950; margin-top: 0.25rem;">Rp {{ (editingMember.membershipCost || 0).toLocaleString('id-ID') }}</div>
+                  </div>
+               </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+               <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 950; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                  <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY PRIVILEGE
+               </button>
+               <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
+                  CLOSE INTELLIGENCE
+               </button>
+            </div>
+         </div>
+
+         <!-- MODE: EDIT -->
+         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
             <div><label class="f-label">Member Name</label><input type="text" v-model="formData.memberName" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div><label class="f-label">Code</label><input type="text" v-model="formData.code" class="f-input"></div>
@@ -81,13 +121,13 @@
                <button @click="saveMem" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
                   <i data-lucide="check-circle" style="width: 14px;"></i> SAVE MEMBER
                </button>
-               <button v-if="editingMem.memberID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+               <button v-if="editingMember.memberID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <i data-lucide="copy" style="width: 14px;"></i> DUPE
                </button>
-               <button v-if="editingMem.memberID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+               <button v-if="editingMember.memberID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <i data-lucide="combine" style="width: 14px;"></i> MERGE
                </button>
-               <button v-if="editingMem.memberID" @click="deleteMem" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+               <button v-if="editingMember.memberID" @click="deleteMem" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
                   <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
                </button>
             </div>
@@ -103,7 +143,8 @@ import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
 const isModalOpen = ref(false)
-const editingMem = ref({})
+const modalMode = ref('analysis')
+const editingMember = ref({})
 const formData = ref({})
 
 const showSearch = ref(false)
@@ -121,14 +162,19 @@ const filteredMembers = computed(() => {
 
 const openModal = (m) => {
   if (m) { 
-    editingMem.value = { ...m }
+    editingMember.value = { ...m }
     formData.value = { 
       ...m,
       membershipDiscount: Number(m.membershipDiscount) || 0,
       membershipCost: Number(m.membershipCost) || 0
     } 
+    modalMode.value = 'analysis'
   }
-  else { editingMem.value = {}; formData.value = { memberName: '', code: '', expiryDate: '', type: 'Loyalty', color: '#8b5cf6', notes: '', memberImage: '', isPaid: false, membershipCost: 0, membershipDiscount: 0 } }
+  else { 
+    editingMember.value = {}
+    formData.value = { memberName: '', membershipType: 'Basic', membershipDiscount: 0, membershipCost: 0, startDate: '', endDate: '', status: 'Active', notes: '' } 
+    modalMode.value = 'edit'
+  }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }

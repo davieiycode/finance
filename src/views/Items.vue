@@ -73,10 +73,61 @@
     <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
-            <span style="font-weight: 800;">Item Detail</span>
+            <span style="font-weight: 800;">{{ editingItem.itemID ? (modalMode === 'analysis' ? 'Item Intelligence' : 'Modify Item' ) : 'New Item' }}</span>
             <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
          </div>
-         <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+
+         <!-- MODE: ANALYSIS -->
+         <div v-if="modalMode === 'analysis' && editingItem.itemID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+            <div style="display: flex; gap: 1.25rem; align-items: center;">
+               <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border);">
+                  <img v-if="editingItem.itemImage" :src="editingItem.itemImage" style="width: 100%; height: 100%; object-fit: cover;">
+                  <i v-else data-lucide="package" style="width: 32px; color: var(--accent);"></i>
+               </div>
+               <div>
+                  <div style="font-size: 1.25rem; font-weight: 900;">{{ editingItem.itemName }}</div>
+                  <div style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.2rem;">{{ editingItem.itemCategory }} • {{ editingItem.SKU || 'No SKU' }}</div>
+               </div>
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
+               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                  <i data-lucide="line-chart" style="width: 14px; color: var(--accent);"></i>
+                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Intelligence Analysis</span>
+               </div>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Outflow</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ itemAnalysis.totalSpend.toLocaleString('id-ID') }}</div>
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Quantity Harvested</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: white; margin-top: 0.25rem;">{{ itemAnalysis.totalQty }} <span style="font-size: 0.6rem; opacity: 0.4;">{{ editingItem.unitScale }}</span></div>
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Avg Acquisition Cost</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: var(--accent); margin-top: 0.25rem;">Rp {{ itemAnalysis.avgPrice.toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.4;">/ UNIT</span></div>
+                  </div>
+               </div>
+            </div>
+
+            <div v-if="editingItem.notes" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+               <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem;">Inventory Notes</div>
+               <div style="font-size: 0.8rem; line-height: 1.5;">{{ editingItem.notes }}</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+               <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;">
+                  <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY ITEM
+               </button>
+               <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
+                  CLOSE INTELLIGENCE
+               </button>
+            </div>
+         </div>
+
+         <!-- MODE: EDIT -->
+         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
             <div><label class="f-label">Item Name</label><input type="text" v-model="formData.itemName" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div>
@@ -117,28 +168,6 @@
             </div>
             <div><label class="f-label">Image URL</label><input type="text" v-model="formData.itemImage" class="f-input"></div>
 
-            <!-- Intelligence Analysis -->
-            <div v-if="editingItem.itemID" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem; margin-top: 0.5rem;">
-               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                  <i data-lucide="line-chart" style="width: 14px; color: var(--accent);"></i>
-                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Intelligence Analysis</span>
-               </div>
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Outflow</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ itemAnalysis.totalSpend.toLocaleString('id-ID') }}</div>
-                  </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Quantity Harvested</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: white; margin-top: 0.25rem;">{{ itemAnalysis.totalQty }} <span style="font-size: 0.6rem; opacity: 0.4;">{{ formData.unitScale }}</span></div>
-                  </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Avg Acquisition Cost</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: var(--accent); margin-top: 0.25rem;">Rp {{ itemAnalysis.avgPrice.toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.4;">/ UNIT</span></div>
-                  </div>
-               </div>
-            </div>
-
             <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
@@ -167,6 +196,7 @@ import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
 const isModalOpen = ref(false)
+const modalMode = ref('analysis')
 const editingItem = ref({})
 const formData = ref({})
 
@@ -202,8 +232,13 @@ const openModal = (item) => {
       ...item,
       amountPerUnit: Number(item.amountPerUnit) || 0
     } 
+    modalMode.value = 'analysis'
   }
-  else { editingItem.value = {}; formData.value = { itemName: '', itemCategory: 'Food & Groceries', unitScale: 'pcs', amountPerUnit: 0, currency: 'IDR', manufacturer: '', model: '', SKU: '', warrantyExpiryDate: '', notes: '', itemImage: '' } }
+  else { 
+    editingItem.value = {}
+    formData.value = { itemName: '', itemCategory: 'Food & Groceries', unitScale: 'pcs', amountPerUnit: 0, currency: 'IDR', manufacturer: '', model: '', SKU: '', warrantyExpiryDate: '', notes: '', itemImage: '' } 
+    modalMode.value = 'edit'
+  }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }

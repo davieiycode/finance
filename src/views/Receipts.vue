@@ -82,42 +82,28 @@
                         <div style="opacity: 0.6; font-size: 0.6rem;">{{ st.date }} • {{ st.total.toLocaleString('id-ID') }}</div>
                      </div>
                      <button @click="linkTransaction(st.transactionID)" style="background: var(--accent); color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 800; font-size: 0.6rem; cursor: pointer;">
-                        LINK
-                     </button>
-                  </div>
+            <div>
+               <label class="f-label">Evidence Capture (Photo/PDF)</label>
+               <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+                  <input type="file" ref="receiptFile" @change="onFileChange" style="display: none;" accept="image/*,application/pdf">
+                  <button @click="$refs.receiptFile.click()" class="f-input" style="flex: 1; text-align: left; display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+                     <i data-lucide="upload-cloud" style="width: 18px;"></i> {{ formData['foto/dokumen'] ? 'Document Loaded' : 'Select Evidence...' }}
+                  </button>
+                  <button v-if="formData['foto/dokumen']" @click="formData['foto/dokumen'] = ''" style="width: 50px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; color: #ef4444; cursor: pointer;">
+                     <i data-lucide="trash-2" style="width: 18px;"></i>
+                  </button>
                </div>
             </div>
-
-            <div><label class="f-label">Linked Transactions (IDs)</label><input type="text" v-model="formData.transactions" placeholder="TX-123, TX-456" class="f-input"></div>
-
-            <!-- Intelligence Analysis -->
-            <div v-if="editingRec.receiptID" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem; margin-top: 0.5rem;">
-               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                  <i data-lucide="line-chart" style="width: 14px; color: var(--accent);"></i>
-                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Intelligence Analysis</span>
-               </div>
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Verified Document Value</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: var(--accent); margin-top: 0.25rem;">Rp {{ recAnalysis.totalValue.toLocaleString('id-ID') }}</div>
-                  </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Attachment Density</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: white; margin-top: 0.25rem;">{{ recAnalysis.count }} <span style="font-size: 0.6rem; opacity: 0.4;">LINKED TRANSACTIONS</span></div>
-                  </div>
-               </div>
-            </div>
-
             <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="saveRec" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE RECEIPT
+               <button @click="saveReceipt" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE EVIDENCE
                </button>
-               <button v-if="editingRec.receiptID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+               <button v-if="editingReceipt.receiptID" @click="handleDuplicate" style="padding: 1rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <i data-lucide="copy" style="width: 14px;"></i> DUPE
                </button>
-               <button v-if="editingRec.receiptID" @click="deleteRec" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: v-if=!editingRec.receiptID ? 'span 2' : 'span 1';">
+               <button v-if="editingReceipt.receiptID" @click="deleteReceipt" style="padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
                </button>
             </div>
@@ -136,18 +122,12 @@ import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
 const isModalOpen = ref(false)
-const editingRec = ref({})
+const modalMode = ref('analysis')
+const editingReceipt = ref({})
 const formData = ref({})
 
 const showSearch = ref(false)
 const searchQuery = ref('')
-
-const recAnalysis = computed(() => {
-  if (!editingRec.value.receiptID) return { totalValue: 0, count: 0 }
-  const txs = store.transactions.filter(t => t.receipt === editingRec.value.receiptID)
-  const totalValue = txs.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
-  return { totalValue, count: txs.length }
-})
 
 const filteredReceipts = computed(() => {
   if (!searchQuery.value) return store.receipts
@@ -159,12 +139,21 @@ const filteredReceipts = computed(() => {
   )
 })
 
+const relatedTransactions = computed(() => {
+  if (!editingReceipt.value.receiptID) return []
+  return store.transactions.filter(t => t.receipt === editingReceipt.value.receiptID)
+})
+
 const openModal = (r) => {
-  if (r) { editingRec.value = { ...r }; formData.value = { ...r } }
+  if (r) { 
+    editingReceipt.value = { ...r }
+    formData.value = { ...r } 
+    modalMode.value = 'analysis'
+  }
   else { 
-    const now = new Date()
-    editingRec.value = {}; 
-    formData.value = { merchant: '', account: '', transactions: '', date: now.toISOString().split('T')[0], time: '12:00', 'foto/dokumen': '', notes: '' } 
+    editingReceipt.value = {}
+    formData.value = { merchant: '', account: '', date: '', time: '', notes: '', transactions: '', 'foto/dokumen': '' } 
+    modalMode.value = 'edit'
   }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })

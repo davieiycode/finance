@@ -55,10 +55,49 @@
     <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
        <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
           <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
-             <span style="font-weight: 800;">Registry Entry</span>
+             <span style="font-weight: 800;">{{ editingItem ? (modalMode === 'analysis' ? 'Registry Intelligence' : 'Modify Record') : 'New Record' }}</span>
              <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
           </div>
-          <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+
+          <!-- MODE: ANALYSIS -->
+          <div v-if="modalMode === 'analysis' && editingItem" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+             <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div :style="{ background: colors[0] + '15', color: colors[0] }" style="width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center;">
+                   <i :data-lucide="getItemIcon(editingItem)" style="width: 28px;"></i>
+                </div>
+                <div>
+                   <div style="font-size: 1.25rem; font-weight: 950; letter-spacing: -0.02em;">{{ getItemName(editingItem) }}</div>
+                   <div style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.2rem;">{{ activeTab.toUpperCase() }} Registry Entry</div>
+                </div>
+             </div>
+
+             <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                   <i data-lucide="activity" style="width: 14px; color: var(--accent);"></i>
+                   <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Metadata Analysis</span>
+                </div>
+                <div style="font-size: 0.85rem; line-height: 1.6; opacity: 0.8;">
+                   {{ getItemSub(editingItem) }}
+                </div>
+             </div>
+
+             <div v-if="formData.description" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 14px; border: 1px solid var(--border);">
+                <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem;">Briefing / Protocol</div>
+                <div style="font-size: 0.8rem; line-height: 1.5;">{{ formData.description }}</div>
+             </div>
+
+             <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+                <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 950; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                   <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY RECORD
+                </button>
+                <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
+                   CLOSE REGISTRY
+                </button>
+             </div>
+          </div>
+
+          <!-- MODE: EDIT -->
+          <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
              <!-- Category Form -->
              <template v-if="activeTab === 'categories'">
                 <div><label class="f-label">Category Name</label><input type="text" v-model="formData.category" class="f-input"></div>
@@ -145,6 +184,7 @@ const activeTab = ref(route.query.tab || 'categories')
 const showSearch = ref(false)
 const searchQuery = ref('')
 const isModalOpen = ref(false)
+const modalMode = ref('analysis')
 const formData = ref({})
 const editingItem = ref(null)
 
@@ -200,8 +240,10 @@ const openModal = (item) => {
   editingItem.value = item ? { ...item } : null
   if (item) {
      formData.value = { ...item }
+     modalMode.value = 'analysis'
   } else {
      // Default values for new entry
+     modalMode.value = 'edit'
      if (activeTab.value === 'categories') formData.value = { category: '', categoryGroup: '', type: 'Expense', description: '', icon: 'tag' }
      else if (activeTab.value === 'unitScales') formData.value = { unitScale: '', description: '' }
      else if (activeTab.value === 'tags') formData.value = { tagName: '', tagGroup: '', description: '' }

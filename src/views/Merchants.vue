@@ -55,49 +55,67 @@
                <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Phone</label><input type="text" v-model="formData.phone" class="f-input"></div>
-               <div><label class="f-label">Email</label><input type="text" v-model="formData.email" class="f-input"></div>
-            </div>
-            <div><label class="f-label">Website</label><input type="text" v-model="formData.website" class="f-input"></div>
-            <div><label class="f-label">Address</label><input type="text" v-model="formData.address" class="f-input"></div>
-            <div><label class="f-label">GMaps Link</label><input type="text" v-model="formData.gMapsLink" class="f-input"></div>
-            <div><label class="f-label">Bank Account Details</label><input type="text" v-model="formData.bankAccountDetails" class="f-input"></div>
 
-            <!-- Intelligence Analysis -->
-            <div v-if="editingMch.merchantID" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem; margin-top: 0.5rem;">
+         <!-- MODE: ANALYSIS -->
+         <div v-if="modalMode === 'analysis' && editingMerchant.merchantID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+            <div style="display: flex; gap: 1.5rem; align-items: center;">
+               <div style="width: 70px; height: 70px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 4px;">
+                  <img v-if="editingMerchant.merchantImage" :src="editingMerchant.merchantImage" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                  <i v-else data-lucide="building-2" style="width: 28px; color: var(--accent);"></i>
+               </div>
+               <div>
+                  <div style="font-size: 1.25rem; font-weight: 950; letter-spacing: -0.02em;">{{ editingMerchant.merchantName }}</div>
+                  <div style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.2rem;">{{ editingMerchant.website || 'No Digital Identity' }}</div>
+               </div>
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                  <i data-lucide="line-chart" style="width: 14px; color: var(--accent);"></i>
-                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Intelligence Analysis</span>
+                  <i data-lucide="activity" style="width: 14px; color: var(--accent);"></i>
+                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Merchant Economics</span>
                </div>
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Spend</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ mchAnalysis.totalSpend.toLocaleString('id-ID') }}</div>
-                  </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Operational Frequency</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: white; margin-top: 0.25rem;">{{ mchAnalysis.count }} <span style="font-size: 0.6rem; opacity: 0.4;">TXNS</span></div>
-                  </div>
-                  <div v-if="mchAnalysis.totalIncome > 0" style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Protocol Inflow (Income)</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: #10b981; margin-top: 0.25rem;">Rp {{ mchAnalysis.totalIncome.toLocaleString('id-ID') }}</div>
+               <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                  <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Flow-Through</div>
+                     <div style="font-size: 1.25rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ merchantSpend.toLocaleString('id-ID') }}</div>
                   </div>
                </div>
             </div>
 
+            <div v-if="editingMerchant.address" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 14px; border: 1px solid var(--border);">
+               <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem;">Coordinates</div>
+               <div style="font-size: 0.8rem; opacity: 0.8;">{{ editingMerchant.address }}</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+               <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 950; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                  <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY MERCHANT
+               </button>
+               <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
+                  CLOSE INTEL
+               </button>
+            </div>
+         </div>
+
+         <!-- MODE: EDIT -->
+         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+            <div><label class="f-label">Merchant Name</label><input type="text" v-model="formData.merchantName" class="f-input"></div>
+            <div><label class="f-label">Address</label><textarea v-model="formData.address" class="f-input" style="min-height: 60px;"></textarea></div>
+            <div><label class="f-label">Website</label><input type="text" v-model="formData.website" class="f-input" placeholder="https://..."></div>
+            <div><label class="f-label">Logo URL</label><input type="text" v-model="formData.merchantImage" class="f-input"></div>
             <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="saveMch" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+               <button @click="saveMerchant" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
                   <i data-lucide="check-circle" style="width: 14px;"></i> SAVE MERCHANT
                </button>
-               <button v-if="editingMch.merchantID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+               <button v-if="editingMerchant.merchantID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <i data-lucide="copy" style="width: 14px;"></i> DUPE
                </button>
-               <button v-if="editingMch.merchantID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+               <button v-if="editingMerchant.merchantID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                   <i data-lucide="combine" style="width: 14px;"></i> MERGE
                </button>
-               <button v-if="editingMch.merchantID" @click="deleteMch" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+               <button v-if="editingMerchant.merchantID" @click="deleteMerchant" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
                   <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
                </button>
             </div>
@@ -113,18 +131,18 @@ import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
 const isModalOpen = ref(false)
-const editingMch = ref({})
+const modalMode = ref('analysis')
+const editingMerchant = ref({})
 const formData = ref({})
 
 const showSearch = ref(false)
 const searchQuery = ref('')
 
-const mchAnalysis = computed(() => {
-  if (!editingMch.value.merchantID) return { totalSpend: 0, totalIncome: 0, count: 0 }
-  const txs = store.transactions.filter(t => t.merchant === editingMch.value.merchantName)
-  const totalSpend = txs.filter(t => t.type === 'Expense').reduce((sum, t) => sum + (Number(t.total) || 0), 0)
-  const totalIncome = txs.filter(t => t.type === 'Income').reduce((sum, t) => sum + (Number(t.total) || 0), 0)
-  return { totalSpend, totalIncome, count: txs.length }
+const merchantSpend = computed(() => {
+  if (!editingMerchant.value.merchantID) return 0
+  return store.transactions
+    .filter(t => t.merchant === editingMerchant.value.merchantName)
+    .reduce((sum, t) => sum + (Number(t.total) || 0), 0)
 })
 
 const filteredMerchants = computed(() => {
@@ -140,15 +158,20 @@ const filteredMerchants = computed(() => {
 
 const openModal = (m) => {
   if (m) { 
-    editingMch.value = { ...m }
+    editingMerchant.value = { ...m }
     formData.value = { ...m } 
+    modalMode.value = 'analysis'
   }
-  else { editingMch.value = {}; formData.value = { merchantName: '', category: '', status: 'Active', phone: '', address: '', email: '', website: '', bankAccountDetails: '', notes: '', gMapsLink: '' } }
+  else { 
+    editingMerchant.value = {}
+    formData.value = { merchantName: '', address: '', website: '', notes: '', merchantImage: '' } 
+    modalMode.value = 'edit'
+  }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
-const saveMch = () => {
+const saveMerchant = () => {
   if (!formData.value.merchantName) return alert('Name required')
   if (editingMch.value.merchantID) store.updateMerchant({ ...formData.value })
   else store.addMerchant({ ...formData.value })

@@ -65,10 +65,55 @@
     <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
-            <span style="font-weight: 800; font-size: 1.1rem;">{{ editingAcc.accountID ? 'Update Vault' : 'New Vault' }}</span>
+            <span style="font-weight: 800; font-size: 1.1rem;">{{ editingAcc.accountID ? (accountMode === 'analysis' ? 'Vault Intelligence' : 'Modify Vault') : 'New Vault' }}</span>
             <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
          </div>
-         <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+
+         <!-- MODE: ANALYSIS -->
+         <div v-if="accountMode === 'analysis' && editingAcc.accountID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Premium Card Preview -->
+            <div class="account-card-premium" :style="{ background: `linear-gradient(135deg, ${editingAcc.cardColor || '#1e293b'}, ${adjustColor(editingAcc.cardColor || '#1e293b', -30)})`, margin: '0 auto', width: '100%', transform: 'scale(0.95)' }">
+               <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div v-if="editingAcc.accountImage" style="width: 32px; height: 32px; border-radius: 6px; overflow: hidden; background: white; padding: 2px;">
+                     <img :src="editingAcc.accountImage" style="width:100%; height:100%; object-fit: contain;">
+                  </div>
+                  <i v-else data-lucide="shield-check" style="width: 20px; color: rgba(255,255,255,0.5);"></i>
+               </div>
+               <div style="margin-top: 1rem;">
+                  <div style="font-size: 0.5rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">{{ editingAcc.accountName }}</div>
+                  <div style="font-size: 1.4rem; font-weight: 950;">Rp {{ (editingAcc.currentBalance || 0).toLocaleString('id-ID') }}</div>
+                  <div style="font-family: monospace; font-size: 0.7rem; margin-top: 1rem; opacity: 0.5;">{{ maskNumber(editingAcc.accountNumber || editingAcc.cardNumber) }}</div>
+               </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+               <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase;">Protocol Inflow</div>
+                  <div style="font-size: 1rem; font-weight: 900; color: #10b981; margin-top: 0.2rem;">Rp {{ accAnalysis.inflow.toLocaleString('id-ID') }}</div>
+               </div>
+               <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase;">Protocol Outflow</div>
+                  <div style="font-size: 1rem; font-weight: 900; color: #ef4444; margin-top: 0.2rem;">Rp {{ accAnalysis.outflow.toLocaleString('id-ID') }}</div>
+               </div>
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid var(--accent); border-radius: 1.25rem; padding: 1.25rem;">
+               <div style="font-size: 0.6rem; color: var(--accent); font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Strategic Summary</div>
+               <div style="font-size: 1.1rem; font-weight: 900;">Rp {{ accAnalysis.net.toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.5; font-weight: 400;">Net Drift</span></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+               <button @click="accountMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;">
+                  <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY PROTOCOL
+               </button>
+               <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
+                  RETURN TO LIST
+               </button>
+            </div>
+         </div>
+
+         <!-- MODE: EDIT -->
+         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
             <div><label class="f-label">Name</label><input type="text" v-model="formData.accountName" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div><label class="f-label">Type</label><select v-model="formData.accountType" class="f-input"><option>Bank</option><option>E-Wallet</option><option>Cash</option><option>Credit Card</option><option>Investment</option></select></div>
@@ -88,28 +133,6 @@
             </div>
             <div><label class="f-label">Logo URL</label><input type="text" v-model="formData.accountImage" placeholder="https://..." class="f-input"></div>
             <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
-
-            <!-- Intelligence Analysis -->
-            <div v-if="editingAcc.accountID" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem; margin-top: 0.5rem;">
-               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                  <i data-lucide="line-chart" style="width: 14px; color: var(--accent);"></i>
-                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Intelligence Analysis</span>
-               </div>
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Inflow</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: #10b981; margin-top: 0.25rem;">Rp {{ accAnalysis.inflow.toLocaleString('id-ID') }}</div>
-                  </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Outflow</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ accAnalysis.outflow.toLocaleString('id-ID') }}</div>
-                  </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Strategic Net Shift</div>
-                     <div style="font-size: 1rem; font-weight: 950; margin-top: 0.25rem;" :style="{ color: accAnalysis.net >= 0 ? '#10b981' : '#ef4444' }">Rp {{ accAnalysis.net.toLocaleString('id-ID') }}</div>
-                  </div>
-               </div>
-            </div>
 
             <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
@@ -139,6 +162,7 @@ import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
 const isModalOpen = ref(false)
+const accountMode = ref('analysis') // 'analysis' or 'edit'
 const editingAcc = ref({})
 const formData = ref({})
 
@@ -173,9 +197,11 @@ const openModal = (acc) => {
       openingBalance: Number(acc.openingBalance) || 0,
       currentBalance: Number(acc.currentBalance) || 0
     }
+    accountMode.value = 'analysis'
   } else {
     editingAcc.value = {}
     formData.value = { accountName: '', accountType: 'Bank', currency: 'IDR', openingBalance: 0, currentBalance: 0, cardColor: '#1e293b', status: 'Active', notes: '', accountNumber: '', accountImage: '', cardNumber: '', expiryDate: '' }
+    accountMode.value = 'edit'
   }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
