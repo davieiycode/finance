@@ -192,8 +192,9 @@ const subTitles = {
   metadata: 'Metadata Lab'
 }
 
-const userPrefs = ref(JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Explorer","email":"","theme":"obsidian","radius":16,"color":"#8b5cf6"}'))
-const cloudUrl = ref(localStorage.getItem('cloud_sheet_url') || '')
+const isSafe = typeof localStorage !== 'undefined'
+const userPrefs = ref(isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Explorer","email":"","theme":"obsidian","radius":16,"color":"#8b5cf6"}') : {"name":"Explorer","email":"","theme":"obsidian","radius":16,"color":"#8b5cf6"})
+const cloudUrl = ref(isSafe ? (localStorage.getItem('cloud_sheet_url') || '') : '')
 
 const themes = [
   { id: 'dark', name: 'Midnight', bg: '#0D0D0D', border: '#1A1A1A' },
@@ -203,7 +204,7 @@ const themes = [
 ]
 
 const savePrefs = () => {
-  localStorage.setItem('user_prefs', JSON.stringify(userPrefs.value))
+  if (isSafe) localStorage.setItem('user_prefs', JSON.stringify(userPrefs.value))
   applyThemeToRoot()
   alert('Preferences saved!')
 }

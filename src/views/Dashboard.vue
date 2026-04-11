@@ -181,6 +181,7 @@ const store = useFinanceStore()
 const showSearch = ref(false)
 const searchQuery = ref('')
 const userAvatar = computed(() => {
+  if (typeof localStorage === 'undefined') return '👤'
   const prefs = JSON.parse(localStorage.getItem('user_prefs') || '{}')
   return prefs.avatar || '👤'
 })

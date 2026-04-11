@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
 
 // Schema Alignment: Internal state now uses EXACT spreadsheet column names
+const isSafe = typeof localStorage !== 'undefined'
 const initTransactions = () => {
+  if (!isSafe) return []
   let txs = JSON.parse(localStorage.getItem('transactions') || '[]')
   if (txs.length === 0) {
     txs = [
@@ -43,19 +45,19 @@ const initTransactions = () => {
 export const useFinanceStore = defineStore('finance', {
   state: () => ({
     transactions: initTransactions(),
-    accounts: JSON.parse(localStorage.getItem('accounts') || '[]'),
-    merchants: JSON.parse(localStorage.getItem('merchants') || '[]'),
-    items: JSON.parse(localStorage.getItem('items') || '[]'),
-    members: JSON.parse(localStorage.getItem('members') || '[]'),
-    vouchers: JSON.parse(localStorage.getItem('vouchers') || '[]'),
-    budgets: JSON.parse(localStorage.getItem('budgets') || '[]'),
-    goals: JSON.parse(localStorage.getItem('goals') || '[]'),
-    receipts: JSON.parse(localStorage.getItem('receipts') || '[]'),
-    categories: JSON.parse(localStorage.getItem('categories') || '[]'),
-    unitScales: JSON.parse(localStorage.getItem('unitScales') || '[]'),
-    tags: JSON.parse(localStorage.getItem('tags') || '[]'),
-    projects: JSON.parse(localStorage.getItem('projects') || '[]'),
-    authors: JSON.parse(localStorage.getItem('authors') || '[]'),
+    accounts: isSafe ? JSON.parse(localStorage.getItem('accounts') || '[]') : [],
+    merchants: isSafe ? JSON.parse(localStorage.getItem('merchants') || '[]') : [],
+    items: isSafe ? JSON.parse(localStorage.getItem('items') || '[]') : [],
+    members: isSafe ? JSON.parse(localStorage.getItem('members') || '[]') : [],
+    vouchers: isSafe ? JSON.parse(localStorage.getItem('vouchers') || '[]') : [],
+    budgets: isSafe ? JSON.parse(localStorage.getItem('budgets') || '[]') : [],
+    goals: isSafe ? JSON.parse(localStorage.getItem('goals') || '[]') : [],
+    receipts: isSafe ? JSON.parse(localStorage.getItem('receipts') || '[]') : [],
+    categories: isSafe ? JSON.parse(localStorage.getItem('categories') || '[]') : [],
+    unitScales: isSafe ? JSON.parse(localStorage.getItem('unitScales') || '[]') : [],
+    tags: isSafe ? JSON.parse(localStorage.getItem('tags') || '[]') : [],
+    projects: isSafe ? JSON.parse(localStorage.getItem('projects') || '[]') : [],
+    authors: isSafe ? JSON.parse(localStorage.getItem('authors') || '[]') : [],
     // Notification & Progress State
     notifications: [],
     syncProgress: 0,
@@ -74,6 +76,7 @@ export const useFinanceStore = defineStore('finance', {
     },
     // Generic Save methods
     saveAll() {
+      if (!isSafe) return
       localStorage.setItem('transactions', JSON.stringify(this.transactions))
       localStorage.setItem('accounts', JSON.stringify(this.accounts))
       localStorage.setItem('merchants', JSON.stringify(this.merchants))
@@ -183,7 +186,7 @@ export const useFinanceStore = defineStore('finance', {
 
     // Cloud Sync...
     async pullFromCloud(mode = 'overwrite') {
-      const url = localStorage.getItem('cloud_sheet_url')
+      const url = isSafe ? localStorage.getItem('cloud_sheet_url') : null
       if (!url) return false
       this.isSyncing = true
       this.syncProgress = 10
@@ -193,6 +196,21 @@ export const useFinanceStore = defineStore('finance', {
         const data = await res.json()
         this.syncProgress = 60
         if (data.status === 'success') {
+          const entities = [
+            { key: 'transaction', state: 'transactions', id: 'transactionID' },
+            { key: 'account', state: 'accounts', id: 'accountID' },
+            { key: 'merchant', state: 'merchants', id: 'merchantID' },
+            { key: 'item', state: 'items', id: 'itemID' },
+            { key: 'member', state: 'members', id: 'memberID' },
+            { key: 'voucher', state: 'vouchers', id: 'voucherID' },
+            { key: 'budget', state: 'budgets', id: 'budgetID' },
+            { key: 'goal', state: 'goals', id: 'goalID' },
+            { key: 'receipt', state: 'receipts', id: 'receiptID' },
+            { key: 'category', state: 'categories', id: 'categoryID' },
+            { key: 'unitScale', state: 'unitScales', id: 'unitScale' },
+            { key: 'tag', state: 'tags', id: 'tagID' },
+            { key: 'project', state: 'projects', id: 'projectID' },
+            { key: 'author', state: 'authors', id: 'authorID' }
           ]
 
           const formatDate = (val) => {
@@ -244,7 +262,7 @@ export const useFinanceStore = defineStore('finance', {
     },
 
     async pushToCloud() {
-      const url = localStorage.getItem('cloud_sheet_url')
+      const url = isSafe ? localStorage.getItem('cloud_sheet_url') : null
       if (!url) return false
       this.isSyncing = true
       this.syncProgress = 20
