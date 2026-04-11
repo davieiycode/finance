@@ -38,7 +38,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const hasCloudUrl = !!localStorage.getItem('cloud_sheet_url')
+  const hasCloudUrl = typeof localStorage !== 'undefined' ? !!localStorage.getItem('cloud_sheet_url') : false
   if (!hasCloudUrl && to.name !== 'setup') {
     next({ name: 'setup' })
   } else if (hasCloudUrl && to.name === 'setup') {
