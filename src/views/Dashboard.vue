@@ -34,25 +34,33 @@
     </div>
 
     <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; margin-top: 1.5rem;">
-      <div class="stat-card" @click="$router.push('/accounts')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer;">
+      <div class="stat-card" @click="$router.push('/accounts')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
+        <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="wallet" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="wallet" style="width: 14px; color: var(--accent); margin-bottom: 0.2rem;"></i>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase;">Treasure Vault</span>
-        <span style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">Rp 0</span>
+        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Treasure Vault</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em;">Rp {{ totalBalance.toLocaleString('id-ID') }}</span>
+        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ store.accounts.length }} ACTIVE VAULTS</div>
       </div>
-      <div class="stat-card" @click="$router.push('/analysis')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer;">
+      <div class="stat-card" @click="$router.push('/analysis')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
+        <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="trending-up" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="line-chart" style="width: 14px; color: #ef4444; margin-bottom: 0.2rem;"></i>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase;">Supplies Used</span>
-        <span style="font-size: 1.25rem; font-weight: 700; color: #ef4444;">Rp 0</span>
+        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Supplies Used</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: #ef4444; letter-spacing: -0.02em;">Rp {{ monthSpending.toLocaleString('id-ID') }}</span>
+        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">CONSUMPTION THIS CYCLE</div>
       </div>
-      <div class="stat-card" @click="$router.push('/budget')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer;">
+      <div class="stat-card" @click="$router.push('/budget')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
+        <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="pie-chart" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="pie-chart" style="width: 14px; color: #22c55e; margin-bottom: 0.2rem;"></i>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase;">Ration Limit</span>
-        <span style="font-size: 1.25rem; font-weight: 700; color: #22c55e;">Rp 0</span>
+        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Ration Limit</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: #22c55e; letter-spacing: -0.02em;">Rp {{ totalBudget.toLocaleString('id-ID') }}</span>
+        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ store.budget.length }} PROTOCOLS ACTIVE</div>
       </div>
-      <div class="stat-card" @click="$router.push('/goals')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer;">
+      <div class="stat-card" @click="$router.push('/goals')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
+        <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="target" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="target" style="width: 14px; color: #0ea5e9; margin-bottom: 0.2rem;"></i>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase;">Destinations</span>
-        <span style="font-size: 1.25rem; font-weight: 700; color: #0ea5e9;">0% Done</span>
+        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Destinations</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: #0ea5e9; letter-spacing: -0.02em;">{{ Math.round(goalProgress) }}% Done</span>
+        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ store.goals.length }} ACTIVE MISSIONS</div>
       </div>
     </div>
 
@@ -92,7 +100,6 @@
       </div>
     </section>
 
-    <!-- Supplemental Nav Grid -->
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; margin-bottom: 2rem;">
       <div @click="$router.push('/items')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
         <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0;">
@@ -100,7 +107,7 @@
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700;">Items</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Manage Catalog</p>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.items.length }} REGISTERED</p>
         </div>
       </div>
       <div @click="$router.push('/merchants')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
@@ -109,7 +116,7 @@
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700;">Vendors</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Store Locations</p>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.merchants.length }} LOCATIONS</p>
         </div>
       </div>
       <div @click="$router.push('/memberships')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
@@ -117,8 +124,8 @@
           <i data-lucide="credit-card" style="width: 22px;"></i>
         </div>
         <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Cards</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Loyalty Points</p>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Privileges</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.memberships.length }} ACTIVE CARDS</p>
         </div>
       </div>
       <div @click="$router.push('/vouchers')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
@@ -126,8 +133,8 @@
           <i data-lucide="ticket" style="width: 22px;"></i>
         </div>
         <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Vouchers</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Shopping Rewards</p>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Assets</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.vouchers.filter(v => v.status === 'Active').length }} USABLE</p>
         </div>
       </div>
       <div @click="$router.push('/receipts')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
@@ -135,8 +142,8 @@
           <i data-lucide="file-text" style="width: 22px;"></i>
         </div>
         <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Vault Receipts</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">Cloud Backup</p>
+          <div style="font-size: 0.8125rem; font-weight: 700;">Evidence</div>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.receipts.length }} ARCHIVED</p>
         </div>
       </div>
       <div @click="$router.push('/audit')" style="background: var(--glass, rgba(239, 68, 68, 0.05)); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; position: relative;">
@@ -145,7 +152,7 @@
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700; color: #ef4444;">Intel Audit</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ anomalyCount }} Anomalies Detected</p>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ anomalyCount }} Anomalies</p>
         </div>
         <div v-if="anomalyCount > 0" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: white; font-size: 0.6rem; font-weight: 950; padding: 2px 6px; border-radius: 10px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
           {{ anomalyCount }}
@@ -184,6 +191,32 @@ const toggleSearch = () => {
     searchQuery.value = ''
   }
 }
+
+const totalBalance = computed(() => {
+  return store.accounts.reduce((sum, acc) => sum + (Number(acc.currentBalance) || 0), 0)
+})
+
+const monthSpending = computed(() => {
+  const now = new Date()
+  const month = now.toISOString().substring(0, 7) // YYYY-MM
+  return store.transactions
+    .filter(t => t.type === 'Expense' && (t.date || '').startsWith(month))
+    .reduce((sum, t) => sum + (Number(t.total) || 0), 0)
+})
+
+const totalBudget = computed(() => {
+  return store.budget.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0)
+})
+
+const goalProgress = computed(() => {
+  if (store.goals.length === 0) return 0
+  const avg = store.goals.reduce((sum, g) => {
+    const target = Number(g.targetAmount) || 1
+    const current = Number(g.currentAmount) || 0
+    return sum + (current / target)
+  }, 0) / store.goals.length
+  return avg * 100
+})
 
 const selectedTx = ref(null)
 

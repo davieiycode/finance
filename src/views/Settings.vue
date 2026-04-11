@@ -162,6 +162,12 @@
           <span class="sett-label" style="font-size: 0.75rem; color: var(--accent);">{{ syncing ? '...' : 'ASCEND LOGS' }}</span>
         </button>
       </div>
+
+      <!-- System Version Info -->
+      <div style="margin-top: 3rem; text-align: center; opacity: 0.3;">
+         <div style="font-size: 0.8rem; font-weight: 800; letter-spacing: 0.3em; margin-bottom: 4px;">JURNEY</div>
+         <div style="font-size: 0.5rem; font-weight: 950; letter-spacing: 0.1em;">PROTOCOL v4.1.0</div>
+      </div>
     </div>
 
 
