@@ -120,7 +120,14 @@ const filteredMembers = computed(() => {
 })
 
 const openModal = (m) => {
-  if (m) { editingMem.value = { ...m }; formData.value = { ...m } }
+  if (m) { 
+    editingMem.value = { ...m }
+    formData.value = { 
+      ...m,
+      membershipDiscount: Number(m.membershipDiscount) || 0,
+      membershipCost: Number(m.membershipCost) || 0
+    } 
+  }
   else { editingMem.value = {}; formData.value = { memberName: '', code: '', expiryDate: '', type: 'Loyalty', color: '#8b5cf6', notes: '', memberImage: '', isPaid: false, membershipCost: 0, membershipDiscount: 0 } }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })

@@ -196,7 +196,13 @@ const filteredItems = computed(() => {
 })
 
 const openModal = (item) => {
-  if (item) { editingItem.value = { ...item }; formData.value = { ...item } }
+  if (item) { 
+    editingItem.value = { ...item }
+    formData.value = { 
+      ...item,
+      amountPerUnit: Number(item.amountPerUnit) || 0
+    } 
+  }
   else { editingItem.value = {}; formData.value = { itemName: '', itemCategory: 'Food & Groceries', unitScale: 'pcs', amountPerUnit: 0, currency: 'IDR', manufacturer: '', model: '', SKU: '', warrantyExpiryDate: '', notes: '', itemImage: '' } }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })

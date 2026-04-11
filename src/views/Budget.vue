@@ -109,7 +109,13 @@ const filteredBudgets = computed(() => {
 })
 
 const openModal = (b) => {
-  if (b) { editingBud.value = { ...b }; formData.value = { ...b } }
+  if (b) { 
+    editingBud.value = { ...b }
+    formData.value = { 
+      ...b,
+      budgetAmount: Number(b.budgetAmount) || 0
+    } 
+  }
   else { editingBud.value = {}; formData.value = { category: '', type: 'Monthly', budgetAmount: 0, currency: 'IDR', status: 'Active' } }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })

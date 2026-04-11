@@ -133,7 +133,14 @@ const filteredVouchers = computed(() => {
 })
 
 const openModal = (v) => {
-  if (v) { editingVou.value = { ...v }; formData.value = { ...v } }
+  if (v) { 
+    editingVou.value = { ...v }
+    formData.value = { 
+      ...v,
+      balance: Number(v.balance) || 0,
+      discountValue: Number(v.discountValue) || 0
+    } 
+  }
   else { editingVou.value = {}; formData.value = { voucherName: '', provider: '', voucherCode: '', expiryDate: '', status: 'Active', notes: '', isSingleUse: true, balance: 0, discountType: 'Amount', discountValue: 0 } }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })

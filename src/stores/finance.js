@@ -193,33 +193,29 @@ export const useFinanceStore = defineStore('finance', {
         const data = await res.json()
         this.syncProgress = 60
         if (data.status === 'success') {
-          const entities = [
-            { key: 'transaction', state: 'transactions', id: 'transactionID' },
-            { key: 'account', state: 'accounts', id: 'accountID' },
-            { key: 'merchant', state: 'merchants', id: 'merchantID' },
-            { key: 'item', state: 'items', id: 'itemID' },
-            { key: 'member', state: 'members', id: 'memberID' },
-            { key: 'voucher', state: 'vouchers', id: 'voucherID' },
-            { key: 'budget', state: 'budgets', id: 'budgetID' },
-            { key: 'goal', state: 'goals', id: 'goalID' },
-            { key: 'receipt', state: 'receipts', id: 'receiptID' },
-            { key: 'category', state: 'categories', id: 'categoryID' },
-            { key: 'unitScale', state: 'unitScales', id: 'unitScale' },
-            { key: 'tag', state: 'tags', id: 'tagID' },
-            { key: 'project', state: 'projects', id: 'projectID' },
-            { key: 'author', state: 'authors', id: 'authorID' }
           ]
+
+          const formatDate = (val) => {
+            if (!val) return ''
+            const d = new Date(val)
+            if (isNaN(d.getTime())) return val
+            return d.toISOString().split('T')[0]
+          }
 
           entities.forEach((ent, i) => {
              if (!data[ent.key]) return
+             const incoming = data[ent.key].map(row => {
+                if (row.date) row.date = formatDate(row.date)
+                if (row.expiryDate) row.expiryDate = formatDate(row.expiryDate)
+                return row
+             })
              if (mode === 'merge') {
-                const incoming = data[ent.key]
                 incoming.forEach(inc => {
                    const exists = this[ent.state].some(cur => cur[ent.id] === inc[ent.id])
                    if (!exists) this[ent.state].push(inc)
                 })
              } else {
-                this[ent.state] = data[ent.key]
+                this[ent.state] = incoming
              }
              this.syncProgress = 60 + Math.floor((i / entities.length) * 35)
           })
@@ -237,6 +233,14 @@ export const useFinanceStore = defineStore('finance', {
         console.error('Cloud pull failed', e)
         return false 
       }
+    },
+
+    forceRefresh() {
+      this.isSyncing = true
+      this.notify('Re-initializing Terminal...', 'info')
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
     },
 
     async pushToCloud() {

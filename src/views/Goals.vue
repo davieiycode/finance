@@ -114,7 +114,14 @@ const filteredGoals = computed(() => {
 })
 
 const openModal = (g) => {
-  if (g) { editingGoal.value = { ...g }; formData.value = { ...g } }
+  if (g) { 
+    editingGoal.value = { ...g }
+    formData.value = { 
+      ...g,
+      targetAmount: Number(g.targetAmount) || 0,
+      currentAmount: Number(g.currentAmount) || 0
+    } 
+  }
   else { editingGoal.value = {}; formData.value = { goalName: '', targetAmount: 0, currentAmount: 0, deadline: '', status: 'In Progress' } }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })

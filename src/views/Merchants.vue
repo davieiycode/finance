@@ -139,7 +139,10 @@ const filteredMerchants = computed(() => {
 })
 
 const openModal = (m) => {
-  if (m) { editingMch.value = { ...m }; formData.value = { ...m } }
+  if (m) { 
+    editingMch.value = { ...m }
+    formData.value = { ...m } 
+  }
   else { editingMch.value = {}; formData.value = { merchantName: '', category: '', status: 'Active', phone: '', address: '', email: '', website: '', bankAccountDetails: '', notes: '', gMapsLink: '' } }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })

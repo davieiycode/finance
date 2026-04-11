@@ -32,15 +32,12 @@
     <div class="accounts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; margin-top: 1.5rem;">
       <div v-for="acc in filteredAccounts" :key="acc.accountID" @click="openModal(acc)" class="account-card-premium" :style="{ background: `linear-gradient(135deg, ${acc.cardColor || '#1e293b'}, ${adjustColor(acc.cardColor || '#1e293b', -30)})` }">
          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div style="width: 44px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 6px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-               <div style="position: absolute; top:0; bottom:0; left:25%; width:1px; background:rgba(0,0,0,0.1);"></div>
-               <div style="position: absolute; top:0; bottom:0; left:50%; width:1px; background:rgba(0,0,0,0.1);"></div>
-               <div style="position: absolute; top:0; bottom:0; left:75%; width:1px; background:rgba(0,0,0,0.1);"></div>
-            </div>
             <div v-if="acc.accountImage" style="width: 36px; height: 36px; border-radius: 8px; overflow: hidden; background: white; padding: 4px;">
                <img :src="acc.accountImage" style="width:100%; height:100%; object-fit: contain;">
             </div>
-            <i v-else data-lucide="shield-check" style="width: 20px; color: rgba(255,255,255,0.5);"></i>
+            <div v-else style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+               <i data-lucide="shield-check" style="width: 20px; color: rgba(255,255,255,0.5);"></i>
+            </div>
          </div>
          
          <div style="margin-top: 1.5rem;">
@@ -171,7 +168,11 @@ const filteredAccounts = computed(() => {
 const openModal = (acc) => {
   if (acc) {
     editingAcc.value = { ...acc }
-    formData.value = { ...acc }
+    formData.value = { 
+      ...acc,
+      openingBalance: Number(acc.openingBalance) || 0,
+      currentBalance: Number(acc.currentBalance) || 0
+    }
   } else {
     editingAcc.value = {}
     formData.value = { accountName: '', accountType: 'Bank', currency: 'IDR', openingBalance: 0, currentBalance: 0, cardColor: '#1e293b', status: 'Active', notes: '', accountNumber: '', accountImage: '', cardNumber: '', expiryDate: '' }

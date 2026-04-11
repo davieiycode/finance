@@ -56,10 +56,15 @@
          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
             <div style="grid-column: span 2;" class="input-group">
                <label class="form-label">Primary Designation (Item Name) *</label>
-               <select v-model="form.itemName" @change="onItemChange" required class="f-input" style="font-size: 1rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);">
-                  <option value="">Search Archives...</option>
-                  <option v-for="i in store.items" :key="i.itemID" :value="i.itemName">{{ i.itemName }}</option>
-               </select>
+               <div style="position: relative;">
+                  <input type="text" v-model="itemSearch" @focus="showItemDropdown = true" @blur="hideDropdown('item')" placeholder="Search Archives..." required class="f-input" style="font-size: 1rem; border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);">
+                  <div v-if="showItemDropdown && filteredItems.length" style="position: absolute; top: 110%; left: 0; right: 0; background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 12px; z-index: 100; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                     <div v-for="i in filteredItems" :key="i.itemID" @mousedown="selectItem(i)" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s;">
+                        <div style="font-weight: 800; color: white;">{{ i.itemName }}</div>
+                        <div v-if="i.notes || i.itemCategory" style="font-size: 0.7rem; opacity: 0.5; margin-top: 0.25rem;">{{ i.itemCategory }} • {{ i.notes }}</div>
+                     </div>
+                  </div>
+               </div>
             </div>
             <div class="input-group">
                <label class="form-label">Vendor / Merchant</label>
@@ -70,10 +75,15 @@
             </div>
             <div class="input-group">
                <label class="form-label">Classification</label>
-               <select v-model="form.category" class="f-input" style="background: rgba(255,255,255,0.02);">
-                  <option value="">General</option>
-                  <option v-for="c in categoriesByType" :key="c.categoryID" :value="c.category">{{ c.category }}</option>
-               </select>
+               <div style="position: relative;">
+                  <input type="text" v-model="categorySearch" @focus="showCategoryDropdown = true" @blur="hideDropdown('category')" placeholder="General" class="f-input" style="background: rgba(255,255,255,0.02);">
+                  <div v-if="showCategoryDropdown && filteredCategories.length" style="position: absolute; top: 110%; left: 0; right: 0; background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 12px; z-index: 100; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                     <div v-for="c in filteredCategories" :key="c.categoryID" @mousedown="selectCategory(c)" style="padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">
+                        <div style="font-weight: 800; color: white; font-size: 0.85rem;">{{ c.category }}</div>
+                        <div v-if="c.description" style="font-size: 0.65rem; opacity: 0.5; margin-top: 0.2rem;">{{ c.description }}</div>
+                     </div>
+                  </div>
+               </div>
             </div>
          </div>
          <div style="margin-top: 1.5rem;">
@@ -189,12 +199,20 @@
             <div style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.25rem;">
                <div class="input-group">
                   <label class="form-label">Quantity & Scale</label>
-                  <div style="display: flex; align-items: center; gap: 0.25rem; background: var(--bg-input); padding: 0 0.5rem; border-radius: 14px; border: 1px solid var(--border); height: 50px; box-sizing: border-box;">
+                  <div style="display: flex; align-items: center; gap: 0.25rem; background: var(--bg-input); padding: 0 0.5rem; border-radius: 14px; border: 1px solid var(--border); height: 50px; box-sizing: border-box; position: relative;">
                      <input type="number" v-model.number="form.quantity" step="0.01" style="width: 100%; background: none; border: none; font-weight: 800; color: white; outline: none; padding: 0 0.5rem; height: 100%;">
-                     <select v-model="form.unitScale" style="background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 0.65rem; font-weight: 900; padding: 6px 10px; outline: none; cursor: pointer; text-transform: uppercase;">
-                        <option value="">UNIT</option>
-                        <option v-for="u in store.unitScales" :key="u.unitScale" :value="u.unitScale">{{ u.unitScale }}</option>
-                     </select>
+                     
+                     <!-- Searchable Unit Dropdown -->
+                     <div style="position: relative; min-width: 80px;">
+                        <input type="text" v-model="unitSearch" @focus="showUnitDropdown = true" @blur="hideDropdown('unit')" placeholder="UNIT" 
+                          style="background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 0.65rem; font-weight: 900; padding: 6px 10px; outline: none; cursor: pointer; text-transform: uppercase; width: 100%; text-align: center;">
+                        <div v-if="showUnitDropdown && filteredUnits.length" style="position: absolute; bottom: 120%; right: 0; min-width: 150px; background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 12px; z-index: 100; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                           <div v-for="u in filteredUnits" :key="u.unitScale" @mousedown="selectUnit(u)" style="padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">
+                              <div style="font-weight: 800; color: white; font-size: 0.8rem;">{{ u.unitScale }}</div>
+                              <div v-if="u.description" style="font-size: 0.6rem; opacity: 0.5; margin-top: 0.2rem;">{{ u.description }}</div>
+                           </div>
+                        </div>
+                     </div>
                   </div>
                </div>
                <div class="input-group">
@@ -364,6 +382,70 @@ const form = ref({
   exchangeRate: 1
 })
 
+// Searchable UI Refs
+const itemSearch = ref('')
+const showItemDropdown = ref(false)
+const categorySearch = ref('')
+const showCategoryDropdown = ref(false)
+const unitSearch = ref('')
+const showUnitDropdown = ref(false)
+
+const hideDropdown = (type) => {
+  setTimeout(() => {
+    if (type === 'item') showItemDropdown.value = false
+    else if (type === 'category') showCategoryDropdown.value = false
+    else if (type === 'unit') showUnitDropdown.value = false
+  }, 200)
+}
+
+const filteredItems = computed(() => {
+  const q = itemSearch.value.toLowerCase()
+  if (!q && !showItemDropdown.value) return []
+  return store.items.filter(i => 
+    (i.itemName || '').toLowerCase().includes(q) || 
+    (i.notes || '').toLowerCase().includes(q) ||
+    (i.itemCategory || '').toLowerCase().includes(q)
+  ).slice(0, 10)
+})
+
+const filteredCategories = computed(() => {
+  const q = categorySearch.value.toLowerCase()
+  const list = store.categories.filter(c => !form.value.type || c.type === form.value.type)
+  if (!q && !showCategoryDropdown.value) return list.slice(0, 10)
+  return list.filter(c => 
+    (c.category || '').toLowerCase().includes(q) || 
+    (c.description || '').toLowerCase().includes(q)
+  ).slice(0, 10)
+})
+
+const filteredUnits = computed(() => {
+  const q = unitSearch.value.toLowerCase()
+  if (!q && !showUnitDropdown.value) return store.unitScales.slice(0, 10)
+  return store.unitScales.filter(u => 
+    (u.unitScale || '').toLowerCase().includes(q) || 
+    (u.description || '').toLowerCase().includes(q)
+  ).slice(0, 10)
+})
+
+const selectItem = (i) => {
+  form.value.itemName = i.itemName
+  itemSearch.value = i.itemName
+  onItemChange()
+  showItemDropdown.value = false
+}
+
+const selectCategory = (c) => {
+  form.value.category = c.category
+  categorySearch.value = c.category
+  showCategoryDropdown.value = false
+}
+
+const selectUnit = (u) => {
+  form.value.unitScale = u.unitScale
+  unitSearch.value = u.unitScale
+  showUnitDropdown.value = false
+}
+
 const showScanner = ref(false)
 let html5QrCode = null
 
@@ -436,14 +518,26 @@ const saveTransaction = () => {
   
   form.value.discount = calculatedDiscount.value
   form.value.total = calculatedTotal.value
-  store.addTransaction({ ...form.value })
   
-  alert('Expedition Successfully Logged!')
+  const isEditing = !!router.currentRoute.value.query.id
+  
+  if (isEditing) {
+    store.updateTransaction({ ...form.value })
+    store.notify('Expedition Log Updated', 'success')
+  } else {
+    // For duplicates, we want a fresh ID
+    const payload = { ...form.value }
+    if (router.currentRoute.value.query.duplicate) {
+      delete payload.transactionID
+    }
+    store.addTransaction(payload)
+  }
+  
   router.push('/')
 }
 
 const toggleValue = (current, value) => {
-  const arr = current ? current.split(',').map(s => s.trim()).filter(Boolean) : []
+  const arr = current ? String(current).split(',').map(s => s.trim()).filter(Boolean) : []
   const idx = arr.indexOf(value)
   if (idx === -1) arr.push(value)
   else arr.splice(idx, 1)
@@ -451,7 +545,7 @@ const toggleValue = (current, value) => {
 }
 
 const isSelected = (current, value) => {
-  const arr = current ? current.split(',').map(s => s.trim()).filter(Boolean) : []
+  const arr = current ? String(current).split(',').map(s => s.trim()).filter(Boolean) : []
   return arr.includes(value)
 }
 
@@ -506,11 +600,25 @@ const stopScanner = async () => {
 
 onBeforeUnmount(() => { stopScanner() })
 onMounted(() => {
-  const txID = router.currentRoute.value.query.id
+  const query = router.currentRoute.value.query
+  const txID = query.id || query.duplicate
+  
   if (txID) {
     const tx = store.transactions.find(t => t.transactionID === txID)
     if (tx) {
-      form.value = { ...tx }
+      // map data with numeric casting to prevent empty/NaN fields
+      form.value = { 
+        ...tx,
+        amountPerUnit: Number(tx.amountPerUnit) || 0,
+        quantity: Number(tx.quantity) || 0,
+        total: Number(tx.total) || 0,
+        discount: Number(tx.discount) || 0,
+        fee: Number(tx.fee) || 0,
+        exchangeRate: Number(tx.exchangeRate) || 1
+      }
+      itemSearch.value = form.value.itemName || ''
+      categorySearch.value = form.value.category || ''
+      unitSearch.value = form.value.unitScale || ''
     }
   }
   if (window.lucide) window.lucide.createIcons()

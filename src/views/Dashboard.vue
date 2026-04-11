@@ -7,6 +7,9 @@
           <p id="welcome-msg" style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0; white-space: nowrap;">Safe travels, Explorer</p>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
+          <div @click="store.forceRefresh" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
+            <i data-lucide="refresh-cw" :class="{ 'spin-active': store.isSyncing }" style="width: 18px;"></i>
+          </div>
           <div @click="toggleSearch" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
             <i data-lucide="search" style="width: 20px;"></i>
           </div>
