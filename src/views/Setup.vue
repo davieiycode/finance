@@ -20,13 +20,13 @@
           </button>
         </div>
         
-        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">INTELLIGENCE CORE V5.0.0 • BUILT 2026-04-12</p>
+        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">INTELLIGENCE CORE V5.1.0 • BUILT 2026-04-12</p>
      </div>
 
      <!-- Manual Entry View -->
      <div v-if="showManual && !syncing" class="welcome-screen">
-         <div class="logo-orb" style="overflow: hidden; padding: 0;">
-            <img src="/logo.png" style="width: 100%; height: 100%; object-fit: cover;">
+         <div class="logo-orb" style="overflow: hidden; padding: 1.5rem; background: white;">
+            <img src="/logo.png" style="width: 100%; height: 100%; object-fit: contain;">
          </div>
         <h1 style="font-weight: 1000; letter-spacing: -0.05em; margin: 2rem 0 0.5rem 0;">MANUAL UPLINK</h1>
         <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 2rem;">Paste your Bridge Nexus URL (Core Protocol) below.</p>

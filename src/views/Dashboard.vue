@@ -3,21 +3,23 @@
     <div class="sticky-nav" style="padding: 1.5rem 0 1rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
         <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.75rem;">
-          <img src="/logo.png" style="height: 32px; width: 32px; border-radius: 8px; object-fit: contain;" alt="Jurney Logo">
+          <div style="width: 36px; height: 36px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <img src="/logo.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Jurney Logo">
+          </div>
           <h1 style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.02em;">Jurney</h1>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <div @click="store.forceRefresh" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
-            <i data-lucide="refresh-cw" :class="{ 'spin-active': store.isSyncing }" style="width: 18px;"></i>
+          <div @click="store.forceRefresh" class="profile-icon" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
+            <i data-lucide="refresh-cw" :class="{ 'spin-active': store.isSyncing }" style="width: 16px;"></i>
           </div>
-          <div @click="toggleSearch" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-            <i data-lucide="search" style="width: 20px;"></i>
+          <div @click="toggleSearch" class="profile-icon" style="width: 36px; height: 36px; border-radius: 12px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i data-lucide="search" style="width: 18px;"></i>
           </div>
           <div class="user-meta" style="display: flex; align-items: center; gap: 0.75rem;">
-            <div @click="$router.push('/settings')" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.25rem; overflow: hidden; position: relative;">
-               <img v-if="userAvatar.includes('.svg')" :src="userAvatar" style="width: 24px; height: 24px; object-fit: contain;">
+            <div @click="$router.push('/settings')" class="profile-icon" style="width: 36px; height: 36px; border-radius: 12px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; overflow: hidden; position: relative;">
+               <img v-if="userAvatar.includes('.svg')" :src="userAvatar" style="width: 20px; height: 20px; object-fit: contain;">
                <span v-else>{{ userAvatar }}</span>
-               <div style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #10b981; border: 2px solid var(--bg-primary); border-radius: 50%;"></div>
+               <div style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; background: #10b981; border: 1.5px solid var(--bg-primary); border-radius: 50%;"></div>
             </div>
           </div>
         </div>
@@ -38,9 +40,9 @@
     <!-- System Status Bar -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 0 0.5rem;">
        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <div style="display: flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2);">
-             <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
-             <span style="font-size: 0.6rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em;">LATEST-STABLE v5.0.0</span>
+          <div style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
+             <span style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; display: block;"></span>
+             <span style="font-size: 0.7rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em; line-height: 1;">CORE v5.1.0</span>
           </div>
           <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">PROD CORE ACTIVE</div>
        </div>
@@ -196,7 +198,7 @@ const toggleSearch = () => {
 const checkUpdates = () => {
   store.notify('Verifying core integrity...', 'info')
   setTimeout(() => {
-     store.notify('Protocol v5.0.0 is the latest stable release.', 'success')
+     store.notify('Protocol v5.1.0 is the latest stable release.', 'success')
   }, 1000)
 }
 

@@ -59,8 +59,8 @@ watch(() => route.path, () => {
   gap: 4px;
   color: #64748b;
   text-decoration: none;
-  font-size: 0.65rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -89,14 +89,14 @@ watch(() => route.path, () => {
 .nav-item.active i {
   color: var(--accent, #8b5cf6);
   filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
-  fill: currentColor;
+  stroke-width: 2.5px;
 }
 
 .plus-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: var(--accent, #8b5cf6);
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;

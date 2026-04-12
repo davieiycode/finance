@@ -393,11 +393,29 @@ const getTxSign = (type) => {
 
 watch([filteredTransactions, activeTab, analysisMode], () => { nextTick(() => initCharts()) })
 onMounted(() => {
+  // If current month has no data, check if there's any data at all to set initial view
+  if (filteredTransactions.value.length === 0 && store.transactions.length > 0) {
+    const lastTx = [...store.transactions].sort((a,b) => new Date(b.date) - new Date(a.date))[0]
+    if (lastTx && lastTx.date) {
+      activeDate.value = new Date(lastTx.date)
+    }
+  }
+
   nextTick(() => {
     if (window.lucide) window.lucide.createIcons()
     initCharts()
   })
   window.addEventListener('resize', () => Object.values(charts).forEach(c => c && c.resize()))
+})
+
+// If user switches to yearly, and current year is empty, try to find a year with data
+watch(analysisMode, (newMode) => {
+  if (newMode === 'yearly' && filteredTransactions.value.length === 0 && store.transactions.length > 0) {
+    const lastTx = [...store.transactions].sort((a,b) => new Date(b.date) - new Date(a.date))[0]
+    if (lastTx && lastTx.date) {
+      activeDate.value = new Date(lastTx.date)
+    }
+  }
 })
 </script>
 
