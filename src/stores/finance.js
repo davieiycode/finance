@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-// Schema Alignment: Internal state now uses EXACT spreadsheet column names
+// Schema Alignment: Internal state now uses EXACT Vault Ledger column names
 const isSafe = typeof localStorage !== 'undefined'
 const safeList = (key) => {
   if (!isSafe) return []

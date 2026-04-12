@@ -147,60 +147,70 @@
     </div>
 
     <div v-show="currentView === 'cloud'" class="sub-view">
-      <div class="settings-list-card" style="padding: 1.75rem;">
-        <label class="sett-label" style="display:flex; align-items:center; gap:0.5rem; margin-bottom: 1rem;">
-           <i data-lucide="link" style="width:14px;"></i> CORE UPLINK COORDINATES
+      <div class="settings-list-card" style="padding: 1.75rem; background: rgba(255,255,255,0.02); border-radius: 1.5rem;">
+        <label class="sett-label" style="display:flex; align-items:center; gap:0.6rem; margin-bottom: 1.25rem;">
+           <i data-lucide="shield-check" style="width:14px; color: var(--accent);"></i> CORE UPLINK COORDINATES
         </label>
         <div style="position: relative;">
-          <input :type="showUrl ? 'text' : 'password'" v-model="cloudUrl" class="f-input" placeholder="https://..." style="padding-right: 3rem;">
-          <button @click="showUrl = !showUrl" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+          <input :type="showUrl ? 'text' : 'password'" v-model="cloudUrl" class="f-input" placeholder="Coordinate String..." style="padding-right: 3.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border2);">
+          <button @click="showUrl = !showUrl" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px;">
              <i :data-lucide="showUrl ? 'eye-off' : 'eye'" style="width: 18px;"></i>
           </button>
         </div>
-        <p style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.75rem; line-height: 1.5; opacity: 0.6;">
-           Connection established via Secure Jurney Access Key.
-        </p>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 1rem;">
+           <div style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite;"></div>
+           <p style="font-size: 0.65rem; color: var(--text-secondary); line-height: 1.5; opacity: 0.6; margin: 0;">
+              Secure comm-link established via Jurney Encryption Protocol.
+           </p>
+        </div>
       </div>
 
-      <div class="settings-list-card" style="padding: 1.75rem;">
-         <label class="sett-label" style="margin-bottom: 1.25rem; display: block;">Resonance Strategy</label>
-         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; background: var(--bg-input); padding: 0.4rem; border-radius: 14px; border: 1px solid var(--border);">
+      <div class="settings-list-card" style="padding: 1.75rem; background: rgba(255,255,255,0.02); border-radius: 1.5rem;">
+         <label class="sett-label" style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="zap" style="width: 14px; color: var(--accent);"></i> Resonance Strategy
+         </label>
+         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 16px; border: 1px solid var(--border2);">
             <button @click="syncMode = 'overwrite'" 
-               style="padding: 0.75rem; border: none; border-radius: 10px; font-weight: 800; font-size: 0.65rem; cursor: pointer; transition: 0.2s;"
-               :style="{ background: syncMode === 'overwrite' ? 'var(--accent)' : 'transparent', color: syncMode === 'overwrite' ? 'white' : 'var(--text-secondary)' }">
+               style="padding: 0.85rem; border: none; border-radius: 12px; font-weight: 850; font-size: 0.65rem; cursor: pointer; transition: 0.3s; letter-spacing: 0.05em;"
+               :style="{ background: syncMode === 'overwrite' ? 'var(--accent)' : 'transparent', color: syncMode === 'overwrite' ? 'white' : 'var(--text-secondary)', boxShadow: syncMode === 'overwrite' ? '0 4px 12px rgba(139, 92, 246, 0.3)' : 'none' }">
                FORCE OVERWRITE
             </button>
             <button @click="syncMode = 'merge'" 
-               style="padding: 0.75rem; border: none; border-radius: 10px; font-weight: 800; font-size: 0.65rem; cursor: pointer; transition: 0.2s;"
-               :style="{ background: syncMode === 'merge' ? 'var(--accent)' : 'transparent', color: syncMode === 'merge' ? 'white' : 'var(--text-secondary)' }">
+               style="padding: 0.85rem; border: none; border-radius: 12px; font-weight: 850; font-size: 0.65rem; cursor: pointer; transition: 0.3s; letter-spacing: 0.05em;"
+               :style="{ background: syncMode === 'merge' ? 'var(--accent)' : 'transparent', color: syncMode === 'merge' ? 'white' : 'var(--text-secondary)', boxShadow: syncMode === 'merge' ? '0 4px 12px rgba(139, 92, 246, 0.3)' : 'none' }">
                HYBRID MERGE
             </button>
          </div>
-         <p style="font-size: 0.6rem; color: var(--text-secondary); margin-top: 1rem; text-align: center; opacity: 0.6;">
-            {{ syncMode === 'overwrite' ? 'Warning: Local intelligence will be replaced by core state.' : 'Info: Duplicate signatures will be ignored; local vaults preserved.' }}
+         <p style="font-size: 0.6rem; color: var(--text-secondary); margin-top: 1.25rem; text-align: center; opacity: 0.5; line-height: 1.4;">
+            {{ syncMode === 'overwrite' ? 'DANGER: Universal Core state will completely rewrite local vaults.' : 'SAFE: Incoming chronicles will merge seamlessly with existing local logs.' }}
          </p>
       </div>
-
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <button class="sett-card" style="align-items: center; background: rgba(255,255,255,0.03); border-style: dashed;" @click="pullData" :disabled="syncing">
-          <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(14, 165, 233, 0.1); display: flex; align-items: center; justify-content: center; color: #0ea5e9; margin-bottom: 0.5rem;">
-             <i data-lucide="download-cloud"></i>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+        <button class="sett-card" style="align-items: center; justify-content: center; background: rgba(14, 165, 233, 0.03); border: 1px dashed rgba(14, 165, 233, 0.3); padding: 2rem 1.25rem; min-height: 140px; margin: 0;" @click="pullData" :disabled="syncing">
+          <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(14, 165, 129, 0.1); display: flex; align-items: center; justify-content: center; color: #10b981; margin-bottom: 0.75rem;">
+             <i data-lucide="download-cloud" style="width: 24px;"></i>
           </div>
-          <span class="sett-label" style="font-size: 0.75rem;">{{ syncing ? '...' : 'DESCEND CORE' }}</span>
+          <span class="sett-label" style="font-size: 0.7rem; letter-spacing: 0.1em; color: #10b981;">{{ syncing ? 'SYNCING...' : 'PULL CORE' }}</span>
         </button>
-        <button class="sett-card" style="align-items: center; background: rgba(139, 92, 246, 0.05); border-color: var(--accent);" @click="pushData" :disabled="syncing">
-          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 0.5rem; box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);">
-             <i data-lucide="upload-cloud"></i>
+        <button class="sett-card" style="align-items: center; justify-content: center; background: rgba(139, 92, 246, 0.03); border: 1px solid rgba(139, 92, 246, 0.2); padding: 2rem 1.25rem; min-height: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin: 0;" @click="pushData" :disabled="syncing">
+          <div style="width: 52px; height: 52px; border-radius: 16px; background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 0.75rem; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);">
+             <i data-lucide="upload-cloud" style="width: 24px;"></i>
           </div>
-          <span class="sett-label" style="font-size: 0.75rem; color: var(--accent);">{{ syncing ? '...' : 'ASCEND LOGS' }}</span>
+          <span class="sett-label" style="font-size: 0.7rem; letter-spacing: 0.1em; color: var(--accent);">{{ syncing ? 'PUSHING...' : 'PUSH LOGS' }}</span>
         </button>
       </div>
 
-      <!-- System Version Info -->
-      <div style="margin-top: 3rem; text-align: center; opacity: 0.3;">
-         <div style="font-size: 0.8rem; font-weight: 800; letter-spacing: 0.3em; margin-bottom: 4px;">JURNEY</div>
-         <div style="font-size: 0.5rem; font-weight: 950; letter-spacing: 0.1em;">PROTOCOL v4.2.0 • BUILT 2026-04-12</div>
-      </div>
+       <!-- System Version Info -->
+       <div style="margin-top: 5rem; text-align: center; border-top: 1px solid var(--border); padding-top: 2.5rem; margin-bottom: 3rem;">
+          <div style="font-size: 1.1rem; font-weight: 1000; letter-spacing: 0.5em; color: white; opacity: 0.9; margin-bottom: 0.6rem;">JURNEY</div>
+          <div style="font-size: 0.6rem; font-weight: 950; letter-spacing: 0.15em; color: var(--text-secondary); opacity: 0.5;">INTELLIGENCE CORE v5.0.0 • BUILT 2026-04-12</div>
+          <div style="display: flex; justify-content: center; gap: 1.25rem; margin-top: 2rem; opacity: 0.2;">
+             <div style="width: 4px; height: 4px; background: white; border-radius: 50%;"></div>
+             <div style="width: 4px; height: 4px; background: white; border-radius: 50%;"></div>
+             <div style="width: 4px; height: 4px; background: white; border-radius: 50%;"></div>
+          </div>
+       </div>
     </div>
 
 

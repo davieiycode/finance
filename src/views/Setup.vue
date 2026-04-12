@@ -16,11 +16,11 @@
           </button>
           
           <button @click="showManual = true" style="background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border); padding: 1rem; border-radius: 1.25rem; font-weight: 700; font-size: 0.8rem; cursor: pointer;">
-             ENTER SCRIPT MANUALLY
+             ENTER COORDINATE MANUALLY
           </button>
         </div>
         
-        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">FINANCE PROTOCOL V4.2.0 • BUILT 2026-04-12</p>
+        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">INTELLIGENCE CORE V5.0.0 • BUILT 2026-04-12</p>
      </div>
 
      <!-- Manual Entry View -->
@@ -29,7 +29,7 @@
             <img src="/logo.png" style="width: 100%; height: 100%; object-fit: cover;">
          </div>
         <h1 style="font-weight: 1000; letter-spacing: -0.05em; margin: 2rem 0 0.5rem 0;">MANUAL UPLINK</h1>
-        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 2rem;">Paste your Core Script URL (Google Apps Script) below.</p>
+        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 2rem;">Paste your Bridge Nexus URL (Core Protocol) below.</p>
         
         <div style="width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 1rem;">
           <input 

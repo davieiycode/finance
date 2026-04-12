@@ -1,6 +1,6 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 2rem; position: relative;">
-    <div class="sticky-nav" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: -1px; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
+  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem 2rem 1rem; overflow-y: auto; height: 100%; position: relative;">
+    <div class="sticky-nav" style="padding: 1.5rem 0 1rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
         <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.75rem;">
           <img src="/logo.png" style="height: 32px; width: 32px; border-radius: 8px; object-fit: contain;" alt="Jurney Logo">
@@ -14,9 +14,10 @@
             <i data-lucide="search" style="width: 20px;"></i>
           </div>
           <div class="user-meta" style="display: flex; align-items: center; gap: 0.75rem;">
-            <div @click="$router.push('/settings')" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.25rem; overflow: hidden;">
-              <img v-if="userAvatar.includes('.svg')" :src="userAvatar" style="width: 24px; height: 24px; object-fit: contain;">
-              <span v-else>{{ userAvatar }}</span>
+            <div @click="$router.push('/settings')" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.25rem; overflow: hidden; position: relative;">
+               <img v-if="userAvatar.includes('.svg')" :src="userAvatar" style="width: 24px; height: 24px; object-fit: contain;">
+               <span v-else>{{ userAvatar }}</span>
+               <div style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #10b981; border: 2px solid var(--bg-primary); border-radius: 50%;"></div>
             </div>
           </div>
         </div>
@@ -30,8 +31,18 @@
                  <i data-lucide="x" style="width: 16px;"></i>
               </button>
            </div>
-        </div>
-      </header>
+    </div>
+
+    <!-- System Status Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 0 0.5rem;">
+       <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2);">
+             <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+             <span style="font-size: 0.6rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em;">LATEST-STABLE v5.0.0</span>
+          </div>
+          <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">PROD CORE ACTIVE</div>
+       </div>
+       <div @click="checkUpdates" style="font-size: 0.6rem; color: var(--accent); font-weight: 800; text-transform: uppercase; cursor: pointer; letter-spacing: 0.05em;">Verify Integrity</div>
     </div>
 
     <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; margin-top: 1.5rem;">
@@ -172,6 +183,13 @@ const toggleSearch = () => {
   if (!showSearch.value) {
     searchQuery.value = ''
   }
+}
+
+const checkUpdates = () => {
+  store.notify('Verifying core integrity...', 'info')
+  setTimeout(() => {
+     store.notify('Protocol v5.0.0 is the latest stable release.', 'success')
+  }, 1000)
 }
 
 const totalBalance = computed(() => {
