@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   # Single deploy job since we're just deploying
@@ -31,22 +31,24 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: System Node Version (Before Setup)
+      - name: System Node Version (Initial)
         run: node -v
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24.x
-          cache: 'npm'
-      - name: Active Node Version (After Setup)
+          node-version: 24
+      - name: Active Node Version
         run: |
           node -v
           npm -v
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
       - name: Build
         run: npm run build
       - name: Setup Pages
