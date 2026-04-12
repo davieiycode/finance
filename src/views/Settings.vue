@@ -15,7 +15,7 @@
     <div v-show="currentView === 'main'" style="animation: fadeIn 0.4s ease;">
       <div class="sett-card" style="margin: 1.5rem 0 2.5rem 0; padding: 1.75rem; display: flex; align-items: center; gap: 1.5rem; cursor: pointer;" @click="currentView = 'personal'">
         <div style="width:72px; height:72px; border-radius:36px; background:rgba(139,92,246,0.1); display:flex; align-items:center; justify-content:center; border: 2px solid var(--accent); overflow: hidden;">
-          <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="userPrefs.avatar" style="width: 70%; height: 70%; object-fit: contain;">
+          <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="resolvedAvatar" style="width: 70%; height: 70%; object-fit: contain;">
           <span v-else style="font-size: 2rem;">{{ userPrefs.avatar || '👤' }}</span>
         </div>
         <div style="flex:1;">
@@ -89,7 +89,7 @@
     <div v-show="currentView === 'personal'" class="sub-view">
       <div style="display: flex; flex-direction: column; align-items: center; margin: 1rem 0 2rem 0;">
         <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-input); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; box-shadow: 0 0 30px rgba(139, 92, 246, 0.2); overflow: hidden;">
-          <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="userPrefs.avatar" style="width: 60%; height: 60%; object-fit: contain;">
+          <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="resolvedAvatar" style="width: 60%; height: 60%; object-fit: contain;">
           <span v-else style="font-size: 3rem;">{{ userPrefs.avatar || '👤' }}</span>
         </div>
         
@@ -200,7 +200,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
@@ -208,10 +208,11 @@ const currentView = ref('main')
 const syncing = ref(false)
 const syncMode = ref('overwrite')
 const showUrl = ref(false)
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
 const avatarList = ref([
-  '/avatars/avatar1.svg', '/avatars/avatar2.svg', '/avatars/avatar3.svg', '/avatars/avatar4.svg',
-  '/avatars/avatar5.svg', '/avatars/avatar6.svg', '/avatars/avatar7.svg', '/avatars/avatar8.svg',
-  '/avatars/avatar9.svg', '/avatars/avatar10.svg', '/avatars/avatar11.svg', '/avatars/avatar12.svg',
+  `${base}/avatars/avatar1.svg`, `${base}/avatars/avatar2.svg`, `${base}/avatars/avatar3.svg`, `${base}/avatars/avatar4.svg`,
+  `${base}/avatars/avatar5.svg`, `${base}/avatars/avatar6.svg`, `${base}/avatars/avatar7.svg`, `${base}/avatars/avatar8.svg`,
+  `${base}/avatars/avatar9.svg`, `${base}/avatars/avatar10.svg`, `${base}/avatars/avatar11.svg`, `${base}/avatars/avatar12.svg`,
   '👤','🥷','👨‍🚀','🧗'
 ])
 
@@ -259,6 +260,18 @@ const updateApp = () => {
     }
   }
 }
+
+const resolvedAvatar = computed(() => {
+  const av = userPrefs.value.avatar
+  if (!av || !av.includes('.svg')) return av
+  if (av.startsWith('http') || av.startsWith('data:')) return av
+  // If it starts with /avatars but missing base, add it
+  const b = import.meta.env.BASE_URL.replace(/\/$/, '')
+  if (av.startsWith('/avatars') && b && !av.startsWith(b)) {
+     return b + av
+  }
+  return av
+})
 
 const savePrefs = () => {
   if (isSafe) localStorage.setItem('user_prefs', JSON.stringify(userPrefs.value))
