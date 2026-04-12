@@ -47,7 +47,7 @@
     <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
-            <span style="font-weight: 800;">Receipt Detail</span>
+            <span style="font-weight: 800;">Evidence Detail</span>
             <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
          </div>
          <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
@@ -82,18 +82,12 @@
                         <div style="opacity: 0.6; font-size: 0.6rem;">{{ st.date }} • {{ st.total.toLocaleString('id-ID') }}</div>
                      </div>
                      <button @click="linkTransaction(st.transactionID)" style="background: var(--accent); color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 800; font-size: 0.6rem; cursor: pointer;">
-            <div>
-               <label class="f-label">Evidence Capture (Photo/PDF)</label>
-               <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-                  <input type="file" ref="receiptFile" @change="onFileChange" style="display: none;" accept="image/*,application/pdf">
-                  <button @click="$refs.receiptFile.click()" class="f-input" style="flex: 1; text-align: left; display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
-                     <i data-lucide="upload-cloud" style="width: 18px;"></i> {{ formData['foto/dokumen'] ? 'Document Loaded' : 'Select Evidence...' }}
-                  </button>
-                  <button v-if="formData['foto/dokumen']" @click="formData['foto/dokumen'] = ''" style="width: 50px; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; color: #ef4444; cursor: pointer;">
-                     <i data-lucide="trash-2" style="width: 18px;"></i>
-                  </button>
+                        LINK
+                     </button>
+                  </div>
                </div>
             </div>
+
             <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
@@ -122,7 +116,6 @@ import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
 const isModalOpen = ref(false)
-const modalMode = ref('analysis')
 const editingReceipt = ref({})
 const formData = ref({})
 
@@ -139,21 +132,14 @@ const filteredReceipts = computed(() => {
   )
 })
 
-const relatedTransactions = computed(() => {
-  if (!editingReceipt.value.receiptID) return []
-  return store.transactions.filter(t => t.receipt === editingReceipt.value.receiptID)
-})
-
 const openModal = (r) => {
   if (r) { 
     editingReceipt.value = { ...r }
     formData.value = { ...r } 
-    modalMode.value = 'analysis'
   }
   else { 
     editingReceipt.value = {}
     formData.value = { merchant: '', account: '', date: '', time: '', notes: '', transactions: '', 'foto/dokumen': '' } 
-    modalMode.value = 'edit'
   }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
@@ -170,7 +156,6 @@ const onFileChange = (e) => {
 const suggestedTransactions = computed(() => {
   if (!formData.value.merchant && !formData.value.date) return []
   return store.transactions.filter(t => {
-     // Check if already linked
      const alreadyLinked = (formData.value.transactions || '').includes(t.transactionID)
      if (alreadyLinked) return false
 
@@ -178,7 +163,6 @@ const suggestedTransactions = computed(() => {
      const sameDate = t.date === formData.value.date
      const sameAccount = t.paymentSourceAccount === formData.value.account
      
-     // Return true if at least two criteria match, or if merchant and date match
      return (sameMerchant && sameDate) || (sameMerchant && sameAccount)
   }).slice(0, 3)
 })
@@ -191,22 +175,28 @@ const linkTransaction = (id) => {
   }
 }
 
-const handleDuplicate = () => {
-  const data = { ...formData.value }
-  delete data.receiptID
-  editingRec.value = {}
-  formData.value = data
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-}
-
-const saveRec = () => {
+const saveReceipt = () => {
   if (!formData.value.merchant) return alert('Merchant required')
-  if (editingRec.value.receiptID) store.updateReceipt({ ...formData.value })
+  if (editingReceipt.value.receiptID) store.updateReceipt({ ...formData.value })
   else store.addReceipt({ ...formData.value })
   isModalOpen.value = false
 }
 
-const deleteRec = () => { if (confirm('Delete this receipt?')) { store.deleteReceipt(editingRec.value.receiptID); isModalOpen.value = false } }
+const deleteReceipt = () => { 
+  if (confirm('Delete this receipt?')) { 
+    store.deleteReceipt(editingReceipt.value.receiptID)
+    isModalOpen.value = false 
+  } 
+}
+
+const handleDuplicate = () => {
+  const data = { ...formData.value }
+  delete data.receiptID
+  editingReceipt.value = {}
+  formData.value = data
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+}
+
 onMounted(() => { if (window.lucide) window.lucide.createIcons() })
 </script>
 
