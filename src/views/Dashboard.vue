@@ -248,11 +248,11 @@ const anomalyCount = computed(() => {
   ;(store.transactions || []).forEach(t => {
     let hasDesync = false
     if (t.tags) {
-       const txTags = t.tags.split(',').map(s => s.trim()).filter(Boolean)
+       const txTags = String(t.tags).split(',').map(s => s.trim()).filter(Boolean)
        if (txTags.some(tagName => !(store.tags || []).some(rt => rt.tagName === tagName))) hasDesync = true
     }
     if (t.projects) {
-       const txPrjs = t.projects.split(',').map(s => s.trim()).filter(Boolean)
+       const txPrjs = String(t.projects).split(',').map(s => s.trim()).filter(Boolean)
        if (txPrjs.some(prjName => !(store.projects || []).some(rp => rp.projectName === prjName))) hasDesync = true
     }
     if (hasDesync) count++

@@ -40,7 +40,6 @@ const initTransactions = () => {
         discount: 0, 
         fee: 0, 
         total: 10600, 
-        updateTime: new Date().toISOString(), 
         description: 'Beli mie telur', 
         currency: 'IDR', 
         exchangeRate: 1 
@@ -106,7 +105,6 @@ export const useFinanceStore = defineStore('finance', {
     // Transaction Actions
     addTransaction(tx) {
       if (!tx.transactionID) tx.transactionID = 'TX-' + Date.now()
-      tx.updateTime = new Date().toISOString()
       this.transactions.push(tx)
       this.saveAll()
       this.handleVoucherUsage(tx)
@@ -115,7 +113,6 @@ export const useFinanceStore = defineStore('finance', {
     updateTransaction(tx) {
       const idx = this.transactions.findIndex(t => t.transactionID === tx.transactionID)
       if (idx !== -1) {
-        tx.updateTime = new Date().toISOString()
         this.transactions[idx] = tx
         this.saveAll()
       }
@@ -345,7 +342,7 @@ export const useFinanceStore = defineStore('finance', {
       this.transactions.forEach(t => {
         if (type === 'categories' && t.category === sourceName) t.category = targetName
         if (type === 'tags') {
-          const tags = t.tags ? t.tags.split(',').map(s => s.trim()) : []
+          const tags = t.tags ? String(t.tags).split(',').map(s => s.trim()) : []
           if (tags.includes(sourceName)) {
             const idx = tags.indexOf(sourceName)
             if (!tags.includes(targetName)) tags[idx] = targetName
@@ -354,7 +351,7 @@ export const useFinanceStore = defineStore('finance', {
           }
         }
         if (type === 'projects') {
-          const prjs = t.projects ? t.projects.split(',').map(s => s.trim()) : []
+          const prjs = t.projects ? String(t.projects).split(',').map(s => s.trim()) : []
           if (prjs.includes(sourceName)) {
             const idx = prjs.indexOf(sourceName)
             if (!prjs.includes(targetName)) prjs[idx] = targetName
