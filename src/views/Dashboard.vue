@@ -2,9 +2,9 @@
   <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 2rem; position: relative;">
     <div class="sticky-nav" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: -1px; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
-        <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; white-space: nowrap;">Jurney</h1>
-          <p id="welcome-msg" style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0; white-space: nowrap;">Safe travels, Explorer</p>
+        <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.75rem;">
+          <img src="/logo.png" style="height: 32px; width: 32px; border-radius: 8px; object-fit: contain;" alt="Jurney Logo">
+          <h1 style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.02em;">Jurney</h1>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
           <div @click="store.forceRefresh" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">

@@ -1,8 +1,8 @@
 <template>
   <div class="setup-container">
      <div v-if="!scanning && !syncing && !showManual" class="welcome-screen">
-        <div class="logo-orb">
-           <i data-lucide="shield-check" style="width: 48px; height: 48px; color: var(--accent);"></i>
+        <div class="logo-orb" style="overflow: hidden; padding: 0;">
+           <img src="/logo.png" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <h1 style="font-weight: 1000; letter-spacing: -0.05em; margin: 2rem 0 0.5rem 0;">INITIALIZE CORE</h1>
         <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; max-width: 280px; margin-bottom: 3rem;">
@@ -20,14 +20,14 @@
           </button>
         </div>
         
-        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">FINANCE PROTOCOL V4.0.0</p>
+        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">FINANCE PROTOCOL V4.2.0 • BUILT 2026-04-12</p>
      </div>
 
      <!-- Manual Entry View -->
      <div v-if="showManual && !syncing" class="welcome-screen">
-        <div class="logo-orb">
-           <i data-lucide="terminal" style="width: 48px; height: 48px; color: var(--accent);"></i>
-        </div>
+         <div class="logo-orb" style="overflow: hidden; padding: 0;">
+            <img src="/logo.png" style="width: 100%; height: 100%; object-fit: cover;">
+         </div>
         <h1 style="font-weight: 1000; letter-spacing: -0.05em; margin: 2rem 0 0.5rem 0;">MANUAL UPLINK</h1>
         <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 2rem;">Paste your Core Script URL (Google Apps Script) below.</p>
         

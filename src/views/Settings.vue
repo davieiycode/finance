@@ -14,8 +14,9 @@
     <!-- Main Settings Menu -->
     <div v-show="currentView === 'main'" style="animation: fadeIn 0.4s ease;">
       <div class="sett-card" style="margin: 1.5rem 0 2.5rem 0; padding: 1.75rem; display: flex; align-items: center; gap: 1.5rem; cursor: pointer;" @click="currentView = 'personal'">
-        <div style="width:72px; height:72px; border-radius:36px; background:rgba(139,92,246,0.1); display:flex; align-items:center; justify-content:center; font-size: 2rem; border: 2px solid var(--accent);">
-          {{ userPrefs.avatar || '👤' }}
+        <div style="width:72px; height:72px; border-radius:36px; background:rgba(139,92,246,0.1); display:flex; align-items:center; justify-content:center; border: 2px solid var(--accent); overflow: hidden;">
+          <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="userPrefs.avatar" style="width: 70%; height: 70%; object-fit: contain;">
+          <span v-else style="font-size: 2rem;">{{ userPrefs.avatar || '👤' }}</span>
         </div>
         <div style="flex:1;">
           <div class="sett-label">Active Identifier</div>
@@ -69,15 +70,21 @@
     <!-- Personal View -->
     <div v-show="currentView === 'personal'" class="sub-view">
       <div style="display: flex; flex-direction: column; align-items: center; margin: 1rem 0 2rem 0;">
-        <div style="width: 100px; height: 1000px; max-height: 100px; border-radius: 50%; background: var(--bg-input); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1.5rem; box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);">
-          {{ userPrefs.avatar || '👤' }}
+        <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-input); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; box-shadow: 0 0 30px rgba(139, 92, 246, 0.2); overflow: hidden;">
+          <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="userPrefs.avatar" style="width: 60%; height: 60%; object-fit: contain;">
+          <span v-else style="font-size: 3rem;">{{ userPrefs.avatar || '👤' }}</span>
         </div>
         
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; max-width: 320px;">
-           <button v-for="a in ['👤','🥷','👨‍🚀','🧗','🧘','🕵️','🧛','🧟','🤖','👽','🧙','🤴','🦊','🐺','🦁','🐉']" :key="a" @click="userPrefs.avatar = a" 
-             style="width: 44px; height: 44px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;"
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; max-width: 320px;">
+           <button v-for="a in avatarList" :key="a" @click="userPrefs.avatar = a" 
+             style="width: 54px; height: 54px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border); overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding: 0;"
              :style="{ borderColor: userPrefs.avatar === a ? 'var(--accent)' : 'var(--border)', background: userPrefs.avatar === a ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }">
-             {{ a }}
+             <template v-if="a.includes('.svg')">
+               <img :src="a" style="width: 80%; height: 80%; object-fit: contain;">
+             </template>
+             <template v-else>
+               <span style="font-size: 1.5rem;">{{ a }}</span>
+             </template>
            </button>
         </div>
       </div>
@@ -166,7 +173,7 @@
       <!-- System Version Info -->
       <div style="margin-top: 3rem; text-align: center; opacity: 0.3;">
          <div style="font-size: 0.8rem; font-weight: 800; letter-spacing: 0.3em; margin-bottom: 4px;">JURNEY</div>
-         <div style="font-size: 0.5rem; font-weight: 950; letter-spacing: 0.1em;">PROTOCOL v4.1.0</div>
+         <div style="font-size: 0.5rem; font-weight: 950; letter-spacing: 0.1em;">PROTOCOL v4.2.0 • BUILT 2026-04-12</div>
       </div>
     </div>
 
@@ -183,6 +190,12 @@ const currentView = ref('main')
 const syncing = ref(false)
 const syncMode = ref('overwrite')
 const showUrl = ref(false)
+const avatarList = ref([
+  '/avatars/avatar1.svg', '/avatars/avatar2.svg', '/avatars/avatar3.svg', '/avatars/avatar4.svg',
+  '/avatars/avatar5.svg', '/avatars/avatar6.svg', '/avatars/avatar7.svg', '/avatars/avatar8.svg',
+  '/avatars/avatar9.svg', '/avatars/avatar10.svg', '/avatars/avatar11.svg', '/avatars/avatar12.svg',
+  '👤','🥷','👨‍🚀','🧗'
+])
 
 const subTitles = {
   personal: 'Profile Details',
