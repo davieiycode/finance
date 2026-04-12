@@ -30,7 +30,7 @@
     </div>
 
     <div class="accounts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
-      <div v-for="acc in filteredAccounts" :key="acc.accountID" @click="openModal(acc)" class="account-card-premium" :style="{ background: `linear-gradient(135deg, ${acc.cardColor || '#1e293b'}, ${adjustColor(acc.cardColor || '#1e293b', -30)})` }">
+      <div v-for="acc in filteredAccounts" :key="acc.accountID" @click="openModal(acc)" class="account-card-premium card-hover" :style="{ background: `linear-gradient(135deg, ${acc.cardColor || '#1e293b'}, ${adjustColor(acc.cardColor || '#1e293b', -30)})` }">
          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div v-if="acc.accountImage" style="width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: white; padding: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
                <img :src="acc.accountImage" style="width:100%; height:100%; object-fit: contain;">

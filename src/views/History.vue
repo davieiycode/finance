@@ -74,7 +74,7 @@
             </div>
           </div>
           
-          <div v-for="t in group.items" :key="t.transactionID" @click="openTx(t)" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 1rem; cursor: pointer; transition: all 0.2s;">
+          <div v-for="t in group.items" :key="t.transactionID" @click="openTx(t)" class="card-hover" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 1rem; cursor: pointer;">
             <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border);" :style="{ color: getTxColor(t.type) }">
                <i v-if="t.type === 'Income'" data-lucide="arrow-down-left" style="width: 20px;" stroke-width="1.5"></i>
                <i v-else-if="t.type === 'Internal Transfer' || t.type === 'Transfer'" data-lucide="repeat" style="width: 18px;" stroke-width="1.5"></i>

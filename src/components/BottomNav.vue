@@ -65,6 +65,15 @@ watch(() => route.path, () => {
   letter-spacing: 0.05em;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex: 1;
+  user-select: none;
+}
+
+.nav-item:active {
+  transform: scale(0.9);
+}
+
+.nav-item:active .plus-icon {
+  transform: scale(0.9);
 }
 
 .nav-item i {
