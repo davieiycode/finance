@@ -178,6 +178,7 @@
              </div>
           </div>
        </div>
+    </div>
     </Teleport>
 
     <TransactionModal v-if="selectedTx" :tx="selectedTx" @close="selectedTx = null" />
