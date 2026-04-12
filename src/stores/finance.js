@@ -231,11 +231,36 @@ export const useFinanceStore = defineStore('finance', {
              const rawData = data[ent.key]
              if (!rawData || !Array.isArray(rawData)) return
              
-             const incoming = rawData.map(row => {
-                if (row.date) row.date = formatDate(row.date)
-                if (row.expiryDate) row.expiryDate = formatDate(row.expiryDate)
-                return row
-             })
+              let incoming = data[ent.key] || []
+              if (!Array.isArray(incoming)) return
+
+              if (ent.key === 'transaction') {
+                incoming = incoming.map(row => {
+                  const r = { ...row }
+                  // Sanitize Time (Convert 1899-12-30T... to HH:mm)
+                  if (r.time && String(r.time).includes('1899-12-30')) {
+                    const tMatch = String(r.time).match(/T(\d{2}:\d{2})/);
+                    if (tMatch) r.time = tMatch[1];
+                  } else if (r.time && String(r.time).length > 10 && String(r.time).includes('T')) {
+                    r.time = String(r.time).split('T')[1].substring(0, 5);
+                  }
+                  
+                  // Ensure numeric types
+                  if (r.total) r.total = Number(r.total)
+                  if (r.quantity) r.quantity = Number(r.quantity)
+                  if (r.amountPerUnit) r.amountPerUnit = Number(r.amountPerUnit)
+                  if (r.discount) r.discount = Number(r.discount)
+                  if (r.fee) r.fee = Number(r.fee)
+                  
+                  return r
+                })
+              } else {
+                 incoming = incoming.map(row => {
+                    if (row.date) row.date = formatDate(row.date)
+                    if (row.expiryDate) row.expiryDate = formatDate(row.expiryDate)
+                    return row
+                 })
+              }
              
              if (mode === 'merge') {
                 incoming.forEach(inc => {
