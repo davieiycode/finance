@@ -35,7 +35,8 @@
        <div v-for="(item, i) in filteredList" :key="i" @click="openModal(item)" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.3s ease; cursor: pointer;">
           <div style="display: flex; align-items: center; gap: 1rem;">
              <div :style="{ background: colors[i % colors.length] + '15', color: colors[i % colors.length] }" style="width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
-                <i :data-lucide="getItemIcon(item)" style="width: 20px;"></i>
+                <span v-if="activeTab === 'categories' && item.icon" class="material-symbols-outlined" style="font-size: 20px;">{{ item.icon }}</span>
+                <i v-else :data-lucide="getItemIcon(item)" style="width: 20px;"></i>
              </div>
              <div>
                 <div style="font-weight: 800; font-size: 1rem; color: var(--text-primary);">{{ getItemName(item) }}</div>
@@ -63,7 +64,8 @@
           <div v-if="modalMode === 'analysis' && editingItem" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
              <div style="display: flex; align-items: center; gap: 1.25rem;">
                 <div :style="{ background: colors[0] + '15', color: colors[0] }" style="width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center;">
-                   <i :data-lucide="getItemIcon(editingItem)" style="width: 28px;"></i>
+                   <span v-if="activeTab === 'categories' && editingItem.icon" class="material-symbols-outlined" style="font-size: 28px;">{{ editingItem.icon }}</span>
+                   <i v-else :data-lucide="getItemIcon(editingItem)" style="width: 28px;"></i>
                 </div>
                 <div>
                    <div style="font-size: 1.25rem; font-weight: 950; letter-spacing: -0.02em;">{{ getItemName(editingItem) }}</div>
@@ -102,10 +104,10 @@
              <template v-if="activeTab === 'categories'">
                 <div><label class="f-label">Category Name</label><input type="text" v-model="formData.category" class="f-input"></div>
                 <div>
-                   <label class="f-label">Icon</label>
-                   <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; background: var(--bg-input); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border); overflow-y: auto; max-height: 150px;">
+                   <label class="f-label">Icon (Material Design)</label>
+                   <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; background: var(--bg-input); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border); overflow-y: auto; max-height: 200px;">
                       <button v-for="iconName in iconList" :key="iconName" @click="formData.icon = iconName" :style="{ background: formData.icon === iconName ? 'var(--accent)' : 'transparent', color: formData.icon === iconName ? 'white' : 'var(--text-secondary)' }" style="border: none; padding: 0.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                         <i :data-lucide="iconName" style="width: 18px;"></i>
+                         <span class="material-symbols-outlined" style="font-size: 20px;">{{ iconName }}</span>
                       </button>
                    </div>
                 </div>
@@ -216,11 +218,35 @@ const formData = ref({})
 const editingItem = ref(null)
 
 const iconList = [
-  'utensils', 'shopping-cart', 'coffee', 'bus', 'car', 'home', 
-  'zap', 'tv', 'smartphone', 'gift', 'heart', 'stethoscope', 
-  'briefcase', 'graduation-cap', 'palette', 'camera', 'music', 'clapperboard',
-  'trending-up', 'wallet', 'banknote', 'credit-card', 'landmark', 'pie-chart',
-  'bikini', 'shirt', 'watch', 'package', 'hard-drive', 'archive'
+  'account_balance_wallet', 'archive', 'attach_money', 'auto_stories', 'bakery_dining', 
+  'bar_chart', 'bedroom_baby', 'box', 'build', 'cached', 'cake', 'calendar_month', 
+  'call', 'camera', 'category', 'check_circle', 'cleaning_services', 'cloud', 
+  'code', 'coffee', 'collections_bookmark', 'computer', 'construction', 'credit_card', 
+  'cyclone', 'database', 'delivery_dining', 'description', 'developer_mode', 'devices', 
+  'directions_bike', 'directions_bus', 'directions_car', 'directions_run', 'directions_subway', 
+  'directions_walk', 'distance', 'done', 'drafts', 'ebike_pickup', 'eco', 'edit', 
+  'electric_bolt', 'electric_moped', 'electric_rickshaw', 'electrical_services', 'emergency', 
+  'empty_dashboard', 'event', 'extension', 'face', 'favorite', 'featured_play_list', 
+  'feed', 'fitness_center', 'flag', 'flight', 'floor_lamp', 'forest', 'format_list_bulleted', 
+  'gas_meter', 'get_app', 'groups', 'hand_repair', 'handshake', 'headset', 'history_edu', 
+  'home', 'hotel', 'icecream', 'imagesmode', 'important_devices', 'inventory', 'key', 
+  'kitchen', 'lamp', 'layers', 'local_atm', 'local_bar', 'local_cafe', 'local_dining', 
+  'local_florist', 'local_gas_station', 'local_grocery_store', 'local_hospital', 'local_hotel', 
+  'local_library', 'local_mall', 'local_movies', 'local_offer', 'local_parking', 'local_pharmacy', 
+  'local_pizza', 'local_post_office', 'local_shipping', 'local_taxi', 'lock', 'luggage', 
+  'lunch_dining', 'mail', 'map', 'medical_information', 'medical_services', 'menu_book', 
+  'military_tech', 'monetization_on', 'monitor', 'moped', 'moving', 'museum', 'music_note', 
+  'navigation', 'newspaper', 'nightlight', 'notifications', 'outdoor_grill', 'package', 
+  'palette', 'payments', 'person', 'personal_injury', 'pest_control', 'pets', 'phone_android', 
+  'photo_camera', 'piano', 'pie_chart', 'pill', 'place', 'precision_manufacturing', 'print', 
+  'qr_code_2', 'ramen_dining', 'receipt_long', 'restaurant', 'rocket', 'savings', 'school', 
+  'science', 'search', 'security', 'self_care', 'settings', 'share', 'shield', 'shopping_bag', 
+  'shopping_cart', 'skillet', 'smartphone', 'smartwatch', 'snowboarding', 'soup_kitchen', 
+  'sports_basketball', 'sports_esports', 'sports_soccer', 'star', 'store', 'subtitles', 
+  'support', 'surfing', 'takeout_dining', 'theater_comedy', 'toll', 'toys', 'train', 
+  'travel_explore', 'trolley', 'umbrella', 'vaping_rooms', 'variable', 'vector_library', 
+  'vertical_shades_closed', 'visibility', 'wallet', 'wash', 'water_drop', 'weekend', 'wifi', 
+  'wine_bar', 'work', 'yard'
 ]
 
 const tabs = [
@@ -266,7 +292,7 @@ const filteredList = computed(() => {
 const openModal = (item) => {
   editingItem.value = item ? { ...item } : null
   if (item) {
-     formData.value = { ...item }
+     formData.value = { icon: 'tag', ...item }
      modalMode.value = 'analysis'
   } else {
      // Default values for new entry

@@ -32,12 +32,13 @@
     <div class="accounts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
       <div v-for="acc in filteredAccounts" :key="acc.accountID" @click="openModal(acc)" class="account-card-premium" :style="{ background: `linear-gradient(135deg, ${acc.cardColor || '#1e293b'}, ${adjustColor(acc.cardColor || '#1e293b', -30)})` }">
          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div v-if="acc.accountImage" style="width: 36px; height: 36px; border-radius: 8px; overflow: hidden; background: white; padding: 4px;">
+            <div v-if="acc.accountImage" style="width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: white; padding: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
                <img :src="acc.accountImage" style="width:100%; height:100%; object-fit: contain;">
             </div>
-            <div v-else style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
-               <i data-lucide="shield-check" style="width: 20px; color: rgba(255,255,255,0.5);"></i>
+            <div v-else style="width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+               <i data-lucide="shield-check" style="width: 22px; color: white;"></i>
             </div>
+            <div v-if="acc.accountType === 'Credit Card'" style="font-size: 0.5rem; background: rgba(255,255,255,0.1); padding: 0.25rem 0.5rem; border-radius: 4px; color: white; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;">PREMIUM</div>
          </div>
          
          <div style="margin-top: 1.5rem;">
@@ -100,6 +101,40 @@
             <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid var(--accent); border-radius: 1.25rem; padding: 1.25rem;">
                <div style="font-size: 0.6rem; color: var(--accent); font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Strategic Summary</div>
                <div style="font-size: 1.1rem; font-weight: 900;">Rp {{ (accAnalysis.net || 0).toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.5; font-weight: 400;">Net Drift</span></div>
+               <div v-if="accAnalysis.insight" style="font-size: 0.75rem; margin-top: 0.75rem; line-height: 1.5; color: var(--text-secondary); border-top: 1px solid rgba(139, 92, 246, 0.2); padding-top: 0.75rem;">
+                  <i data-lucide="zap" style="width: 12px; display: inline-block; margin-right: 4px; color: var(--accent);"></i>
+                  {{ accAnalysis.insight }}
+               </div>
+            </div>
+
+            <!-- Flow Visualizer Chart -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem;">
+                <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem;">Vault Inflow/Outflow Correlation</div>
+                <div id="acc-flow-chart" style="width: 100%; height: 200px;"></div>
+            </div>
+
+            <!-- Related Logbook Entries -->
+            <div style="margin-top: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase;">Recent Protocol Entries</div>
+                    <div style="font-size: 0.5rem; opacity: 0.4;">Showing last 5 items</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div v-for="t in accAnalysis.recentTransactions" :key="t.transactionID" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 0.75rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; items-center; gap: 0.75rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
+                                <i :data-lucide="t.type === 'Income' ? 'trending-up' : 'trending-down'" :style="{ color: t.type === 'Income' ? '#10b981' : '#ef4444' }" style="width: 14px;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.8rem; font-weight: 700;">{{ t.merchant || t.itemName }}</div>
+                                <div style="font-size: 0.55rem; opacity: 0.4;">{{ t.date }} • {{ t.category }}</div>
+                            </div>
+                        </div>
+                        <div :style="{ color: t.type === 'Income' ? '#10b981' : '#ef4444' }" style="font-weight: 800; font-size: 0.8rem;">
+                            {{ t.type === 'Income' ? '+' : '-' }} {{ (t.total || 0).toLocaleString('id-ID') }}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
@@ -119,11 +154,15 @@
                <div><label class="f-label">Type</label><select v-model="formData.accountType" class="f-input"><option>Bank</option><option>E-Wallet</option><option>Cash</option><option>Credit Card</option><option>Investment</option></select></div>
                <div><label class="f-label">Currency</label><input type="text" v-model="formData.currency" class="f-input"></div>
             </div>
-            <div><label class="f-label">Account Number</label><input type="text" v-model="formData.accountNumber" placeholder="Bank account or card number" class="f-input"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+               <div><label class="f-label">Account Number</label><input type="text" v-model="formData.accountNumber" placeholder="Bank account" class="f-input"></div>
+               <div><label class="f-label">Card Number</label><input type="text" v-model="formData.cardNumber" placeholder="xxxx xxxx xxxx" class="f-input"></div>
+            </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div><label class="f-label">Opening Balance</label><input type="number" v-model.number="formData.openingBalance" class="f-input"></div>
-               <div><label class="f-label">Current Balance</label><input type="number" v-model.number="formData.currentBalance" class="f-input"></div>
+               <div><label class="f-label">Expiry Date (MM/YY)</label><input type="text" v-model="formData.expiryDate" placeholder="12/29" class="f-input"></div>
             </div>
+            <div><label class="f-label">Current Balance (Live State)</label><input type="number" v-model.number="formData.currentBalance" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div><label class="f-label">Card Color</label><input type="color" v-model="formData.cardColor" style="height: 44px; padding: 4px;" class="f-input"></div>
                <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
@@ -195,13 +234,30 @@ const showSearch = ref(false)
 const searchQuery = ref('')
 
 const accAnalysis = computed(() => {
-  if (!editingAcc.value.accountID) return { inflow: 0, outflow: 0, net: 0 }
-  const inTx = store.transactions.filter(t => t.beneficiaryAccount === editingAcc.value.accountName)
-  const outTx = store.transactions.filter(t => t.paymentSourceAccount === editingAcc.value.accountName)
+  if (!editingAcc.value.accountID) return { inflow: 0, outflow: 0, net: 0, recentTransactions: [], insight: '' }
+  const name = editingAcc.value.accountName
+  const inTx = store.transactions.filter(t => t.beneficiaryAccount === name)
+  const outTx = store.transactions.filter(t => t.paymentSourceAccount === name)
   
   const inflow = inTx.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
   const outflow = outTx.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
-  return { inflow, outflow, net: inflow - outflow }
+  
+  // Recent transactions (last 5)
+  const allRelated = [...inTx, ...outTx].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
+
+  // Insight Logic
+  let insight = ''
+  if (outflow > inflow * 2 && inflow > 0) insight = 'Critical alert: Outflow exceeds inflow by 100%. Protocol recalibration recommended.'
+  else if (inflow > outflow && outflow > 0) insight = 'Optimal resonance: Inflow is outpacing consumption. Core strength increasing.'
+  else if (allRelated.length > 3) {
+      const topCat = allRelated.reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + 1; return acc }, {})
+      const favorite = Object.keys(topCat).reduce((a, b) => topCat[a] > topCat[b] ? a : b)
+      insight = `Frequent mission vector identified: "${favorite}". Monitor consumption patterns.`
+  } else {
+      insight = 'Insufficient mission local logs to generate predictive intelligence.'
+  }
+
+  return { inflow, outflow, net: inflow - outflow, recentTransactions: allRelated, insight }
 })
 
 const filteredAccounts = computed(() => {
@@ -220,17 +276,63 @@ const openModal = (acc) => {
     formData.value = { 
       ...acc,
       openingBalance: Number(acc.openingBalance) || 0,
-      currentBalance: Number(acc.currentBalance) || 0
+      currentBalance: Number(acc.currentBalance) || 0,
+      cardNumber: acc.cardNumber || '',
+      expiryDate: acc.expiryDate || ''
     }
     accountMode.value = 'analysis'
   } else {
     editingAcc.value = {}
-    formData.value = { accountName: '', accountType: 'Bank', currency: 'IDR', openingBalance: 0, currentBalance: 0, cardColor: '#1e293b', status: 'Active', notes: '', accountNumber: '', accountImage: '' }
+    formData.value = { accountName: '', accountType: 'Bank', currency: 'IDR', openingBalance: 0, currentBalance: 0, cardColor: '#1e293b', status: 'Active', notes: '', accountNumber: '', cardNumber: '', expiryDate: '', accountImage: '' }
     accountMode.value = 'edit'
   }
   isModalOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+  nextTick(() => { 
+    if (window.lucide) window.lucide.createIcons()
+    if (accountMode.value === 'analysis') initAnalysisChart()
+  })
 }
+
+let flowChart = null
+const initAnalysisChart = () => {
+    const chartDom = document.getElementById('acc-flow-chart')
+    if (!chartDom) return
+    if (flowChart) flowChart.dispose()
+    flowChart = window.echarts.init(chartDom)
+    
+    const option = {
+        backgroundColor: 'transparent',
+        tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#fff' } },
+        grid: { top: '10%', left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: { type: 'category', data: ['Inflow', 'Outflow'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10 } },
+        yAxis: { type: 'value', splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }, axisLabel: { show: false } },
+        series: [
+            {
+                data: [
+                    { value: accAnalysis.value.inflow, itemStyle: { color: '#10b981', borderRadius: [8, 8, 0, 0] } },
+                    { value: accAnalysis.value.outflow, itemStyle: { color: '#ef4444', borderRadius: [8, 8, 0, 0] } }
+                ],
+                type: 'bar',
+                barWidth: '40%',
+                label: {
+                    show: true,
+                    position: 'top',
+                    formatter: (params) => 'Rp ' + (params.value / 1000).toFixed(0) + 'k',
+                    color: 'rgba(255,255,255,0.7)',
+                    fontSize: 10,
+                    fontWeight: 'bold'
+                }
+            }
+        ]
+    }
+    flowChart.setOption(option)
+}
+
+watch(accountMode, (newVal) => {
+    if (newVal === 'analysis') {
+        nextTick(() => initAnalysisChart())
+    }
+})
 
 const saveAcc = () => {
   if (!formData.value.accountName) return alert('Name required')

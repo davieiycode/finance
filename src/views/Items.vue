@@ -97,17 +97,42 @@
                </div>
                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                   <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Outflow</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ itemAnalysis.totalSpend.toLocaleString('id-ID') }}</div>
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Current Live Price</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: #3b82f6; margin-top: 0.25rem;">
+                       Rp {{ (itemAnalysis.lastPrice || 0).toLocaleString('id-ID') }}
+                       <span style="display: block; font-size: 0.5rem; opacity: 0.5; font-weight: 400; margin-top: 2px;">LATEST LOG</span>
+                     </div>
                   </div>
                   <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Quantity Harvested</div>
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Outflow</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ (itemAnalysis.totalSpend || 0).toLocaleString('id-ID') }}</div>
+                  </div>
+                  
+                  <div v-if="itemAnalysis.bestPrice" style="background: rgba(16, 185, 129, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2); grid-column: span 2;">
+                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 900; text-transform: uppercase; color: #10b981;">Best Historical Value (1Y)</div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #10b981;">{{ itemAnalysis.bestMerchant }}</div>
+                     </div>
+                     <div style="font-size: 1.2rem; font-weight: 950; color: #10b981; margin-top: 0.25rem;">Rp {{ itemAnalysis.bestPrice.toLocaleString('id-ID') }}</div>
+                     <p style="font-size: 0.65rem; opacity: 0.6; margin-top: 0.5rem; line-height: 1.4;">
+                        Secured at <b>{{ itemAnalysis.bestMerchant }}</b> on {{ itemAnalysis.bestDate }}. 
+                        Savings potential: {{ (((itemAnalysis.lastPrice - itemAnalysis.bestPrice) / itemAnalysis.lastPrice) * 100).toFixed(1) }}% vs current.
+                     </p>
+                  </div>
+
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Inventory Harvested</div>
                      <div style="font-size: 1rem; font-weight: 950; color: white; margin-top: 0.25rem;">{{ itemAnalysis.totalQty }} <span style="font-size: 0.6rem; opacity: 0.4;">{{ editingItem.unitScale }}</span></div>
                   </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); grid-column: span 2;">
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
                      <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Avg Acquisition Cost</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: var(--accent); margin-top: 0.25rem;">Rp {{ itemAnalysis.avgPrice.toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.4;">/ UNIT</span></div>
+                     <div style="font-size: 1rem; font-weight: 950; color: var(--accent); margin-top: 0.25rem;">Rp {{ Math.round(itemAnalysis.avgPrice).toLocaleString('id-ID') }}</div>
                   </div>
+               </div>
+               
+               <div v-if="itemAnalysis.insight" style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 12px; font-size: 0.75rem; border: 1px dashed var(--border); line-height: 1.5; color: var(--text-secondary);">
+                  <i data-lucide="zap" style="width: 12px; display: inline-block; margin-right: 4px; color: var(--accent);"></i>
+                  {{ itemAnalysis.insight }}
                </div>
             </div>
 
@@ -233,12 +258,37 @@ const showScanner = ref(false)
 let html5QrCode = null
 
 const itemAnalysis = computed(() => {
-  if (!editingItem.value.itemID) return { totalSpend: 0, totalQty: 0, avgPrice: 0 }
-  const txs = store.transactions.filter(t => t.itemName === editingItem.value.itemName)
-  const totalSpend = txs.filter(t => t.type === 'Expense').reduce((sum, t) => sum + (Number(t.total) || 0), 0)
+  if (!editingItem.value.itemID) return { totalSpend: 0, totalQty: 0, avgPrice: 0, lastPrice: 0, bestPrice: 0, bestMerchant: '', bestDate: '', insight: '' }
+  
+  const txs = store.transactions.filter(t => t.itemName === editingItem.value.itemName && t.type === 'Expense')
+  if (txs.length === 0) return { totalSpend: 0, totalQty: 0, avgPrice: 0, lastPrice: 0, bestPrice: 0, bestMerchant: '', bestDate: '', insight: 'No mission data recorded for this item.' }
+  
+  const sortedTxs = [...txs].sort((a, b) => new Date(b.date) - new Date(a.date))
+  const lastPrice = sortedTxs[0].amountPerUnit || 0
+  
+  const totalSpend = txs.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
   const totalQty = txs.reduce((sum, t) => sum + (Number(t.quantity) || 0), 0)
   const avgPrice = totalQty > 0 ? totalSpend / totalQty : 0
-  return { totalSpend, totalQty, avgPrice }
+  
+  // Best Price (Lowest in 1 Year)
+  const oneYearAgo = new Date(); oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+  const yearlyTxs = txs.filter(t => new Date(t.date) >= oneYearAgo)
+  
+  let bestPrice = 0, bestMerchant = '', bestDate = ''
+  if (yearlyTxs.length > 0) {
+    const best = yearlyTxs.reduce((min, t) => (t.amountPerUnit < min.amountPerUnit) ? t : min, yearlyTxs[0])
+    bestPrice = best.amountPerUnit
+    bestMerchant = best.merchant
+    bestDate = best.date
+  }
+
+  // Insight
+  let insight = ''
+  if (lastPrice > avgPrice * 1.2) insight = 'Inflation Alert: Current price is significantly higher than historical average.'
+  else if (lastPrice < bestPrice && bestPrice > 0) insight = 'Optimal Acquisition: Current price is at a historical low.'
+  else insight = `Stable asset. Maintain standard procurement via ${bestMerchant || 'current vendors'}.`
+
+  return { totalSpend, totalQty, avgPrice, lastPrice, bestPrice, bestMerchant, bestDate, insight }
 })
 
 const filteredItems = computed(() => {

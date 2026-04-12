@@ -92,18 +92,26 @@
           <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="resolvedAvatar" style="width: 60%; height: 60%; object-fit: contain;">
           <span v-else style="font-size: 3rem;">{{ userPrefs.avatar || '👤' }}</span>
         </div>
+
+        <!-- Avatar Search -->
+        <div style="width: 100%; max-width: 320px; margin-bottom: 1.5rem; position: relative;">
+          <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary); opacity: 0.5;"></i>
+          <input type="text" v-model="avatarSearch" placeholder="Search avatar keywords..." 
+            style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 0.75rem; outline: none;">
+        </div>
         
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; max-width: 320px;">
-           <button v-for="a in avatarList" :key="a" @click="userPrefs.avatar = a" 
-             style="width: 54px; height: 54px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border); overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding: 0;"
-             :style="{ borderColor: userPrefs.avatar === a ? 'var(--accent)' : 'var(--border)', background: userPrefs.avatar === a ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }">
-             <template v-if="a.includes('.svg')">
-               <img :src="a" style="width: 80%; height: 80%; object-fit: contain;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; max-width: 320px; max-height: 250px; overflow-y: auto; padding-right: 0.5rem; scrollbar-width: none;">
+           <button v-for="a in filteredAvatars" :key="a.url" @click="userPrefs.avatar = a.url" 
+             style="width: 100%; aspect-ratio: 1/1; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border); overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding: 0;"
+             :style="{ borderColor: userPrefs.avatar === a.url ? 'var(--accent)' : 'var(--border)', background: userPrefs.avatar === a.url ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }">
+             <template v-if="a.url.includes('.svg')">
+               <img :src="a.url" style="width: 80%; height: 80%; object-fit: contain;">
              </template>
              <template v-else>
-               <span style="font-size: 1.5rem;">{{ a }}</span>
+               <span style="font-size: 1.5rem;">{{ a.url }}</span>
              </template>
            </button>
+           <div v-if="filteredAvatars.length === 0" style="grid-column: span 4; text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.7rem;">No matching identifiers.</div>
         </div>
       </div>
 
@@ -209,12 +217,33 @@ const syncing = ref(false)
 const syncMode = ref('overwrite')
 const showUrl = ref(false)
 const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+const avatarSearch = ref('')
 const avatarList = ref([
-  `${base}/avatars/avatar1.svg`, `${base}/avatars/avatar2.svg`, `${base}/avatars/avatar3.svg`, `${base}/avatars/avatar4.svg`,
-  `${base}/avatars/avatar5.svg`, `${base}/avatars/avatar6.svg`, `${base}/avatars/avatar7.svg`, `${base}/avatars/avatar8.svg`,
-  `${base}/avatars/avatar9.svg`, `${base}/avatars/avatar10.svg`, `${base}/avatars/avatar11.svg`, `${base}/avatars/avatar12.svg`,
-  '👤','🥷','👨‍🚀','🧗'
+  { url: `${base}/avatars/avatar1.svg`, tags: 'male, boy, short hair, glasses' },
+  { url: `${base}/avatars/avatar2.svg`, tags: 'female, girl, long hair, smile' },
+  { url: `${base}/avatars/avatar3.svg`, tags: 'male, young, cap, hat' },
+  { url: `${base}/avatars/avatar4.svg`, tags: 'female, professional, suit' },
+  { url: `${base}/avatars/avatar5.svg`, tags: 'male, beard, mustache' },
+  { url: `${base}/avatars/avatar6.svg`, tags: 'female, glasses, smart' },
+  { url: `${base}/avatars/avatar7.svg`, tags: 'male, casual, hoodie' },
+  { url: `${base}/avatars/avatar8.svg`, tags: 'female, casual, t-shirt' },
+  { url: `${base}/avatars/avatar9.svg`, tags: 'male, athletic, gym' },
+  { url: `${base}/avatars/avatar10.svg`, tags: 'female, blonde, bright' },
+  { url: `${base}/avatars/avatar11.svg`, tags: 'male, older, mature' },
+  { url: `${base}/avatars/avatar12.svg`, tags: 'female, older, mature' },
+  { url: '👤', tags: 'user, default, shadow' },
+  { url: '🥷', tags: 'ninja, spy, black' },
+  { url: '👨‍🚀', tags: 'astronaut, space, rocket' },
+  { url: '🧗', tags: 'climbing, explorer, mountain' },
+  { url: '🤖', tags: 'robot, bot, ai' },
+  { url: '👻', tags: 'ghost, dark, hollow' }
 ])
+
+const filteredAvatars = computed(() => {
+  if (!avatarSearch.value) return avatarList.value
+  const q = avatarSearch.value.toLowerCase()
+  return avatarList.value.filter(a => a.tags.toLowerCase().includes(q) || a.url.toLowerCase().includes(q))
+})
 
 const subTitles = {
   personal: 'Profile Details',

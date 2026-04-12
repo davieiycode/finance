@@ -66,10 +66,76 @@
                   <i data-lucide="activity" style="width: 14px; color: var(--accent);"></i>
                   <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Merchant Economics</span>
                </div>
-               <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
-                  <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Flow-Through</div>
-                     <div style="font-size: 1.25rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ (merchantSpend || 0).toLocaleString('id-ID') }}</div>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Flow</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ (merchantAnalysis.totalSpend || 0).toLocaleString('id-ID') }}</div>
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Mission Count</div>
+                     <div style="font-size: 1rem; font-weight: 950; color: white; margin-top: 0.25rem;">{{ merchantAnalysis.txCount }}</div>
+                  </div>
+               </div>
+               <div v-if="merchantAnalysis.insight" style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; border-top: 1px solid rgba(139, 92, 246, 0.1); padding-top: 1rem;">
+                  <i data-lucide="zap" style="width: 12px; display: inline-block; margin-right: 4px; color: var(--accent);"></i>
+                  {{ merchantAnalysis.insight }}
+               </div>
+            </div>
+
+            <!-- Favorite Items -->
+            <div v-if="merchantAnalysis.topItems.length > 0">
+               <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem;">Highest Payload Items</div>
+               <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                  <div v-for="item in merchantAnalysis.topItems" :key="item.name" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.5rem 0.75rem; border-radius: 10px; font-size: 0.75rem; font-weight: 700;">
+                     {{ item.name }} <span style="opacity: 0.4; font-weight: 400; margin-left: 4px;">x{{ item.count }}</span>
+                  </div>
+               </div>
+            </div>
+
+            <!-- Members & Vouchers -->
+            <div v-if="merchantAnalysis.members.length > 0 || merchantAnalysis.vouchers.length > 0" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div v-if="merchantAnalysis.members.length > 0">
+                    <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem;">Loyalty Protocols</div>
+                    <div v-for="mem in merchantAnalysis.members" :key="mem.memberID" style="background: linear-gradient(90deg, rgba(139, 92, 246, 0.1), transparent); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <i data-lucide="id-card" style="width: 16px; color: var(--accent);"></i>
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 800;">{{ mem.memberCardName }}</div>
+                            <div style="font-size: 0.6rem; opacity: 0.5;">{{ mem.memberIDValue || 'Internal Identifier' }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="merchantAnalysis.vouchers.length > 0">
+                    <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem;">Available Stimuli (Vouchers)</div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div v-for="v in merchantAnalysis.vouchers" :key="v.voucherID" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem; display: flex; justify-content: space-between; align-items: center;" :style="{ opacity: v.status === 'Used' || v.status === 'Expired' ? 0.4 : 1 }">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <i data-lucide="ticket" style="width: 16px; color: #10b981;"></i>
+                                <div>
+                                    <div style="font-size: 0.8rem; font-weight: 700;">{{ v.voucherName }}</div>
+                                    <div style="font-size: 0.55rem; opacity: 0.5;">Exp: {{ v.expiryDate || 'Indefinite' }}</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.6rem; font-weight: 900; text-transform: uppercase; padding: 2px 8px; border-radius: 4px;" :style="{ background: v.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.05)', color: v.status === 'Active' ? '#10b981' : 'white' }">
+                                {{ v.status }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction List -->
+            <div>
+               <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem;">Chronological Mission Logs</div>
+               <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <div v-for="t in merchantAnalysis.recentTxs" :key="t.transactionID" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 0.75rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                     <div>
+                        <div style="font-size: 0.8rem; font-weight: 700;">{{ t.itemName }}</div>
+                        <div style="font-size: 0.55rem; opacity: 0.4;">{{ t.date }} • {{ t.paymentSourceAccount }}</div>
+                     </div>
+                     <div style="text-align: right;">
+                        <div style="font-weight: 900; font-size: 0.85rem; color: #ef4444;">-Rp {{ (t.total || 0).toLocaleString('id-ID') }}</div>
+                        <div style="font-size: 0.55rem; opacity: 0.4;">{{ t.quantity }} unit</div>
+                     </div>
                   </div>
                </div>
             </div>
@@ -167,11 +233,40 @@ const formData = ref({})
 const showSearch = ref(false)
 const searchQuery = ref('')
 
-const merchantSpend = computed(() => {
-  if (!editingMerchant.value.merchantID) return 0
-  return store.transactions
-    .filter(t => t.merchant === editingMerchant.value.merchantName)
-    .reduce((sum, t) => sum + (Number(t.total) || 0), 0)
+const merchantAnalysis = computed(() => {
+  if (!editingMerchant.value.merchantID) return { totalSpend: 0, txCount: 0, topItems: [], recentTxs: [], members: [], vouchers: [], insight: '' }
+  const name = editingMerchant.value.merchantName
+  const txs = store.transactions.filter(t => t.merchant === name)
+  
+  const totalSpend = txs.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
+  const txCount = txs.length
+  
+  // Top Items
+  const itemMap = txs.reduce((acc, t) => { acc[t.itemName] = (acc[t.itemName] || 0) + 1; return acc }, {})
+  const topItems = Object.entries(itemMap)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, count]) => ({ name, count }))
+
+  // Recent Transactions
+  const recentTxs = [...txs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10)
+
+  // Members & Vouchers
+  const members = store.members.filter(m => m.merchantName === name || m.merchantID === editingMerchant.value.merchantID)
+  const vouchers = store.vouchers
+    .filter(v => v.merchantName === name || v.merchantID === editingMerchant.value.merchantID)
+    .sort((a,b) => {
+        const order = { 'Active': 0, 'Pending': 1, 'Used': 2, 'Expired': 3 }
+        return (order[a.status] || 9) - (order[b.status] || 9)
+    })
+
+  // Insight
+  let insight = ''
+  if (totalSpend > 1000000) insight = 'High-yield partner. Significant capital deployment detected in this sector.'
+  else if (txCount > 5) insight = 'Frequent operational node. Consider establishing deeper loyalty protocols.'
+  else insight = 'Emerging vendor relation. Insufficient logs for advanced behavioral modeling.'
+
+  return { totalSpend, txCount, topItems, recentTxs, members, vouchers, insight }
 })
 
 const filteredMerchants = computed(() => {

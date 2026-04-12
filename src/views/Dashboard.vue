@@ -64,6 +64,29 @@
         <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ (store.goals || []).length }} ACTIVE MISSIONS</div>
       </div>
     </div>
+    
+    <!-- Recurring Protocol Reminders (Smart Detection) -->
+    <div v-if="upcomingReminders.length > 0" style="margin-bottom: 2rem; animation: slideUp 0.4s ease;">
+       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-left: 0.5rem;">
+          <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.15em;">Critical Reminders</div>
+          <div style="font-size: 0.55rem; color: #ef4444; font-weight: 800; display: flex; align-items: center; gap: 4px;">
+             <span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; display: block; animation: pulse 1.5s infinite;"></span>
+             {{ upcomingReminders.length }} SIGNALS DETECTED
+          </div>
+       </div>
+       <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div v-for="rem in upcomingReminders" :key="rem.id" class="reminder-card" style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
+             <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444; flex-shrink: 0;">
+                <i :data-lucide="rem.icon" style="width: 20px;"></i>
+             </div>
+             <div style="flex: 1;">
+                <div style="font-size: 0.875rem; font-weight: 800; color: white;">{{ rem.name }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.2rem;">Missing log for {{ rem.period }}. Last seen {{ rem.lastDate }}.</div>
+             </div>
+             <button @click="$router.push('/transaction')" style="background: rgba(239, 68, 68, 0.2); border: none; padding: 0.5rem 0.75rem; border-radius: 8px; color: white; font-size: 0.6rem; font-weight: 800; cursor: pointer;">RESOLVE</button>
+          </div>
+       </div>
+    </div>
 
 
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; margin-bottom: 2rem;">
@@ -178,6 +201,62 @@ const goalProgress = computed(() => {
     return sum + (current / target)
   }, 0) / (store.goals.length || 1)
   return avg * 100
+})
+
+const upcomingReminders = computed(() => {
+  const txs = store.transactions || []
+  const now = new Date()
+  const currentMonth = now.toISOString().substring(0, 7) // YYYY-MM
+  const currentYear = now.getFullYear().toString()
+  
+  // Detection Protocols (Keywords vs Regularity)
+  const protocols = [
+    { id: 'elec', name: 'Electricity (PLN)', keywords: ['listrik', 'pln', 'token'], type: 'monthly', icon: 'zap' },
+    { id: 'net', name: 'Internet / WiFi', keywords: ['internet', 'wifi', 'indihome', 'biznet', 'myrepublic'], type: 'monthly', icon: 'wifi' },
+    { id: 'mobile', name: 'Mobile / Pulsa', keywords: ['pulsa', 'kuota', 'telkomsel', 'xl', 'indosat'], type: 'monthly', icon: 'smartphone' },
+    { id: 'water', name: 'Water (PDAM)', keywords: ['pdam', 'air'], type: 'monthly', icon: 'droplet' },
+    { id: 'trash', name: 'Trash / Security', keywords: ['sampah', 'keamanan', 'iuran'], type: 'monthly', icon: 'shield-check' },
+    { id: 'tax', name: 'Property Tax (PBB)', keywords: ['pajak', 'pbb', 'samsat'], type: 'yearly', icon: 'file-text' },
+    { id: 'rent', name: 'Rent / Mortgage', keywords: ['sewa', 'cicilan', 'kpr'], type: 'monthly', icon: 'home' },
+    { id: 'sub', name: 'Subscritpions', keywords: ['netflix', 'spotify', 'youtube', 'cloud', 'icloud', 'disney'], type: 'monthly', icon: 'play' },
+    { id: 'donate', name: 'Donations / Zakat', keywords: ['donasi', 'zakat', 'sedekah', 'kitabisa'], type: 'monthly', icon: 'heart' }
+  ]
+
+  const reminders = []
+
+  protocols.forEach(proto => {
+    // 1. Find the MOST RECENT transaction that matches this protocol
+    const relatedTxs = txs.filter(t => {
+      const target = (t.itemName + ' ' + t.category + ' ' + t.merchant).toLowerCase()
+      return proto.keywords.some(k => target.includes(k.toLowerCase()))
+    }).sort((a,b) => new Date(b.date) - new Date(a.date))
+
+    if (relatedTxs.length > 0) {
+      const lastTx = relatedTxs[0]
+      const lastDate = lastTx.date || ''
+      const lastMonth = lastDate.substring(0, 7)
+      const lastYear = lastDate.substring(0, 4)
+
+      let isPaid = false
+      if (proto.type === 'monthly') {
+        isPaid = lastMonth === currentMonth
+      } else if (proto.type === 'yearly') {
+        isPaid = lastYear === currentYear
+      }
+
+      if (!isPaid) {
+        reminders.push({
+          id: proto.id,
+          name: proto.name,
+          period: proto.type === 'monthly' ? now.toLocaleString('default', { month: 'long' }) : currentYear,
+          lastDate: lastDate,
+          icon: proto.icon
+        })
+      }
+    }
+  })
+
+  return reminders
 })
 
 const anomalyCount = computed(() => {
