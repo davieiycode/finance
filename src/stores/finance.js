@@ -336,7 +336,7 @@ export const useFinanceStore = defineStore('finance', {
 
     addAuthor(a) { if (!a.authorID) a.authorID = 'AUT-' + Date.now(); a.updateTime = new Date().toISOString(); this.authors.push(a); this.saveAll() },
     updateAuthor(a) { const idx = this.authors.findIndex(i => i.authorID === a.authorID); if (idx !== -1) { a.updateTime = new Date().toISOString(); this.authors[idx] = a; this.saveAll() } },
-    deleteAuthor(id) { this.authors = this.authors.filter(i => i.authorID !== id); this.saveAll() }
+    deleteAuthor(id) { this.authors = this.authors.filter(i => i.authorID !== id); this.saveAll() },
     // Merge Engine
     mergeEntities(type, sourceName, targetName) {
       console.log(`Merging ${type}: ${sourceName} -> ${targetName}`)
