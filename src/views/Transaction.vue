@@ -346,10 +346,11 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
 
 const router = useRouter()
+const route = useRoute()
 const store = useFinanceStore()
 
 const now = new Date()
@@ -389,6 +390,11 @@ const categorySearch = ref('')
 const showCategoryDropdown = ref(false)
 const unitSearch = ref('')
 const showUnitDropdown = ref(false)
+
+// Sync search refs to form
+watch(itemSearch, (val) => { if (val !== form.value.itemName) form.value.itemName = val })
+watch(categorySearch, (val) => { if (val !== form.value.category) form.value.category = val })
+watch(unitSearch, (val) => { if (val !== form.value.unitScale) form.value.unitScale = val })
 
 const hideDropdown = (type) => {
   setTimeout(() => {
@@ -457,8 +463,14 @@ const onItemChange = () => {
   const item = store.items.find(i => i.itemName === form.value.itemName)
   if (item) {
     if (item.amountPerUnit) form.value.amountPerUnit = item.amountPerUnit
-    if (item.itemCategory) form.value.category = item.itemCategory
-    if (item.unitScale) form.value.unitScale = item.unitScale
+    if (item.itemCategory) {
+      form.value.category = item.itemCategory
+      categorySearch.value = item.itemCategory
+    }
+    if (item.unitScale) {
+       form.value.unitScale = item.unitScale
+       unitSearch.value = item.unitScale
+    }
     if (item.currency) form.value.currency = item.currency
   }
 }
@@ -519,7 +531,7 @@ const saveTransaction = () => {
   form.value.discount = calculatedDiscount.value
   form.value.total = calculatedTotal.value
   
-  const isEditing = !!router.currentRoute.value.query.id
+  const isEditing = !!route.query.id
   
   if (isEditing) {
     store.updateTransaction({ ...form.value })
@@ -527,7 +539,7 @@ const saveTransaction = () => {
   } else {
     // For duplicates, we want a fresh ID
     const payload = { ...form.value }
-    if (router.currentRoute.value.query.duplicate) {
+    if (route.query.duplicate) {
       delete payload.transactionID
     }
     store.addTransaction(payload)
@@ -570,6 +582,7 @@ const startScanner = async () => {
           const item = store.items.find(i => i.SKU === decodedText)
           if (item) {
             form.value.itemName = item.itemName
+            itemSearch.value = item.itemName
             onItemChange() // Trigger auto-fill for price/category
             alert(`Detected: ${item.itemName}`)
           } else {
@@ -599,12 +612,13 @@ const stopScanner = async () => {
 }
 
 onBeforeUnmount(() => { stopScanner() })
+
 const initForm = () => {
-  const query = router.currentRoute.value.query
-  const txID = query.id || query.duplicate
+  const txID = route.query.id || route.query.duplicate
   
   if (txID) {
-    const tx = store.transactions.find(t => t.transactionID === txID)
+    // Force string comparison for robustness
+    const tx = store.transactions.find(t => String(t.transactionID) === String(txID))
     if (tx) {
       form.value = { 
         ...tx,
@@ -618,44 +632,45 @@ const initForm = () => {
       itemSearch.value = form.value.itemName || ''
       categorySearch.value = form.value.category || ''
       unitSearch.value = form.value.unitScale || ''
+      return
     }
-  } else {
-    // Reset to defaults
-    form.value = {
-      transactionID: '',
-      date: now.toISOString().split('T')[0],
-      time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'),
-      category: '',
-      merchant: '',
-      itemName: '',
-      amountPerUnit: 0,
-      quantity: 1,
-      unitScale: 'pcs',
-      type: 'Expense',
-      cleared: 'yes',
-      paymentSourceAccount: '',
-      beneficiaryAccount: '',
-      receipt: '',
-      membershipID: '',
-      voucherID: '',
-      localPhoto: '',
-      tags: '',
-      projects: '',
-      author: 'Self',
-      discount: 0,
-      fee: 0,
-      total: 0,
-      description: '',
-      currency: 'IDR',
-      exchangeRate: 1
-    }
-    itemSearch.value = ''
-    categorySearch.value = ''
-    unitSearch.value = ''
   }
+
+  // Reset to defaults if no ID or no matching transaction found
+  form.value = {
+    transactionID: '',
+    date: now.toISOString().split('T')[0],
+    time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'),
+    category: '',
+    merchant: '',
+    itemName: '',
+    amountPerUnit: 0,
+    quantity: 1,
+    unitScale: 'pcs',
+    type: 'Expense',
+    cleared: 'yes',
+    paymentSourceAccount: '',
+    beneficiaryAccount: '',
+    receipt: '',
+    membershipID: '',
+    voucherID: '',
+    localPhoto: '',
+    tags: '',
+    projects: '',
+    author: 'Self',
+    discount: 0,
+    fee: 0,
+    total: 0,
+    description: '',
+    currency: 'IDR',
+    exchangeRate: 1
+  }
+  itemSearch.value = ''
+  categorySearch.value = ''
+  unitSearch.value = ''
 }
 
-watch(() => router.currentRoute.value.query, () => {
+watch(() => route.query, () => {
   initForm()
 }, { deep: true })
 
