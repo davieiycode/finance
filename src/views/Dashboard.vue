@@ -31,6 +31,8 @@
                  <i data-lucide="x" style="width: 16px;"></i>
               </button>
            </div>
+        </div>
+      </header>
     </div>
 
     <!-- System Status Bar -->
