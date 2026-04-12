@@ -363,9 +363,15 @@ export const useFinanceStore = defineStore('finance', {
     mergeEntities(type, sourceName, targetName) {
       console.log(`Merging ${type}: ${sourceName} -> ${targetName}`)
       
-      // Update Transactions
+      // 1. Update Transactions
       this.transactions.forEach(t => {
         if (type === 'categories' && t.category === sourceName) t.category = targetName
+        if (type === 'items' && t.itemName === sourceName) t.itemName = targetName
+        if (type === 'merchants' && t.merchant === sourceName) t.merchant = targetName
+        if (type === 'accounts') {
+          if (t.paymentSourceAccount === sourceName) t.paymentSourceAccount = targetName
+          if (t.beneficiaryAccount === sourceName) t.beneficiaryAccount = targetName
+        }
         if (type === 'tags') {
           const tags = t.tags ? String(t.tags).split(',').map(s => s.trim()) : []
           if (tags.includes(sourceName)) {
@@ -384,27 +390,31 @@ export const useFinanceStore = defineStore('finance', {
             t.projects = prjs.join(', ')
           }
         }
-        if (type === 'accounts' && t.paymentSourceAccount === sourceName) t.paymentSourceAccount = targetName
-        if (type === 'accounts' && t.beneficiaryAccount === sourceName) t.beneficiaryAccount = targetName
         if (type === 'authors' && t.author === sourceName) t.author = targetName
         if (type === 'unitScales' && t.unitScale === sourceName) t.unitScale = targetName
       })
 
-      // Update Items
+      // 2. Update Metadata References in other catalogs
       this.items.forEach(i => {
         if (type === 'categories' && i.itemCategory === sourceName) i.itemCategory = targetName
         if (type === 'unitScales' && i.unitScale === sourceName) i.unitScale = targetName
       })
-
-      // Update Budgets
       this.budgets.forEach(b => {
         if (type === 'categories' && b.category === sourceName) b.category = targetName
       })
-
-      // Update Goals
       this.goals.forEach(g => {
         if (type === 'categories' && g.category === sourceName) g.category = targetName
       })
+
+      // 3. Remove source record from its own catalog
+      if (type === 'items') this.items = this.items.filter(i => i.itemName !== sourceName)
+      if (type === 'merchants') this.merchants = this.merchants.filter(m => m.merchantName !== sourceName)
+      if (type === 'accounts') this.accounts = this.accounts.filter(a => a.accountName !== sourceName)
+      if (type === 'tags') this.tags = this.tags.filter(t => t.tagName !== sourceName)
+      if (type === 'projects') this.projects = this.projects.filter(p => p.projectName !== sourceName)
+      if (type === 'categories') this.categories = this.categories.filter(c => c.category !== sourceName)
+      if (type === 'authors') this.authors = this.authors.filter(a => a.authorName !== sourceName)
+      if (type === 'unitScales') this.unitScales = this.unitScales.filter(u => u.unitScale !== sourceName)
 
       this.saveAll()
       this.notify(`Consolidation Successful: ${sourceName} merged into ${targetName}`, 'success')

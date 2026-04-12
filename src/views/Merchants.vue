@@ -122,7 +122,34 @@
                </button>
             </div>
          </div>
-      </div>
+       </div>
+
+       <!-- Merge Selection Panel -->
+       <div v-if="isMergePanelOpen" style="position: absolute; inset: 0; background: var(--bg-primary, #000); z-index: 3000; border-radius: 2rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+             <span style="font-weight: 800; color: var(--accent);">Target Selection</span>
+             <button @click="isMergePanelOpen = false" style="background:none; border:none; color:white; cursor:pointer;"><i data-lucide="x"></i></button>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+             Select the target entity to absorb "{{ editingMerchant.merchantName }}".
+          </div>
+          <input type="text" v-model="mergeTargetSearch" placeholder="Search target catalog..." class="f-input" style="background: rgba(255,255,255,0.05);">
+          
+          <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+             <div v-for="target in filteredMergeTargets" :key="target.merchantID" @click="performMerge(target)" style="padding: 1rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 1rem; transition: 0.2s;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(139, 92, 246, 0.1); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">
+                   {{ (target.merchantName || 'M')[0].toUpperCase() }}
+                </div>
+                <div>
+                   <div style="font-weight: 700; font-size: 0.875rem;">{{ target.merchantName }}</div>
+                   <div style="font-size: 0.65rem; color: var(--text-secondary);">{{ target.category }}</div>
+                </div>
+             </div>
+             <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.5; font-size: 0.75rem;">
+                No compatible targets found in this sector.
+             </div>
+          </div>
+       </div>
     </div>
   </div>
 </template>
@@ -195,8 +222,27 @@ const handleDuplicate = () => {
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
+const isMergePanelOpen = ref(false)
+const mergeTargetSearch = ref('')
+const filteredMergeTargets = computed(() => {
+  const q = mergeTargetSearch.value.toLowerCase()
+  return store.merchants
+    .filter(m => m.merchantID !== editingMerchant.value.merchantID)
+    .filter(m => (m.merchantName || '').toLowerCase().includes(q))
+    .slice(0, 10)
+})
+
 const handleMerge = () => {
-  alert('MERCHANT Merge Engine coming soon.')
+  isMergePanelOpen.value = true
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+}
+
+const performMerge = (target) => {
+  if (confirm(`Relocate financial payload from "${editingMerchant.value.merchantName}" to "${target.merchantName}"? This will update all transaction logs and delete the source merchant.`)) {
+    store.mergeEntities('merchants', editingMerchant.value.merchantName, target.merchantName)
+    isMergePanelOpen.value = false
+    isModalOpen.value = false
+  }
 }
 
 onMounted(() => { if (window.lucide) window.lucide.createIcons() })
