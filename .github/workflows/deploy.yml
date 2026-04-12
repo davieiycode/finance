@@ -34,12 +34,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: System Node Version (Before Setup)
+        run: node -v
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 24.x
           cache: 'npm'
-      - name: Check Node Version
+      - name: Active Node Version (After Setup)
         run: |
           node -v
           npm -v
