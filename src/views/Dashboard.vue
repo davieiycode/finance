@@ -65,41 +65,6 @@
       </div>
     </div>
 
-    <section v-if="(recentTransactions || []).length > 0">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1rem; font-weight: 700;">Recent Expeditions</h3>
-        <a @click.prevent="$router.push('/history')" style="font-size: 0.75rem; color: var(--accent); font-weight: 600; cursor: pointer;">See All</a>
-      </div>
-      
-      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-         <div v-for="t in recentTransactions" :key="t.id || t.date + t.name" @click="openTx(t)" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 0.8rem; cursor: pointer; transition: 0.2s;">
-           <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border);" :style="{ color: getTxColor(t.type) }">
-             <i v-if="t.type === 'Income'" data-lucide="arrow-down-left" style="width: 20px;" stroke-width="1.5"></i>
-             <i v-else-if="t.type === 'Internal Transfer' || t.type === 'Transfer'" data-lucide="repeat" style="width: 18px;" stroke-width="1.5"></i>
-             <i v-else-if="t.type === 'Savings'" data-lucide="piggy-bank" style="width: 20px;" stroke-width="1.5"></i>
-             <i v-else-if="t.type === 'Investment'" data-lucide="trending-up" style="width: 20px;" stroke-width="1.5"></i>
-             <i v-else data-lucide="shopping-cart" style="width: 18px;" stroke-width="1.5"></i>
-           </div>
-           <div style="flex: 1;">
-             <div style="font-weight: 600; font-size: 0.9375rem; color: var(--text-primary);">{{ t.merchant || t.itemName }}</div>
-             <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ t.date }} • {{ t.paymentSourceAccount || t.beneficiaryAccount || 'Cash' }}</div>
-           </div>
-           <div style="text-align: right; font-weight: 700; font-size: 0.9375rem;" :style="{ color: getTxColor(t.type) }">
-             {{ getTxSign(t.type) }} Rp {{ (t.total || 0).toLocaleString('id-ID') }}
-           </div>
-         </div>
-      </div>
-    </section>
-    
-    <section v-else>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 1rem; font-weight: 700;">Recent Expeditions</h3>
-        <a @click.prevent="$router.push('/history')" style="font-size: 0.75rem; color: var(--accent); font-weight: 600; cursor: pointer;">See All</a>
-      </div>
-      <div style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; padding: 2rem; background: rgba(255,255,255,0.02); border-radius: 1rem;">
-        No transactions recorded yet.
-      </div>
-    </section>
 
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; margin-bottom: 2rem;">
       <div @click="$router.push('/items')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
@@ -160,13 +125,6 @@
         </div>
       </div>
     </div>
-
-    <!-- FAB -->
-    <button @click="$router.push('/transaction')" class="fab" style="position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 28px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); cursor: pointer; z-index: 100;">
-      <i data-lucide="plus"></i>
-    </button>
-    
-    <TransactionModal v-if="selectedTx" :tx="selectedTx" @close="selectedTx = null" />
   </div>
 </template>
 
@@ -174,7 +132,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
-import TransactionModal from '../components/TransactionModal.vue'
 
 const router = useRouter()
 const store = useFinanceStore()
@@ -223,12 +180,6 @@ const goalProgress = computed(() => {
   return avg * 100
 })
 
-const selectedTx = ref(null)
-
-const openTx = (t) => {
-  selectedTx.value = t
-}
-
 const anomalyCount = computed(() => {
   let count = 0
   
@@ -260,24 +211,6 @@ const anomalyCount = computed(() => {
   
   return count
 })
-
-const recentTransactions = computed(() => {
-  if (!Array.isArray(store.transactions)) return []
-  // Show up to 5 most recent transactions
-  return [...store.transactions].reverse().slice(0, 5)
-})
-
-const getTxColor = (type) => {
-  if (type === 'Income') return '#10b981'
-  if (type === 'Expense') return '#ef4444'
-  return '#3b82f6' // Transfer, Investment, Savings
-}
-
-const getTxSign = (type) => {
-  if (type === 'Income') return '+'
-  if (type === 'Expense') return '-'
-  return ''
-}
 
 onMounted(() => {
   if (window.lucide) {

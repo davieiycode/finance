@@ -133,10 +133,24 @@ const groupedTransactions = computed(() => {
 
   const groups = {}
   list.forEach(t => {
-    if (!groups[t.date]) groups[t.date] = { dateFormatted: t.date, net: 0, items: [] }
     const amount = Number(t.total) || 0
-    if (t.type === 'Income') groups[t.date].net += amount
-    else if (t.type === 'Expense') groups[t.date].net -= amount
+    const type = (t.type || '').toLowerCase()
+    
+    if (!groups[t.date]) {
+       // Create human-readable date
+       let label = t.date
+       try {
+         const d = new Date(t.date)
+         if (!isNaN(d)) {
+           label = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+         }
+       } catch (e) {}
+       groups[t.date] = { dateFormatted: label, net: 0, items: [] }
+    }
+    
+    if (type === 'income') groups[t.date].net += amount
+    else if (type === 'expense' || type === 'savings' || type === 'investment') groups[t.date].net -= amount
+    
     groups[t.date].items.push(t)
   })
   return groups
