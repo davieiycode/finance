@@ -84,10 +84,10 @@
             </div>
             <div style="flex: 1;">
               <div style="font-weight: 600; font-size: 0.9375rem; color: var(--text-primary);">{{ t.itemName || t.merchant || 'Unknown Loot' }}</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ t.merchant ? t.merchant + ' • ' : '' }}{{ t.category || 'General' }} • {{ t.time || '00:00' }}</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ t.merchant ? t.merchant + ' • ' : '' }}{{ t.category || 'General' }} • {{ formatTime(t.time) }}</div>
             </div>
             <div style="text-align: right; font-weight: 700; font-size: 0.9375rem;" :style="{ color: getTxColor(t.type) }">
-              {{ getTxSign(t.type) }}Rp {{ (t.total || 0).toLocaleString('id-ID') }}
+              {{ getTxSign(t.type) }}Rp {{ Number(t.total || 0).toLocaleString('id-ID') }}
             </div>
           </div>
        </template>
@@ -161,6 +161,16 @@ const getTxColor = (type) => {
   if (type === 'Income') return '#10b981'
   if (type === 'Expense') return '#ef4444'
   return '#3b82f6' // Transfer, Investment, Savings
+}
+
+const formatTime = (time) => {
+  if (!time) return '00:00'
+  const t = String(time)
+  if (t.includes('1899-12-30')) {
+    const parts = t.split('T')
+    if (parts[1]) return parts[1].substring(0, 5)
+  }
+  return t.length > 5 ? t.substring(0, 5) : t
 }
 
 const getTxSign = (type) => {

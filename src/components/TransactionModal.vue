@@ -47,7 +47,7 @@
             <div style="text-align: center;">
                <div style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.25rem;">TOTAL AUTHORIZATION</div>
                <div style="font-size: 2.25rem; font-weight: 950; letter-spacing: -0.02em;" :style="{ color: getTxColor(tx.type) }">
-                  Rp {{ (tx.total || 0).toLocaleString('id-ID') }}
+                  Rp {{ formatCurrency(tx.total) }}
                </div>
             </div>
             
@@ -60,17 +60,17 @@
                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">MERCHANT</label>
                  <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.merchant || 'Unknown' }}</div>
                </div>
-               <div>
+               <div v-if="tx.type !== 'Income'">
                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">SOURCE</label>
                  <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.paymentSourceAccount || '-' }}</div>
                </div>
-               <div>
+               <div v-if="tx.type !== 'Expense'">
                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">BENEFICIARY</label>
                  <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.beneficiaryAccount || '-' }}</div>
                </div>
                <div style="grid-column: span 2;">
                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">TEMPORAL COORDINATES</label>
-                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.date }} • {{ tx.time }}</div>
+                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.date }} • {{ displayTime }}</div>
                </div>
                <div v-if="tx.description" style="grid-column: span 2;">
                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">LOG ENTRY</label>
@@ -190,6 +190,23 @@ const deleteTx = () => {
     emit('close')
   }
 }
+
+const formatCurrency = (val) => {
+  if (!val) return '0'
+  const s = String(val).replace(/[^0-9.-]+/g,"")
+  const num = Number(s)
+  return isNaN(num) ? '0' : num.toLocaleString('id-ID')
+}
+
+const displayTime = computed(() => {
+  if (!props.tx.time) return '--:--'
+  const t = String(props.tx.time)
+  if (t.includes('1899-12-30')) {
+    const parts = t.split('T')
+    if (parts[1]) return parts[1].substring(0, 5)
+  }
+  return t
+})
 
 const getTxColor = (type) => {
   if (type === 'Income') return '#10b981'

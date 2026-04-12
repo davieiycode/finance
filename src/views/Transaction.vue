@@ -184,12 +184,12 @@
 
          <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 1.75rem; padding: 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; backdrop-filter: blur(20px);">
             <!-- Currency Block -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+            <div style="display: grid; gap: 1.25rem;" :style="{ gridTemplateColumns: form.currency.toUpperCase() === 'IDR' ? '1fr' : '1fr 1fr' }">
                <div class="input-group">
                   <label class="form-label">Active Currency</label>
-                  <input type="text" v-model="form.currency" class="f-input-clean" placeholder="USD">
+                  <input type="text" v-model="form.currency" class="f-input-clean" placeholder="IDR">
                </div>
-               <div class="input-group">
+               <div v-if="form.currency.toUpperCase() !== 'IDR'" class="input-group">
                   <label class="form-label">Exchange Rate</label>
                   <input type="number" v-model.number="form.exchangeRate" step="any" class="f-input-clean" placeholder="1.0">
                </div>
@@ -218,8 +218,7 @@
                <div class="input-group">
                   <label class="form-label">Base Cost / Item</label>
                   <div style="position: relative; display: flex; align-items: center; height: 50px;">
-                     <span style="position: absolute; left: 1rem; font-weight: 800; opacity: 0.4; font-size: 0.8rem;">Rp</span>
-                     <input type="number" v-model.number="form.amountPerUnit" step="any" class="f-input" style="font-size: 1.5rem; font-weight: 950; color: white; padding-left: 2.5rem; background: rgba(255,255,255,0.03);">
+                     <input type="number" v-model.number="form.amountPerUnit" step="any" class="f-input" style="font-size: 1.5rem; font-weight: 950; color: white; background: rgba(255,255,255,0.03);">
                   </div>
                </div>
             </div>
@@ -551,6 +550,7 @@ const saveTransaction = () => {
   form.value.discount = calculatedDiscount.value
   form.value.total = calculatedTotal.value
   
+  form.value.updateTime = new Date().toISOString()
   const isEditing = !!route.query.id
   
   if (isEditing) {
@@ -561,6 +561,7 @@ const saveTransaction = () => {
     const payload = { ...form.value }
     if (route.query.duplicate) {
       delete payload.transactionID
+      payload.transactionID = 'TX-' + Date.now()
     }
     store.addTransaction(payload)
   }
@@ -643,7 +644,12 @@ const initForm = () => {
       // Ensure time is in HH:mm format for input type="time"
       let formattedTime = tx.time || ''
       if (formattedTime.includes(':')) {
-        formattedTime = formattedTime.split(':').slice(0, 2).join(':')
+        if (formattedTime.includes('1899-12-30')) {
+          const parts = formattedTime.split('T')
+          if (parts[1]) formattedTime = parts[1].substring(0, 5)
+        } else {
+          formattedTime = formattedTime.split(':').slice(0, 2).join(':')
+        }
       }
 
       form.value = { 
