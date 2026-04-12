@@ -161,6 +161,12 @@
         </div>
       </div>
     </div>
+    
+    <!-- System Footer -->
+    <div style="margin-top: 3rem; text-align: center; padding-bottom: 2rem; opacity: 0.3;">
+       <div style="font-size: 0.55rem; font-weight: 900; letter-spacing: 0.2em; color: var(--text-secondary); text-transform: uppercase;">v5.1.0 Intelligence Core</div>
+       <div style="font-size: 0.45rem; margin-top: 0.5rem; letter-spacing: 0.1em;">TERMINAL STABILIZED // NORECALL PROTOCOL ACTIVE</div>
+    </div>
   </div>
 </template>
 
