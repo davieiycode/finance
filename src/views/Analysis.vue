@@ -15,7 +15,7 @@
     </div>
 
     <!-- Period Navigator -->
-    <div style="display: flex; align-items: center; justify-content: space-between; margin: 1.5rem 0; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 0.75rem 1rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin: 1.5rem 0; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.25rem; padding: 0.75rem 1rem; flex-shrink: 0;">
       <button @click="changePeriod(-1)" style="width: 36px; height: 36px; border-radius: 18px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; cursor: pointer;"><i data-lucide="chevron-left" style="width: 18px;"></i></button>
       <div style="text-align: center;">
         <div style="font-weight: 800; color: var(--text-primary); font-size: 1.125rem;">{{ displayPeriod }}</div>
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Metrics Grid -->
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; flex-shrink: 0;">
       <div class="stat-card card-hover" @click="showModal('category', 'Income', 'Total Income')" style="border-left: 4px solid #10b981; cursor: pointer;">
         <span style="font-size: 1.1rem; font-weight: 800; color: #10b981;">Rp {{ (metrics.income || 0).toLocaleString('id-ID') }}</span>
         <span style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-top: 0.2rem;">Total Discovery</span>
@@ -45,15 +45,15 @@
     </div>
 
     <!-- Explorer's Insight Card -->
-    <div class="insight-card" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.02)); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 2rem; position: relative; overflow: hidden;">
+    <div class="insight-card" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.02)); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.5rem; padding: 1.25rem; margin-bottom: 2rem; position: relative; overflow: hidden; flex-shrink: 0; min-height: 100px;">
       <div style="position: absolute; top: -20px; right: -20px; opacity: 0.05;"><i data-lucide="zap" style="width: 120px; height: 120px;"></i></div>
       <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-        <div style="background: var(--accent); width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-          <i data-lucide="sparkles" style="width: 16px; color: white;"></i>
+        <div style="background: var(--accent); width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          <i data-lucide="sparkles" style="width: 14px; color: white;"></i>
         </div>
-        <h3 style="font-size: 0.875rem; font-weight: 800; color: var(--text-primary); margin:0;">Intelligence Briefing</h3>
+        <h3 style="font-size: 0.75rem; font-weight: 800; color: var(--text-primary); margin:0; text-transform: uppercase; letter-spacing: 0.05em;">Intelligence Briefing</h3>
       </div>
-      <p style="font-size: 0.8125rem; line-height: 1.6; color: var(--text-secondary); margin: 0; font-weight: 500;">
+      <p style="font-size: 0.8125rem; line-height: 1.6; color: var(--text-secondary); margin: 0; font-weight: 500; position: relative; z-index: 1;">
         {{ insightText }}
       </p>
     </div>
