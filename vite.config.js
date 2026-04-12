@@ -8,7 +8,7 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.png', 'avatars/*'],
+      includeAssets: [],
       manifest: {
         name: 'JURNEY Command Center',
         short_name: 'Jurney',
