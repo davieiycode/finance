@@ -16,7 +16,6 @@
           </button>
         </div>
 
-        <!-- Expanding Search Bar -->
         <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
            <div style="position: relative; width: 100%; height: 36px; display: flex; align-items: center; min-width: 250px;">
               <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
@@ -48,15 +47,7 @@
             <span style="font-weight: 800;">Merchant Detail</span>
             <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
          </div>
-         <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-            <div><label class="f-label">Merchant Name</label><input type="text" v-model="formData.merchantName" class="f-input"></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Category</label><input type="text" v-model="formData.category" class="f-input"></div>
-               <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
-            </div>
-            </div>
-         </div>
-
+         
          <!-- MODE: ANALYSIS -->
          <div v-if="modalMode === 'analysis' && editingMerchant.merchantID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
             <div style="display: flex; gap: 1.5rem; align-items: center;">
@@ -179,7 +170,12 @@ const saveMerchant = () => {
   isModalOpen.value = false
 }
 
-const deleteMerchant = () => { if (confirm('Delete this merchant?')) { store.deleteMerchant(editingMerchant.value.merchantID); isModalOpen.value = false } }
+const deleteMerchant = () => { 
+  if (confirm('Delete this merchant?')) { 
+    store.deleteMerchant(editingMerchant.value.merchantID)
+    isModalOpen.value = false 
+  } 
+}
 
 const handleDuplicate = () => {
   const data = { ...formData.value }
