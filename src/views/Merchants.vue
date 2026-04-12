@@ -190,6 +190,7 @@
             </div>
          </div>
        </div>
+      </Teleport>
 
       <Teleport to="body">
         <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
@@ -219,7 +220,6 @@
         </div>
       </Teleport>
     </div>
-  </div>
 </template>
 
 <script setup>

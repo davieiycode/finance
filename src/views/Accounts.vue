@@ -187,7 +187,7 @@
             </div>
          </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Merge Selection Panel -->
     <Teleport to="body">
