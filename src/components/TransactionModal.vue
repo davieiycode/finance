@@ -47,7 +47,7 @@
             <div style="text-align: center;">
                <div style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.25rem;">TOTAL AUTHORIZATION</div>
                <div style="font-size: 2.25rem; font-weight: 950; letter-spacing: -0.02em;" :style="{ color: getTxColor(tx.type) }">
-                  Rp {{ formatCurrency(tx.total) }}
+                  Rp {{ formatCurrency(tx.total || (tx.amountPerUnit * tx.quantity)) }}
                </div>
             </div>
             

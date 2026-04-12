@@ -652,16 +652,25 @@ const initForm = () => {
         }
       }
 
+      // Sanitize Date (Ensure YYYY-MM-DD for input type="date")
+      let formattedDate = tx.date || ''
+      if (formattedDate.includes('T')) {
+        formattedDate = formattedDate.split('T')[0]
+      }
+
       form.value = { 
         ...tx,
+        date: formattedDate,
         time: formattedTime,
         amountPerUnit: Number(tx.amountPerUnit) || 0,
-        quantity: Number(tx.quantity) || 1, // Default to 1 if 0/null
-        total: Number(tx.total) || 0,
+        quantity: Number(tx.quantity) || 1, 
+        total: Number(tx.total) || (Number(tx.amountPerUnit) * Number(tx.quantity)) || 0,
         discount: Number(tx.discount) || 0,
         fee: Number(tx.fee) || 0,
         exchangeRate: Number(tx.exchangeRate) || 1
       }
+      form.value.total = Number(form.value.total) // Double check
+      
       itemSearch.value = form.value.itemName || ''
       categorySearch.value = form.value.category || ''
       unitSearch.value = form.value.unitScale || ''

@@ -87,7 +87,7 @@
               <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ t.merchant ? t.merchant + ' • ' : '' }}{{ t.category || 'General' }} • {{ formatTime(t.time) }}</div>
             </div>
             <div style="text-align: right; font-weight: 700; font-size: 0.9375rem;" :style="{ color: getTxColor(t.type) }">
-              {{ getTxSign(t.type) }}Rp {{ Number(t.total || 0).toLocaleString('id-ID') }}
+              {{ getTxSign(t.type) }}Rp {{ (Number(t.total) || (Number(t.quantity || 0) * Number(t.amountPerUnit || 0)) || 0).toLocaleString('id-ID') }}
             </div>
           </div>
        </template>
@@ -133,7 +133,7 @@ const groupedTransactions = computed(() => {
 
   const groups = {}
   list.forEach(t => {
-    const amount = Number(t.total) || 0
+    const amount = Number(t.total) || (Number(t.quantity || 0) * Number(t.amountPerUnit || 0)) || 0
     const type = (t.type || '').toLowerCase()
     
     if (!groups[t.date]) {
