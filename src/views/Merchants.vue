@@ -92,8 +92,18 @@
          <!-- MODE: EDIT -->
          <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
             <div><label class="f-label">Merchant Name</label><input type="text" v-model="formData.merchantName" class="f-input"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+               <div><label class="f-label">Category</label><input type="text" v-model="formData.category" class="f-input"></div>
+               <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+               <div><label class="f-label">Phone</label><input type="text" v-model="formData.phone" class="f-input"></div>
+               <div><label class="f-label">Email</label><input type="email" v-model="formData.email" class="f-input"></div>
+            </div>
             <div><label class="f-label">Address</label><textarea v-model="formData.address" class="f-input" style="min-height: 60px;"></textarea></div>
+            <div><label class="f-label">GMaps Link</label><input type="text" v-model="formData.gMapsLink" class="f-input" placeholder="https://goo.gl/maps/..."></div>
             <div><label class="f-label">Website</label><input type="text" v-model="formData.website" class="f-input" placeholder="https://..."></div>
+            <div><label class="f-label">Bank Account Details</label><input type="text" v-model="formData.bankAccountDetails" class="f-input" placeholder="Bank Name - Account Number"></div>
             <div><label class="f-label">Logo URL</label><input type="text" v-model="formData.merchantImage" class="f-input"></div>
             <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
@@ -156,7 +166,7 @@ const openModal = (m) => {
   }
   else { 
     editingMerchant.value = {}
-    formData.value = { merchantName: '', address: '', website: '', notes: '', merchantImage: '' } 
+    formData.value = { merchantName: '', category: 'General', status: 'Active', phone: '', email: '', address: '', website: '', gMapsLink: '', bankAccountDetails: '', notes: '', merchantImage: '' } 
     modalMode.value = 'edit'
   }
   isModalOpen.value = true

@@ -66,7 +66,7 @@
                   <div style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">{{ editingVoucher.status }}</div>
                </div>
                <div style="font-size: 1.5rem; font-weight: 950; position: relative; z-index: 1;">{{ editingVoucher.voucherName }}</div>
-               <div style="font-family: monospace; font-size: 0.9rem; margin-top: 0.5rem; letter-spacing: 0.1em; position: relative; z-index: 1;">{{ editingVoucher.code }}</div>
+               <div style="font-family: monospace; font-size: 0.9rem; margin-top: 0.5rem; letter-spacing: 0.1em; position: relative; z-index: 1;">{{ editingVoucher.voucherCode }}</div>
             </div>
 
             <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
@@ -101,7 +101,7 @@
          <!-- MODE: EDIT -->
          <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
             <div><label class="f-label">Voucher Name</label><input type="text" v-model="formData.voucherName" class="f-input"></div>
-            <div><label class="f-label">Voucher Code</label><input type="text" v-model="formData.code" class="f-input"></div>
+            <div><label class="f-label">Voucher Code</label><input type="text" v-model="formData.voucherCode" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div><label class="f-label">Discount Type</label><select v-model="formData.discountType" class="f-input"><option>Percent</option><option>Nominal</option></select></div>
                <div><label class="f-label">Discount Value</label><input type="number" v-model.number="formData.discountValue" class="f-input"></div>
@@ -174,7 +174,7 @@ const openModal = (v) => {
   }
   else { 
     editingVoucher.value = {}
-    formData.value = { voucherName: '', code: '', discountType: 'Nominal', discountValue: 0, balance: 0, expiryDate: '', status: 'Active', isSingleUse: false, notes: '' } 
+    formData.value = { voucherName: '', provider: '', voucherCode: '', discountType: 'Nominal', discountValue: 0, balance: 0, expiryDate: '', status: 'Active', isSingleUse: false, notes: '' } 
     modalMode.value = 'edit'
   }
   isModalOpen.value = true

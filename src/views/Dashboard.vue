@@ -14,8 +14,9 @@
             <i data-lucide="search" style="width: 20px;"></i>
           </div>
           <div class="user-meta" style="display: flex; align-items: center; gap: 0.75rem;">
-            <div @click="$router.push('/settings')" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.25rem;">
-              {{ userAvatar }}
+            <div @click="$router.push('/settings')" class="profile-icon" style="width: 40px; height: 40px; border-radius: 20px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.25rem; overflow: hidden;">
+              <img v-if="userAvatar.includes('.svg')" :src="userAvatar" style="width: 24px; height: 24px; object-fit: contain;">
+              <span v-else>{{ userAvatar }}</span>
             </div>
           </div>
         </div>
@@ -119,7 +120,7 @@
           <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.merchants || []).length }} LOCATIONS</p>
         </div>
       </div>
-      <div @click="$router.push('/members')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+      <div @click="$router.push('/memberships')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
         <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0;">
           <i data-lucide="credit-card" style="width: 22px;"></i>
         </div>
@@ -209,7 +210,7 @@ const monthSpending = computed(() => {
 
 const totalBudget = computed(() => {
   if (!Array.isArray(store.budgets)) return 0
-  return store.budgets.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0)
+  return store.budgets.reduce((sum, b) => sum + (Number(b.amount) || 0), 0)
 })
 
 const goalProgress = computed(() => {

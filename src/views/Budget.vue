@@ -33,8 +33,8 @@
       <div v-for="b in filteredBudgets" :key="b.budgetID" @click="openModal(b)" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; cursor: pointer; transition: 0.2s;">
          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
             <div>
-               <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">{{ b.type }} / {{ b.category }}</div>
-               <div style="font-size: 1.125rem; font-weight: 800; margin-top: 0.2rem;">{{ b.currency }} {{ (b.budgetAmount || 0).toLocaleString('id-ID') }}</div>
+               <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">{{ b.period }} / {{ b.category }}</div>
+               <div style="font-size: 1.125rem; font-weight: 800; margin-top: 0.2rem;">{{ b.currency }} {{ (b.amount || 0).toLocaleString('id-ID') }}</div>
             </div>
             <div style="font-size: 0.65rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 2px 8px; border-radius: 10px; font-weight: 800;">{{ b.status }}</div>
          </div>
@@ -57,12 +57,13 @@
          </div>
          <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
             <div><label class="f-label">Category</label><input type="text" v-model="formData.category" list="cat-list" class="f-input"></div>
-            <div><label class="f-label">Type</label><select v-model="formData.type" class="f-input"><option>Monthly</option><option>Weekly</option><option>Yearly</option><option>Custom Project</option></select></div>
+            <div><label class="f-label">Period</label><select v-model="formData.period" class="f-input"><option>Monthly</option><option>Weekly</option><option>Yearly</option><option>Custom Project</option></select></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Budget Amount</label><input type="number" v-model.number="formData.budgetAmount" class="f-input"></div>
+               <div><label class="f-label">Budget Amount</label><input type="number" v-model.number="formData.amount" class="f-input"></div>
                <div><label class="f-label">Currency</label><input type="text" v-model="formData.currency" class="f-input"></div>
             </div>
             <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Paused</option><option>Completed</option></select></div>
+            <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
                <button @click="saveBud" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
@@ -104,7 +105,7 @@ const filteredBudgets = computed(() => {
   const q = searchQuery.value.toLowerCase()
   return store.budgets.filter(b => 
     (b.category || '').toLowerCase().includes(q) ||
-    (b.type || '').toLowerCase().includes(q)
+    (b.period || '').toLowerCase().includes(q)
   )
 })
 
@@ -113,10 +114,10 @@ const openModal = (b) => {
     editingBud.value = { ...b }
     formData.value = { 
       ...b,
-      budgetAmount: Number(b.budgetAmount) || 0
+      amount: Number(b.amount) || 0
     } 
   }
-  else { editingBud.value = {}; formData.value = { category: '', type: 'Monthly', budgetAmount: 0, currency: 'IDR', status: 'Active' } }
+  else { editingBud.value = {}; formData.value = { category: '', period: 'Monthly', amount: 0, currency: 'IDR', status: 'Active', notes: '' } }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
@@ -149,9 +150,9 @@ const getSpent = (b) => {
 }
 
 const calculateProgress = (b) => {
-  if (!b.budgetAmount) return 0
+  if (!b.amount) return 0
   const spent = getSpent(b)
-  return Math.min(Math.round((spent / b.budgetAmount) * 100), 100)
+  return Math.min(Math.round((spent / b.amount) * 100), 100)
 }
 
 const getProgressColor = (b) => {

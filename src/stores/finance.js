@@ -208,18 +208,18 @@ export const useFinanceStore = defineStore('finance', {
         if (data.status === 'success') {
           const entities = [
             { key: 'transaction', state: 'transactions', id: 'transactionID' },
+            { key: 'receipt', state: 'receipts', id: 'receiptID' },
+            { key: 'member', state: 'members', id: 'memberID' },
+            { key: 'voucher', state: 'vouchers', id: 'voucherID' },
             { key: 'account', state: 'accounts', id: 'accountID' },
             { key: 'merchant', state: 'merchants', id: 'merchantID' },
             { key: 'item', state: 'items', id: 'itemID' },
-            { key: 'member', state: 'members', id: 'memberID' },
-            { key: 'voucher', state: 'vouchers', id: 'voucherID' },
-            { key: 'budget', state: 'budgets', id: 'budgetID' },
-            { key: 'goal', state: 'goals', id: 'goalID' },
-            { key: 'receipt', state: 'receipts', id: 'receiptID' },
             { key: 'category', state: 'categories', id: 'categoryID' },
             { key: 'unitScale', state: 'unitScales', id: 'unitScale' },
             { key: 'tag', state: 'tags', id: 'tagID' },
             { key: 'project', state: 'projects', id: 'projectID' },
+            { key: 'budget', state: 'budgets', id: 'budgetID' },
+            { key: 'goal', state: 'goals', id: 'goalID' },
             { key: 'author', state: 'authors', id: 'authorID' }
           ]
 

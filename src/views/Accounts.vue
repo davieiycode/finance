@@ -119,21 +119,16 @@
                <div><label class="f-label">Type</label><select v-model="formData.accountType" class="f-input"><option>Bank</option><option>E-Wallet</option><option>Cash</option><option>Credit Card</option><option>Investment</option></select></div>
                <div><label class="f-label">Currency</label><input type="text" v-model="formData.currency" class="f-input"></div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Account Number</label><input type="text" v-model="formData.accountNumber" class="f-input"></div>
-               <div><label class="f-label">Card Number</label><input type="text" v-model="formData.cardNumber" placeholder="XXXX XXXX XXXX XXXX" class="f-input"></div>
-            </div>
+            <div><label class="f-label">Account Number</label><input type="text" v-model="formData.accountNumber" placeholder="Bank account or card number" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div><label class="f-label">Opening Balance</label><input type="number" v-model.number="formData.openingBalance" class="f-input"></div>
                <div><label class="f-label">Current Balance</label><input type="number" v-model.number="formData.currentBalance" class="f-input"></div>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Card Expiry (MM/YY)</label><input type="text" v-model="formData.expiryDate" placeholder="MM/YY" class="f-input"></div>
                <div><label class="f-label">Card Color</label><input type="color" v-model="formData.cardColor" style="height: 44px; padding: 4px;" class="f-input"></div>
+               <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
             </div>
             <div><label class="f-label">Logo URL</label><input type="text" v-model="formData.accountImage" placeholder="https://..." class="f-input"></div>
-            <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
-
             <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
@@ -200,7 +195,7 @@ const openModal = (acc) => {
     accountMode.value = 'analysis'
   } else {
     editingAcc.value = {}
-    formData.value = { accountName: '', accountType: 'Bank', currency: 'IDR', openingBalance: 0, currentBalance: 0, cardColor: '#1e293b', status: 'Active', notes: '', accountNumber: '', accountImage: '', cardNumber: '', expiryDate: '' }
+    formData.value = { accountName: '', accountType: 'Bank', currency: 'IDR', openingBalance: 0, currentBalance: 0, cardColor: '#1e293b', status: 'Active', notes: '', accountNumber: '', accountImage: '' }
     accountMode.value = 'edit'
   }
   isModalOpen.value = true

@@ -64,7 +64,7 @@
                   <i data-lucide="award" style="width: 20px;"></i>
                </div>
                <div style="font-size: 1.5rem; font-weight: 950;">{{ editingMember.memberName }}</div>
-               <div style="font-size: 0.8rem; font-weight: 700; margin-top: 0.5rem; opacity: 0.8;">{{ editingMember.membershipType }} Class</div>
+               <div style="font-size: 0.8rem; font-weight: 700; margin-top: 0.5rem; opacity: 0.8;">{{ editingMember.type }} Class</div>
             </div>
 
             <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
@@ -172,7 +172,7 @@ const openModal = (m) => {
   }
   else { 
     editingMember.value = {}
-    formData.value = { memberName: '', membershipType: 'Basic', membershipDiscount: 0, membershipCost: 0, startDate: '', endDate: '', status: 'Active', notes: '' } 
+    formData.value = { memberName: '', code: '', expiryDate: '', type: 'Basic', color: '#1e293b', notes: '', memberImage: '', membershipDiscount: 0, membershipCost: 0 } 
     modalMode.value = 'edit'
   }
   isModalOpen.value = true

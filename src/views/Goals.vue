@@ -65,12 +65,17 @@
          </div>
          <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
             <div><label class="f-label">Goal Name</label><input type="text" v-model="formData.goalName" class="f-input"></div>
+            <div><label class="f-label">Category</label><input type="text" v-model="formData.category" list="cat-list" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div><label class="f-label">Target Amount</label><input type="number" v-model.number="formData.targetAmount" class="f-input"></div>
                <div><label class="f-label">Current Amount</label><input type="number" v-model.number="formData.currentAmount" class="f-input"></div>
             </div>
             <div><label class="f-label">Deadline</label><input type="date" v-model="formData.deadline" class="f-input"></div>
             <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>In Progress</option><option>Paused</option><option>Completed</option><option>Abandoned</option></select></div>
+            <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
+            <datalist id="cat-list">
+               <option v-for="c in store.categories" :key="c.categoryID" :value="c.category" />
+            </datalist>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
                <button @click="saveGoal" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
