@@ -85,6 +85,36 @@
          </datalist>
       </div>
     </div>
+
+    <!-- Merge Selection Panel -->
+    <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
+       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 440px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; animation: slideUp 0.3s ease-out;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span style="font-weight: 800; font-size: 1rem;">Budget Consolidation</span>
+             <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the target budget that will absorb the allocation from <b>{{ editingBud.category }}</b>.</p>
+          
+          <div style="position: relative;">
+             <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
+             <input type="text" v-model="mergeTargetSearch" placeholder="Search budgets..." class="f-input" style="padding-left: 2.5rem; height: 44px; font-size: 0.8rem;">
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
+             <div v-for="t in filteredMergeTargets" :key="t.budgetID" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center;">
+                   <i data-lucide="landmark" style="width: 14px;"></i>
+                </div>
+                <div>
+                   <div style="font-weight: 700; font-size: 0.85rem;">{{ t.category }}</div>
+                   <div style="font-size: 0.6rem; opacity: 0.5;">{{ t.period }} • Rp {{ (t.amount || 0).toLocaleString('id-ID') }}</div>
+                </div>
+             </div>
+             <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid budgets found.</div>
+          </div>
+          <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
+       </div>
+    </div>
   </div>
 </template>
 
@@ -139,8 +169,35 @@ const handleDuplicate = () => {
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
+const isMergePanelOpen = ref(false)
+const mergeTargetSearch = ref('')
+const filteredMergeTargets = computed(() => {
+  const q = mergeTargetSearch.value.toLowerCase()
+  return store.budgets.filter(b => 
+    b.budgetID !== editingBud.value.budgetID &&
+    (b.category || '').toLowerCase().includes(q)
+  )
+})
+
 const handleMerge = () => {
-  alert('BUDGET Merge Engine coming soon.')
+  isMergePanelOpen.value = true
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+}
+
+const performMerge = (target) => {
+  const sourceName = editingBud.value.category
+  const targetName = target.category
+  
+  if (!confirm(`Append the allocation from budget "${sourceName}" into "${targetName}"? This will add Rp ${editingBud.value.amount} to the target and delete the source.`)) return
+  
+  const updatedTarget = { ...target }
+  updatedTarget.amount = (Number(updatedTarget.amount) || 0) + (Number(editingBud.value.amount) || 0)
+  
+  store.updateBudget(updatedTarget)
+  store.deleteBudget(editingBud.value.budgetID)
+  
+  isMergePanelOpen.value = false
+  isModalOpen.value = false
 }
 
 const getSpent = (b) => {

@@ -95,11 +95,39 @@
         </div>
         <button @click="$emit('close')" style="width: 100%; margin-top: 1rem; padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer;">DISMISS</button>
     </div>
+
+    <!-- Merge Selection Panel -->
+    <div v-if="isMergePanelOpen" style="position: absolute; inset: 0; background: var(--bg-primary, #000); z-index: 3000; border-radius: 2rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border);">
+       <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 800; font-size: 1rem;">Consolidation Target</span>
+          <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
+       </div>
+       <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the mission log that will absorb the financial payload from this entry.</p>
+       
+       <div style="position: relative;">
+          <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
+          <input type="text" v-model="mergeTargetSearch" placeholder="Search logs..." style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem 0.8rem 2.5rem; color: white; font-size: 0.8rem; outline: none;">
+       </div>
+
+       <div style="display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; flex: 1;">
+          <div v-for="t in filteredMergeTargets" :key="t.transactionID" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
+             <div style="background: rgba(139, 92, 246, 0.1); color: var(--accent); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="history" style="width: 14px;"></i>
+             </div>
+             <div>
+                <div style="font-weight: 700; font-size: 0.85rem;">{{ t.itemName }}</div>
+                <div style="font-size: 0.6rem; opacity: 0.5;">{{ t.date }} • Rp {{ (t.total || 0).toLocaleString('id-ID') }}</div>
+             </div>
+          </div>
+          <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid logs found in range.</div>
+       </div>
+       <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
 
@@ -120,8 +148,40 @@ const duplicateTx = () => {
   emit('close')
 }
 
+const isMergePanelOpen = ref(false)
+const mergeTargetSearch = ref('')
+const filteredMergeTargets = computed(() => {
+  const q = mergeTargetSearch.value.toLowerCase()
+  return store.transactions
+    .filter(t => t.transactionID !== props.tx.transactionID)
+    .filter(t => 
+      (t.itemName || '').toLowerCase().includes(q) ||
+      (t.merchant || '').toLowerCase().includes(q) ||
+      (t.date || '').toLowerCase().includes(q)
+    ).slice(0, 10)
+})
+
 const mergeTx = () => {
-  alert('Merge Engine coming soon for Transactions.')
+  isMergePanelOpen.value = true
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+}
+
+const performMerge = (target) => {
+  if (!confirm(`Relocate financial payload from this log to "${target.itemName}" (${target.date})? This will delete the current log.`)) return
+  
+  const updatedTarget = { ...target }
+  // Logic: either add total or just decommission source.
+  // For simplicity, we add the totals if currencies match.
+  if (target.currency === props.tx.currency) {
+    updatedTarget.total = (Number(updatedTarget.total) || 0) + (Number(props.tx.total) || 0)
+    updatedTarget.quantity = (Number(updatedTarget.quantity) || 0) + (Number(props.tx.quantity) || 0)
+    updatedTarget.description = (updatedTarget.description || '') + ` (Merged from ID: ${props.tx.transactionID})`
+    store.updateTransaction(updatedTarget)
+  }
+  
+  store.deleteTransaction(props.tx.transactionID)
+  isMergePanelOpen.value = false
+  emit('close')
 }
 
 const deleteTx = () => {

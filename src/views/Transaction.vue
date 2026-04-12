@@ -345,7 +345,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
 
@@ -368,6 +368,9 @@ const form = ref({
   paymentSourceAccount: '',
   beneficiaryAccount: '',
   receipt: '',
+  membershipID: '',
+  voucherID: '',
+  localPhoto: '',
   tags: '',
   projects: '',
   author: 'Self',
@@ -596,14 +599,13 @@ const stopScanner = async () => {
 }
 
 onBeforeUnmount(() => { stopScanner() })
-onMounted(() => {
+const initForm = () => {
   const query = router.currentRoute.value.query
   const txID = query.id || query.duplicate
   
   if (txID) {
     const tx = store.transactions.find(t => t.transactionID === txID)
     if (tx) {
-      // map data with numeric casting to prevent empty/NaN fields
       form.value = { 
         ...tx,
         amountPerUnit: Number(tx.amountPerUnit) || 0,
@@ -617,7 +619,48 @@ onMounted(() => {
       categorySearch.value = form.value.category || ''
       unitSearch.value = form.value.unitScale || ''
     }
+  } else {
+    // Reset to defaults
+    form.value = {
+      transactionID: '',
+      date: now.toISOString().split('T')[0],
+      time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'),
+      category: '',
+      merchant: '',
+      itemName: '',
+      amountPerUnit: 0,
+      quantity: 1,
+      unitScale: 'pcs',
+      type: 'Expense',
+      cleared: 'yes',
+      paymentSourceAccount: '',
+      beneficiaryAccount: '',
+      receipt: '',
+      membershipID: '',
+      voucherID: '',
+      localPhoto: '',
+      tags: '',
+      projects: '',
+      author: 'Self',
+      discount: 0,
+      fee: 0,
+      total: 0,
+      description: '',
+      currency: 'IDR',
+      exchangeRate: 1
+    }
+    itemSearch.value = ''
+    categorySearch.value = ''
+    unitSearch.value = ''
   }
+}
+
+watch(() => router.currentRoute.value.query, () => {
+  initForm()
+}, { deep: true })
+
+onMounted(() => {
+  initForm()
   if (window.lucide) window.lucide.createIcons()
 })
 </script>

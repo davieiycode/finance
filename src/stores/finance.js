@@ -337,5 +337,55 @@ export const useFinanceStore = defineStore('finance', {
     addAuthor(a) { if (!a.authorID) a.authorID = 'AUT-' + Date.now(); a.updateTime = new Date().toISOString(); this.authors.push(a); this.saveAll() },
     updateAuthor(a) { const idx = this.authors.findIndex(i => i.authorID === a.authorID); if (idx !== -1) { a.updateTime = new Date().toISOString(); this.authors[idx] = a; this.saveAll() } },
     deleteAuthor(id) { this.authors = this.authors.filter(i => i.authorID !== id); this.saveAll() }
+    // Merge Engine
+    mergeEntities(type, sourceName, targetName) {
+      console.log(`Merging ${type}: ${sourceName} -> ${targetName}`)
+      
+      // Update Transactions
+      this.transactions.forEach(t => {
+        if (type === 'categories' && t.category === sourceName) t.category = targetName
+        if (type === 'tags') {
+          const tags = t.tags ? t.tags.split(',').map(s => s.trim()) : []
+          if (tags.includes(sourceName)) {
+            const idx = tags.indexOf(sourceName)
+            if (!tags.includes(targetName)) tags[idx] = targetName
+            else tags.splice(idx, 1)
+            t.tags = tags.join(', ')
+          }
+        }
+        if (type === 'projects') {
+          const prjs = t.projects ? t.projects.split(',').map(s => s.trim()) : []
+          if (prjs.includes(sourceName)) {
+            const idx = prjs.indexOf(sourceName)
+            if (!prjs.includes(targetName)) prjs[idx] = targetName
+            else prjs.splice(idx, 1)
+            t.projects = prjs.join(', ')
+          }
+        }
+        if (type === 'accounts' && t.paymentSourceAccount === sourceName) t.paymentSourceAccount = targetName
+        if (type === 'accounts' && t.beneficiaryAccount === sourceName) t.beneficiaryAccount = targetName
+        if (type === 'authors' && t.author === sourceName) t.author = targetName
+        if (type === 'unitScales' && t.unitScale === sourceName) t.unitScale = targetName
+      })
+
+      // Update Items
+      this.items.forEach(i => {
+        if (type === 'categories' && i.itemCategory === sourceName) i.itemCategory = targetName
+        if (type === 'unitScales' && i.unitScale === sourceName) i.unitScale = targetName
+      })
+
+      // Update Budgets
+      this.budgets.forEach(b => {
+        if (type === 'categories' && b.category === sourceName) b.category = targetName
+      })
+
+      // Update Goals
+      this.goals.forEach(g => {
+        if (type === 'categories' && g.category === sourceName) g.category = targetName
+      })
+
+      this.saveAll()
+      this.notify(`Consolidation Successful: ${sourceName} merged into ${targetName}`, 'success')
+    },
   }
 })

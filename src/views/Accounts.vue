@@ -145,8 +145,37 @@
                   <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
                </button>
             </div>
-         </div>
       </div>
+    </div>
+
+    <!-- Merge Selection Panel -->
+    <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
+       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 440px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; animation: slideUp 0.3s ease-out;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span style="font-weight: 800; font-size: 1rem;">Vault Consolidation</span>
+             <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the vault that will absorb all logs and historical data from <b>{{ editingAcc.accountName }}</b>.</p>
+          
+          <div style="position: relative;">
+             <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
+             <input type="text" v-model="mergeTargetSearch" placeholder="Search vaults..." class="f-input" style="padding-left: 2.5rem; height: 44px; font-size: 0.8rem;">
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
+             <div v-for="t in filteredMergeTargets" :key="t.accountID" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
+                <div :style="{ background: t.cardColor || '#8b5cf6', color: 'white' }" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 900;">
+                   {{ t.accountName.substring(0, 2).toUpperCase() }}
+                </div>
+                <div>
+                   <div style="font-weight: 700; font-size: 0.85rem;">{{ t.accountName }}</div>
+                   <div style="font-size: 0.6rem; opacity: 0.5;">{{ t.accountType }} • {{ t.currency }}</div>
+                </div>
+             </div>
+             <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid vaults found.</div>
+          </div>
+          <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
+       </div>
     </div>
   </div>
 </template>
@@ -219,8 +248,32 @@ const handleDuplicate = () => {
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
+const isMergePanelOpen = ref(false)
+const mergeTargetSearch = ref('')
+const filteredMergeTargets = computed(() => {
+  const q = mergeTargetSearch.value.toLowerCase()
+  return store.accounts.filter(a => 
+    a.accountID !== editingAcc.value.accountID &&
+    (a.accountName || '').toLowerCase().includes(q)
+  )
+})
+
 const handleMerge = () => {
-  alert('ACCOUNT Merge Engine coming soon.')
+  isMergePanelOpen.value = true
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+}
+
+const performMerge = (target) => {
+  const sourceName = editingAcc.value.accountName
+  const targetName = target.accountName
+  
+  if (!confirm(`Relocate ALL logs from vault "${sourceName}" to "${targetName}"? This protocol will decommission the "${sourceName}" vault.`)) return
+  
+  store.mergeEntities('accounts', sourceName, targetName)
+  store.deleteAccount(editingAcc.value.accountID)
+  
+  isMergePanelOpen.value = false
+  isModalOpen.value = false
 }
 
 const maskNumber = (n) => {
