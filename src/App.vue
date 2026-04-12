@@ -18,13 +18,15 @@ import BottomNav from './components/BottomNav.vue'
 .app-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   width: 100%;
   background: var(--bg-primary, #020617);
   position: relative;
+  overflow: hidden; /* Prevent body scroll */
 }
 .main-content {
   flex: 1;
-  padding-bottom: 80px; /* Space for bottom nav */
+  overflow: hidden; /* Each view will handle its own scroll */
+  padding-bottom: 0; /* Views have their own padding */
 }
 </style>

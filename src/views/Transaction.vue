@@ -1,6 +1,6 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 6rem;">
-    <header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: -1px; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
+  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(70px + 6rem);">
+    <header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
       <div style="display: flex; align-items: center; gap: 1rem;">
         <button @click="$router.push('/')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%;">
            <i data-lucide="chevron-left" style="width: 20px;" stroke-width="2"></i>
