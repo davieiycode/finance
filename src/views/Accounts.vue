@@ -145,6 +145,7 @@
                   <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
                </button>
             </div>
+         </div>
       </div>
     </div>
 
