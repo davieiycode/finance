@@ -1,5 +1,5 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 2rem; position: relative;">
+  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1.5rem; overflow-y: auto; height: 100%; padding-bottom: 6rem; position: relative;">
     <div class="sticky-nav" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: -1px; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
         <div style="display: flex; align-items: center; gap: 1rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
@@ -29,7 +29,7 @@
       </header>
     </div>
 
-    <div class="accounts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; margin-top: 1.5rem;">
+    <div class="accounts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
       <div v-for="acc in filteredAccounts" :key="acc.accountID" @click="openModal(acc)" class="account-card-premium" :style="{ background: `linear-gradient(135deg, ${acc.cardColor || '#1e293b'}, ${adjustColor(acc.cardColor || '#1e293b', -30)})` }">
          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div v-if="acc.accountImage" style="width: 36px; height: 36px; border-radius: 8px; overflow: hidden; background: white; padding: 4px;">
@@ -298,6 +298,24 @@ onMounted(() => { if (window.lucide) window.lucide.createIcons() })
 </script>
 
 <style scoped>
+.account-card-premium {
+   padding: 1.5rem;
+   border-radius: 1.5rem;
+   border: 1px solid rgba(255,255,255,0.1);
+   cursor: pointer;
+   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+   position: relative;
+   overflow: hidden;
+   display: flex;
+   flex-direction: column;
+   justify-content: space-between;
+   min-height: 180px;
+}
+.account-card-premium:hover {
+   transform: translateY(-5px);
+   box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+   border-color: rgba(255,255,255,0.2);
+}
 .f-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem; }
 .f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
