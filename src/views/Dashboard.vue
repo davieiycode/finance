@@ -214,6 +214,9 @@ const totalBudget = computed(() => {
 
 const goalProgress = computed(() => {
   if (!(store.goals || []).length) return 0
+  const avg = store.goals.reduce((sum, g) => {
+    const target = Number(g.targetAmount) || 1
+    const current = Number(g.currentAmount) || 0
     return sum + (current / target)
   }, 0) / (store.goals.length || 1)
   return avg * 100
