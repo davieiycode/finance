@@ -39,7 +39,7 @@
         <i data-lucide="wallet" style="width: 14px; color: var(--accent); margin-bottom: 0.2rem;"></i>
         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Treasure Vault</span>
         <span style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em;">Rp {{ (totalBalance || 0).toLocaleString('id-ID') }}</span>
-        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ store.accounts.length }} ACTIVE VAULTS</div>
+        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ (store.accounts || []).length }} ACTIVE VAULTS</div>
       </div>
       <div class="stat-card" @click="$router.push('/analysis')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
         <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="trending-up" style="width: 60px; height: 60px;"></i></div>
@@ -53,18 +53,18 @@
         <i data-lucide="pie-chart" style="width: 14px; color: #22c55e; margin-bottom: 0.2rem;"></i>
         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Ration Limit</span>
         <span style="font-size: 1.25rem; font-weight: 900; color: #22c55e; letter-spacing: -0.02em;">Rp {{ (totalBudget || 0).toLocaleString('id-ID') }}</span>
-        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ store.budget.length }} PROTOCOLS ACTIVE</div>
+        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ (store.budgets || []).length }} PROTOCOLS ACTIVE</div>
       </div>
       <div class="stat-card" @click="$router.push('/goals')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
         <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="target" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="target" style="width: 14px; color: #0ea5e9; margin-bottom: 0.2rem;"></i>
         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Destinations</span>
         <span style="font-size: 1.25rem; font-weight: 900; color: #0ea5e9; letter-spacing: -0.02em;">{{ Math.round(goalProgress) }}% Done</span>
-        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ store.goals.length }} ACTIVE MISSIONS</div>
+        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ (store.goals || []).length }} ACTIVE MISSIONS</div>
       </div>
     </div>
 
-    <section v-if="recentTransactions.length > 0">
+    <section v-if="(recentTransactions || []).length > 0">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h3 style="font-size: 1rem; font-weight: 700;">Recent Expeditions</h3>
         <a @click.prevent="$router.push('/history')" style="font-size: 0.75rem; color: var(--accent); font-weight: 600; cursor: pointer;">See All</a>
@@ -107,7 +107,7 @@
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700;">Items</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.items.length }} REGISTERED</p>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.items || []).length }} REGISTERED</p>
         </div>
       </div>
       <div @click="$router.push('/merchants')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
@@ -116,16 +116,16 @@
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700;">Vendors</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.merchants.length }} LOCATIONS</p>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.merchants || []).length }} LOCATIONS</p>
         </div>
       </div>
-      <div @click="$router.push('/memberships')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
+      <div @click="$router.push('/members')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
         <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0;">
           <i data-lucide="credit-card" style="width: 22px;"></i>
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700;">Privileges</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.memberships.length }} ACTIVE CARDS</p>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.members || []).length }} ACTIVE CARDS</p>
         </div>
       </div>
       <div @click="$router.push('/vouchers')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
@@ -134,7 +134,7 @@
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700;">Assets</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.vouchers.filter(v => v.status === 'Active').length }} USABLE</p>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.vouchers || []).filter(v => v.status === 'Active').length }} USABLE</p>
         </div>
       </div>
       <div @click="$router.push('/receipts')" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s;">
@@ -143,7 +143,7 @@
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700;">Evidence</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ store.receipts.length }} ARCHIVED</p>
+          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.receipts || []).length }} ARCHIVED</p>
         </div>
       </div>
       <div @click="$router.push('/audit')" style="background: var(--glass, rgba(239, 68, 68, 0.05)); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; position: relative;">
@@ -208,17 +208,14 @@ const monthSpending = computed(() => {
 })
 
 const totalBudget = computed(() => {
-  if (!Array.isArray(store.budget)) return 0
-  return store.budget.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0)
+  if (!Array.isArray(store.budgets)) return 0
+  return store.budgets.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0)
 })
 
 const goalProgress = computed(() => {
-  if (store.goals.length === 0) return 0
-  const avg = store.goals.reduce((sum, g) => {
-    const target = Number(g.targetAmount) || 1
-    const current = Number(g.currentAmount) || 0
+  if (!(store.goals || []).length) return 0
     return sum + (current / target)
-  }, 0) / store.goals.length
+  }, 0) / (store.goals.length || 1)
   return avg * 100
 })
 
@@ -232,27 +229,27 @@ const anomalyCount = computed(() => {
   let count = 0
   
   // 1. Pending Clearances
-  count += store.transactions.filter(t => t.cleared === 'no' || !t.cleared).length
+  count += (store.transactions || []).filter(t => t.cleared === 'no' || !t.cleared).length
   
   // 2. Duplicates
   const groups = {}
-  store.transactions.forEach(t => {
+  ;(store.transactions || []).forEach(t => {
     const sig = `${t.date}_${t.merchant}_${t.total}_${t.itemName}`
     if (!groups[sig]) groups[sig] = []
     groups[sig].push(t)
   })
-  count += Object.values(groups).filter(g => g.length > 1).length
+  count += Object.values(groups).filter(g => (g || []).length > 1).length
   
   // 3. Desync
-  store.transactions.forEach(t => {
+  ;(store.transactions || []).forEach(t => {
     let hasDesync = false
     if (t.tags) {
        const txTags = t.tags.split(',').map(s => s.trim()).filter(Boolean)
-       if (txTags.some(tagName => !store.tags.some(rt => rt.tagName === tagName))) hasDesync = true
+       if (txTags.some(tagName => !(store.tags || []).some(rt => rt.tagName === tagName))) hasDesync = true
     }
     if (t.projects) {
        const txPrjs = t.projects.split(',').map(s => s.trim()).filter(Boolean)
-       if (txPrjs.some(prjName => !store.projects.some(rp => rp.projectName === prjName))) hasDesync = true
+       if (txPrjs.some(prjName => !(store.projects || []).some(rp => rp.projectName === prjName))) hasDesync = true
     }
     if (hasDesync) count++
   })

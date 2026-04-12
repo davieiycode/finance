@@ -40,7 +40,7 @@ const getIcon = (type) => {
   return 'info'
 }
 
-watch(() => store.notifications.length, () => {
+watch(() => (store.notifications || []).length, () => {
   if (window.lucide) window.lucide.createIcons()
 })
 
