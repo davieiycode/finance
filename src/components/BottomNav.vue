@@ -89,6 +89,7 @@ watch(() => route.path, () => {
 .nav-item.active i {
   color: var(--accent, #8b5cf6);
   filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
+  fill: currentColor;
 }
 
 .plus-icon {
