@@ -26,6 +26,24 @@
         <i data-lucide="chevron-right" style="opacity: 0.4;"></i>
       </div>
 
+      <div class="section-title">System Status</div>
+      <div class="settings-list-card">
+        <div v-if="installPrompt" class="sett-list-item" @click="installApp">
+          <div class="sett-icon" style="color: var(--accent); border-color: var(--accent);"><i data-lucide="download"></i></div>
+          <div style="flex:1;">
+            <div class="sett-value">Install Protocol</div>
+            <div class="sett-sub">Deploy Jurney to your local desktop/mobile</div>
+          </div>
+        </div>
+        <div class="sett-list-item" @click="updateApp">
+          <div class="sett-icon" style="color: #10b981;"><i data-lucide="refresh-cw"></i></div>
+          <div style="flex:1;">
+            <div class="sett-value">Update Explorer</div>
+            <div class="sett-sub">Check for latest version and refresh</div>
+          </div>
+        </div>
+      </div>
+
       <div class="section-title">Visual Layout</div>
       <div class="settings-grid" style="grid-template-columns: 1fr;">
         <div class="sett-card" @click="currentView = 'visual'">
@@ -216,6 +234,32 @@ const themes = [
   { id: 'light', name: 'Arctic', bg: '#FFFFFF', border: '#E7E5E4' }
 ]
 
+const installPrompt = ref(null)
+
+const installApp = async () => {
+  if (!installPrompt.value) return
+  installPrompt.value.prompt()
+  const { outcome } = await installPrompt.value.userChoice
+  if (outcome === 'accepted') {
+    installPrompt.value = null
+  }
+}
+
+const updateApp = () => {
+  if (confirm('Verify and initiate system update? This will refresh the explorer.')) {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          registration.update()
+        }
+        window.location.reload()
+      })
+    } else {
+      window.location.reload()
+    }
+  }
+}
+
 const savePrefs = () => {
   if (isSafe) localStorage.setItem('user_prefs', JSON.stringify(userPrefs.value))
   applyThemeToRoot()
@@ -281,6 +325,10 @@ watch(currentView, () => {
 })
 
 onMounted(() => {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault()
+    installPrompt.value = e
+  })
   applyThemeToRoot()
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 })
