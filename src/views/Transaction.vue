@@ -157,7 +157,7 @@
                         <div style="font-weight: 800; color: white;">{{ sr.merchant }}</div>
                         <div style="opacity: 0.5; font-size: 0.65rem; margin-top: 0.2rem;">{{ sr.date }} • {{ sr.account }}</div>
                      </div>
-                     <button type="button" @click="form.receipt = sr.receiptID" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 900; font-size: 0.65rem; cursor: pointer; text-transform: uppercase;">
+                     <button type="button" @click="linkReceipt(sr)" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 900; font-size: 0.65rem; cursor: pointer; text-transform: uppercase;">
                         Link Source
                      </button>
                   </div>
@@ -392,7 +392,12 @@ const unitSearch = ref('')
 const showUnitDropdown = ref(false)
 
 // Sync search refs to form
-watch(itemSearch, (val) => { if (val !== form.value.itemName) form.value.itemName = val })
+watch(itemSearch, (val) => { 
+  if (val !== form.value.itemName) {
+    form.value.itemName = val
+    onItemChange() // Trigger auto-fill when typing
+  }
+})
 watch(categorySearch, (val) => { if (val !== form.value.category) form.value.category = val })
 watch(unitSearch, (val) => { if (val !== form.value.unitScale) form.value.unitScale = val })
 
@@ -462,7 +467,7 @@ const categoriesByType = computed(() => {
 const onItemChange = () => {
   const item = store.items.find(i => i.itemName === form.value.itemName)
   if (item) {
-    if (item.amountPerUnit) form.value.amountPerUnit = item.amountPerUnit
+    if (item.amountPerUnit) form.value.amountPerUnit = Number(item.amountPerUnit)
     if (item.itemCategory) {
       form.value.category = item.itemCategory
       categorySearch.value = item.itemCategory
@@ -472,7 +477,22 @@ const onItemChange = () => {
        unitSearch.value = item.unitScale
     }
     if (item.currency) form.value.currency = item.currency
+    
+    // Default quantity to 1 if it's 0
+    if (!form.value.quantity) form.value.quantity = 1
   }
+}
+
+const linkReceipt = (r) => {
+  form.value.receipt = r.receiptID
+  if (r.date) form.value.date = r.date
+  if (r.time) {
+     const t = String(r.time)
+     form.value.time = t.includes(':') ? t.split(':').slice(0, 2).join(':') : t
+  }
+  if (r.merchant) form.value.merchant = r.merchant
+  if (r.account) form.value.paymentSourceAccount = r.account
+  store.notify('Expedition Artifact Linked', 'info')
 }
 
 const suggestedReceipts = computed(() => {
@@ -620,10 +640,17 @@ const initForm = () => {
     // Force string comparison for robustness
     const tx = store.transactions.find(t => String(t.transactionID) === String(txID))
     if (tx) {
+      // Ensure time is in HH:mm format for input type="time"
+      let formattedTime = tx.time || ''
+      if (formattedTime.includes(':')) {
+        formattedTime = formattedTime.split(':').slice(0, 2).join(':')
+      }
+
       form.value = { 
         ...tx,
+        time: formattedTime,
         amountPerUnit: Number(tx.amountPerUnit) || 0,
-        quantity: Number(tx.quantity) || 0,
+        quantity: Number(tx.quantity) || 1, // Default to 1 if 0/null
         total: Number(tx.total) || 0,
         discount: Number(tx.discount) || 0,
         fee: Number(tx.fee) || 0,
