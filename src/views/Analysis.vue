@@ -302,21 +302,52 @@ const initCharts = () => {
   const sankeyEl = document.getElementById('cashflow-sankey')
   if (sankeyEl && activeTab.value === 'cashflow') {
     if (!charts.cf) charts.cf = window.echarts.init(sankeyEl, 'dark')
-    const nodes = [{ name: 'Income', itemStyle: { color: '#10b981' } }, { name: 'Vault (Net)', itemStyle: { color: '#3b82f6' } }]
-    categoryIncome.value.forEach(i => nodes.push({ name: i.name }))
-    categorySpending.value.forEach(s => nodes.push({ name: s.name }))
+    
+    // Sankey requires unique names. We'll use IDs and labels to prevent collisions.
+    const nodes = [
+      { name: '__INTERNAL_INFLOW__', label: { formatter: 'Income' }, itemStyle: { color: '#10b981' } }, 
+      { name: '__INTERNAL_VAULT__', label: { formatter: 'Vault (Net)' }, itemStyle: { color: '#3b82f6' } }
+    ]
     const links = []
-    categoryIncome.value.forEach(i => links.push({ source: i.name, target: 'Income', value: i.value }))
-    categorySpending.value.forEach(s => links.push({ source: 'Income', target: s.name, value: s.value }))
-    if (metrics.value.profit > 0) links.push({ source: 'Income', target: 'Vault (Net)', value: metrics.value.profit })
-    charts.cf.setOption({ ...darkTheme, series: [{ type: 'sankey', layout: 'none', data: nodes, links: links, label: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }] })
-    charts.cf.off('click')
-    charts.cf.on('click', (p) => { 
-       const node = nodes.find(n => n.name === p.name)
-       if (!node) return
-       if (categoryIncome.value.some(i => i.name === p.name)) showModal('category', 'Income', p.name)
-       else if (categorySpending.value.some(s => s.name === p.name)) showModal('category', 'Expense', p.name)
+    
+    categoryIncome.value.forEach(i => {
+      const nodeId = `INC_${i.name}`
+      nodes.push({ name: nodeId, label: { formatter: i.name } })
+      links.push({ source: nodeId, target: '__INTERNAL_INFLOW__', value: i.value })
     })
+    
+    categorySpending.value.forEach(s => {
+      const nodeId = `EXP_${s.name}`
+      nodes.push({ name: nodeId, label: { formatter: s.name } })
+      links.push({ source: '__INTERNAL_INFLOW__', target: nodeId, value: s.value })
+    })
+    
+    if (metrics.value.profit > 0) {
+      links.push({ source: '__INTERNAL_INFLOW__', target: '__INTERNAL_VAULT__', value: metrics.value.profit })
+    }
+
+    if (links.length > 0) {
+      charts.cf.setOption({ 
+        ...darkTheme, 
+        series: [{ 
+          type: 'sankey', 
+          layout: 'none', 
+          data: nodes, 
+          links: links, 
+          label: { color: '#94a3b8', fontSize: 10, fontWeight: 700, formatter: (p) => p.data.label?.formatter || p.name } 
+        }] 
+      })
+      
+      charts.cf.off('click')
+      charts.cf.on('click', (p) => { 
+         // Extract clean name from node ID
+         const cleanName = p.name.replace(/^(INC_|EXP_)/, '')
+         if (p.name.startsWith('INC_')) showModal('category', 'Income', cleanName)
+         else if (p.name.startsWith('EXP_')) showModal('category', 'Expense', cleanName)
+      })
+    } else {
+      charts.cf.clear()
+    }
   }
 
   const renderTM = (id, data, key, type) => {
