@@ -54,7 +54,8 @@
                <div><label class="f-label">Category</label><input type="text" v-model="formData.category" class="f-input"></div>
                <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            </div>
+         </div>
 
          <!-- MODE: ANALYSIS -->
          <div v-if="modalMode === 'analysis' && editingMerchant.merchantID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
@@ -173,17 +174,17 @@ const openModal = (m) => {
 
 const saveMerchant = () => {
   if (!formData.value.merchantName) return alert('Name required')
-  if (editingMch.value.merchantID) store.updateMerchant({ ...formData.value })
+  if (editingMerchant.value.merchantID) store.updateMerchant({ ...formData.value })
   else store.addMerchant({ ...formData.value })
   isModalOpen.value = false
 }
 
-const deleteMch = () => { if (confirm('Delete this merchant?')) { store.deleteMerchant(editingMch.merchantID); isModalOpen.value = false } }
+const deleteMerchant = () => { if (confirm('Delete this merchant?')) { store.deleteMerchant(editingMerchant.value.merchantID); isModalOpen.value = false } }
 
 const handleDuplicate = () => {
   const data = { ...formData.value }
   delete data.merchantID
-  editingMch.value = {}
+  editingMerchant.value = {}
   formData.value = data
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
