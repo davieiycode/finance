@@ -134,8 +134,9 @@ const groupedTransactions = computed(() => {
   const groups = {}
   list.forEach(t => {
     if (!groups[t.date]) groups[t.date] = { dateFormatted: t.date, net: 0, items: [] }
-    if (t.type === 'Income') groups[t.date].net += (t.total || 0)
-    else if (t.type === 'Expense') groups[t.date].net -= (t.total || 0)
+    const amount = Number(t.total) || 0
+    if (t.type === 'Income') groups[t.date].net += amount
+    else if (t.type === 'Expense') groups[t.date].net -= amount
     groups[t.date].items.push(t)
   })
   return groups

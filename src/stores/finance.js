@@ -2,11 +2,20 @@ import { defineStore } from 'pinia'
 
 // Schema Alignment: Internal state now uses EXACT spreadsheet column names
 const isSafe = typeof localStorage !== 'undefined'
-const initTransactions = () => {
+const safeList = (key) => {
   if (!isSafe) return []
-  let txs = JSON.parse(localStorage.getItem('transactions') || '[]')
-  if (txs.length === 0) {
-    txs = [
+  try {
+    const data = JSON.parse(localStorage.getItem(key) || '[]')
+    return Array.isArray(data) ? data : []
+  } catch (e) {
+    return []
+  }
+}
+
+const initTransactions = () => {
+  const txs = safeList('transactions')
+  if (txs.length === 0 && isSafe) {
+    const defaultTx = [
       { 
         transactionID: 'TX-1711200001', 
         date: '2024-03-24', 
@@ -37,7 +46,8 @@ const initTransactions = () => {
         exchangeRate: 1 
       }
     ]
-    localStorage.setItem('transactions', JSON.stringify(txs))
+    localStorage.setItem('transactions', JSON.stringify(defaultTx))
+    return defaultTx
   }
   return txs
 }
@@ -45,19 +55,19 @@ const initTransactions = () => {
 export const useFinanceStore = defineStore('finance', {
   state: () => ({
     transactions: initTransactions(),
-    accounts: isSafe ? JSON.parse(localStorage.getItem('accounts') || '[]') : [],
-    merchants: isSafe ? JSON.parse(localStorage.getItem('merchants') || '[]') : [],
-    items: isSafe ? JSON.parse(localStorage.getItem('items') || '[]') : [],
-    members: isSafe ? JSON.parse(localStorage.getItem('members') || '[]') : [],
-    vouchers: isSafe ? JSON.parse(localStorage.getItem('vouchers') || '[]') : [],
-    budgets: isSafe ? JSON.parse(localStorage.getItem('budgets') || '[]') : [],
-    goals: isSafe ? JSON.parse(localStorage.getItem('goals') || '[]') : [],
-    receipts: isSafe ? JSON.parse(localStorage.getItem('receipts') || '[]') : [],
-    categories: isSafe ? JSON.parse(localStorage.getItem('categories') || '[]') : [],
-    unitScales: isSafe ? JSON.parse(localStorage.getItem('unitScales') || '[]') : [],
-    tags: isSafe ? JSON.parse(localStorage.getItem('tags') || '[]') : [],
-    projects: isSafe ? JSON.parse(localStorage.getItem('projects') || '[]') : [],
-    authors: isSafe ? JSON.parse(localStorage.getItem('authors') || '[]') : [],
+    accounts: safeList('accounts'),
+    merchants: safeList('merchants'),
+    items: safeList('items'),
+    members: safeList('members'),
+    vouchers: safeList('vouchers'),
+    budgets: safeList('budgets'),
+    goals: safeList('goals'),
+    receipts: safeList('receipts'),
+    categories: safeList('categories'),
+    unitScales: safeList('unitScales'),
+    tags: safeList('tags'),
+    projects: safeList('projects'),
+    authors: safeList('authors'),
     // Notification & Progress State
     notifications: [],
     syncProgress: 0,
@@ -221,15 +231,18 @@ export const useFinanceStore = defineStore('finance', {
           }
 
           entities.forEach((ent, i) => {
-             if (!data[ent.key]) return
-             const incoming = data[ent.key].map(row => {
+             const rawData = data[ent.key]
+             if (!rawData || !Array.isArray(rawData)) return
+             
+             const incoming = rawData.map(row => {
                 if (row.date) row.date = formatDate(row.date)
                 if (row.expiryDate) row.expiryDate = formatDate(row.expiryDate)
                 return row
              })
+             
              if (mode === 'merge') {
                 incoming.forEach(inc => {
-                   const exists = this[ent.state].some(cur => cur[ent.id] === inc[ent.id])
+                   const exists = (this[ent.state] || []).some(cur => cur[ent.id] === inc[ent.id])
                    if (!exists) this[ent.state].push(inc)
                 })
              } else {

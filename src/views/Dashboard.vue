@@ -38,21 +38,21 @@
         <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="wallet" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="wallet" style="width: 14px; color: var(--accent); margin-bottom: 0.2rem;"></i>
         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Treasure Vault</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em;">Rp {{ totalBalance.toLocaleString('id-ID') }}</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em;">Rp {{ (totalBalance || 0).toLocaleString('id-ID') }}</span>
         <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ store.accounts.length }} ACTIVE VAULTS</div>
       </div>
       <div class="stat-card" @click="$router.push('/analysis')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
         <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="trending-up" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="line-chart" style="width: 14px; color: #ef4444; margin-bottom: 0.2rem;"></i>
         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Supplies Used</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: #ef4444; letter-spacing: -0.02em;">Rp {{ monthSpending.toLocaleString('id-ID') }}</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: #ef4444; letter-spacing: -0.02em;">Rp {{ (monthSpending || 0).toLocaleString('id-ID') }}</span>
         <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">CONSUMPTION THIS CYCLE</div>
       </div>
       <div class="stat-card" @click="$router.push('/budget')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
         <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="pie-chart" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="pie-chart" style="width: 14px; color: #22c55e; margin-bottom: 0.2rem;"></i>
         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Ration Limit</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: #22c55e; letter-spacing: -0.02em;">Rp {{ totalBudget.toLocaleString('id-ID') }}</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: #22c55e; letter-spacing: -0.02em;">Rp {{ (totalBudget || 0).toLocaleString('id-ID') }}</span>
         <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ store.budget.length }} PROTOCOLS ACTIVE</div>
       </div>
       <div class="stat-card" @click="$router.push('/goals')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
@@ -194,10 +194,12 @@ const toggleSearch = () => {
 }
 
 const totalBalance = computed(() => {
+  if (!Array.isArray(store.accounts)) return 0
   return store.accounts.reduce((sum, acc) => sum + (Number(acc.currentBalance) || 0), 0)
 })
 
 const monthSpending = computed(() => {
+  if (!Array.isArray(store.transactions)) return 0
   const now = new Date()
   const month = now.toISOString().substring(0, 7) // YYYY-MM
   return store.transactions
@@ -206,6 +208,7 @@ const monthSpending = computed(() => {
 })
 
 const totalBudget = computed(() => {
+  if (!Array.isArray(store.budget)) return 0
   return store.budget.reduce((sum, b) => sum + (Number(b.budgetAmount) || 0), 0)
 })
 
@@ -258,6 +261,7 @@ const anomalyCount = computed(() => {
 })
 
 const recentTransactions = computed(() => {
+  if (!Array.isArray(store.transactions)) return []
   // Show up to 5 most recent transactions
   return [...store.transactions].reverse().slice(0, 5)
 })

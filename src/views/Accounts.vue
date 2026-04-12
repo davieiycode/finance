@@ -89,17 +89,17 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
                   <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase;">Protocol Inflow</div>
-                  <div style="font-size: 1rem; font-weight: 900; color: #10b981; margin-top: 0.2rem;">Rp {{ accAnalysis.inflow.toLocaleString('id-ID') }}</div>
+                  <div style="font-size: 1rem; font-weight: 900; color: #10b981; margin-top: 0.2rem;">Rp {{ (accAnalysis.inflow || 0).toLocaleString('id-ID') }}</div>
                </div>
                <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
                   <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase;">Protocol Outflow</div>
-                  <div style="font-size: 1rem; font-weight: 900; color: #ef4444; margin-top: 0.2rem;">Rp {{ accAnalysis.outflow.toLocaleString('id-ID') }}</div>
+                  <div style="font-size: 1rem; font-weight: 900; color: #ef4444; margin-top: 0.2rem;">Rp {{ (accAnalysis.outflow || 0).toLocaleString('id-ID') }}</div>
                </div>
             </div>
 
             <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid var(--accent); border-radius: 1.25rem; padding: 1.25rem;">
                <div style="font-size: 0.6rem; color: var(--accent); font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Strategic Summary</div>
-               <div style="font-size: 1.1rem; font-weight: 900;">Rp {{ accAnalysis.net.toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.5; font-weight: 400;">Net Drift</span></div>
+               <div style="font-size: 1.1rem; font-weight: 900;">Rp {{ (accAnalysis.net || 0).toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.5; font-weight: 400;">Net Drift</span></div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">

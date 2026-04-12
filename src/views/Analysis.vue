@@ -27,15 +27,15 @@
     <!-- Metrics Grid -->
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
       <div class="stat-card" @click="showModal('category', 'Income', 'Total Income')" style="border-left: 4px solid #10b981; cursor: pointer;">
-        <span style="font-size: 1.1rem; font-weight: 800; color: #10b981;">Rp {{ metrics.income.toLocaleString('id-ID') }}</span>
+        <span style="font-size: 1.1rem; font-weight: 800; color: #10b981;">Rp {{ (metrics.income || 0).toLocaleString('id-ID') }}</span>
         <span style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-top: 0.2rem;">Total Discovery</span>
       </div>
       <div class="stat-card" @click="showModal('category', 'Expense', 'Total Expense')" style="border-left: 4px solid #ef4444; cursor: pointer;">
-        <span style="font-size: 1.1rem; font-weight: 800; color: #ef4444;">Rp {{ metrics.expense.toLocaleString('id-ID') }}</span>
+        <span style="font-size: 1.1rem; font-weight: 800; color: #ef4444;">Rp {{ (metrics.expense || 0).toLocaleString('id-ID') }}</span>
         <span style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-top: 0.2rem;">Total Consumption</span>
       </div>
       <div class="stat-card" style="border-left: 4px solid var(--accent);">
-        <span style="font-size: 1.1rem; font-weight: 800; color: white;">Rp {{ metrics.profit.toLocaleString('id-ID') }}</span>
+        <span style="font-size: 1.1rem; font-weight: 800; color: white;">Rp {{ (metrics.profit || 0).toLocaleString('id-ID') }}</span>
         <span style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-top: 0.2rem;">Net Cashflow</span>
       </div>
       <div class="stat-card" style="border-left: 4px solid #f59e0b;">
@@ -84,7 +84,7 @@
                <div v-for="(item, i) in categoryIncome" :key="item.name" @click="showModal('category', 'Income', item.name)" class="rank-card" style="cursor: pointer;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                      <span style="font-weight: 800; font-size: 0.875rem;">{{ item.name }}</span>
-                     <span style="font-weight: 900; font-size: 0.875rem; color: #10b981;">Rp {{ item.value.toLocaleString('id-ID') }}</span>
+                     <span style="font-weight: 900; font-size: 0.875rem; color: #10b981;">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
                   </div>
                   <div class="bar-container"><div class="bar-fill" :style="{ width: (item.value/metrics.income*100) + '%', background: colors[i % colors.length] }"></div></div>
                </div>
@@ -100,7 +100,7 @@
                <div v-for="(item, i) in categorySpending" :key="item.name" @click="showModal('category', 'Expense', item.name)" class="rank-card" style="cursor: pointer;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                      <span style="font-weight: 800; font-size: 0.875rem;">{{ item.name }}</span>
-                     <span style="font-weight: 900; font-size: 0.875rem; color: #ef4444;">Rp {{ item.value.toLocaleString('id-ID') }}</span>
+                     <span style="font-weight: 900; font-size: 0.875rem; color: #ef4444;">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
                   </div>
                   <div class="bar-container"><div class="bar-fill" :style="{ width: (item.value/metrics.expense*100) + '%', background: colors[i % colors.length] }"></div></div>
                </div>
@@ -119,7 +119,7 @@
                         <i data-lucide="hash" style="width: 12px; opacity: 0.5;"></i>
                         <span style="font-weight: 800; font-size: 0.875rem;">{{ item.name }}</span>
                      </div>
-                     <span style="font-weight: 900; font-size: 0.875rem;">Rp {{ item.value.toLocaleString('id-ID') }}</span>
+                     <span style="font-weight: 900; font-size: 0.875rem;">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
                   </div>
                   <div class="bar-container"><div class="bar-fill" :style="{ width: (item.value / maxTagValue * 100) + '%', background: colors[i % colors.length] }"></div></div>
                </div>
@@ -138,7 +138,7 @@
                         <i data-lucide="layers" style="width: 12px; opacity: 0.5;"></i>
                         <span style="font-weight: 800; font-size: 0.875rem;">{{ item.name || 'Standalone' }}</span>
                      </div>
-                     <span style="font-weight: 900; font-size: 0.875rem;">Rp {{ item.value.toLocaleString('id-ID') }}</span>
+                     <span style="font-weight: 900; font-size: 0.875rem;">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
                   </div>
                   <div class="bar-container"><div class="bar-fill" :style="{ width: (item.value / maxProjectValue * 100) + '%', background: colors[i % colors.length] }"></div></div>
                </div>

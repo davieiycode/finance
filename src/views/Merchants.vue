@@ -31,7 +31,7 @@
     <div class="merchant-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
       <div v-for="m in filteredMerchants" :key="m.merchantID" @click="openModal(m)" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.2s;">
         <div style="width: 48px; height: 48px; border-radius: 1.25rem; display: flex; align-items: center; justify-content: center; background: rgba(139,92,246,0.1); color: var(--accent); font-weight: 800; font-size: 1.25rem; flex-shrink: 0;">
-           {{ (m.merchantName || 'M')[0].toUpperCase() }}
+           {{ String(m.merchantName || 'M')[0].toUpperCase() }}
         </div>
         <div style="flex: 1;">
           <div style="font-weight: 700; color: white;">{{ m.merchantName }}</div>
@@ -69,7 +69,7 @@
                <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
                   <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
                      <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Flow-Through</div>
-                     <div style="font-size: 1.25rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ merchantSpend.toLocaleString('id-ID') }}</div>
+                     <div style="font-size: 1.25rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ (merchantSpend || 0).toLocaleString('id-ID') }}</div>
                   </div>
                </div>
             </div>

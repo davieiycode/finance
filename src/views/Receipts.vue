@@ -79,7 +79,7 @@
                   <div v-for="st in suggestedTransactions" :key="st.transactionID" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-primary); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border);">
                      <div style="font-size: 0.75rem;">
                         <div style="font-weight: 800;">{{ st.itemName }}</div>
-                        <div style="opacity: 0.6; font-size: 0.6rem;">{{ st.date }} • {{ st.total.toLocaleString('id-ID') }}</div>
+                        <div style="opacity: 0.6; font-size: 0.6rem;">{{ st.date }} • {{ (st.total || 0).toLocaleString('id-ID') }}</div>
                      </div>
                      <button @click="linkTransaction(st.transactionID)" style="background: var(--accent); color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 800; font-size: 0.6rem; cursor: pointer;">
                         LINK
