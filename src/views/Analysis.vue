@@ -148,7 +148,8 @@
     </div>
 
     <!-- LIST MODAL -->
-    <div v-if="modalData" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: flex-end; justify-content: center;">
+    <Teleport to="body">
+       <div v-if="modalData" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: flex-end; justify-content: center;">
        <div style="background: var(--bg-primary, #000); width: 100%; max-width: 600px; height: 85vh; border-radius: 2rem 2rem 0 0; padding: 1.5rem; display: flex; flex-direction: column; border-top: 1px solid var(--border); animation: slideUp 0.3s ease-out;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
              <div>
@@ -177,7 +178,7 @@
              </div>
           </div>
        </div>
-    </div>
+    </Teleport>
 
     <TransactionModal v-if="selectedTx" :tx="selectedTx" @close="selectedTx = null" />
 

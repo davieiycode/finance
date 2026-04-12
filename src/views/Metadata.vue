@@ -53,147 +53,151 @@
     </div>
 
     <!-- Modal for Individual Registry Type -->
-    <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; padding-bottom: 5rem;">
-          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
-             <span style="font-weight: 800;">{{ editingItem ? (modalMode === 'analysis' ? 'Registry Intelligence' : 'Modify Record') : 'New Record' }}</span>
-             <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-          </div>
+    <Teleport to="body">
+      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+         <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; padding-bottom: 5rem;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
+               <span style="font-weight: 800;">{{ editingItem ? (modalMode === 'analysis' ? 'Registry Intelligence' : 'Modify Record') : 'New Record' }}</span>
+               <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
+            </div>
 
-          <!-- MODE: ANALYSIS -->
-          <div v-if="modalMode === 'analysis' && editingItem" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
-             <div style="display: flex; align-items: center; gap: 1.25rem;">
-                <div :style="{ background: colors[0] + '15', color: colors[0] }" style="width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center;">
-                   <span v-if="activeTab === 'categories' && editingItem.icon" class="material-symbols-outlined" style="font-size: 28px;">{{ editingItem.icon }}</span>
-                   <i v-else :data-lucide="getItemIcon(editingItem)" style="width: 28px;"></i>
-                </div>
-                <div>
-                   <div style="font-size: 1.25rem; font-weight: 950; letter-spacing: -0.02em;">{{ getItemName(editingItem) }}</div>
-                   <div style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.2rem;">{{ activeTab.toUpperCase() }} Registry Entry</div>
-                </div>
-             </div>
+            <!-- MODE: ANALYSIS -->
+            <div v-if="modalMode === 'analysis' && editingItem" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+               <div style="display: flex; align-items: center; gap: 1.25rem;">
+                  <div :style="{ background: colors[0] + '15', color: colors[0] }" style="width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center;">
+                     <span v-if="activeTab === 'categories' && editingItem.icon" class="material-symbols-outlined" style="font-size: 28px;">{{ editingItem.icon }}</span>
+                     <i v-else :data-lucide="getItemIcon(editingItem)" style="width: 28px;"></i>
+                  </div>
+                  <div>
+                     <div style="font-size: 1.25rem; font-weight: 950; letter-spacing: -0.02em;">{{ getItemName(editingItem) }}</div>
+                     <div style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.2rem;">{{ activeTab.toUpperCase() }} Registry Entry</div>
+                  </div>
+               </div>
 
-             <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-                   <i data-lucide="activity" style="width: 14px; color: var(--accent);"></i>
-                   <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Metadata Analysis</span>
-                </div>
-                <div style="font-size: 0.85rem; line-height: 1.6; opacity: 0.8;">
-                   {{ getItemSub(editingItem) }}
-                </div>
-             </div>
+               <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                     <i data-lucide="activity" style="width: 14px; color: var(--accent);"></i>
+                     <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Metadata Analysis</span>
+                  </div>
+                  <div style="font-size: 0.85rem; line-height: 1.6; opacity: 0.8;">
+                     {{ getItemSub(editingItem) }}
+                  </div>
+               </div>
 
-             <div v-if="formData.description" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 14px; border: 1px solid var(--border);">
-                <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem;">Briefing / Protocol</div>
-                <div style="font-size: 0.8rem; line-height: 1.5;">{{ formData.description }}</div>
-             </div>
+               <div v-if="formData.description" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 14px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem;">Briefing / Protocol</div>
+                  <div style="font-size: 0.8rem; line-height: 1.5;">{{ formData.description }}</div>
+               </div>
 
-             <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
-                <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 950; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                   <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY RECORD
-                </button>
-                <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
-                   CLOSE REGISTRY
-                </button>
-             </div>
-          </div>
+               <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+                  <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 950; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                     <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY RECORD
+                  </button>
+                  <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
+                     CLOSE REGISTRY
+                  </button>
+               </div>
+            </div>
 
-          <!-- MODE: EDIT -->
-          <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
-             <!-- Category Form -->
-             <template v-if="activeTab === 'categories'">
-                <div><label class="f-label">Category Name</label><input type="text" v-model="formData.category" class="f-input"></div>
-                <div>
-                   <label class="f-label">Icon (Material Design)</label>
-                   <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; background: var(--bg-input); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border); overflow-y: auto; max-height: 200px;">
-                      <button v-for="iconName in iconList" :key="iconName" @click="formData.icon = iconName" :style="{ background: formData.icon === iconName ? 'var(--accent)' : 'transparent', color: formData.icon === iconName ? 'white' : 'var(--text-secondary)' }" style="border: none; padding: 0.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                         <span class="material-symbols-outlined" style="font-size: 20px;">{{ iconName }}</span>
-                      </button>
-                   </div>
-                </div>
-                <div><label class="f-label">Category Group</label><input type="text" v-model="formData.categoryGroup" placeholder="Food, Living, etc." class="f-input"></div>
-                <div><label class="f-label">Type</label><select v-model="formData.type" class="f-input"><option>Income</option><option>Expense</option><option>Transfer</option><option>Savings</option><option>Investment</option></select></div>
-                <div><label class="f-label">Description</label><textarea v-model="formData.description" class="f-input"></textarea></div>
-             </template>
+            <!-- MODE: EDIT -->
+            <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+               <!-- Category Form -->
+               <template v-if="activeTab === 'categories'">
+                  <div><label class="f-label">Category Name</label><input type="text" v-model="formData.category" class="f-input"></div>
+                  <div>
+                     <label class="f-label">Icon (Material Design)</label>
+                     <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; background: var(--bg-input); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border); overflow-y: auto; max-height: 200px;">
+                        <button v-for="iconName in iconList" :key="iconName" @click="formData.icon = iconName" :style="{ background: formData.icon === iconName ? 'var(--accent)' : 'transparent', color: formData.icon === iconName ? 'white' : 'var(--text-secondary)' }" style="border: none; padding: 0.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                           <span class="material-symbols-outlined" style="font-size: 20px;">{{ iconName }}</span>
+                        </button>
+                     </div>
+                  </div>
+                  <div><label class="f-label">Category Group</label><input type="text" v-model="formData.categoryGroup" placeholder="Food, Living, etc." class="f-input"></div>
+                  <div><label class="f-label">Type</label><select v-model="formData.type" class="f-input"><option>Income</option><option>Expense</option><option>Transfer</option><option>Savings</option><option>Investment</option></select></div>
+                  <div><label class="f-label">Description</label><textarea v-model="formData.description" class="f-input"></textarea></div>
+               </template>
 
-             <!-- UnitScale Form -->
-             <template v-if="activeTab === 'unitScales'">
-                <div><label class="f-label">Unit Code</label><input type="text" v-model="formData.unitScale" placeholder="pcs, kg, etc." class="f-input" :disabled="isEditing"></div>
-                <div><label class="f-label">Description</label><textarea v-model="formData.description" class="f-input"></textarea></div>
-             </template>
+               <!-- UnitScale Form -->
+               <template v-if="activeTab === 'unitScales'">
+                  <div><label class="f-label">Unit Code</label><input type="text" v-model="formData.unitScale" placeholder="pcs, kg, etc." class="f-input" :disabled="isEditing"></div>
+                  <div><label class="f-label">Description</label><textarea v-model="formData.description" class="f-input"></textarea></div>
+               </template>
 
-             <!-- Tag Form -->
-             <template v-if="activeTab === 'tags'">
-                <div><label class="f-label">Tag Name</label><input type="text" v-model="formData.tagName" class="f-input"></div>
-                <div><label class="f-label">Tag Group</label><input type="text" v-model="formData.tagGroup" class="f-input"></div>
-                <div><label class="f-label">Description</label><textarea v-model="formData.description" class="f-input"></textarea></div>
-             </template>
+               <!-- Tag Form -->
+               <template v-if="activeTab === 'tags'">
+                  <div><label class="f-label">Tag Name</label><input type="text" v-model="formData.tagName" class="f-input"></div>
+                  <div><label class="f-label">Tag Group</label><input type="text" v-model="formData.tagGroup" class="f-input"></div>
+                  <div><label class="f-label">Description</label><textarea v-model="formData.description" class="f-input"></textarea></div>
+               </template>
 
-             <!-- Project Form -->
-             <template v-if="activeTab === 'projects'">
-                <div><label class="f-label">Project Name</label><input type="text" v-model="formData.projectName" class="f-input"></div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                   <div><label class="f-label">Start Date</label><input type="date" v-model="formData.startDate" class="f-input"></div>
-                   <div><label class="f-label">End Date</label><input type="date" v-model="formData.endDate" class="f-input"></div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                   <div><label class="f-label">Budget Amount</label><input type="number" v-model.number="formData.budgetAmount" class="f-input"></div>
-                   <div><label class="f-label">Author</label><select v-model="formData.author" class="f-input"><option v-for="a in store.authors" :key="a.authorID" :value="a.authorName">{{ a.authorName }}</option></select></div>
-                </div>
-                <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Completed</option><option>Planned</option></select></div>
-                <div><label class="f-label">Description</label><textarea v-model="formData.description" class="f-input"></textarea></div>
-             </template>
+               <!-- Project Form -->
+               <template v-if="activeTab === 'projects'">
+                  <div><label class="f-label">Project Name</label><input type="text" v-model="formData.projectName" class="f-input"></div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                     <div><label class="f-label">Start Date</label><input type="date" v-model="formData.startDate" class="f-input"></div>
+                     <div><label class="f-label">End Date</label><input type="date" v-model="formData.endDate" class="f-input"></div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                     <div><label class="f-label">Budget Amount</label><input type="number" v-model.number="formData.budgetAmount" class="f-input"></div>
+                     <div><label class="f-label">Author</label><select v-model="formData.author" class="f-input"><option v-for="a in store.authors" :key="a.authorID" :value="a.authorName">{{ a.authorName }}</option></select></div>
+                  </div>
+                  <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Completed</option><option>Planned</option></select></div>
+                  <div><label class="f-label">Description</label><textarea v-model="formData.description" class="f-input"></textarea></div>
+               </template>
 
-             <!-- Author Form -->
-             <template v-if="activeTab === 'authors'">
-                <div><label class="f-label">Author Name</label><input type="text" v-model="formData.authorName" class="f-input"></div>
-                <div><label class="f-label">Role Type</label><select v-model="formData.roleType" class="f-input"><option>Admin</option><option>Explorer</option><option>Auditor</option></select></div>
-             </template>
+               <!-- Author Form -->
+               <template v-if="activeTab === 'authors'">
+                  <div><label class="f-label">Author Name</label><input type="text" v-model="formData.authorName" class="f-input"></div>
+                  <div><label class="f-label">Role Type</label><select v-model="formData.roleType" class="f-input"><option>Admin</option><option>Explorer</option><option>Auditor</option></select></div>
+               </template>
 
-             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
-                <button @click="handleSave" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                   <i data-lucide="check-circle" style="width: 14px;"></i> SAVE RECORD
-                </button>
-                <button v-if="isEditing" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                   <i data-lucide="copy" style="width: 14px;"></i> DUPE
-                </button>
-                <button v-if="isEditing" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                   <i data-lucide="combine" style="width: 14px;"></i> MERGE
-                </button>
-                <button v-if="isEditing" @click="handleDelete" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                   <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
-                </button>
-             </div>
-          </div>
-       </div>
-    </div>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
+                  <button @click="handleSave" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+                     <i data-lucide="check-circle" style="width: 14px;"></i> SAVE RECORD
+                  </button>
+                  <button v-if="isEditing" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                     <i data-lucide="copy" style="width: 14px;"></i> DUPE
+                  </button>
+                  <button v-if="isEditing" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                     <i data-lucide="combine" style="width: 14px;"></i> MERGE
+                  </button>
+                  <button v-if="isEditing" @click="handleDelete" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
+                     <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
+                  </button>
+               </div>
+            </div>
+         </div>
+      </div>
+    </Teleport>
 
     <!-- Merge Selection Panel -->
-    <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
-       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 440px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; animation: slideUp 0.3s ease-out;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span style="font-weight: 800; font-size: 1rem;">Consolidation Target</span>
-             <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-          </div>
-          <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the record that will absorb all transactions and metadata associated with <b>{{ getItemName(editingItem) }}</b>.</p>
-          
-          <div style="position: relative;">
-             <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
-             <input type="text" v-model="mergeTargetSearch" placeholder="Search targets..." class="f-input" style="padding-left: 2.5rem; height: 44px; font-size: 0.8rem;">
-          </div>
+    <Teleport to="body">
+      <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
+         <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 440px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; animation: slideUp 0.3s ease-out;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+               <span style="font-weight: 800; font-size: 1rem;">Consolidation Target</span>
+               <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the record that will absorb all transactions and metadata associated with <b>{{ getItemName(editingItem) }}</b>.</p>
+            
+            <div style="position: relative;">
+               <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
+               <input type="text" v-model="mergeTargetSearch" placeholder="Search targets..." class="f-input" style="padding-left: 2.5rem; height: 44px; font-size: 0.8rem;">
+            </div>
 
-          <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
-             <div v-for="t in filteredMergeTargets" :key="getItemName(t)" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
-                <div :style="{ background: colors[0] + '20', color: colors[0] }" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                   <i :data-lucide="getItemIcon(t)" style="width: 14px;"></i>
-                </div>
-                <div style="font-weight: 700; font-size: 0.85rem;">{{ getItemName(t) }}</div>
-             </div>
-             <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid merge targets found.</div>
-          </div>
-          <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
-       </div>
-    </div>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
+               <div v-for="t in filteredMergeTargets" :key="getItemName(t)" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
+                  <div :style="{ background: colors[0] + '20', color: colors[0] }" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                     <i :data-lucide="getItemIcon(t)" style="width: 14px;"></i>
+                  </div>
+                  <div style="font-weight: 700; font-size: 0.85rem;">{{ getItemName(t) }}</div>
+               </div>
+               <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid merge targets found.</div>
+            </div>
+            <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
+         </div>
+      </div>
+    </Teleport>
 
     <!-- Add New Entry FAB -->
     <button @click="openModal(null)" class="fab" style="position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 28px; background: var(--accent); color: white; border: none; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100;">
