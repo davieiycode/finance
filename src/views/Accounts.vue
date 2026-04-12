@@ -221,7 +221,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
