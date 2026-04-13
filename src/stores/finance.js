@@ -83,6 +83,21 @@ export const useFinanceStore = defineStore('finance', {
     setSyncProgress(val) {
       this.syncProgress = val
     },
+    resolveIcon(categoryName, txType) {
+      if (!categoryName) return this.getTypeFallbackIcon(txType)
+      const cat = this.categories.find(c => (c.category || '').toLowerCase() === categoryName.toLowerCase())
+      if (cat && cat.icon) return cat.icon
+      return this.getTypeFallbackIcon(txType)
+    },
+
+    getTypeFallbackIcon(txType) {
+      if (txType === 'Income') return 'banknote'
+      if (txType === 'Transfer' || txType === 'Internal Transfer' || txType === 'Internal') return 'repeat'
+      if (txType === 'Investment') return 'trending-up'
+      if (txType === 'Savings') return 'piggy-bank'
+      return 'shopping-cart'
+    },
+
     // Generic Save methods
     saveAll() {
       if (!isSafe) return

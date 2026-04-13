@@ -1,5 +1,5 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
+  <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
     <div class="sticky-nav" style="padding: 1.5rem 0 1rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
         <div style="display: flex; align-items: center; gap: 1rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
@@ -76,11 +76,7 @@
           
           <div v-for="t in group.items" :key="t.transactionID" @click="openTx(t)" class="card-hover" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 1rem; cursor: pointer;">
             <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border);" :style="{ color: getTxColor(t.type) }">
-               <i v-if="t.type === 'Income'" data-lucide="arrow-down-left" style="width: 20px;" stroke-width="1.5"></i>
-               <i v-else-if="t.type === 'Internal Transfer' || t.type === 'Transfer'" data-lucide="repeat" style="width: 18px;" stroke-width="1.5"></i>
-               <i v-else-if="t.type === 'Savings'" data-lucide="piggy-bank" style="width: 20px;" stroke-width="1.5"></i>
-               <i v-else-if="t.type === 'Investment'" data-lucide="trending-up" style="width: 20px;" stroke-width="1.5"></i>
-               <i v-else data-lucide="shopping-cart" style="width: 18px;" stroke-width="1.5"></i>
+               <i :data-lucide="store.resolveIcon(t.category, t.type)" style="width: 20px;" stroke-width="1.5"></i>
             </div>
             <div style="flex: 1;">
               <div style="font-weight: 600; font-size: 0.9375rem; color: var(--text-primary);">{{ t.itemName || t.merchant || 'Unknown Loot' }}</div>
@@ -108,6 +104,7 @@ import { useFinanceStore } from '../stores/finance'
 import TransactionModal from '../components/TransactionModal.vue'
 
 const store = useFinanceStore()
+const scrollContainer = ref(null)
 const showSearch = ref(false)
 const showFilter = ref(false)
 const searchQuery = ref('')
@@ -179,7 +176,10 @@ const getTxSign = (type) => {
   return ''
 }
 
-onMounted(() => { if (window.lucide) window.lucide.createIcons() })
+onMounted(() => { 
+  if (scrollContainer.value) scrollContainer.value.scrollTo(0, 0)
+  if (window.lucide) window.lucide.createIcons() 
+})
 </script>
 
 <style scoped>

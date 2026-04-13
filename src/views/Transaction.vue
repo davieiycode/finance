@@ -68,10 +68,15 @@
             </div>
             <div class="input-group">
                <label class="form-label">Vendor / Merchant</label>
-               <select v-model="form.merchant" class="f-input" style="background: rgba(255,255,255,0.02);">
-                  <option value="">Unspecified</option>
-                  <option v-for="m in store.merchants" :key="m.merchantID" :value="m.merchantName">{{ m.merchantName }}</option>
-               </select>
+               <div style="position: relative;">
+                  <input type="text" v-model="merchantSearch" @focus="showMerchantDropdown = true" @blur="hideDropdown('merchant')" placeholder="Search Vendors..." class="f-input" style="background: rgba(255,255,255,0.02);">
+                  <div v-if="showMerchantDropdown && filteredMerchants.length" style="position: absolute; top: 110%; left: 0; right: 0; background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 12px; z-index: 100; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                     <div v-for="m in filteredMerchants" :key="m.merchantID" @mousedown="selectMerchant(m)" style="padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s;">
+                        <div style="font-weight: 800; color: white; font-size: 0.85rem;">{{ m.merchantName }}</div>
+                        <div v-if="m.location" style="font-size: 0.65rem; opacity: 0.5; margin-top: 0.2rem;">{{ m.location }}</div>
+                     </div>
+                  </div>
+               </div>
             </div>
             <div class="input-group">
                <label class="form-label">Classification</label>
@@ -200,7 +205,7 @@
                <div class="input-group">
                   <label class="form-label">Quantity & Scale</label>
                   <div style="display: flex; align-items: center; gap: 0.25rem; background: var(--bg-input); padding: 0 0.5rem; border-radius: 14px; border: 1px solid var(--border); height: 50px; box-sizing: border-box; position: relative;">
-                     <input type="number" v-model.number="form.quantity" step="0.01" style="width: 100%; background: none; border: none; font-weight: 800; color: white; outline: none; padding: 0 0.5rem; height: 100%;">
+                     <input type="number" v-model.number="form.quantity" step="any" style="width: 100%; background: none; border: none; font-weight: 800; color: white; outline: none; padding: 0 0.5rem; height: 100%;">
                      
                      <!-- Searchable Unit Dropdown -->
                      <div style="position: relative; min-width: 80px;">
@@ -387,6 +392,8 @@ const itemSearch = ref('')
 const showItemDropdown = ref(false)
 const categorySearch = ref('')
 const showCategoryDropdown = ref(false)
+const merchantSearch = ref('')
+const showMerchantDropdown = ref(false)
 const unitSearch = ref('')
 const showUnitDropdown = ref(false)
 
@@ -398,12 +405,14 @@ watch(itemSearch, (val) => {
   }
 })
 watch(categorySearch, (val) => { if (val !== form.value.category) form.value.category = val })
+watch(merchantSearch, (val) => { if (val !== form.value.merchant) form.value.merchant = val })
 watch(unitSearch, (val) => { if (val !== form.value.unitScale) form.value.unitScale = val })
 
 const hideDropdown = (type) => {
   setTimeout(() => {
     if (type === 'item') showItemDropdown.value = false
     else if (type === 'category') showCategoryDropdown.value = false
+    else if (type === 'merchant') showMerchantDropdown.value = false
     else if (type === 'unit') showUnitDropdown.value = false
   }, 200)
 }
@@ -437,6 +446,15 @@ const filteredUnits = computed(() => {
   ).slice(0, 10)
 })
 
+const filteredMerchants = computed(() => {
+  const q = merchantSearch.value.toLowerCase()
+  if (!q && !showMerchantDropdown.value) return store.merchants.slice(0, 10)
+  return store.merchants.filter(m => 
+    (m.merchantName || '').toLowerCase().includes(q) || 
+    (m.location || '').toLowerCase().includes(q)
+  ).slice(0, 10)
+})
+
 const selectItem = (i) => {
   form.value.itemName = i.itemName
   itemSearch.value = i.itemName
@@ -448,6 +466,12 @@ const selectCategory = (c) => {
   form.value.category = c.category
   categorySearch.value = c.category
   showCategoryDropdown.value = false
+}
+
+const selectMerchant = (m) => {
+  form.value.merchant = m.merchantName
+  merchantSearch.value = m.merchantName
+  showMerchantDropdown.value = false
 }
 
 const selectUnit = (u) => {
@@ -673,6 +697,7 @@ const initForm = () => {
       
       itemSearch.value = form.value.itemName || ''
       categorySearch.value = form.value.category || ''
+      merchantSearch.value = form.value.merchant || ''
       unitSearch.value = form.value.unitScale || ''
       return
     }
@@ -709,6 +734,7 @@ const initForm = () => {
   }
   itemSearch.value = ''
   categorySearch.value = ''
+  merchantSearch.value = ''
   unitSearch.value = ''
 }
 

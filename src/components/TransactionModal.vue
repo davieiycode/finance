@@ -7,10 +7,8 @@
         </button>
         
         <div style="text-align: center; margin-bottom: 2rem; margin-top: 1rem;">
-          <div style="background: rgba(139, 92, 246, 0.1); color: var(--accent); margin: 0 auto 0.75rem auto; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <i v-if="tx.type === 'Income'" data-lucide="arrow-down-left" style="width: 28px;"></i>
-            <i v-else-if="tx.type === 'Transfer'" data-lucide="repeat" style="width: 28px;"></i>
-            <i v-else data-lucide="shopping-cart" style="width: 28px;"></i>
+          <div :style="{ background: getTxColor(tx.type) + '15', color: getTxColor(tx.type) }" style="margin: 0 auto 0.75rem auto; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i :data-lucide="store.resolveIcon(tx.category, tx.type)" style="width: 28px;"></i>
           </div>
           <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;">Expedition Summary</h2>
           <div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em; margin-top: 0.25rem;">ID: {{ tx.transactionID }}</div>
@@ -25,7 +23,7 @@
             <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px dashed var(--border); padding-bottom: 1.5rem;">
                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
                   <span style="color: var(--text-secondary);">Quantity</span>
-                  <span style="font-weight: 700; color: white;">{{ tx.quantity }} {{ tx.unitScale }}</span>
+                  <span style="font-weight: 700; color: white;">{{ formatQty(tx.quantity) }} {{ tx.unitScale }}</span>
                </div>
                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
                   <span style="color: var(--text-secondary);">Price/Unit</span>
@@ -69,9 +67,9 @@
                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">BENEFICIARY</label>
                  <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.beneficiaryAccount || '-' }}</div>
                </div>
-               <div style="grid-column: span 2;">
-                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">TEMPORAL COORDINATES</label>
-                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.date }} • {{ displayTime }}</div>
+                <div style="grid-column: span 2;">
+                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">TEMPORAL COORDINATES</label>
+                  <div style="font-weight: 700; font-size: 0.8125rem;">{{ displayDate }} • {{ displayTime }}</div>
                </div>
                <div v-if="tx.description" style="grid-column: span 2;">
                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">LOG ENTRY</label>
@@ -199,6 +197,23 @@ const formatCurrency = (val) => {
   const num = Number(s)
   return isNaN(num) ? '0' : num.toLocaleString('id-ID')
 }
+
+const formatQty = (val) => {
+  if (val === undefined || val === null) return '0'
+  const num = Number(val)
+  if (isNaN(num)) return val
+  // Gunakan presisi hingga 8 desimal agar akurat untuk bensin/investasi
+  return parseFloat(num.toFixed(8)).toLocaleString('id-ID', { maximumFractionDigits: 8 })
+}
+
+const displayDate = computed(() => {
+  if (!props.tx.date) return 'Unknown Cycle'
+  try {
+    const d = new Date(props.tx.date)
+    if (isNaN(d.getTime())) return props.tx.date
+    return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+  } catch (e) { return props.tx.date }
+})
 
 const displayTime = computed(() => {
   if (!props.tx.time) return '--:--'

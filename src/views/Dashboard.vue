@@ -1,5 +1,5 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
+  <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
     <div class="sticky-nav" style="padding: 1.5rem 0 1rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
         <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.75rem;">
@@ -181,6 +181,7 @@ import { useFinanceStore } from '../stores/finance'
 
 const router = useRouter()
 const store = useFinanceStore()
+const scrollContainer = ref(null)
 
 const showSearch = ref(false)
 const searchQuery = ref('')
@@ -330,6 +331,7 @@ const anomalyCount = computed(() => {
 })
 
 onMounted(() => {
+  if (scrollContainer.value) scrollContainer.value.scrollTo(0, 0)
   if (window.lucide) {
     window.lucide.createIcons()
   }
