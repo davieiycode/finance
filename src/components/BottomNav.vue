@@ -1,27 +1,44 @@
 <template>
-  <nav class="bottom-nav">
+  <nav class="nav-island" :class="{ 'nav-hidden': isHidden }">
     <router-link to="/" class="nav-item" active-class="active">
-      <i data-lucide="layout-dashboard"></i>
-      <span>Dashboard</span>
+      <div class="icon-box">
+        <i data-lucide="layout-dashboard"></i>
+      </div>
+      <span>Dash</span>
     </router-link>
-    <router-link to="/transaction" class="nav-item" active-class="active">
-      <div class="plus-icon">
+    <router-link to="/transaction" class="nav-item action-item" active-class="active">
+      <div class="plus-hex">
         <i data-lucide="plus"></i>
       </div>
-      <span>New Entry</span>
+      <span style="color: var(--accent);">Entry</span>
     </router-link>
     <router-link to="/history" class="nav-item" active-class="active">
-      <i data-lucide="scroll"></i>
-      <span>Logbook</span>
+      <div class="icon-box">
+        <i data-lucide="scroll"></i>
+      </div>
+      <span>Log</span>
     </router-link>
   </nav>
 </template>
 
 <script setup>
-import { onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const isHidden = ref(false)
+let lastScrollY = 0
+
+const handleScroll = (e) => {
+  // We need to detect scroll from the scrollable containers in views
+  const scrollY = e.target.scrollTop
+  if (scrollY > lastScrollY && scrollY > 50) {
+    isHidden.value = true
+  } else {
+    isHidden.value = false
+  }
+  lastScrollY = scrollY
+}
 
 const initIcons = () => {
   if (window.lucide) {
@@ -29,51 +46,79 @@ const initIcons = () => {
   }
 }
 
-onMounted(initIcons)
+onMounted(() => {
+  initIcons()
+  // Listen to the custom containers' scroll events
+  document.addEventListener('scroll', handleScroll, true)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('scroll', handleScroll, true)
+})
+
 watch(() => route.path, () => {
   setTimeout(initIcons, 50)
+  isHidden.value = false // Show nav on route change
 })
 </script>
 
 <style scoped>
-.bottom-nav {
+.nav-island {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 70px;
-  background: rgba(10, 10, 15, 0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  min-width: 280px;
+  max-width: 90vw;
+  height: 64px;
+  background: rgba(15, 15, 25, 0.7);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  z-index: 1000;
-  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 2000;
+  padding: 0 1.25rem;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-hidden {
+  bottom: -100px;
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px) scale(0.95);
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  color: #64748b;
+  justify-content: center;
+  gap: 2px;
+  color: rgba(255, 255, 255, 0.4);
   text-decoration: none;
-  font-size: 0.75rem;
+  font-size: 0.6rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s;
   flex: 1;
-  user-select: none;
+  padding: 0 0.5rem;
 }
 
-.nav-item:active {
-  transform: scale(0.9);
-}
-
-.nav-item:active .plus-icon {
-  transform: scale(0.9);
+.icon-box {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
 }
 
 .nav-item i {
@@ -83,36 +128,42 @@ watch(() => route.path, () => {
 }
 
 .nav-item.active {
-  color: var(--accent, #8b5cf6);
+  color: white;
 }
 
-.nav-item.active i {
+.nav-item.active .icon-box i {
   color: var(--accent, #8b5cf6);
-  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.6));
   stroke-width: 2.5px;
 }
 
-.plus-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--accent, #8b5cf6);
-  border-radius: 12px;
+.plus-hex {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--accent) 0%, #6d28d9 100%);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  margin-bottom: 2px;
-  transition: all 0.3s;
+  margin-bottom: 4px;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.nav-item.active .plus-icon {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+.action-item:active .plus-hex {
+  transform: scale(0.85) rotate(-15deg);
 }
 
-.nav-item .plus-icon i {
+.nav-item.active .plus-hex {
+  transform: translateY(-8px) scale(1.1);
+  box-shadow: 0 12px 25px rgba(139, 92, 246, 0.5);
+}
+
+.action-item i {
   color: white;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  stroke-width: 3px;
 }
 </style>
