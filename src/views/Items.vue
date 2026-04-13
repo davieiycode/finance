@@ -1,18 +1,15 @@
 <template>
   <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="padding: 1.5rem 0 1rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
+    <div class="sticky-nav" style="padding: calc(0.4rem + env(safe-area-inset-top)) 0 0.4rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
-        <div style="display: flex; align-items: center; gap: 1rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:24px;"></i></button>
-          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin:0; white-space: nowrap;">Item Catalog</h1>
+        <div style="display: flex; align-items: center; gap: 0.75rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
+          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
+          <h1 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin:0; white-space: nowrap;">Item Catalog</h1>
         </div>
         
         <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
             <i data-lucide="search" style="width: 18px;"></i>
-          </button>
-          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 12px; height: 36px; padding: 0 1rem; font-weight: 700; display:flex; align-items:center; gap: 0.4rem; cursor:pointer;">
-            <i data-lucide="plus" style="width: 16px;"></i> New
           </button>
         </div>
 
@@ -20,13 +17,21 @@
         <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
            <div style="position: relative; width: 100%; height: 36px; display: flex; align-items: center; min-width: 250px;">
               <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Search item name, category, or SKU..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
+              <input type="text" v-model="searchQuery" placeholder="Search archives..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
               <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
                  <i data-lucide="x" style="width: 16px;"></i>
               </button>
            </div>
         </div>
       </header>
+
+      <!-- Sticky Category Filters -->
+      <div style="display: flex; gap: 0.6rem; overflow-x: auto; padding: 0.75rem 0.25rem 0.25rem 0.25rem; scrollbar-width: none;">
+         <button @click="selectedCategory = ''" :class="{ active: selectedCategory === '' }" class="filter-pill">ALL</button>
+         <button v-for="cat in uniqueCategories" :key="cat" @click="selectedCategory = cat" :class="{ active: selectedCategory === cat }" class="filter-pill">
+            {{ cat }}
+         </button>
+      </div>
     </div>
 
     <div class="item-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
@@ -70,7 +75,8 @@
     </div>
 
     <!-- Detail Modal -->
-    <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+    <Teleport to="body">
+      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
             <span style="font-weight: 800;">{{ editingItem.itemID ? (modalMode === 'analysis' ? 'Item Intelligence' : 'Modify Item' ) : 'New Item' }}</span>
@@ -238,7 +244,15 @@
              </div>
           </div>
        </div>
-    </div>
+      </div>
+    </Teleport>
+
+    <!-- Add New Item FAB -->
+    <Teleport to="body">
+       <button @click="openModal(null)" class="fab" style="position: fixed; bottom: 6rem; right: 1.5rem; width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: white; border: none; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2000; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+          <i data-lucide="plus" style="width: 28px; height: 28px; stroke-width: 3;"></i>
+       </button>
+    </Teleport>
   </div>
 </template>
 
@@ -252,7 +266,7 @@ const isModalOpen = ref(false)
 const modalMode = ref('analysis')
 const editingItem = ref({})
 const formData = ref({})
-
+const selectedCategory = ref('')
 const showSearch = ref(false)
 const searchQuery = ref('')
 const showScanner = ref(false)
@@ -292,10 +306,19 @@ const itemAnalysis = computed(() => {
   return { totalSpend, totalQty, avgPrice, lastPrice, bestPrice, bestMerchant, bestDate, insight }
 })
 
+const uniqueCategories = computed(() => {
+  const cats = store.items.map(i => i.itemCategory).filter(Boolean)
+  return [...new Set(cats)].sort()
+})
+
 const filteredItems = computed(() => {
-  if (!searchQuery.value) return store.items
+  let list = store.items
+  if (selectedCategory.value) {
+    list = list.filter(i => i.itemCategory === selectedCategory.value)
+  }
+  if (!searchQuery.value) return list
   const q = searchQuery.value.toLowerCase()
-  return store.items.filter(i => 
+  return list.filter(i => 
     (i.itemName || '').toLowerCase().includes(q) ||
     (i.itemCategory || '').toLowerCase().includes(q) ||
     (i.SKU || '').toLowerCase().includes(q) ||
@@ -405,9 +428,10 @@ onMounted(() => {
 <style scoped>
 .f-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem; }
 .f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
+.filter-pill { padding: 0.5rem 1.25rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); font-size: 0.65rem; font-weight: 800; cursor: pointer; transition: 0.3s; white-space: nowrap; }
+.filter-pill.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3); }
+
 @keyframes scanLine { 0% { top: 0; } 100% { top: 100%; } }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-#reader { border: none !important; }
-#reader video { border-radius: 1rem; }
+@keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 </style>

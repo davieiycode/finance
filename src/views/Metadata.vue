@@ -53,7 +53,7 @@
 
     <!-- Modal for Individual Registry Type -->
     <Teleport to="body">
-      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
          <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; padding-bottom: 5rem;">
             <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
                <span style="font-weight: 800;">{{ editingItem ? (modalMode === 'analysis' ? 'Registry Intelligence' : 'Modify Record') : 'New Record' }}</span>
@@ -203,9 +203,11 @@
     </Teleport>
 
     <!-- Add New Entry FAB -->
-    <button @click="openModal(null)" class="fab" style="position: fixed; bottom: 6rem; right: 1.5rem; width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: white; border: none; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1000; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-       <i data-lucide="plus" style="width: 28px; height: 28px; stroke-width: 3;"></i>
-    </button>
+    <Teleport to="body">
+       <button @click="openModal(null)" class="fab" style="position: fixed; bottom: 6rem; right: 1.5rem; width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: white; border: none; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2000; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+          <i data-lucide="plus" style="width: 28px; height: 28px; stroke-width: 3;"></i>
+       </button>
+    </Teleport>
   </div>
 </template>
 
