@@ -1,22 +1,22 @@
 <template>
   <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="padding: calc(0.75rem + env(safe-area-inset-top)) 0 0.75rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
+    <div class="sticky-nav" style="padding: calc(0.4rem + env(safe-area-inset-top)) 0 0.4rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
-        <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.65rem;">
-          <div style="width: 34px; height: 34px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); flex-shrink: 0;">
+        <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.6rem;">
+          <div style="width: 28px; height: 28px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); flex-shrink: 0;">
             <img src="/logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="Jurney Logo">
           </div>
-          <h1 style="font-size: 1.2rem; font-weight: 950; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.03em;">Jurney</h1>
+          <h1 style="font-size: 1.15rem; font-weight: 950; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.04em;">Jurney</h1>
         </div>
-        <div style="display: flex; gap: 0.75rem; align-items: center; padding-right: 0.5rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <div @click="store.forceRefresh" class="profile-icon" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
+        <div style="display: flex; gap: 0.6rem; align-items: center; padding-right: 0.25rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
+          <div @click="store.forceRefresh" class="profile-icon" style="width: 32px; height: 32px; border-radius: 10px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
             <i data-lucide="refresh-cw" :class="{ 'spin-active': store.isSyncing }" style="width: 16px;"></i>
           </div>
-          <div @click="toggleSearch" class="profile-icon" style="width: 36px; height: 36px; border-radius: 12px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-            <i data-lucide="search" style="width: 18px;"></i>
+          <div @click="toggleSearch" class="profile-icon" style="width: 32px; height: 32px; border-radius: 10px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <i data-lucide="search" style="width: 16px;"></i>
           </div>
           <div class="user-meta" style="display: flex; align-items: center; gap: 0.75rem;">
-            <div @click="$router.push('/settings')" class="profile-icon" style="width: 36px; height: 36px; border-radius: 12px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; overflow: hidden; position: relative;">
+            <div @click="$router.push('/settings')" class="profile-icon" style="width: 32px; height: 32px; border-radius: 10px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; overflow: hidden; position: relative;">
                <img v-if="userAvatar.includes('.svg')" :src="userAvatar" style="width: 20px; height: 20px; object-fit: contain;">
                <span v-else>{{ userAvatar }}</span>
                <div style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; background: #10b981; border: 1.5px solid var(--bg-primary); border-radius: 50%;"></div>
@@ -42,7 +42,7 @@
        <div style="display: flex; align-items: center; gap: 0.5rem;">
           <div style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
              <span style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; display: block;"></span>
-             <span style="font-size: 0.7rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em; line-height: 1;">CORE v5.2.0</span>
+             <span style="font-size: 0.7rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em; line-height: 1;">CORE v5.3.0</span>
           </div>
           <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">PROD ACTIVE</div>
        </div>
@@ -168,7 +168,7 @@
     
     <!-- System Footer -->
     <div style="margin-top: 3rem; text-align: center; padding-bottom: 2rem; opacity: 0.3;">
-       <div style="font-size: 0.55rem; font-weight: 900; letter-spacing: 0.2em; color: var(--text-secondary); text-transform: uppercase;">v5.2.0 Intelligence Core</div>
+       <div style="font-size: 0.55rem; font-weight: 900; letter-spacing: 0.2em; color: var(--text-secondary); text-transform: uppercase;">v5.3.0 Intelligence Core</div>
        <div style="font-size: 0.45rem; margin-top: 0.5rem; letter-spacing: 0.1em;">TERMINAL STABILIZED // NORECALL PROTOCOL ACTIVE</div>
     </div>
   </div>
@@ -209,7 +209,7 @@ const formatDate = (dateStr) => {
 const checkUpdates = () => {
   store.notify('Verifying core integrity...', 'info')
   setTimeout(() => {
-     store.notify('Protocol v5.2.0 is the latest stable release.', 'success')
+     store.notify('Protocol v5.3.0 is the latest stable release.', 'success')
   }, 1000)
 }
 

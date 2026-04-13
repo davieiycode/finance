@@ -20,7 +20,7 @@
           </button>
         </div>
         
-        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">INTELLIGENCE CORE V5.1.0 • BUILT 2026-04-12</p>
+        <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 2rem; letter-spacing: 0.1em; font-weight: 800;">INTELLIGENCE CORE V5.3.0 • BUILT 2026-04-13</p>
      </div>
 
      <!-- Manual Entry View -->

@@ -204,7 +204,7 @@
        <!-- System Version Info -->
        <div style="margin-top: 5rem; text-align: center; border-top: 1px solid var(--border); padding-top: 2.5rem; margin-bottom: 3rem;">
           <div style="font-size: 1.1rem; font-weight: 1000; letter-spacing: 0.5em; color: white; opacity: 0.9; margin-bottom: 0.6rem;">JURNEY</div>
-          <div style="font-size: 0.6rem; font-weight: 950; letter-spacing: 0.15em; color: var(--text-secondary); opacity: 0.5;">INTELLIGENCE CORE v5.1.0 • BUILT 2026-04-12</div>
+          <div style="font-size: 0.6rem; font-weight: 950; letter-spacing: 0.15em; color: var(--text-secondary); opacity: 0.5;">INTELLIGENCE CORE v5.3.0 • BUILT 2026-04-13</div>
           <div style="display: flex; justify-content: center; gap: 1.25rem; margin-top: 2rem; opacity: 0.2;">
              <div style="width: 4px; height: 4px; background: white; border-radius: 50%;"></div>
              <div style="width: 4px; height: 4px; background: white; border-radius: 50%;"></div>

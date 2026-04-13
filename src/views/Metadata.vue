@@ -1,10 +1,10 @@
 <template>
   <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="padding: calc(0.75rem + env(safe-area-inset-top)) 0 0.75rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 10;">
+    <div class="sticky-nav" style="padding: calc(0.2rem + env(safe-area-inset-top)) 0 0.2rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
         <div style="display: flex; align-items: center; gap: 1rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s' }">
           <button class="back-btn" @click="$router.push('/settings')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:24px;"></i></button>
-          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin:0;">Registry Vault</h1>
+          <h1 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin:0;">Registry Vault</h1>
         </div>
 
         <button v-if="!showSearch" @click="showSearch = true" style="background: none; border: none; color: var(--text-primary); cursor: pointer;"><i data-lucide="search" style="width: 20px;"></i></button>

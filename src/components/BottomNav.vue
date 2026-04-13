@@ -133,8 +133,15 @@ watch(() => route.path, () => {
 
 .nav-item.active .icon-box i {
   color: var(--accent, #8b5cf6);
-  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.6));
+  fill: rgba(139, 92, 246, 0.3); /* Subtle fill to make it 'solid' */
+  filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.8));
   stroke-width: 2.5px;
+  transform: scale(1.1);
+}
+
+.nav-item.active span {
+  color: white;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
 }
 
 .plus-hex {
