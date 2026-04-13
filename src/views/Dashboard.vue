@@ -1,5 +1,5 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(70px + 2rem); position: relative;">
+  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
     <div class="sticky-nav" style="padding: 1.5rem 0 1rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
         <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.75rem;">
@@ -8,7 +8,7 @@
           </div>
           <h1 style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.02em;">Jurney</h1>
         </div>
-        <div style="display: flex; gap: 0.75rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
+        <div style="display: flex; gap: 0.75rem; align-items: center; padding-right: 0.5rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
           <div @click="store.forceRefresh" class="profile-icon" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
             <i data-lucide="refresh-cw" :class="{ 'spin-active': store.isSyncing }" style="width: 16px;"></i>
           </div>
@@ -38,15 +38,15 @@
     </div>
 
     <!-- System Status Bar -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 0 0.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 1rem; padding: 0 0.5rem;">
        <div style="display: flex; align-items: center; gap: 0.5rem;">
           <div style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
              <span style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; display: block;"></span>
              <span style="font-size: 0.7rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em; line-height: 1;">CORE v5.1.0</span>
           </div>
-          <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700;">PROD CORE ACTIVE</div>
+          <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">PROD ACTIVE</div>
        </div>
-       <div @click="checkUpdates" style="font-size: 0.6rem; color: var(--accent); font-weight: 800; text-transform: uppercase; cursor: pointer; letter-spacing: 0.05em;">Verify Integrity</div>
+       <div @click="checkUpdates" style="font-size: 0.6rem; color: var(--accent); font-weight: 800; text-transform: uppercase; cursor: pointer; letter-spacing: 0.05em; border-bottom: 1px solid rgba(139,92,246,0.3); padding-bottom: 2px;">Verify Integrity</div>
     </div>
 
     <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; margin-top: 1.5rem;">
@@ -54,14 +54,14 @@
         <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="wallet" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="wallet" style="width: 14px; color: var(--accent); margin-bottom: 0.2rem;"></i>
         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Treasure Vault</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em;">Rp {{ (totalBalance || 0).toLocaleString('id-ID') }}</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em;">Rp {{ Math.round(totalBalance || 0).toLocaleString('id-ID') }}</span>
         <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ (store.accounts || []).length }} ACTIVE VAULTS</div>
       </div>
       <div class="stat-card card-hover" @click="$router.push('/analysis')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
         <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="trending-up" style="width: 60px; height: 60px;"></i></div>
         <i data-lucide="line-chart" style="width: 14px; color: #ef4444; margin-bottom: 0.2rem;"></i>
         <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Supplies Used</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: #ef4444; letter-spacing: -0.02em;">Rp {{ (monthSpending || 0).toLocaleString('id-ID') }}</span>
+        <span style="font-size: 1.25rem; font-weight: 900; color: #ef4444; letter-spacing: -0.02em;">Rp {{ Math.round(monthSpending || 0).toLocaleString('id-ID') }}</span>
         <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">CONSUMPTION THIS CYCLE</div>
       </div>
       <div class="stat-card card-hover" @click="$router.push('/budget')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
@@ -94,10 +94,12 @@
              <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444; flex-shrink: 0;">
                 <i :data-lucide="rem.icon" style="width: 20px;"></i>
              </div>
-             <div style="flex: 1;">
+              <div style="flex: 1; min-width: 0;">
                 <div style="font-size: 0.875rem; font-weight: 800; color: white;">{{ rem.name }}</div>
-                <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.2rem;">Missing log for {{ rem.period }}. Last seen {{ rem.lastDate }}.</div>
-             </div>
+                <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                   Missing log for {{ rem.period }}. Last seen {{ formatDate(rem.lastDate) }}.
+                </div>
+              </div>
              <button @click="$router.push('/transaction')" style="background: rgba(239, 68, 68, 0.2); border: none; padding: 0.5rem 0.75rem; border-radius: 8px; color: white; font-size: 0.6rem; font-weight: 800; cursor: pointer;">RESOLVE</button>
           </div>
        </div>
@@ -193,6 +195,14 @@ const toggleSearch = () => {
   if (!showSearch.value) {
     searchQuery.value = ''
   }
+}
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'N/A'
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return dateStr
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
 const checkUpdates = () => {
