@@ -61,7 +61,6 @@
     <!-- Tabbed Analysis -->
     <div style="margin-bottom: 2rem;">
       <!-- Main Content Area -->
-      <div class="tab-content" style="min-height: 400px; animation: fadeIn 0.4s ease;">
 
       <div class="tab-content" style="min-height: 400px; animation: fadeIn 0.4s ease;">
          <div v-show="activeTab === 'cashflow'">
@@ -183,7 +182,7 @@
              </div>
           </div>
        </div>
-    </div>
+      </div>
     </Teleport>
 
     <TransactionModal v-if="selectedTx" :tx="selectedTx" @close="selectedTx = null" />
