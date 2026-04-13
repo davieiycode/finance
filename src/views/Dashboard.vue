@@ -1,12 +1,12 @@
 <template>
   <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="padding: calc(0.4rem + env(safe-area-inset-top)) 0 0.4rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+    <div class="sticky-nav" style="padding: calc(0.2rem + env(safe-area-inset-top)) 1.5rem 0.2rem 1.5rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
+      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.4rem 0;">
         <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.6rem;">
           <div style="width: 28px; height: 28px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); flex-shrink: 0;">
             <img src="/logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="Jurney Logo">
           </div>
-          <h1 style="font-size: 1.15rem; font-weight: 950; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.04em;">Jurney</h1>
+          <h1 style="font-size: 1.1rem; font-weight: 950; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.04em;">Jurney</h1>
         </div>
         <div style="display: flex; gap: 0.6rem; align-items: center; padding-right: 0.25rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
           <div @click="store.forceRefresh" class="profile-icon" style="width: 32px; height: 32px; border-radius: 10px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
@@ -26,9 +26,9 @@
 
         <!-- Expanding Search Bar -->
         <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 40px; display: flex; align-items: center; min-width: 250px;">
-              <i data-lucide="search" style="position: absolute; left: 1rem; width: 18px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Scan expeditions..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 20px; padding: 0 2.5rem 0 3rem; color: var(--text-primary); outline: none; font-size: 0.875rem;">
+           <div style="position: relative; width: 100%; height: 36px; display: flex; align-items: center; min-width: 250px;">
+              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
+              <input type="text" v-model="searchQuery" placeholder="Scan expeditions..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
               <button @click="toggleSearch" style="position: absolute; right: 0.75rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
                  <i data-lucide="x" style="width: 16px;"></i>
               </button>
@@ -337,3 +337,8 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped>
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes pulse { 0% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.4; transform: scale(1); } }
+</style>

@@ -1,10 +1,10 @@
 <template>
   <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="padding: calc(0.4rem + env(safe-area-inset-top)) 0 0.4rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+    <div class="sticky-nav" style="padding: calc(0.2rem + env(safe-area-inset-top)) 1.5rem 0.2rem 1.5rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
+      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.4rem 0;">
         <div style="display: flex; align-items: center; gap: 0.75rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
           <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
-          <h1 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin:0; white-space: nowrap;">Item Catalog</h1>
+          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0; white-space: nowrap;">Item Catalog</h1>
         </div>
         
         <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
@@ -24,14 +24,6 @@
            </div>
         </div>
       </header>
-
-      <!-- Sticky Category Filters -->
-      <div style="display: flex; gap: 0.6rem; overflow-x: auto; padding: 0.75rem 0.25rem 0.25rem 0.25rem; scrollbar-width: none;">
-         <button @click="selectedCategory = ''" :class="{ active: selectedCategory === '' }" class="filter-pill">ALL</button>
-         <button v-for="cat in uniqueCategories" :key="cat" @click="selectedCategory = cat" :class="{ active: selectedCategory === cat }" class="filter-pill">
-            {{ cat }}
-         </button>
-      </div>
     </div>
 
     <div class="item-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
@@ -247,10 +239,20 @@
       </div>
     </Teleport>
 
+    <!-- Bottom Contextual Island (Filters) -->
+    <Teleport to="body">
+       <div v-if="!document.body.classList.contains('modal-open')" style="position: fixed; bottom: 7.5rem; left: 50%; transform: translateX(-50%); z-index: 1500; width: auto; max-width: 90vw; background: rgba(15, 15, 25, 0.7); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; padding: 0.6rem 1rem; display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+          <button @click="selectedCategory = ''" :class="{ active: selectedCategory === '' }" class="filter-pill" style="padding: 0.4rem 1.25rem; height: 32px; font-size: 0.65rem;">ALL</button>
+          <button v-for="cat in uniqueCategories" :key="cat" @click="selectedCategory = cat" :class="{ active: selectedCategory === cat }" class="filter-pill" style="padding: 0.4rem 1.25rem; height: 32px; font-size: 0.65rem; white-space: nowrap;">
+             {{ cat }}
+          </button>
+       </div>
+    </Teleport>
+
     <!-- Add New Item FAB -->
     <Teleport to="body">
-       <button @click="openModal(null)" class="fab" style="position: fixed; bottom: 6rem; right: 1.5rem; width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: white; border: none; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2000; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-          <i data-lucide="plus" style="width: 28px; height: 28px; stroke-width: 3;"></i>
+       <button @click="openModal(null)" class="fab" style="position: fixed; bottom: 6.5rem; right: 1.5rem; width: 56px; height: 56px; border-radius: 28px; background: var(--accent); color: white; border: none; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2000; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+          <i data-lucide="plus" style="width: 24px; height: 24px; stroke-width: 3;"></i>
        </button>
     </Teleport>
   </div>
