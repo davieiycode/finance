@@ -1,70 +1,65 @@
 <template>
   <nav class="nav-island" :class="{ 'nav-hidden': isHidden }">
-    <router-link to="/" class="nav-item" active-class="active">
-      <div class="icon-box">
-        <i data-lucide="layout-dashboard"></i>
+    <router-link v-for="item in menuItems" :key="item.path" :to="item.path" class="nav-item" :class="{ 'active': isActive(item.path), 'action-item': item.path === '/transaction' }">
+      <div :class="item.path === '/transaction' ? 'plus-hex' : 'icon-box'">
+        <i :data-lucide="item.icon"></i>
       </div>
-      <span>Dash</span>
-    </router-link>
-    <router-link to="/transaction" class="nav-item action-item" active-class="active">
-      <div class="plus-hex">
-        <i data-lucide="plus"></i>
-      </div>
-      <span style="color: var(--accent);">Entry</span>
-    </router-link>
-    <router-link to="/history" class="nav-item" active-class="active">
-      <div class="icon-box">
-        <i data-lucide="scroll"></i>
-      </div>
-      <span>Log</span>
+      <span>{{ item.label }}</span>
     </router-link>
   </nav>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useUIStore } from '../stores/ui'
 
+const router = useRouter()
 const route = useRoute()
+const uiStore = useUIStore()
 const isHidden = ref(false)
-let lastScrollY = 0
+
+const menuItems = [
+  { path: '/', label: 'Dash', icon: 'layout-grid' },
+  { path: '/transaction', label: 'Log', icon: 'plus-circle' },
+  { path: '/history', label: 'Venture', icon: 'zap' },
+  { path: '/analysis', label: 'Intel', icon: 'line-chart' },
+  { path: '/settings', label: 'Core', icon: 'user' }
+]
+
+const isActive = (path) => {
+  if (path === '/') return router.currentRoute.value.path === '/'
+  return router.currentRoute.value.path.startsWith(path)
+}
 
 const handleScroll = (e) => {
-  if (document.body.classList.contains('modal-open')) {
+  if (uiStore.isModalOpen) {
     isHidden.value = true
     return
   }
-  const scrollY = e.target.scrollTop
-  if (scrollY > lastScrollY && scrollY > 50) {
-    isHidden.value = true
-  } else {
-    isHidden.value = false
-  }
-  lastScrollY = scrollY
+  
+  const target = e.target
+  if (target.scrollTop > 50) isHidden.value = true
+  else isHidden.value = false
 }
 
 const initIcons = () => {
-  if (window.lucide) {
-    window.lucide.createIcons()
-  }
+  if (window.lucide) window.lucide.createIcons()
 }
 
-const observer = ref(null)
+// Watch for global modal state changes
+watch(() => uiStore.isModalOpen, (val) => {
+  if (val) isHidden.value = true
+  else isHidden.value = false
+})
 
 onMounted(() => {
   initIcons()
   document.addEventListener('scroll', handleScroll, true)
-  
-  observer.value = new MutationObserver(() => {
-    if (document.body.classList.contains('modal-open')) isHidden.value = true
-    else isHidden.value = false
-  })
-  observer.value.observe(document.body, { attributes: true, attributeFilter: ['class'] })
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   document.removeEventListener('scroll', handleScroll, true)
-  if (observer.value) observer.value.disconnect()
 })
 
 watch(() => route.path, () => {

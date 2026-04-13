@@ -261,8 +261,10 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const scrollContainer = ref(null)
 const isModalOpen = ref(false)
 const modalMode = ref('analysis')
@@ -422,7 +424,7 @@ const stopScanner = async () => {
 
 onBeforeUnmount(() => { 
   stopScanner()
-  document.body.classList.remove('modal-open')
+  uiStore.unregisterModal('items')
 })
 
 // Re-render icons when mode changes (Pulse Fix)
@@ -430,9 +432,9 @@ watch([modalMode, isMergePanelOpen], () => {
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 })
 
-watch(isModalOpen, (val) => {
-  if (val) document.body.classList.add('modal-open')
-  else document.body.classList.remove('modal-open')
+watch([isModalOpen, isMergePanelOpen], ([m, mp]) => {
+  if (m || mp) uiStore.registerModal('items')
+  else uiStore.unregisterModal('items')
 })
 
 onMounted(() => { 

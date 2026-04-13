@@ -352,10 +352,12 @@
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const router = useRouter()
 const route = useRoute()
 const store = useFinanceStore()
+const uiStore = useUIStore()
 
 const now = new Date()
 const form = ref({
@@ -744,12 +746,13 @@ watch(() => route.query, () => {
 
 onMounted(() => {
   initForm()
-  document.body.classList.add('modal-open') // Hide global bottom nav for focused entry
+  uiStore.registerModal('transaction-form') // Hide global bottom nav for focused entry
   if (window.lucide) window.lucide.createIcons()
 })
 
 onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open')
+  stopScanner()
+  uiStore.unregisterModal('transaction-form')
 })
 
 // Re-render icons on focus/actions

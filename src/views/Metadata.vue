@@ -215,9 +215,11 @@
 import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const route = useRoute()
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const activeTab = ref(route.query.tab || 'categories')
 const showSearch = ref(false)
 const searchQuery = ref('')
@@ -398,9 +400,10 @@ const handleDelete = () => {
    isModalOpen.value = false
 }
 
+// Visibility & Class Sync
 watch(isModalOpen, (val) => {
-  if (val) document.body.classList.add('modal-open')
-  else document.body.classList.remove('modal-open')
+  if (val) uiStore.registerModal('metadata')
+  else uiStore.unregisterModal('metadata')
 })
 
 watch([activeTab, showSearch, iconSearch, modalMode, isMergePanelOpen, isModalOpen], () => {
@@ -408,7 +411,9 @@ watch([activeTab, showSearch, iconSearch, modalMode, isMergePanelOpen, isModalOp
 })
 
 onMounted(() => { if (window.lucide) window.lucide.createIcons() })
-onBeforeUnmount(() => { document.body.classList.remove('modal-open') })
+onBeforeUnmount(() => {
+  uiStore.unregisterModal('metadata')
+})
 </script>
 
 <style scoped>

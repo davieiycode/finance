@@ -227,8 +227,10 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const isModalOpen = ref(false)
 const modalMode = ref('analysis')
 const editingMerchant = ref({})
@@ -346,8 +348,8 @@ const performMerge = (target) => {
 
 // Visibility & Class Sync
 watch([isModalOpen, isMergePanelOpen], ([m, mp]) => {
-  if (m || mp) document.body.classList.add('modal-open')
-  else document.body.classList.remove('modal-open')
+  if (m || mp) uiStore.registerModal('merchants')
+  else uiStore.unregisterModal('merchants')
 })
 
 // Lifecycle Management
@@ -356,7 +358,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open')
+  uiStore.unregisterModal('merchants')
 })
 
 // Icon Re-rendering

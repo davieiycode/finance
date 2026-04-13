@@ -86,9 +86,11 @@
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const router = useRouter()
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const showTxModal = ref(false)
 
 const pendingClearances = computed(() => {
@@ -160,8 +162,8 @@ const quickFixRegistry = (issue) => {
 
 // Visibility & Class Sync
 watch(showTxModal, (val) => {
-  if (val) document.body.classList.add('modal-open')
-  else document.body.classList.remove('modal-open')
+  if (val) uiStore.registerModal('audit')
+  else uiStore.unregisterModal('audit')
 })
 
 // Lifecycle Management
@@ -170,7 +172,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open')
+  uiStore.unregisterModal('audit')
 })
 
 // Re-render icons

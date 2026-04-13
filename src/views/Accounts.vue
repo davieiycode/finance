@@ -227,8 +227,10 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const scrollContainer = ref(null)
 const isModalOpen = ref(false)
 const accountMode = ref('analysis') // 'analysis' or 'edit'
@@ -403,8 +405,8 @@ const adjustColor = (hex, percent) => {
 
 // Visibility & Class Sync
 watch(isModalOpen, (val) => {
-  if (val) document.body.classList.add('modal-open')
-  else document.body.classList.remove('modal-open')
+  if (val) uiStore.registerModal('accounts')
+  else uiStore.unregisterModal('accounts')
 })
 
 // Lifecycle Management
@@ -414,7 +416,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open')
+  uiStore.unregisterModal('accounts')
 })
 
 // Icon Re-rendering

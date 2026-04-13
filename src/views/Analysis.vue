@@ -193,9 +193,11 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 import TransactionModal from '../components/TransactionModal.vue'
 
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const analysisMode = ref('monthly')
 const activeDate = ref(new Date())
 const activeTab = ref('cashflow')
@@ -407,12 +409,12 @@ const getTxSign = (type) => {
 
 // Visibility & Class Sync
 watch(isModalOpen, (val) => {
-  if (val) document.body.classList.add('modal-open')
-  else document.body.classList.remove('modal-open')
+  if (val) uiStore.registerModal('analysis')
+  else uiStore.unregisterModal('analysis')
 })
 
 onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open')
+  uiStore.unregisterModal('analysis')
 })
 
 // Re-render icons

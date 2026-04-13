@@ -102,8 +102,10 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const isModalOpen = ref(false)
 const editingGoal = ref({})
 const formData = ref({})
@@ -123,13 +125,14 @@ const filteredGoals = computed(() => {
 const openModal = (g) => {
   if (g) { 
     editingGoal.value = { ...g }
-    formData.value = { 
-      ...g,
-      targetAmount: Number(g.targetAmount) || 0,
-      currentAmount: Number(g.currentAmount) || 0
-    } 
+    formData.value = { ...g, targetAmount: Number(g.targetAmount) || 0, currentAmount: Number(g.currentAmount) || 0 } 
+    modalMode.value = 'analysis'
   }
-  else { editingGoal.value = {}; formData.value = { goalName: '', targetAmount: 0, currentAmount: 0, deadline: '', status: 'In Progress' } }
+  else { 
+    editingGoal.value = {}
+    formData.value = { goalName: '', category: 'All Categories', targetAmount: 0, currentAmount: 0, deadline: '', notes: '', emoji: '🎯' } 
+    modalMode.value = 'edit'
+  }
   isModalOpen.value = true
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
@@ -141,7 +144,7 @@ const saveGoal = () => {
   isModalOpen.value = false
 }
 
-const deleteGoal = () => { if (confirm('Delete this goal?')) { store.deleteGoal(editingGoal.value.goalID); isModalOpen.value = false } }
+const deleteGoal = () => { if (confirm('Abandon this target?')) { store.deleteGoal(editingGoal.value.goalID); isModalOpen.value = false } }
 
 const handleDuplicate = () => {
   const data = { ...formData.value }
@@ -168,8 +171,8 @@ const calculateDaysLeft = (deadline) => {
 
 // Visibility & Class Sync
 watch(isModalOpen, (val) => {
-  if (val) document.body.classList.add('modal-open')
-  else document.body.classList.remove('modal-open')
+  if (val) uiStore.registerModal('goals')
+  else uiStore.unregisterModal('goals')
 })
 
 // Lifecycle Management
@@ -178,7 +181,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open')
+  uiStore.unregisterModal('goals')
 })
 
 // Icon Re-rendering

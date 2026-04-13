@@ -127,11 +127,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const router = useRouter()
 const props = defineProps({
   tx: Object
@@ -232,12 +234,12 @@ const getTxColor = (type) => {
 }
 
 onMounted(() => {
-  document.body.classList.add('modal-open')
+  uiStore.registerModal('transaction-detail')
   if (window.lucide) window.lucide.createIcons()
 })
 
 onUnmounted(() => {
-  document.body.classList.remove('modal-open')
+  uiStore.unregisterModal('transaction-detail')
 })
 </script>
 

@@ -125,8 +125,10 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
+import { useUIStore } from '../stores/ui'
 
 const store = useFinanceStore()
+const uiStore = useUIStore()
 const isModalOpen = ref(false)
 const editingBud = ref({})
 const formData = ref({})
@@ -225,8 +227,8 @@ const getProgressColor = (b) => {
 
 // Visibility & Class Sync
 watch([isModalOpen, isMergePanelOpen], ([m, mp]) => {
-  if (m || mp) document.body.classList.add('modal-open')
-  else document.body.classList.remove('modal-open')
+  if (m || mp) uiStore.registerModal('budget')
+  else uiStore.unregisterModal('budget')
 })
 
 // Lifecycle Management
@@ -235,7 +237,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  document.body.classList.remove('modal-open')
+  uiStore.unregisterModal('budget')
 })
 
 // Icon Re-rendering
