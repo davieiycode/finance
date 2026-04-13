@@ -195,7 +195,7 @@
 
     <!-- Add New Entry FAB -->
     <Teleport to="body">
-       <div v-if="!document.body.classList.contains('modal-open')" style="position: fixed; bottom: 7.2rem; left: 50%; transform: translateX(-50%); z-index: 1500; width: auto; max-width: 90vw; background: rgba(15, 15, 25, 0.7); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; padding: 0.6rem 1rem; display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+       <div v-if="!isModalOpen && !isMergePanelOpen" style="position: fixed; bottom: 7.2rem; left: 50%; transform: translateX(-50%); z-index: 1500; width: auto; max-width: 90vw; background: rgba(15, 15, 25, 0.7); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; padding: 0.6rem 1rem; display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
           <button v-for="t in tabs" :key="t.id" @click="activeTab = t.id" :class="{ active: activeTab === t.id }" class="tab-pill" style="padding: 0.4rem 1rem; font-size: 0.65rem; height: 32px; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem;">
              <i :data-lucide="t.icon" style="width: 12px;"></i>
              {{ t.label }}
