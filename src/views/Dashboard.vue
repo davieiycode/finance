@@ -2,11 +2,11 @@
   <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
     <div class="sticky-nav" style="padding: calc(0.75rem + env(safe-area-inset-top)) 0 0.75rem 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
       <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
-        <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.75rem;">
-          <div style="width: 38px; height: 38px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 5px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); flex-shrink: 0;">
+        <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 34px; height: 34px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); flex-shrink: 0;">
             <img src="/logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="Jurney Logo">
           </div>
-          <h1 style="font-size: 1.35rem; font-weight: 900; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.03em;">Jurney</h1>
+          <h1 style="font-size: 1.2rem; font-weight: 950; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.03em;">Jurney</h1>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center; padding-right: 0.5rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
           <div @click="store.forceRefresh" class="profile-icon" style="width: 36px; height: 36px; border-radius: 12px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
