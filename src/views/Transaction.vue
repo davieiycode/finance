@@ -1,18 +1,18 @@
 <template>
   <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(120px + env(safe-area-inset-bottom));">
-    <header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <button @click="$router.push('/')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%;">
-           <i data-lucide="chevron-left" style="width: 20px;" stroke-width="2"></i>
-        </button>
-        <span style="font-weight: 1000; font-size: 1.15rem; letter-spacing: -0.02em; text-transform: uppercase;">Log Expedition</span>
-      </div>
-      <div>
-        <button @click="saveTransaction" style="background: var(--success, #10b981); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 14px; font-weight: 900; display: flex; align-items: center; gap: 0.6rem; cursor: pointer; box-shadow: 0 10px 20px rgba(16,185,129,0.25); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; transition: 0.3s;">
-          <i data-lucide="shield-check" style="width: 16px;"></i> AUTHORIZE
-        </button>
-      </div>
-    </header>
+    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
+      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
+          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Identity</h1>
+        </div>
+        <div>
+          <button @click="saveTransaction" style="background: var(--success, #10b981); color: white; border: none; padding: 0.4rem 1rem; border-radius: 10px; font-weight: 950; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em; transition: 0.3s;">
+            <i data-lucide="shield-check" style="width: 14px;"></i> AUTHORIZE
+          </button>
+        </div>
+      </header>
+    </div>
 
     <form @submit.prevent="saveTransaction" style="display: flex; flex-direction: column; gap: 2rem; margin-top: 1.5rem;">
       
@@ -349,7 +349,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
 
@@ -744,7 +744,17 @@ watch(() => route.query, () => {
 
 onMounted(() => {
   initForm()
+  document.body.classList.add('modal-open') // Hide global bottom nav for focused entry
   if (window.lucide) window.lucide.createIcons()
+})
+
+onBeforeUnmount(() => {
+  document.body.classList.remove('modal-open')
+})
+
+// Re-render icons on focus/actions
+watch([showItemDropdown, showCategoryDropdown, showMerchantDropdown, showUnitDropdown, scanning], () => {
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 })
 </script>
 

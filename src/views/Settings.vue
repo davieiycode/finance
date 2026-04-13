@@ -1,12 +1,12 @@
 <template>
   <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 2rem; position: relative;">
-    <div class="sticky-nav" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: -1px; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
-      <header style="display: flex; align-items: center; gap: 1rem;">
+    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
+      <header style="display: flex; align-items: center; gap: 0.8rem; padding: 0.35rem 0;">
         <button class="back-btn" @click="currentView === 'main' ? $router.push('/') : currentView = 'main'" style="background:none; border:none; color:var(--text-primary); cursor:pointer;">
-          <i :data-lucide="currentView === 'main' ? 'chevron-left' : 'arrow-left'" style="width:24px;"></i>
+          <i :data-lucide="currentView === 'main' ? 'chevron-left' : 'arrow-left'" style="width:20px;"></i>
         </button>
-        <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin:0;">
-          {{ currentView === 'main' ? 'Explorer Prefs' : subTitles[currentView] }}
+        <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">
+          {{ currentView === 'main' ? 'Settings' : subTitles[currentView] }}
         </h1>
       </header>
     </div>
@@ -218,7 +218,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()

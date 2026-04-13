@@ -1,15 +1,15 @@
 <template>
   <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
-      <header style="display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:24px;"></i></button>
-          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin:0;">Cartography</h1>
+    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
+      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
+          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Analysis</h1>
         </div>
-        <div style="display: flex; background: rgba(255,255,255,0.05); border-radius: 20px; padding: 0.2rem; border: 1px solid var(--border); position: relative; width: 170px; height: 36px; align-items: center;">
-          <div :style="{ left: analysisMode === 'monthly' ? '0.2rem' : '50%', width: 'calc(50% - 0.2rem)' }" style="position: absolute; top: 0.2rem; bottom: 0.2rem; background: var(--accent); border-radius: 16px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);"></div>
-          <button @click="analysisMode = 'monthly'" :style="{ color: analysisMode === 'monthly' ? 'white' : 'var(--text-secondary)' }" style="flex: 1; border: none; background: none; font-size: 0.65rem; font-weight: 900; z-index: 2; cursor: pointer; transition: color 0.3s; height: 100%; position: relative; letter-spacing: 0.05em;">MONTHLY</button>
-          <button @click="analysisMode = 'yearly'" :style="{ color: analysisMode === 'yearly' ? 'white' : 'var(--text-secondary)' }" style="flex: 1; border: none; background: none; font-size: 0.65rem; font-weight: 900; z-index: 2; cursor: pointer; transition: color 0.3s; height: 100%; position: relative; letter-spacing: 0.05em;">YEARLY</button>
+        <div style="display: flex; background: rgba(255,255,255,0.05); border-radius: 14px; padding: 0.15rem; border: 1px solid var(--border); width: 140px; height: 30px; align-items: center;">
+          <div :style="{ left: analysisMode === 'monthly' ? '0.15rem' : '50%', width: 'calc(50% - 0.15rem)' }" style="position: absolute; top: 0.15rem; bottom: 0.15rem; background: var(--accent); border-radius: 11px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;"></div>
+          <button @click="analysisMode = 'monthly'" :style="{ color: analysisMode === 'monthly' ? 'white' : 'var(--text-secondary)' }" style="flex: 1; border: none; background: none; font-size: 0.55rem; font-weight: 900; z-index: 2; cursor: pointer; transition: color 0.3s; height: 100%; position: relative;">MONTHLY</button>
+          <button @click="analysisMode = 'yearly'" :style="{ color: analysisMode === 'yearly' ? 'white' : 'var(--text-secondary)' }" style="flex: 1; border: none; background: none; font-size: 0.55rem; font-weight: 900; z-index: 2; cursor: pointer; transition: color 0.3s; height: 100%; position: relative;">YEARLY</button>
         </div>
       </header>
     </div>
@@ -60,12 +60,8 @@
 
     <!-- Tabbed Analysis -->
     <div style="margin-bottom: 2rem;">
-      <div class="tabs-scroll" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: none;">
-         <button v-for="t in tabs" :key="t.id" @click="activeTab = t.id" :class="{ active: activeTab === t.id }" class="tab-pill">
-            <i :data-lucide="t.icon" style="width: 14px;"></i>
-            {{ t.label }}
-         </button>
-      </div>
+      <!-- Main Content Area -->
+      <div class="tab-content" style="min-height: 400px; animation: fadeIn 0.4s ease;">
 
       <div class="tab-content" style="min-height: 400px; animation: fadeIn 0.4s ease;">
          <div v-show="activeTab === 'cashflow'">
@@ -149,7 +145,16 @@
 
     <!-- LIST MODAL -->
     <Teleport to="body">
-       <div v-if="modalData" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; align-items: flex-end; justify-content: center;">
+       <div v-if="!document.body.classList.contains('modal-open')" style="position: fixed; bottom: 7.2rem; left: 50%; transform: translateX(-50%); z-index: 1500; width: auto; max-width: 90vw; background: rgba(15, 15, 25, 0.7); backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; padding: 0.6rem 1rem; display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+          <button v-for="t in tabs" :key="t.id" @click="activeTab = t.id" :class="{ active: activeTab === t.id }" class="tab-pill" style="padding: 0.4rem 1rem; font-size: 0.65rem; height: 32px; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem;">
+             <i :data-lucide="t.icon" style="width: 12px;"></i>
+             {{ t.label }}
+          </button>
+       </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
        <div style="background: var(--bg-primary, #000); width: 100%; max-width: 600px; height: 85vh; border-radius: 2rem 2rem 0 0; padding: 1.5rem; display: flex; flex-direction: column; border-top: 1px solid var(--border); animation: slideUp 0.3s ease-out;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
              <div>
@@ -187,7 +192,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 import TransactionModal from '../components/TransactionModal.vue'
 
@@ -197,6 +202,7 @@ const activeDate = ref(new Date())
 const activeTab = ref('cashflow')
 const selectedTx = ref(null)
 const modalData = ref(null)
+const isModalOpen = computed(() => !!modalData.value)
 
 const tabs = [
   { id: 'cashflow', label: 'Cashflow', icon: 'git-pull-request' },
@@ -314,7 +320,6 @@ const initCharts = () => {
   if (sankeyEl && activeTab.value === 'cashflow') {
     if (!charts.cf) charts.cf = window.echarts.init(sankeyEl, 'dark')
     
-    // Sankey requires unique names. We'll use IDs and labels to prevent collisions.
     const nodes = [
       { name: '__INTERNAL_INFLOW__', label: { formatter: 'Income' }, itemStyle: { color: '#10b981' } }, 
       { name: '__INTERNAL_VAULT__', label: { formatter: 'Vault (Net)' }, itemStyle: { color: '#3b82f6' } }
@@ -351,7 +356,6 @@ const initCharts = () => {
       
       charts.cf.off('click')
       charts.cf.on('click', (p) => { 
-         // Extract clean name from node ID
          const cleanName = p.name.replace(/^(INC_|EXP_)/, '')
          if (p.name.startsWith('INC_')) showModal('category', 'Income', cleanName)
          else if (p.name.startsWith('EXP_')) showModal('category', 'Expense', cleanName)
@@ -402,9 +406,24 @@ const getTxSign = (type) => {
   return ''
 }
 
+// Visibility & Class Sync
+watch(isModalOpen, (val) => {
+  if (val) document.body.classList.add('modal-open')
+  else document.body.classList.remove('modal-open')
+})
+
+onBeforeUnmount(() => {
+  document.body.classList.remove('modal-open')
+})
+
+// Re-render icons
+watch([activeTab, analysisMode, isModalOpen], () => {
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+})
+
 watch([filteredTransactions, activeTab, analysisMode], () => { nextTick(() => initCharts()) })
+
 onMounted(() => {
-  // If current month has no data, check if there's any data at all to set initial view
   if (filteredTransactions.value.length === 0 && store.transactions.length > 0) {
     const lastTx = [...store.transactions].sort((a,b) => new Date(b.date) - new Date(a.date))[0]
     if (lastTx && lastTx.date) {
@@ -412,10 +431,8 @@ onMounted(() => {
     }
   }
 
-  nextTick(() => {
-    if (window.lucide) window.lucide.createIcons()
-    initCharts()
-  })
+  initCharts()
+  if (window.lucide) window.lucide.createIcons()
   window.addEventListener('resize', () => Object.values(charts).forEach(c => c && c.resize()))
 })
 

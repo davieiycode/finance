@@ -76,13 +76,13 @@ watch(() => route.path, () => {
 <style scoped>
 .nav-island {
   position: fixed;
-  bottom: 2rem;
+  bottom: 1.25rem;
   left: 50%;
   transform: translateX(-50%);
   width: auto;
-  min-width: 280px;
-  max-width: 90vw;
-  height: 64px;
+  min-width: 240px;
+  max-width: 85vw;
+  height: 52px;
   background: rgba(15, 15, 25, 0.7);
   backdrop-filter: blur(25px) saturate(180%);
   -webkit-backdrop-filter: blur(25px) saturate(180%);
@@ -114,7 +114,7 @@ watch(() => route.path, () => {
   gap: 2px;
   color: rgba(255, 255, 255, 0.4);
   text-decoration: none;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -124,8 +124,8 @@ watch(() => route.path, () => {
 }
 
 .icon-box {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -133,8 +133,8 @@ watch(() => route.path, () => {
 }
 
 .nav-item i {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   stroke-width: 2px;
 }
 
@@ -156,10 +156,10 @@ watch(() => route.path, () => {
 }
 
 .plus-hex {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   background: linear-gradient(135deg, var(--accent) 0%, #6d28d9 100%);
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,8 +180,8 @@ watch(() => route.path, () => {
 
 .action-item i {
   color: white;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   stroke-width: 3px;
 }
 </style>

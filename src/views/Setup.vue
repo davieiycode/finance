@@ -64,13 +64,13 @@
     <div v-if="syncing" class="sync-state">
        <div class="pulse-loader"></div>
        <h2 style="font-weight: 950; letter-spacing: 0.1em; margin-top: 2rem;">INGESTING DATA...</h2>
-       <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem;">Allocating local vault resources</p>
+       <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">Allocating local vault resources</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
 
@@ -145,6 +145,12 @@ const submitManual = () => {
 }
 
 onBeforeUnmount(() => { stopScanner() })
+
+// Re-render icons on state changes
+watch([scanning, syncing, showManual], () => {
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+})
+
 onMounted(() => {
   if (window.lucide) window.lucide.createIcons()
 })

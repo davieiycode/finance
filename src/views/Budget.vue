@@ -1,28 +1,28 @@
 <template>
   <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 10; padding-top: 0.5rem;">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative;">
-        <div style="display: flex; align-items: center; gap: 1rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:24px;"></i></button>
-          <h1 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin:0;">Budget Control</h1>
+    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
+      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
+        <div style="display: flex; align-items: center; gap: 0.8rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
+          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
+          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Budgets</h1>
         </div>
 
         <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
             <i data-lucide="search" style="width: 18px;"></i>
           </button>
-          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 12px; height: 36px; padding: 0 1rem; font-weight: 700; display:flex; align-items:center; gap: 0.4rem; cursor:pointer;">
-            <i data-lucide="plus" style="width: 16px;"></i> New
+          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 10px; height: 32px; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 700; display:flex; align-items:center; gap: 0.3rem; cursor:pointer;">
+            <i data-lucide="plus" style="width: 14px;"></i> New
           </button>
         </div>
 
         <!-- Expanding Search Bar -->
         <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 36px; display: flex; align-items: center; min-width: 250px;">
+           <div style="position: relative; width: 100%; height: 34px; display: flex; align-items: center; min-width: 250px;">
               <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Search category or type..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
+              <input type="text" v-model="searchQuery" placeholder="Search archive..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
               <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
-                 <i data-lucide="x" style="width: 16px;"></i>
+                 <i data-lucide="x" style="width: 14px;"></i>
               </button>
            </div>
         </div>
@@ -49,7 +49,8 @@
       </div>
     </div>
 
-    <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+    <Teleport to="body">
+      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
             <span style="font-weight: 800;">Budget Detail</span>
@@ -86,8 +87,8 @@
       </div>
     </div>
 
-    <!-- Merge Selection Panel -->
-    <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
+    <Teleport to="body">
+       <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
        <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 440px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; animation: slideUp 0.3s ease-out;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
              <span style="font-weight: 800; font-size: 1rem;">Budget Consolidation</span>
@@ -119,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
@@ -219,7 +220,25 @@ const getProgressColor = (b) => {
   return 'var(--accent)'
 }
 
-onMounted(() => { if (window.lucide) window.lucide.createIcons() })
+// Visibility & Class Sync
+watch([isModalOpen, isMergePanelOpen], ([m, mp]) => {
+  if (m || mp) document.body.classList.add('modal-open')
+  else document.body.classList.remove('modal-open')
+})
+
+// Lifecycle Management
+onMounted(() => {
+  if (window.lucide) window.lucide.createIcons()
+})
+
+onBeforeUnmount(() => {
+  document.body.classList.remove('modal-open')
+})
+
+// Icon Re-rendering
+watch([isModalOpen, isMergePanelOpen], () => {
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+})
 </script>
 
 <style scoped>
