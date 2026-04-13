@@ -152,7 +152,7 @@
       </div>
       <div @click="$router.push('/audit')" style="background: var(--glass, rgba(239, 68, 68, 0.05)); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; position: relative;">
         <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444; flex-shrink: 0;">
-          <i data-lucide="activity-heart" style="width: 22px;"></i>
+          <i data-lucide="activity" style="width: 22px;"></i>
         </div>
         <div>
           <div style="font-size: 0.8125rem; font-weight: 700; color: #ef4444;">Intel Audit</div>

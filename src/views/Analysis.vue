@@ -236,7 +236,8 @@ const processData = (list, key, isTag = false) => {
   list.forEach(t => {
     const val = t.total || 0
     if (isTag) {
-      const tags = (t[key] || '').split(/[, ]+/).filter(x => x.trim())
+      const tagVal = t[key]
+      const tags = (typeof tagVal === 'string' ? tagVal : (Array.isArray(tagVal) ? tagVal.join(', ') : '')).split(/[, ]+/).filter(x => x.trim())
       tags.forEach(tag => map[tag] = (map[tag] || 0) + val)
     } else {
       const name = t[key] || (key === 'projects' ? 'Standalone' : 'Unclassified')
@@ -266,9 +267,17 @@ const filteredList = computed(() => {
          list = list.filter(t => t.type === mType)
       }
    } else if (filterType === 'tag') {
-      list = list.filter(t => (t.tags || '').toLowerCase().includes(filterValue.toLowerCase()))
+      list = list.filter(t => {
+         const tagVal = t.tags || ''
+         const tagStr = typeof tagVal === 'string' ? tagVal : (Array.isArray(tagVal) ? tagVal.join(', ') : '')
+         return tagStr.toLowerCase().includes(filterValue.toLowerCase())
+      })
    } else if (filterType === 'project') {
-      list = list.filter(t => (t.projects || 'Standalone') === filterValue)
+      list = list.filter(t => {
+         const prjVal = t.projects || 'Standalone'
+         const prjStr = typeof prjVal === 'string' ? prjVal : (Array.isArray(prjVal) ? prjVal.join(', ') : '')
+         return prjStr === filterValue
+      })
    }
    
    return list.sort((a,b) => (b.total || 0) - (a.total || 0))
