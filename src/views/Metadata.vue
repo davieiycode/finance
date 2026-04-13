@@ -23,9 +23,9 @@
     </div>
 
     <!-- Tab Selector -->
-    <div style="margin: 1.5rem 0; display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: none; border-bottom: 1px solid var(--border);">
-       <button v-for="t in tabs" :key="t.id" @click="activeTab = t.id" :class="{ active: activeTab === t.id }" class="tab-pill">
-          <i :data-lucide="t.icon" style="width: 14px;"></i>
+    <div style="margin: 1.5rem 0; display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem 0.25rem 1.25rem 0.25rem; scrollbar-width: none; border-bottom: 1px solid var(--border);">
+       <button v-for="t in tabs" :key="t.id" @click="activeTab = t.id" :class="{ active: activeTab === t.id }" class="tab-pill" style="padding: 0.8rem 1.5rem; font-size: 0.85rem; height: 46px;">
+          <i :data-lucide="t.icon" style="width: 16px;"></i>
           {{ t.label }}
        </button>
     </div>
@@ -203,8 +203,8 @@
     </Teleport>
 
     <!-- Add New Entry FAB -->
-    <button @click="openModal(null)" class="fab" style="position: fixed; bottom: 2rem; right: 2rem; width: 56px; height: 56px; border-radius: 28px; background: var(--accent); color: white; border: none; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100;">
-       <i data-lucide="plus"></i>
+    <button @click="openModal(null)" class="fab" style="position: fixed; bottom: 6rem; right: 1.5rem; width: 60px; height: 60px; border-radius: 20px; background: var(--accent); color: white; border: none; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1000; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+       <i data-lucide="plus" style="width: 28px; height: 28px; stroke-width: 3;"></i>
     </button>
   </div>
 </template>
@@ -410,4 +410,5 @@ onMounted(() => { if (window.lucide) window.lucide.createIcons() })
 .f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; box-sizing: border-box; font-family: inherit; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 </style>
