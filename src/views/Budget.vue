@@ -81,11 +81,13 @@
                </button>
             </div>
          </div>
-         <datalist id="cat-list">
-            <option v-for="c in store.categories" :key="c.categoryID" :value="c.category" />
-         </datalist>
       </div>
     </div>
+    </Teleport>
+
+    <datalist id="cat-list">
+       <option v-for="c in store.categories" :key="c.categoryID" :value="c.category" />
+    </datalist>
 
     <Teleport to="body">
        <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
@@ -113,9 +115,10 @@
              </div>
              <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid budgets found.</div>
           </div>
-          <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
-       </div>
-    </div>
+           <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
+        </div>
+     </div>
+    </Teleport>
   </div>
 </template>
 

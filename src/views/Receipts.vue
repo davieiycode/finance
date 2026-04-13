@@ -106,8 +106,9 @@
          <datalist id="mch-list">
             <option v-for="m in store.merchants" :key="m.merchantID" :value="m.merchantName" />
          </datalist>
+        </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
