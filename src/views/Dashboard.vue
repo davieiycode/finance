@@ -1,7 +1,7 @@
 <template>
   <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="padding: calc(0.2rem + env(safe-area-inset-top)) 1.5rem 0.2rem 1.5rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-primary, #000); z-index: 100;">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.4rem 0;">
+    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
+      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
         <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.6rem;">
           <div style="width: 28px; height: 28px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); flex-shrink: 0;">
             <img src="/logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="Jurney Logo">
