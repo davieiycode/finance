@@ -51,9 +51,8 @@
        <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 600;">No matching entries in this registry.</div>
     </div>
 
-    <!-- Modal for Individual Registry Type -->
     <Teleport to="body">
-      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
          <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; padding-bottom: 5rem;">
             <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
                <span style="font-weight: 800;">{{ editingItem ? (modalMode === 'analysis' ? 'Registry Intelligence' : 'Modify Record') : 'New Record' }}</span>
@@ -212,7 +211,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
 
@@ -398,11 +397,17 @@ const handleDelete = () => {
    isModalOpen.value = false
 }
 
-watch([activeTab, showSearch, iconSearch], () => {
+watch(isModalOpen, (val) => {
+  if (val) document.body.classList.add('modal-open')
+  else document.body.classList.remove('modal-open')
+})
+
+watch([activeTab, showSearch, iconSearch, modalMode, isMergePanelOpen, isModalOpen], () => {
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 })
 
 onMounted(() => { if (window.lucide) window.lucide.createIcons() })
+onBeforeUnmount(() => { document.body.classList.remove('modal-open') })
 </script>
 
 <style scoped>

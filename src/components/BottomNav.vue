@@ -30,7 +30,10 @@ const isHidden = ref(false)
 let lastScrollY = 0
 
 const handleScroll = (e) => {
-  // We need to detect scroll from the scrollable containers in views
+  if (document.body.classList.contains('modal-open')) {
+    isHidden.value = true
+    return
+  }
   const scrollY = e.target.scrollTop
   if (scrollY > lastScrollY && scrollY > 50) {
     isHidden.value = true
@@ -46,14 +49,22 @@ const initIcons = () => {
   }
 }
 
+const observer = ref(null)
+
 onMounted(() => {
   initIcons()
-  // Listen to the custom containers' scroll events
   document.addEventListener('scroll', handleScroll, true)
+  
+  observer.value = new MutationObserver(() => {
+    if (document.body.classList.contains('modal-open')) isHidden.value = true
+    else isHidden.value = false
+  })
+  observer.value.observe(document.body, { attributes: true, attributeFilter: ['class'] })
 })
 
 onUnmounted(() => {
   document.removeEventListener('scroll', handleScroll, true)
+  if (observer.value) observer.value.disconnect()
 })
 
 watch(() => route.path, () => {

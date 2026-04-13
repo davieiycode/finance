@@ -76,7 +76,7 @@
 
     <!-- Detail Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+      <div v-if="isModalOpen" :class="{ 'modal-active': isModalOpen }" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
          <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
             <span style="font-weight: 800;">{{ editingItem.itemID ? (modalMode === 'analysis' ? 'Item Intelligence' : 'Modify Item' ) : 'New Item' }}</span>
@@ -158,7 +158,7 @@
          </div>
 
          <!-- MODE: EDIT -->
-         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 6rem;">
             <div><label class="f-label">Item Name</label><input type="text" v-model="formData.itemName" class="f-input"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                <div>
@@ -257,7 +257,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 
 const store = useFinanceStore()
@@ -418,7 +418,21 @@ const stopScanner = async () => {
   showScanner.value = false
 }
 
-onBeforeUnmount(() => { stopScanner() })
+onBeforeUnmount(() => { 
+  stopScanner()
+  document.body.classList.remove('modal-open')
+})
+
+// Re-render icons when mode changes (Pulse Fix)
+watch([modalMode, isMergePanelOpen], () => {
+  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+})
+
+watch(isModalOpen, (val) => {
+  if (val) document.body.classList.add('modal-open')
+  else document.body.classList.remove('modal-open')
+})
+
 onMounted(() => { 
   if (scrollContainer.value) scrollContainer.value.scrollTo(0, 0)
   if (window.lucide) window.lucide.createIcons() 
