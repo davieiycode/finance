@@ -42,7 +42,7 @@
        <div style="display: flex; align-items: center; gap: 0.5rem;">
           <div style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
              <span style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; display: block;"></span>
-             <span style="font-size: 0.7rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em; line-height: 1;">CORE v5.1.0</span>
+             <span style="font-size: 0.7rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em; line-height: 1;">CORE v5.2.0</span>
           </div>
           <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">PROD ACTIVE</div>
        </div>
@@ -168,7 +168,7 @@
     
     <!-- System Footer -->
     <div style="margin-top: 3rem; text-align: center; padding-bottom: 2rem; opacity: 0.3;">
-       <div style="font-size: 0.55rem; font-weight: 900; letter-spacing: 0.2em; color: var(--text-secondary); text-transform: uppercase;">v5.1.0 Intelligence Core</div>
+       <div style="font-size: 0.55rem; font-weight: 900; letter-spacing: 0.2em; color: var(--text-secondary); text-transform: uppercase;">v5.2.0 Intelligence Core</div>
        <div style="font-size: 0.45rem; margin-top: 0.5rem; letter-spacing: 0.1em;">TERMINAL STABILIZED // NORECALL PROTOCOL ACTIVE</div>
     </div>
   </div>
@@ -208,7 +208,7 @@ const formatDate = (dateStr) => {
 const checkUpdates = () => {
   store.notify('Verifying core integrity...', 'info')
   setTimeout(() => {
-     store.notify('Protocol v5.1.0 is the latest stable release.', 'success')
+     store.notify('Protocol v5.2.0 is the latest stable release.', 'success')
   }, 1000)
 }
 

@@ -217,7 +217,8 @@ export const useFinanceStore = defineStore('finance', {
             { key: 'project', state: 'projects', id: 'projectID' },
             { key: 'budget', state: 'budgets', id: 'budgetID' },
             { key: 'goal', state: 'goals', id: 'goalID' },
-            { key: 'author', state: 'authors', id: 'authorID' }
+            { key: 'author', state: 'authors', id: 'authorID' },
+            { key: 'settings', state: 'settings', id: 'key' }
           ]
 
           const formatDate = (val) => {
@@ -262,14 +263,23 @@ export const useFinanceStore = defineStore('finance', {
                  })
               }
              
-             if (mode === 'merge') {
-                incoming.forEach(inc => {
-                   const exists = (this[ent.state] || []).some(cur => cur[ent.id] === inc[ent.id])
-                   if (!exists) this[ent.state].push(inc)
-                })
-             } else {
-                this[ent.state] = incoming
-             }
+              if (ent.key === 'settings') {
+                 try {
+                   const prefs = {}
+                   incoming.forEach(s => {
+                     try { prefs[s.key] = JSON.parse(s.value) } 
+                     catch(e) { prefs[s.key] = s.value }
+                   })
+                   localStorage.setItem('user_prefs', JSON.stringify(prefs))
+                 } catch(e) { console.error('Failed to parse settings', e) }
+              } else if (mode === 'merge') {
+                 incoming.forEach(inc => {
+                    const exists = (this[ent.state] || []).some(cur => cur[ent.id] === inc[ent.id])
+                    if (!exists) this[ent.state].push(inc)
+                 })
+              } else {
+                 this[ent.state] = incoming
+              }
              this.syncProgress = 60 + Math.floor((i / entities.length) * 35)
           })
 
@@ -317,6 +327,7 @@ export const useFinanceStore = defineStore('finance', {
         tag: this.tags,
         project: this.projects,
         author: this.authors,
+        settings: Object.entries(JSON.parse(localStorage.getItem('user_prefs') || '{}')).map(([k, v]) => ({ key: k, value: typeof v === 'object' ? JSON.stringify(v) : v })),
         updateTime: new Date().toISOString()
       }
       this.syncProgress = 50
