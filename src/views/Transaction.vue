@@ -189,7 +189,7 @@
 
          <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 1.75rem; padding: 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; backdrop-filter: blur(20px);">
             <!-- Currency Block -->
-            <div style="display: grid; gap: 1.25rem;" :style="{ gridTemplateColumns: form.currency.toUpperCase() === 'IDR' ? '1fr' : '1fr 1fr' }">
+            <div class="f-row" :class="{ 'force-1-col': form.currency.toUpperCase() === 'IDR' }">
                <div class="input-group">
                   <label class="form-label">Active Currency</label>
                   <input type="text" v-model="form.currency" class="f-input-clean" placeholder="IDR">
@@ -764,10 +764,10 @@ watch([showItemDropdown, showCategoryDropdown, showMerchantDropdown, showUnitDro
 <style scoped>
 .form-section { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; }
 .section-header { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; color: var(--accent); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.1em; }
-.form-label { font-size: 0.65rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem; }
-.f-input { width: 100%; height: 50px; padding: 0 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; transition: 0.2s; font-weight: 600; font-family: inherit; box-sizing: border-box; }
+.form-label { font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.6rem; opacity: 0.9; }
+.f-input { width: 100%; height: 50px; padding: 0 1.25rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; transition: 0.2s; font-weight: 600; font-family: inherit; box-sizing: border-box; }
 .f-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15); background: rgba(255,255,255,0.05); }
-.f-input-clean { width: 100%; height: 50px; padding: 0; background: transparent; border: none; border-bottom: 1px solid var(--border); color: white; outline: none; transition: 0.2s; font-weight: 700; font-size: 1rem; box-sizing: border-box; }
+.f-input-clean { width: 100%; height: 50px; padding: 0; background: transparent; border: none; border-bottom: 1px solid var(--border); color: white; outline: none; transition: 0.2s; font-weight: 700; font-size: 1.1rem; box-sizing: border-box; }
 .f-input-clean:focus { border-color: var(--accent); }
 
 textarea.f-input { height: auto; padding: 1rem; }
@@ -777,8 +777,10 @@ textarea.f-input { height: auto; padding: 1rem; }
 
 .input-group { display: flex; flex-direction: column; }
 .f-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+.f-row.force-1-col { grid-template-columns: 1fr !important; }
 @media (max-width: 768px) {
   .f-row { grid-template-columns: 1fr; }
+  .f-row:not(.no-stack-mobile) > * { grid-column: span 1 !important; }
   .f-row.no-stack-mobile { grid-template-columns: repeat(2, 1fr); }
   .mobile-border-top { border-left: none !important; border-top: 1px solid var(--border); padding-left: 0 !important; padding-top: 1.25rem !important; }
 }
