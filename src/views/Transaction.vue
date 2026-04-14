@@ -21,7 +21,7 @@
          <div class="section-header">
             <i data-lucide="clock-4" stroke-width="1.5"></i> <span style="font-weight: 700;">1. Temporal Coordinates</span>
          </div>
-         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+         <div class="f-row">
             <div class="input-group">
                <label class="form-label">Mission Date</label>
                <input type="date" v-model="form.date" class="f-input-clean">
@@ -53,7 +53,7 @@
             </button>
          </div>
 
-         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+         <div class="f-row">
             <div style="grid-column: span 2;" class="input-group">
                <label class="form-label">Primary Designation (Item Name) *</label>
                <div style="position: relative;">
@@ -111,7 +111,7 @@
             </div>
          </div>
          
-         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+         <div class="f-row">
             <div v-show="form.type !== 'Income'" class="input-group">
                <label class="form-label" style="display: flex; align-items: center; gap: 0.4rem;"><i data-lucide="minus-circle" style="width: 10px; color: #f87171;"></i> Source Vault *</label>
                <select v-model="form.paymentSourceAccount" class="f-input" style="background: rgba(255,255,255,0.02);">
@@ -201,11 +201,11 @@
             </div>
 
             <!-- Volume & Cost Block -->
-            <div style="display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.25rem;">
+            <div class="f-row">
                <div class="input-group">
                   <label class="form-label">Quantity & Scale</label>
                   <div style="display: flex; align-items: center; gap: 0.25rem; background: var(--bg-input); padding: 0 0.5rem; border-radius: 14px; border: 1px solid var(--border); height: 50px; box-sizing: border-box; position: relative;">
-                     <input type="number" v-model.number="form.quantity" step="any" style="width: 100%; background: none; border: none; font-weight: 800; color: white; outline: none; padding: 0 0.5rem; height: 100%;">
+                     <input type="number" v-model.number="form.quantity" step="any" style="flex: 1; min-width: 50px; background: none; border: none; font-weight: 800; color: white; outline: none; padding: 0 0.5rem; height: 100%;">
                      
                      <!-- Searchable Unit Dropdown -->
                      <div style="position: relative; min-width: 80px;">
@@ -230,7 +230,7 @@
 
             <!-- Adjustments -->
             <div style="display: flex; flex-direction: column; gap: 1.25rem; border-top: 1px dashed var(--border); padding-top: 1.5rem;">
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: center;">
+               <div class="f-row" style="align-items: center;">
                   <div class="input-group">
                      <label class="form-label" style="color: var(--success); display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="tag" style="width: 10px;"></i> REWARD OFFSET (-)</label>
                      <div style="position: relative;">
@@ -246,7 +246,7 @@
             </div>
 
             <!-- Privilege Selection (Sleeker) -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; padding: 0.5rem 1.25rem; background: rgba(255,255,255,0.02); border-radius: 1.25rem; border: 1px solid var(--border);">
+            <div class="f-row" style="padding: 0.5rem 1.25rem; background: rgba(255,255,255,0.02); border-radius: 1.25rem; border: 1px solid var(--border);">
                <div class="input-group" style="justify-content: center;">
                   <label class="form-label" style="font-size: 0.6rem; opacity: 0.6; margin-bottom: 0;">Membership Protocol</label>
                   <select v-model="form.membershipID" style="background: none; border: none; padding: 0; width: 100%; color: white; font-weight: 700; outline: none; height: 30px;">
@@ -254,7 +254,7 @@
                      <option v-for="m in store.members" :key="m.memberID" :value="m.memberID">{{ m.memberName }}</option>
                   </select>
                </div>
-               <div class="input-group" style="border-left: 1px solid var(--border); padding-left: 1.25rem; justify-content: center;">
+               <div class="input-group mobile-border-top" style="border-left: 1px solid var(--border); padding-left: 1.25rem; justify-content: center;">
                   <label class="form-label" style="font-size: 0.6rem; opacity: 0.6; margin-bottom: 0;">Redeemable Voucher</label>
                   <select v-model="form.voucherID" style="background: none; border: none; padding: 0; width: 100%; color: white; font-weight: 700; outline: none; height: 30px;">
                      <option value="">No Active Voucher</option>
@@ -776,6 +776,12 @@ textarea.f-input { height: auto; padding: 1rem; }
 .type-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); transform: translateY(-1px); }
 
 .input-group { display: flex; flex-direction: column; }
+.f-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+@media (max-width: 768px) {
+  .f-row { grid-template-columns: 1fr; }
+  .f-row.no-stack-mobile { grid-template-columns: repeat(2, 1fr); }
+  .mobile-border-top { border-left: none !important; border-top: 1px solid var(--border); padding-left: 0 !important; padding-top: 1.25rem !important; }
+}
 
 @keyframes scanLine { from { top: 0; } to { top: 100%; } }
 #txn-reader { border: none !important; }

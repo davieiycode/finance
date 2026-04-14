@@ -6,7 +6,7 @@
           <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
           <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Analysis</h1>
         </div>
-        <div style="display: flex; background: rgba(255,255,255,0.05); border-radius: 14px; padding: 0.15rem; border: 1px solid var(--border); width: 140px; height: 30px; align-items: center;">
+        <div style="display: flex; position: relative; background: rgba(255,255,255,0.05); border-radius: 14px; padding: 0.15rem; border: 1px solid var(--border); width: 140px; height: 30px; align-items: center;">
           <div :style="{ left: analysisMode === 'monthly' ? '0.15rem' : '50%', width: 'calc(50% - 0.15rem)' }" style="position: absolute; top: 0.15rem; bottom: 0.15rem; background: var(--accent); border-radius: 11px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1;"></div>
           <button @click="analysisMode = 'monthly'" :style="{ color: analysisMode === 'monthly' ? 'white' : 'var(--text-secondary)' }" style="flex: 1; border: none; background: none; font-size: 0.55rem; font-weight: 900; z-index: 2; cursor: pointer; transition: color 0.3s; height: 100%; position: relative;">MONTHLY</button>
           <button @click="analysisMode = 'yearly'" :style="{ color: analysisMode === 'yearly' ? 'white' : 'var(--text-secondary)' }" style="flex: 1; border: none; background: none; font-size: 0.55rem; font-weight: 900; z-index: 2; cursor: pointer; transition: color 0.3s; height: 100%; position: relative;">YEARLY</button>
