@@ -756,7 +756,7 @@ onBeforeUnmount(() => {
 })
 
 // Re-render icons on focus/actions
-watch([showItemDropdown, showCategoryDropdown, showMerchantDropdown, showUnitDropdown, scanning], () => {
+watch([showItemDropdown, showCategoryDropdown, showMerchantDropdown, showUnitDropdown, showScanner], () => {
   nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 })
 </script>

@@ -101,20 +101,25 @@ export const useFinanceStore = defineStore('finance', {
     // Generic Save methods
     saveAll() {
       if (!isSafe) return
-      localStorage.setItem('transactions', JSON.stringify(this.transactions))
-      localStorage.setItem('accounts', JSON.stringify(this.accounts))
-      localStorage.setItem('merchants', JSON.stringify(this.merchants))
-      localStorage.setItem('items', JSON.stringify(this.items))
-      localStorage.setItem('members', JSON.stringify(this.members))
-      localStorage.setItem('vouchers', JSON.stringify(this.vouchers))
-      localStorage.setItem('budgets', JSON.stringify(this.budgets))
-      localStorage.setItem('goals', JSON.stringify(this.goals))
-      localStorage.setItem('receipts', JSON.stringify(this.receipts))
-      localStorage.setItem('categories', JSON.stringify(this.categories))
-      localStorage.setItem('unitScales', JSON.stringify(this.unitScales))
-      localStorage.setItem('tags', JSON.stringify(this.tags))
-      localStorage.setItem('projects', JSON.stringify(this.projects))
-      localStorage.setItem('authors', JSON.stringify(this.authors))
+      try {
+        localStorage.setItem('transactions', JSON.stringify(this.transactions))
+        localStorage.setItem('accounts', JSON.stringify(this.accounts))
+        localStorage.setItem('merchants', JSON.stringify(this.merchants))
+        localStorage.setItem('items', JSON.stringify(this.items))
+        localStorage.setItem('members', JSON.stringify(this.members))
+        localStorage.setItem('vouchers', JSON.stringify(this.vouchers))
+        localStorage.setItem('budgets', JSON.stringify(this.budgets))
+        localStorage.setItem('goals', JSON.stringify(this.goals))
+        localStorage.setItem('receipts', JSON.stringify(this.receipts))
+        localStorage.setItem('categories', JSON.stringify(this.categories))
+        localStorage.setItem('unitScales', JSON.stringify(this.unitScales))
+        localStorage.setItem('tags', JSON.stringify(this.tags))
+        localStorage.setItem('projects', JSON.stringify(this.projects))
+        localStorage.setItem('authors', JSON.stringify(this.authors))
+      } catch (e) {
+        console.error('Storage stabilization failed:', e)
+        this.notify('Vault Capacity Overload (Storage Full)', 'error')
+      }
     },
 
     // Transaction Actions
@@ -326,8 +331,14 @@ export const useFinanceStore = defineStore('finance', {
       if (!url) return false
       this.isSyncing = true
       this.syncProgress = 20
+      
+      let prefs = {}
+      try {
+        const raw = localStorage.getItem('user_prefs')
+        if (raw) prefs = JSON.parse(raw)
+      } catch (e) { console.error('Settings parse failed', e) }
+
       const payload = {
-        // ... same payload ...
         transaction: this.transactions,
         account: this.accounts,
         merchant: this.merchants,
@@ -342,15 +353,14 @@ export const useFinanceStore = defineStore('finance', {
         tag: this.tags,
         project: this.projects,
         author: this.authors,
-        settings: Object.entries(JSON.parse(localStorage.getItem('user_prefs') || '{}')).map(([k, v]) => ({ key: k, value: typeof v === 'object' ? JSON.stringify(v) : v })),
+        settings: Object.entries(prefs || {}).map(([k, v]) => ({ key: k, value: typeof v === 'object' ? JSON.stringify(v) : v })),
         updateTime: new Date().toISOString()
       }
       this.syncProgress = 50
       try {
-        await fetch(url, {
+        const response = await fetch(url, {
           method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         })
         this.syncProgress = 100
