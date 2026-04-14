@@ -21,10 +21,8 @@ const isHidden = ref(false)
 
 const menuItems = [
   { path: '/', label: 'Dash', icon: 'layout-grid' },
-  { path: '/transaction', label: 'Log', icon: 'plus-circle' },
-  { path: '/history', label: 'Venture', icon: 'zap' },
-  { path: '/analysis', label: 'Intel', icon: 'line-chart' },
-  { path: '/settings', label: 'Core', icon: 'user' }
+  { path: '/transaction', label: '+', icon: 'plus' },
+  { path: '/history', label: 'Log', icon: 'scroll-text' }
 ]
 
 const isActive = (path) => {
