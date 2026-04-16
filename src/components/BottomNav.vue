@@ -138,4 +138,3 @@ watch(() => route.path, () => {
   transform: scale(0.95);
 }
 </style>
-</style>
