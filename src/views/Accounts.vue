@@ -130,14 +130,14 @@
                     </div>
                 </div>
 
-                <div class="action-stack">
-                   <button @click="accountMode = 'edit'" class="tonal-btn lg">
-                      <span class="material-symbols-rounded">edit</span>
-                      UBAH DATA
-                   </button>
-                   <button @click="isModalOpen = false" class="text-btn">Kembali</button>
-                </div>
-             </div>
+                 <div class="action-grid mt-24">
+                    <button @click="accountMode = 'edit'" class="tonal-btn">
+                       <span class="material-symbols-rounded">edit</span>
+                       UBAH DATA
+                    </button>
+                    <button @click="isModalOpen = false" class="tonal-btn">TUTUP</button>
+                 </div>
+              </div>
 
              <!-- MODE: EDIT -->
              <div v-else class="edit-view">
@@ -217,23 +217,16 @@
                    <textarea v-model="formData.notes" class="md-input" style="min-height: 80px;"></textarea>
                 </div>
 
-                <div class="action-grid">
-                   <button @click="saveAcc" class="primary-btn full">
+                <div class="action-grid mt-24">
+                   <button @click="saveAcc" class="filled-btn full">
                       <span class="material-symbols-rounded">check</span>
                       SIMPAN
                    </button>
-                   <button v-if="editingAcc.accountID" @click="handleDuplicate" class="outline-btn">
-                      <span class="material-symbols-rounded">content_copy</span>
-                      DUPLIKAT
-                   </button>
-                   <button v-if="editingAcc.accountID" @click="handleMerge" class="outline-btn">
-                      <span class="material-symbols-rounded">merge</span>
-                      GABUNG
-                   </button>
-                   <button v-if="editingAcc.accountID" @click="deleteAcc" class="danger-btn full">
-                      <span class="material-symbols-rounded">delete</span>
-                      HAPUS
-                   </button>
+                   <div v-if="editingAcc.accountID" class="secondary-actions">
+                      <button @click="handleDuplicate" class="tonal-btn">DUPLIKAT</button>
+                      <button @click="handleMerge" class="tonal-btn">GABUNG</button>
+                      <button @click="deleteAcc" class="danger-btn">HAPUS</button>
+                   </div>
                 </div>
              </div>
           </div>
@@ -621,11 +614,12 @@ onBeforeUnmount(() => {
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .color-input-wrapper { display: flex; align-items: center; gap: 12px; background: var(--surface-variant); border-radius: 12px; padding: 8px 16px; }
-.color-input-wrapper input { width: 32px; height: 32px; border: none; background: non/* MD3 BUTTONS SYSTEM IS GLOBAL */
+.color-input-wrapper input { width: 32px; height: 32px; border: none; background: none; }
+
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .full { grid-column: span 2; }
 .secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; grid-column: span 2; }
-.mt-24 { margin-top: 24px; }ter; }
+.mt-24 { margin-top: 24px; }
 
 .icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
