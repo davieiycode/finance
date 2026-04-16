@@ -272,6 +272,9 @@
        </div>
       </div>
     </Teleport>
+  </div>
+</template>
+
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'

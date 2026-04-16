@@ -27,7 +27,7 @@
         <!-- Search Overlay -->
         <div class="search-overlay" :class="{ 'active': showSearch }">
           <span class="material-symbols-rounded search-icon">search</span>
-          <input type="text" v-model="searchQuery" placeholder="Search transactions..." @blur="if(!searchQuery) showSearch = false">
+          <input type="text" v-model="searchQuery" placeholder="Search transactions..." @blur="searchQuery ? null : showSearch = false">
           <button @click="toggleSearch" class="close-search-btn">
             <span class="material-symbols-rounded">close</span>
           </button>
