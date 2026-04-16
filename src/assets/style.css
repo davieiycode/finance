@@ -299,8 +299,8 @@ body::after {
   100% { transform: scaleX(0.08) translateX(1200%); }
 }
 
-.form-group { display: flex; flex-direction: column; gap: 8px; }
-.form-label { font-size: 12px; font-weight: 600; color: var(--primary); margin-left: 4px; opacity: 0.9; }
+.form-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--primary); margin-left: 4px; opacity: 0.9; margin-bottom: 4px; }
 
 .app-bar-actions {
   display: flex;

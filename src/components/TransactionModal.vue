@@ -294,7 +294,7 @@ onUnmounted(() => { uiStore.unregisterModal('transaction-detail') })
 .info-item.full { grid-column: span 2; }
 .info-item .label { font-size: 11px; font-weight: 600; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 1px; }
 .info-item .value { font-size: 14px; font-weight: 500; }
-.info-item.description .value { line-height: 1.5; opacity: 0.8; }
+.info-item.description .value { line-height: 1.5; opacity: 0.9; white-space: pre-wrap; word-break: break-word; }
 
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 

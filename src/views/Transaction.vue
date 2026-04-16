@@ -602,15 +602,10 @@ watch(() => route.query, () => initForm(), { deep: true })
   overflow: hidden;
 }
 
-/* TOP APP BAR */
-.top-app-bar {
-  padding: env(safe-area-inset-top) 16px 8px 16px;
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-}
-.app-bar-content { height: 64px; display: flex; align-items: center; gap: 12px; }
-.app-bar-content h1 { flex: 1; font-size: 20px; font-weight: 400; font-family: 'Outfit', sans-serif; margin: 0; }
+.bottom-actions { margin-top: 32px; padding-bottom: 40px; }
+
+/* TOP BAR SHARED */
+.app-bar-content h1 { flex: 1; font-size: 20px; font-weight: 500; margin: 0; }
 
 /* CONTENT */
 .content-scroll { flex: 1; overflow-y: auto; padding: 16px 16px 120px 16px; }
@@ -623,9 +618,9 @@ watch(() => route.query, () => initForm(), { deep: true })
 .section-header h3 { font-size: 14px; font-weight: 500; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
 
 /* GROUPS & INPUTS */
-.form-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.form-row { display: flex; gap: 16px; margin-bottom: 16px; }
-.field-label { font-size: 12px; font-weight: 500; color: var(--on-surface-variant); margin-left: 4px; }
+.form-group { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.form-row { display: flex; gap: 16px; margin-bottom: 24px; }
+.field-label { font-size: 12px; font-weight: 600; color: var(--primary); margin-left: 4px; opacity: 0.8; margin-bottom: 4px; }
 .md-input.large-text { font-size: 20px; font-weight: 700; height: 56px; }
 
 /* DROPDOWN */
