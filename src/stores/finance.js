@@ -280,8 +280,14 @@ export const useFinanceStore = defineStore('finance', {
               if (ent.key === 'transaction') {
                 incoming = incoming.map(row => {
                   const r = { ...row }
-                  // Sanitize Time (Convert various formats to HH:mm)
+                  
+                  // Handle merged Date/Time columns (if time is missing but date has T)
                   let t = r.time ? String(r.time) : ''
+                  if ((!t || t === 'undefined') && r.date && String(r.date).includes('T')) {
+                    t = String(r.date).split('T')[1].substring(0, 5)
+                  }
+
+                  // Sanitize Time (Convert various formats to HH:mm)
                   if (t.includes('T')) {
                     t = t.split('T')[1].substring(0, 5)
                   } else if (t.includes(':')) {
@@ -290,7 +296,7 @@ export const useFinanceStore = defineStore('finance', {
                   }
                   r.time = t || '00:00'
                   
-                  // Sanitize Date
+                  // Sanitize Date (Always convert to local YYYY-MM-DD for app state)
                   if (r.date) r.date = formatDate(r.date)
                   
                   // Ensure numeric types
@@ -368,7 +374,11 @@ export const useFinanceStore = defineStore('finance', {
       } catch (e) { console.error('Settings parse failed', e) }
 
       const payload = {
-        transaction: this.transactions,
+        transaction: this.transactions.map(t => ({
+          ...t,
+          // Merge date and time for spreadsheet compatibility (ISO-like local string)
+          date: `${t.date} ${t.time || '00:00'}:00`
+        })),
         account: this.accounts,
         merchant: this.merchants,
         item: this.items,
