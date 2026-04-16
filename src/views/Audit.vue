@@ -6,18 +6,18 @@
         <button class="icon-btn" @click="$router.push('/')">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
-        <div class="wealth-card">
-          <span class="wealth-label">PERLU DICEK</span>
-          <h2 class="wealth-amount">{{ totalIssues }} Catatan</h2>
-          <span class="wealth-sub">Menunggu verifikasi Anda</span>
+        <div class="header-briefing">
+          <span class="briefing-prefix">AUDIT PROTOCOL</span>
+          <h1 class="briefing-title">{{ totalIssues }} Anomali</h1>
+          <p class="briefing-sub">Sistem mendeteksi entri yang memerlukan verifikasi manual.</p>
         </div>
       </div>
     </div>
 
     <div class="content-scroll">
-      <div class="filter-switcher">
-         <button v-for="t in [['all', 'Semua'], ['unverified', 'Belum Dicek'], ['duplicate', 'Duplikat'], ['desync', 'Tidak Cocok']]" :key="t[0]" @click="filterType = t[0]" :class="{ active: filterType === t[0] }" class="filter-chip">
-            {{ t[1] }}
+      <div class="filter-row">
+         <button v-for="t in [['all', 'Semua'], ['unverified', 'Belum'], ['duplicate', 'Duplikat'], ['desync', 'Meleset']]" :key="t[0]" @click="filterType = t[0]" :class="{ active: filterType === t[0] }" class="tab-chip">
+            <span class="chip-label">{{ t[1] }}</span>
          </button>
       </div>
 
@@ -184,56 +184,92 @@ onBeforeUnmount(() => { uiStore.unregisterModal('audit') })
 
 <style scoped>
 .audit-container { height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-primary); }
-.top-app-bar { padding: env(safe-area-inset-top) 16px 8px 16px; background-color: var(--bg-primary); border-bottom: 1px solid var(--border); z-index: 100; }
-.app-bar-content { height: 64px; display: flex; align-items: center; gap: 12px; }
-.app-bar-content h1 { flex: 1; font-size: 22px; font-weight: 400; margin: 0; }
 
-.anomaly-counter { display: flex; flex-direction: column; align-items: center; background: var(--error-container); color: var(--on-error-container); padding: 4px 12px; border-radius: 8px; min-width: 60px; }
-.anomaly-counter .count { font-size: 16px; font-weight: 800; }
-.anomaly-counter .label { font-size: 8px; font-weight: 900; opacity: 0.8; }
+.top-app-bar {
+  padding-top: max(env(safe-area-inset-top), 16px);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 24px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
 
-.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.header-briefing { display: flex; flex-direction: column; gap: 4px; padding-left: 4px; }
+.briefing-prefix { font-size: 10px; font-weight: 800; color: var(--primary); letter-spacing: 2px; }
+.briefing-title { font-size: 28px; font-weight: 600; margin: 0; color: var(--on-surface); }
+.briefing-sub { font-size: 11px; color: var(--on-surface-variant); margin: 0; opacity: 0.7; }
 
-.content-scroll { flex: 1; overflow-y: auto; padding: 16px; }
-.audit-stack { display: flex; flex-direction: column; gap: 32px; }
+.app-bar-content { display: flex; align-items: flex-start; gap: 16px; min-height: 100px; padding-top: 8px; }
 
-.audit-section { display: flex; flex-direction: column; gap: 16px; }
-.section-title { font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 1px; display: flex; align-items: center; gap: 10px; border-left: 4px solid var(--primary); padding-left: 12px; }
-.section-title .material-symbols-rounded { font-size: 18px; }
-.section-title .material-symbols-rounded.warning { color: var(--error); }
-.section-title .material-symbols-rounded.primary { color: var(--primary); }
-.section-title .material-symbols-rounded.secondary { color: var(--secondary); }
+.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: var(--surface-variant); color: var(--on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+.content-scroll { flex: 1; overflow-y: auto; padding: 24px 16px 120px 16px; }
+
+.filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 24px; scrollbar-width: none; }
+.filter-row::-webkit-scrollbar { display: none; }
+
+.tab-chip {
+  height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid var(--border);
+  background: transparent; color: var(--on-surface-variant); font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; white-space: nowrap; cursor: pointer; transition: all 0.2s;
+}
+.tab-chip.active { background-color: var(--primary-container); color: var(--on-primary-container); border-color: var(--primary-container); }
+
+.audit-stack { display: flex; flex-direction: column; gap: 40px; }
+
+.audit-section { display: flex; flex-direction: column; gap: 20px; }
+.section-title { 
+  font-size: 11px; font-weight: 800; color: var(--primary); letter-spacing: 1.5px; 
+  display: flex; align-items: center; gap: 12px; margin-left: 4px;
+}
+.section-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(to right, var(--border), transparent); }
 
 .audit-list { display: flex; flex-direction: column; gap: 12px; }
-.audit-card { display: flex; align-items: center; justify-content: space-between; padding: 16px; cursor: pointer; }
-.card-left { display: flex; flex-direction: column; gap: 2px; }
-.item-name { font-size: 15px; font-weight: 600; }
-.item-meta { font-size: 11px; color: var(--on-surface-variant); }
-.desync-warn { font-size: 11px; color: var(--secondary); font-weight: 700; }
+.audit-card { 
+  display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; 
+  cursor: pointer; background-color: var(--bg-secondary); border-radius: 20px; border: 1px solid var(--border);
+}
 
-.card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.item-total { font-size: 14px; font-weight: 700; color: var(--error); }
-.issue-tag { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
+.card-left { display: flex; flex-direction: column; gap: 4px; }
+.item-name { font-size: 16px; font-weight: 600; color: var(--on-surface); }
+.item-meta { font-size: 12px; color: var(--on-surface-variant); }
+.desync-warn { font-size: 11px; color: var(--error); font-weight: 700; background: rgba(242, 184, 181, 0.1); padding: 4px 10px; border-radius: 8px; margin-top: 4px; border: 1px solid rgba(242, 184, 181, 0.2); }
+
+.card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.item-total { font-size: 15px; font-weight: 700; color: var(--error); }
+.issue-tag { font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
 .issue-tag.warning { background: var(--error-container); color: var(--on-error-container); }
 
-.audit-empty-state { padding: 40px 0; display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.3; }
-.audit-empty-state .material-symbols-rounded { font-size: 48px; }
+.audit-empty-state { padding: 60px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
+.audit-empty-state .material-symbols-rounded { font-size: 56px; }
 
-.cluster-container { padding: 0; overflow: hidden; border: 1px solid var(--outline-variant); }
-.cluster-header { background: rgba(0,0,0,0.2); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-.cluster-id { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; opacity: 0.7; }
-.resolve-btn { background: var(--primary); color: var(--on-primary); border: none; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; cursor: pointer; }
+.cluster-container { padding: 0; overflow: hidden; border-radius: 24px; background-color: var(--bg-secondary); border: 1px solid var(--border); }
+.cluster-header { 
+  background: rgba(168, 199, 250, 0.05); padding: 16px 20px; display: flex; 
+  justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); 
+}
+.cluster-id { font-size: 11px; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
+.resolve-btn { background: var(--primary); color: var(--on-primary); border: none; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 199, 250, 0.3); }
 
 .cluster-items { display: flex; flex-direction: column; }
-.cluster-item { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.cluster-item { 
+  display: flex; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); 
+  transition: background-color 0.2s; cursor: pointer;
+}
+.cluster-item:hover { background-color: rgba(255,255,255,0.02); }
 .cluster-item:last-child { border-bottom: none; }
-.item-main { display: flex; flex-direction: column; }
-.item-main .name { font-size: 14px; font-weight: 600; }
-.item-main .id { font-size: 10px; opacity: 0.4; }
-.item-side { display: flex; flex-direction: column; align-items: flex-end; }
-.item-side .val { font-size: 13px; font-weight: 700; }
-.item-side .date { font-size: 10px; opacity: 0.5; }
+.item-main { display: flex; flex-direction: column; gap: 2px; }
+.item-main .name { font-size: 15px; font-weight: 600; }
+.item-main .id { font-size: 10px; font-family: monospace; opacity: 0.4; }
+.item-side { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.item-side .val { font-size: 14px; font-weight: 700; color: var(--on-surface); }
+.item-side .date { font-size: 11px; color: var(--on-surface-variant); }
 
-.sync-action-btn { background: var(--secondary-container); color: var(--on-secondary-container); border: none; height: 36px; padding: 0 16px; border-radius: 18px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
-.sync-action-btn .material-symbols-rounded { font-size: 18px; }
+.sync-action-btn { 
+  background: var(--primary-container); color: var(--on-primary-container); border: none; 
+  height: 40px; padding: 0 16px; border-radius: 20px; display: flex; align-items: center; 
+  gap: 10px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.sync-action-btn:active { transform: scale(0.95); opacity: 0.8; }
 </style>

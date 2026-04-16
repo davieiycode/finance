@@ -202,6 +202,7 @@
                        <div v-if="showUnitDropdown && filteredUnits.length" class="dropdown-panel top">
                           <div v-for="u in filteredUnits" :key="u.unitScale" @mousedown="selectUnit(u)" class="dropdown-item">
                              <span class="item-main">{{ u.unitScale }}</span>
+                             <span class="item-sub" v-if="u.description">{{ u.description }}</span>
                           </div>
                        </div>
                     </div>
@@ -403,8 +404,12 @@ const filteredCategories = computed(() => {
 
 const filteredUnits = computed(() => {
   const q = unitSearch.value.toLowerCase()
-  if (!q && !showUnitDropdown.value) return store.unitScales.slice(0, 5)
-  return store.unitScales.filter(u => (u.unitScale || '').toLowerCase().includes(q)).slice(0, 5)
+  const list = store.unitScales || []
+  if (!q && !showUnitDropdown.value) return list.slice(0, 8)
+  return list.filter(u => 
+    (u.unitScale || '').toLowerCase().includes(q) || 
+    (u.description || '').toLowerCase().includes(q)
+  ).slice(0, 10)
 })
 
 const filteredMerchants = computed(() => {
@@ -661,7 +666,7 @@ watch(() => route.query, () => initForm(), { deep: true })
 /* CALCULATION */
 .unit-input-group { position: relative; display: flex; }
 .unit-dropdown { position: absolute; right: 8px; top: 8px; width: 60px; }
-.unit-search-field { width: 100%; background: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 8px; padding: 4px 8px; font-size: 10px; font-weight: 700; text-align: center; outline: none; }
+.unit-search-field { width: 100%; background: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 700; text-align: center; outline: none; }
 
 .dashed-top { border-top: 1px dashed var(--border); padding-top: 16px; }
 .success-bg { background-color: rgba(180, 232, 168, 0.1) !important; border-color: var(--green) !important; }

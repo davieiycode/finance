@@ -9,6 +9,10 @@
               <span class="material-symbols-rounded">{{ store.resolveIcon(tx.category, tx.type) }}</span>
            </div>
            <div class="header-info">
+             <div v-if="accountInfo" class="account-watermark" :style="{ color: accountInfo.color || 'var(--primary)' }">
+               <span class="material-symbols-rounded" v-if="accountInfo.icon">{{ accountInfo.icon }}</span>
+               <span>{{ accountInfo.accountName }}</span>
+             </div>
              <h2 class="sheet-title">Ringkasan Transaksi</h2>
              <span class="tx-id">LOG ID: {{ tx.transactionID }}</span>
            </div>
@@ -22,7 +26,7 @@
                <div class="item-name">{{ tx.itemName }}</div>
                <div class="main-amount" :style="{ color: getTxColor(tx.type) }">
                   <span class="currency">Rp</span>
-                  <span class="value">{{ formatCurrency(tx.total || (tx.amountPerUnit * tx.quantity)) }}</span>
+                  <span class="hero-value">{{ formatCurrency(tx.total || (tx.amountPerUnit * tx.quantity)) }}</span>
                </div>
             </div>
 
@@ -171,6 +175,11 @@ const filteredMergeTargets = computed(() => {
     ).slice(0, 10)
 })
 
+const accountInfo = computed(() => {
+  const name = props.tx.type === 'Income' ? props.tx.beneficiaryAccount : props.tx.paymentSourceAccount
+  return store.getAccount(name)
+})
+
 const mergeTx = () => { isMergePanelOpen.value = true }
 
 const performMerge = (target) => {
@@ -259,7 +268,9 @@ onUnmounted(() => { uiStore.unregisterModal('transaction-detail') })
 
 .sheet-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
 .summary-icon-container { width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; }
-.header-info { flex: 1; display: flex; flex-direction: column; }
+.header-info { flex: 1; display: flex; flex-direction: column; position: relative; }
+.account-watermark { position: absolute; top: -16px; left: 0; display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; }
+.account-watermark .material-symbols-rounded { font-size: 14px; }
 .sheet-title { font-size: 22px; font-weight: 400; margin: 0; font-family: 'Outfit', sans-serif; }
 .tx-id { font-size: 10px; font-weight: 700; opacity: 0.5; letter-spacing: 1px; }
 
@@ -269,12 +280,12 @@ onUnmounted(() => { uiStore.unregisterModal('transaction-detail') })
 .item-name { font-size: 16px; font-weight: 500; opacity: 0.8; margin-bottom: 8px; }
 .main-amount { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
 .currency { font-size: 20px; font-weight: 400; opacity: 0.7; }
-.value { font-size: 40px; font-weight: 700; }
+.hero-value { font-size: 40px; font-weight: 700; }
 
 .details-section { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; border-bottom: 1px dashed var(--border); padding-bottom: 24px; }
 .detail-row { display: flex; justify-content: space-between; font-size: 14px; }
 .detail-row .label { color: var(--on-surface-variant); }
-.detail-row .value { font-weight: 600; }
+.detail-row .value { font-weight: 600; font-size: 14px; }
 .detail-row.success .value { color: var(--green); }
 .detail-row.danger .value { color: var(--red); }
 

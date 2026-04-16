@@ -8,9 +8,15 @@
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
           <h1>Bukti Transaksi</h1>
-          <button class="icon-btn" @click="showSearch = true">
-            <span class="material-symbols-rounded">search</span>
-          </button>
+          <div class="app-bar-actions">
+            <button class="icon-btn" @click="showSearch = true">
+              <span class="material-symbols-rounded">search</span>
+            </button>
+            <button class="tonal-btn" @click="openModal(null)">
+              <span class="material-symbols-rounded">add_a_photo</span>
+              Baru
+            </button>
+          </div>
         </template>
         <template v-else>
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
@@ -46,10 +52,7 @@
       </div>
     </div>
 
-    <!-- FAB -->
-    <button @click="openModal(null)" class="fab">
-      <span class="material-symbols-rounded">add_a_photo</span>
-    </button>
+    <!-- FAB Removed -->
 
     <!-- Bottom Sheet Modal -->
     <Teleport to="body">

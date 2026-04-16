@@ -86,8 +86,13 @@ export const useFinanceStore = defineStore('finance', {
     resolveIcon(categoryName, txType) {
       if (!categoryName) return this.getTypeFallbackIcon(txType)
       const cat = this.categories.find(c => (c.category || '').toLowerCase() === categoryName.toLowerCase())
-      if (cat && cat.icon) return cat.icon
+      if (cat && cat.icon && cat.icon.trim()) return cat.icon
       return this.getTypeFallbackIcon(txType)
+    },
+
+    getAccount(name) {
+      if (!name) return null
+      return this.accounts.find(a => (a.accountName || '').toLowerCase() === name.toLowerCase())
     },
 
     getTypeFallbackIcon(txType) {

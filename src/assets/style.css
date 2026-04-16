@@ -180,11 +180,62 @@ body::after {
   color: var(--text-primary);
 }
 
-.btn-primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
+.app-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.tonal-btn { 
+  background-color: var(--secondary-container); 
+  color: var(--on-secondary-container); 
+  border: none; 
+  border-radius: 20px; 
+  padding: 8px 16px; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-size: 14px; 
+  font-weight: 500; 
+  cursor: pointer; 
+  transition: all 0.2s;
+}
+
+.tonal-btn:active { transform: scale(0.95); opacity: 0.8; }
+
+.filled-btn { 
+  background-color: var(--primary); 
+  color: var(--on-primary); 
+  border: none; 
+  border-radius: 20px; 
+  padding: 8px 16px; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-size: 14px; 
+  font-weight: 500; 
+  cursor: pointer; 
+  transition: all 0.2s;
+}
+
+.filled-btn:active { transform: scale(0.95); opacity: 0.8; }
+
+.outline-btn { 
+  background: transparent; 
+  border: 1px solid var(--outline); 
+  color: var(--primary); 
+  border-radius: 20px; 
+  padding: 8px 16px; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-size: 14px; 
+  font-weight: 500; 
+  cursor: pointer; 
+  transition: all 0.2s;
+}
+
+.outline-btn:active { transform: scale(0.95); opacity: 0.8; }
 
 .btn-primary:hover {
   background: var(--accent-hover);
