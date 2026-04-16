@@ -266,7 +266,8 @@ export const useFinanceStore = defineStore('finance', {
             if (!val) return ''
             const d = new Date(val)
             if (isNaN(d.getTime())) return val
-            return d.toISOString().split('T')[0]
+            // Consistent local YYYY-MM-DD
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
           }
 
           entities.forEach((ent, i) => {
@@ -279,13 +280,18 @@ export const useFinanceStore = defineStore('finance', {
               if (ent.key === 'transaction') {
                 incoming = incoming.map(row => {
                   const r = { ...row }
-                  // Sanitize Time (Convert 1899-12-30T... to HH:mm)
-                  if (r.time && String(r.time).includes('1899-12-30')) {
-                    const tMatch = String(r.time).match(/T(\d{2}:\d{2})/);
-                    if (tMatch) r.time = tMatch[1];
-                  } else if (r.time && String(r.time).length > 10 && String(r.time).includes('T')) {
-                    r.time = String(r.time).split('T')[1].substring(0, 5);
+                  // Sanitize Time (Convert various formats to HH:mm)
+                  let t = r.time ? String(r.time) : ''
+                  if (t.includes('T')) {
+                    t = t.split('T')[1].substring(0, 5)
+                  } else if (t.includes(':')) {
+                    const parts = t.split(':')
+                    t = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0')
                   }
+                  r.time = t || '00:00'
+                  
+                  // Sanitize Date
+                  if (r.date) r.date = formatDate(r.date)
                   
                   // Ensure numeric types
                   if (r.total) r.total = Number(r.total)

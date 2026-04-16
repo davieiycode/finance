@@ -222,14 +222,20 @@ const displayDate = computed(() => {
   if (!props.tx.date) return 'Waktu Tidak Diketahui'
   try {
     const d = new Date(props.tx.date)
-    return isNaN(d.getTime()) ? props.tx.date : d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+    if (isNaN(d.getTime())) return props.tx.date
+    return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
   } catch (e) { return props.tx.date }
 })
 
 const displayTime = computed(() => {
   if (!props.tx.time) return '--:--'
   const t = String(props.tx.time)
-  return t.includes('1899-12-30') ? t.split('T')[1]?.substring(0, 5) : t
+  if (t.includes('T')) return t.split('T')[1].substring(0, 5)
+  if (t.includes(':')) {
+    const parts = t.split(':')
+    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0')
+  }
+  return t
 })
 
 const getTxColor = (type) => {

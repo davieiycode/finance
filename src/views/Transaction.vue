@@ -328,10 +328,17 @@ const store = useFinanceStore()
 const uiStore = useUIStore()
 
 const now = new Date()
+const formatDateLocal = (d) => {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+}
+const formatTimeLocal = (d) => {
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
+}
+
 const form = ref({
   transactionID: '',
-  date: now.toISOString().split('T')[0],
-  time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'),
+  date: formatDateLocal(now),
+  time: formatTimeLocal(now),
   category: '',
   merchant: '',
   itemName: '',
@@ -572,11 +579,29 @@ const initForm = () => {
   if (txID) {
     const tx = store.transactions.find(t => String(t.transactionID) === String(txID))
     if (tx) {
-      let ft = tx.time || ''
-      if (ft.includes(':')) ft = ft.includes('1899-12-30') ? ft.split('T')[1]?.substring(0, 5) : ft.split(':').slice(0, 2).join(':')
+      // Robust Date & Time parsing
       let fd = tx.date || ''
       if (fd.includes('T')) fd = fd.split('T')[0]
-      form.value = { ...tx, date: fd, time: ft, amountPerUnit: Number(tx.amountPerUnit) || 0, quantity: Number(tx.quantity) || 1, total: Number(tx.total) || 0, discount: Number(tx.discount) || 0, fee: Number(tx.fee) || 0, exchangeRate: Number(tx.exchangeRate) || 1 }
+      
+      let ft = tx.time || ''
+      if (String(ft).includes('T')) {
+        ft = String(ft).split('T')[1].substring(0, 5)
+      } else if (String(ft).includes(':')) {
+        const parts = String(ft).split(':')
+        ft = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0')
+      }
+
+      form.value = { 
+        ...tx, 
+        date: fd, 
+        time: ft, 
+        amountPerUnit: Number(tx.amountPerUnit) || 0, 
+        quantity: Number(tx.quantity) || 1, 
+        total: Number(tx.total) || 0, 
+        discount: Number(tx.discount) || 0, 
+        fee: Number(tx.fee) || 0, 
+        exchangeRate: Number(tx.exchangeRate) || 1 
+      }
       itemSearch.value = form.value.itemName || ''
       categorySearch.value = form.value.category || ''
       merchantSearch.value = form.value.merchant || ''
