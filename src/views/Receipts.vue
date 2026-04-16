@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.back()">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Bukti Transaksi</h1>
+          <h1>Nota</h1>
           <div class="app-bar-actions">
             <button class="icon-btn" @click="showSearch = true">
               <span class="material-symbols-rounded">search</span>
@@ -230,24 +230,9 @@ onBeforeUnmount(() => { uiStore.unregisterModal('receipts') })
   background-color: var(--bg-primary);
 }
 
-.top-app-bar {
-  padding-top: max(env(safe-area-inset-top), 16px);
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 8px;
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-}
-
-.app-bar-content {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.app-bar-content h1 {
+/* TOP BAR SHARED */
+.app-bar-content h1 { flex: 1; font-size: 20px; font-weight: 500; margin: 0; }
+.icon-btn { width: 36px; height: 36px; border-radius: 18px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   flex: 1;
   font-size: 22px;
   font-weight: 400;

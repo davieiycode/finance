@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.back()">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Member & Langganan</h1>
+          <h1>Anggota</h1>
           <div class="app-bar-actions">
             <button class="icon-btn" @click="showSearch = true">
               <span class="material-symbols-rounded">search</span>

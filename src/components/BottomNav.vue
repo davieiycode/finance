@@ -65,7 +65,7 @@ watch(() => route.path, () => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 64px;
   background-color: var(--bg-secondary);
   display: flex;
   justify-content: space-around;

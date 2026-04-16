@@ -103,7 +103,7 @@
         </div>
         <div @click="$router.push('/receipts')" class="quick-card">
           <div class="quick-icon tertiary"><span class="material-symbols-rounded">receipt_long</span></div>
-          <div class="quick-label">Nota/Bukti</div>
+          <div class="quick-label">Nota</div>
         </div>
         <div @click="$router.push('/audit')" class="quick-card anomaly">
           <div class="quick-icon danger"><span class="material-symbols-rounded">monitoring</span></div>
@@ -290,77 +290,11 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* TOP APP BAR */
-.top-app-bar {
-  padding-top: max(env(safe-area-inset-top), 16px);
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 8px;
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-}
-
-.app-bar-content {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-}
-
+/* TOP BAR overrides if any */
 .app-title-group {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.logo-box {
-  width: 32px;
-  height: 32px;
-  background-color: white;
-  border-radius: 8px;
-  padding: 4px;
-  display: flex; /* Added display: flex */
-  align-items: center; /* Added align-items: center */
-  justify-content: center; /* Added justify-content: center */
-}
-
-.logo-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.app-title-group h1 {
-  font-size: 22px;
-  font-weight: 500;
-  font-family: 'Outfit', sans-serif;
-  margin: 0;
-}
-
-.app-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  border: none;
-  background: transparent;
-  color: var(--on-surface-variant);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.icon-btn:hover {
-  background-color: var(--surface-variant);
 }
 
 .avatar-box {

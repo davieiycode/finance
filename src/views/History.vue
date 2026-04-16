@@ -199,22 +199,9 @@ onMounted(() => {
   background-color: var(--bg-primary);
 }
 
-.top-app-bar {
-  padding-top: max(env(safe-area-inset-top), 16px);
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 8px;
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-}
 
-.app-bar-content {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+
+
 
 .app-bar-content h1 {
   flex: 1;
