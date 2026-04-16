@@ -82,19 +82,19 @@
 
             <div class="action-grid mt-24">
                <button @click="editTx" class="tonal-btn">
-                  <span class="material-symbols-rounded">edit</span>
+                  <span class="material-symbols-rounded" style="font-size: 20px;">edit</span>
                   Ubah
                </button>
                <button @click="duplicateTx" class="tonal-btn">
-                  <span class="material-symbols-rounded">content_copy</span>
+                  <span class="material-symbols-rounded" style="font-size: 20px;">content_copy</span>
                   Duplikat
                </button>
                <button @click="mergeTx" class="tonal-btn">
-                  <span class="material-symbols-rounded">merge</span>
-                  Gabungkan
+                  <span class="material-symbols-rounded" style="font-size: 20px;">merge</span>
+                  Gabung
                </button>
-               <button @click="deleteTx" class="danger-btn-md3">
-                  <span class="material-symbols-rounded">delete</span>
+               <button @click="deleteTx" class="danger-btn">
+                  <span class="material-symbols-rounded" style="font-size: 20px;">delete</span>
                   Hapus
                </button>
             </div>
@@ -131,7 +131,7 @@
              </div>
              <div v-if="filteredMergeTargets.length === 0" class="empty-state">Tidak ada transaksi yang cocok ditemukan.</div>
           </div>
-          <button @click="isMergePanelOpen = false" class="outline-btn-md3">Batalkan</button>
+          <button @click="isMergePanelOpen = false" class="outline-btn mt-24">Batalkan</button>
        </div>
     </div>
   </div>
@@ -298,12 +298,7 @@ onUnmounted(() => { uiStore.unregisterModal('transaction-detail') })
 
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-/* MD3 BUTTONS */
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 20px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-.danger-btn-md3 { background: rgba(242, 184, 181, 0.1); border: 1px solid var(--red); color: var(--red); border-radius: 20px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-.outline-btn-md3 { background: transparent; border: 1px solid var(--outline); color: var(--primary); border-radius: 28px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 16px; }
-
-.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+/* Global MD3 Buttons are used */
 
 /* MERGE PANEL */
 .merge-sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); border-radius: 28px 28px 0 0; z-index: 4500; display: flex; align-items: flex-end; }

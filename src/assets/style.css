@@ -136,6 +136,8 @@ body::after {
   gap: 12px;
 }
 
+.description-text { white-space: pre-wrap; word-break: break-word; }
+
 .app-bar-content h1 {
   flex: 1;
   font-size: 20px;
@@ -158,6 +160,12 @@ body::after {
 }
 
 .icon-btn:hover { background-color: var(--surface-variant); }
+.icon-btn.sm { width: 32px; height: 32px; border-radius: 16px; }
+.icon-btn.sm .material-symbols-rounded { font-size: 18px; }
+.icon-btn.lg { width: 48px; height: 48px; border-radius: 24px; }
+.icon-btn.lg .material-symbols-rounded { font-size: 28px; }
+.icon-btn.tonal { background-color: var(--secondary-container); color: var(--on-secondary-container); }
+.icon-btn.filled { background-color: var(--primary); color: var(--on-primary); }
 
 
 .header-actions {

@@ -64,7 +64,7 @@
               <div v-for="(cluster, idx) in duplicateClusters" :key="idx" class="cluster-container card-md3 outline">
                  <div class="cluster-header">
                     <span class="cluster-id">KLUSTER #{{ idx + 1 }} • {{ cluster.length }} DATA</span>
-                    <button @click="resolveCluster(cluster)" class="resolve-btn">HAPUS DUPLIKAT</button>
+                     <button @click="resolveCluster(cluster)" class="filled-btn" style="height: 36px; font-size: 11px; padding: 0 16px;">HAPUS DUPLIKAT</button>
                  </div>
                  <div class="cluster-items">
                     <div v-for="tx in cluster" :key="tx.transactionID" @click="openTx(tx)" class="cluster-item">
@@ -100,8 +100,8 @@
                     <span class="item-name">{{ t.tx.itemName }}</span>
                     <span class="desync-warn">TIDAK DITEMUKAN: {{ t.missing.join(', ') }}</span>
                  </div>
-                 <button @click.stop="quickFixRegistry(t)" class="sync-action-btn">
-                    <span class="material-symbols-rounded">sync</span>
+                 <button @click.stop="quickFixRegistry(t)" class="tonal-btn" style="height: 36px; padding: 0 16px;">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">sync</span>
                     SINKRON
                  </button>
               </div>
@@ -202,7 +202,7 @@ onBeforeUnmount(() => { uiStore.unregisterModal('audit') })
 
 .app-bar-content { display: flex; align-items: flex-start; gap: 16px; min-height: 100px; padding-top: 8px; }
 
-.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: var(--surface-variant); color: var(--on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+/* Global icon-btn used */
 
 .content-scroll { flex: 1; overflow-y: auto; padding: 24px 16px 120px 16px; }
 
@@ -250,7 +250,7 @@ onBeforeUnmount(() => { uiStore.unregisterModal('audit') })
   justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); 
 }
 .cluster-id { font-size: 11px; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
-.resolve-btn { background: var(--primary); color: var(--on-primary); border: none; padding: 8px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 199, 250, 0.3); }
+/* Global MD3 Buttons are used */
 
 .cluster-items { display: flex; flex-direction: column; }
 .cluster-item { 
@@ -266,10 +266,5 @@ onBeforeUnmount(() => { uiStore.unregisterModal('audit') })
 .item-side .val { font-size: 14px; font-weight: 700; color: var(--on-surface); }
 .item-side .date { font-size: 11px; color: var(--on-surface-variant); }
 
-.sync-action-btn { 
-  background: var(--primary-container); color: var(--on-primary-container); border: none; 
-  height: 40px; padding: 0 16px; border-radius: 20px; display: flex; align-items: center; 
-  gap: 10px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-}
-.sync-action-btn:active { transform: scale(0.95); opacity: 0.8; }
+/* sync-action-btn replaced by global tonal-btn */
 </style>

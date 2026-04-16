@@ -110,13 +110,13 @@
                    <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                 </div>
 
-                <div class="modal-actions">
-                   <button @click="saveGoal" class="filled-btn-lg">
+                <div class="modal-actions mt-24">
+                   <button @click="saveGoal" class="filled-btn">
                       <span class="material-symbols-rounded">save</span>
                       SIMPAN TARGET
                    </button>
                    <div v-if="editingGoal.goalID" class="secondary-actions">
-                      <button @click="deleteGoal" class="error-btn">Hapus</button>
+                      <button @click="deleteGoal" class="danger-btn">Hapus</button>
                    </div>
                 </div>
              </div>
@@ -181,7 +181,7 @@ onBeforeUnmount(() => { uiStore.unregisterModal('goals') })
 .top-app-bar { padding: env(safe-area-inset-top) 16px 8px 16px; background-color: var(--bg-primary); border-bottom: 1px solid var(--border); z-index: 100; }
 .app-bar-content { height: 64px; display: flex; align-items: center; gap: 12px; }
 .app-bar-content h1 { flex: 1; font-size: 22px; font-weight: 400; margin: 0; }
-.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+/* Global icon-btn used */
 .search-input-field { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 16px; outline: none; }
 .content-scroll { flex: 1; overflow-y: auto; padding: 16px; }
 
@@ -225,11 +225,8 @@ onBeforeUnmount(() => { uiStore.unregisterModal('goals') })
 .md-input { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; height: 48px; padding: 0 12px; color: var(--on-surface); font-size: 14px; outline: none; }
 .md-textarea { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px; color: var(--on-surface); font-size: 14px; outline: none; min-height: 80px; resize: vertical; }
 
-.modal-actions { display: flex; flex-direction: column; gap: 16px; }
-.secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; }
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
-.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+.mt-24 { margin-top: 24px; }
+/* Global MD3 Buttons are used */
 
 @keyframes sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }

@@ -65,7 +65,7 @@ watch(() => route.path, () => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: 56px;
   background-color: var(--bg-secondary);
   display: flex;
   justify-content: space-around;
@@ -96,7 +96,7 @@ watch(() => route.path, () => {
 }
 
 .icon-container {
-  padding: 4px 20px;
+  padding: 2px 20px;
   border-radius: 16px;
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
   display: flex;

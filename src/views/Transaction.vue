@@ -53,7 +53,7 @@
               <h3>Detail Barang/Toko</h3>
            </div>
            
-           <button type="button" @click="startScanner" class="scan-button">
+           <button type="button" @click="startScanner" class="tonal-btn-lg mt-24" style="margin-bottom: 24px;">
               <span class="material-symbols-rounded">barcode_scanner</span>
               BUKA SCANNER BARCODE
            </button>
@@ -286,7 +286,7 @@
         </section>
 
         <div class="bottom-actions">
-           <button type="submit" class="primary-btn lg full">
+           <button type="submit" class="filled-btn-lg">
               <span class="material-symbols-rounded">verified</span>
               SIMPAN TRANSAKSI
            </button>
@@ -633,7 +633,7 @@ watch(() => route.query, () => initForm(), { deep: true })
 .item-sub { font-size: 11px; color: var(--on-surface-variant); }
 
 /* SCANNER */
-.scan-button { width: 100%; background: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 16px; padding: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; cursor: pointer; }
+/* Global MD3 Buttons are used */
 
 /* PROTOCOLS */
 .protocol-switcher { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
@@ -697,14 +697,8 @@ watch(() => route.query, () => initForm(), { deep: true })
 .scan-line { position: absolute; width: 100%; height: 2px; background: var(--primary); top: 0; animation: scanMove 2s linear infinite; box-shadow: 0 0 12px var(--primary); }
 @keyframes scanMove { from { top: 0; } to { top: 100%; } }
 
-.mt-12 { margin-top: 12px; }
-.mt-16 { margin-top: 16px; }
-.success-text { color: var(--green); }
-.full { width: 100%; }
-.lg { padding: 16px; border-radius: 20px; }
-
-/* Standard buttons used from global stylesheet */
-.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.mt-24 { margin-top: 24px; }
+/* Global MD3 Buttons are used */
 .icon-btn-outlined { width: 48px; height: 48px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
 @media (max-width: 480px) {
