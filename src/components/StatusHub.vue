@@ -5,7 +5,7 @@
        <div class="sync-container-md3">
           <div class="sync-header">
              <span class="material-symbols-rounded spin">sync</span>
-             <span class="sync-title">Synchronizing Archive</span>
+             <span class="sync-title">Menyinkronkan Data</span>
           </div>
           <div class="md-progress-bar">
              <div class="progress-track">
@@ -13,7 +13,7 @@
              </div>
           </div>
           <div class="sync-footer">
-             <span class="sync-status">STABILIZING RECORDS</span>
+             <span class="sync-status">MENYEMPURNAKAN DATA</span>
              <span class="sync-percent">{{ store.syncProgress }}%</span>
           </div>
        </div>

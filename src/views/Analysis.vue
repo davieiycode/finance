@@ -231,7 +231,7 @@ const processData = (list, key, isTag = false) => {
       const tags = (typeof tagVal === 'string' ? tagVal : (Array.isArray(tagVal) ? tagVal.join(', ') : '')).split(/[, ]+/).filter(x => x.trim())
       tags.forEach(tag => map[tag] = (map[tag] || 0) + val)
     } else {
-      const name = t[key] || (key === 'projects' ? 'Standalone' : 'Unclassified')
+      const name = t[key] || (key === 'projects' ? 'Mandiri' : 'Tanpa Kategori')
       map[name] = (map[name] || 0) + val
     }
   })
@@ -265,7 +265,7 @@ const filteredList = computed(() => {
       })
    } else if (filterType === 'project') {
       list = list.filter(t => {
-         const prjVal = t.projects || 'Standalone'
+         const prjVal = t.projects || 'Mandiri'
          const prjStr = typeof prjVal === 'string' ? prjVal : (Array.isArray(prjVal) ? prjVal.join(', ') : '')
          return prjStr === filterValue
       })
@@ -280,11 +280,11 @@ const showModal = (filterType, type, filterValue) => {
 
 const insightText = computed(() => {
   const { income, expense, savingRate } = metrics.value
-  if (income === 0 && expense === 0) return 'No data detected in this cycle. Begin your exploration to generate intelligence reports.'
-  if (expense > income) return 'Warning: Resource consumption exceeds discovery. Your reserves are depleting. Audit your supply lines immediately.'
-  if (savingRate > 60) return 'Exemplary logistics. You are securing over 60% of resources in the Vault. Mission success is highly probable.'
-  if (savingRate > 30) return 'Nominal performance. Supply levels are stable and the preservation rate is within expected parameters.'
-  return 'Slight turbulence in resource management. Preservation rate is below 30%. Consider optimizing mission costs.'
+  if (income === 0 && expense === 0) return 'Tidak ada data terdeteksi pada periode ini. Mulailah mencatat untuk menghasilkan laporan analisis.'
+  if (expense > income) return 'Peringatan: Pengeluaran melebihi pemasukan. Cadangan dana Anda sedang menipis. Segera audit kembali pos pengeluaran Anda.'
+  if (savingRate > 60) return 'Logistik Teladan. Anda mengamankan lebih dari 60% sumber daya ke dalam Brankas. Kesuksesan finansial sangat mungkin tercapai.'
+  if (savingRate > 30) return 'Performa Normal. Tingkat pengeluaran stabil dan tingkat penyimpanan berada dalam parameter yang diharapkan.'
+  return 'Sedikit gejolak dalam pengelolaan sumber daya. Tingkat penyimpanan di bawah 30%. Pertimbangkan untuk mengoptimalkan pengeluaran.'
 })
 
 const changePeriod = (delta) => {
@@ -305,8 +305,8 @@ const initCharts = () => {
     if (!charts.cf) charts.cf = window.echarts.init(sankeyEl, 'dark')
     
     const nodes = [
-      { name: '__INTERNAL_INFLOW__', label: { formatter: 'Income' }, itemStyle: { color: '#B4E8A8' } }, 
-      { name: '__INTERNAL_VAULT__', label: { formatter: 'Vault (Net)' }, itemStyle: { color: '#D0BCFF' } }
+      { name: '__INTERNAL_INFLOW__', label: { formatter: 'Pemasukan' }, itemStyle: { color: '#B4E8A8' } }, 
+      { name: '__INTERNAL_VAULT__', label: { formatter: 'Tabungan (Net)' }, itemStyle: { color: '#D0BCFF' } }
     ]
     const links = []
     

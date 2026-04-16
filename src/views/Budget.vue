@@ -16,7 +16,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari anggaran..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -124,7 +124,7 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">Consolidate Allocations</h3>
+                <h3 class="sheet-title">Gabungkan Anggaran</h3>
                 <button @click="isMergePanelOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
@@ -132,7 +132,7 @@
              <div class="sheet-content">
                 <div class="search-box card-md3">
                    <span class="material-symbols-rounded">search</span>
-                   <input v-model="mergeTargetSearch" type="text" placeholder="Search budget categories...">
+                   <input v-model="mergeTargetSearch" type="text" placeholder="Cari kategori anggaran...">
                 </div>
                 <div class="target-list">
                    <div v-for="t in filteredMergeTargets" :key="t.budgetID" @click="performMerge(t)" class="target-item card-md3">
@@ -182,23 +182,23 @@ const filteredMergeTargets = computed(() => {
 
 const openModal = (b) => {
   if (b) { editingBud.value = { ...b }; formData.value = { ...b, amount: Number(b.amount) || 0 } }
-  else { editingBud.value = {}; formData.value = { category: '', period: 'Monthly', amount: 0, currency: 'IDR', status: 'Active', notes: '' } }
+  else { editingBud.value = {}; formData.value = { category: '', period: 'Bulanan', amount: 0, currency: 'IDR', status: 'Aktif', notes: '' } }
   isModalOpen.value = true
 }
 
 const saveBud = () => {
-  if (!formData.value.category) return alert('Category required')
+  if (!formData.value.category) return alert('Kategori wajib diisi')
   if (editingBud.value.budgetID) store.updateBudget({ ...formData.value })
   else store.addBudget({ ...formData.value })
   isModalOpen.value = false
 }
 
-const deleteBud = () => { if (confirm('Purge this allocation?')) { store.deleteBudget(editingBud.value.budgetID); isModalOpen.value = false } }
+const deleteBud = () => { if (confirm('Hapus anggaran ini?')) { store.deleteBudget(editingBud.value.budgetID); isModalOpen.value = false } }
 const handleDuplicate = () => { const data = { ...formData.value }; delete data.budgetID; editingBud.value = {}; formData.value = data }
 const handleMerge = () => isMergePanelOpen.value = true
 
 const performMerge = (target) => {
-  if (!confirm(`Append "${editingBud.value.category}" allocation to "${target.category}"?`)) return
+  if (!confirm(`Tambahkan alokasi "${editingBud.value.category}" ke "${target.category}"?`)) return
   const updatedTarget = { ...target, amount: (Number(target.amount) || 0) + (Number(editingBud.value.amount) || 0) }
   store.updateBudget(updatedTarget); store.deleteBudget(editingBud.value.budgetID)
   isMergePanelOpen.value = false; isModalOpen.value = false

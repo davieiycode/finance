@@ -1,7 +1,7 @@
 <template>
 <Teleport to="body">
   <div v-if="tx" class="modal-backdrop-full" @click.self="$emit('close')">
-    <div class="bottom-sheet transaction-summary">
+      <div class="bottom-sheet transaction-summary">
         <div class="sheet-drag-handle"></div>
         
         <div class="sheet-header">
@@ -9,7 +9,7 @@
               <span class="material-symbols-rounded">{{ store.resolveIcon(tx.category, tx.type) }}</span>
            </div>
            <div class="header-info">
-             <h2 class="sheet-title">Expedition Summary</h2>
+             <h2 class="sheet-title">Ringkasan Transaksi</h2>
              <span class="tx-id">LOG ID: {{ tx.transactionID }}</span>
            </div>
            <button @click="$emit('close')" class="icon-btn">
@@ -28,50 +28,50 @@
 
             <div class="details-section">
                <div class="detail-row">
-                  <span class="label">Quantity</span>
+                  <span class="label">Jumlah</span>
                   <span class="value">{{ formatQty(tx.quantity) }} {{ tx.unitScale }}</span>
                </div>
                <div class="detail-row">
-                  <span class="label">Price per Unit</span>
+                  <span class="label">Harga Satuan</span>
                   <span class="value">{{ (tx.amountPerUnit || 0).toLocaleString('id-ID') }}</span>
                </div>
                <div v-if="tx.discount" class="detail-row success">
-                  <span class="label">Reward Offset (-)</span>
+                  <span class="label">Diskon/Bonus (-)</span>
                   <span class="value">-{{ (tx.discount || 0).toLocaleString('id-ID') }}</span>
                </div>
                <div v-if="tx.fee" class="detail-row danger">
-                  <span class="label">Logistics Fee (+)</span>
+                  <span class="label">Biaya Layanan (+)</span>
                   <span class="value">+{{ (tx.fee || 0).toLocaleString('id-ID') }}</span>
                </div>
                <div v-if="tx.currency !== 'IDR' || tx.exchangeRate !== 1" class="detail-row outline">
-                  <span class="label">Exchange Info</span>
+                  <span class="label">Info Kurs</span>
                   <span class="value">{{ tx.currency }} @ {{ tx.exchangeRate }}</span>
                </div>
             </div>
 
             <div class="info-grid">
                <div class="info-item">
-                 <span class="label">Classification</span>
-                 <span class="value">{{ tx.category || 'Unclassified' }}</span>
+                 <span class="label">Kategori</span>
+                 <span class="value">{{ tx.category || 'Tanpa Kategori' }}</span>
                </div>
                <div class="info-item">
-                 <span class="label">Merchant</span>
-                 <span class="value">{{ tx.merchant || 'Unknown' }}</span>
+                 <span class="label">Toko/Merchant</span>
+                 <span class="value">{{ tx.merchant || 'Tidak Diketahui' }}</span>
                </div>
                <div v-if="tx.type !== 'Income'" class="info-item">
-                 <span class="label">Source Vault</span>
+                 <span class="label">Rekening Sumber</span>
                  <span class="value">{{ tx.paymentSourceAccount || '-' }}</span>
                </div>
                <div v-if="tx.type !== 'Expense'" class="info-item">
-                 <span class="label">Target Vault</span>
+                 <span class="label">Rekening Tujuan</span>
                  <span class="value">{{ tx.beneficiaryAccount || '-' }}</span>
                </div>
                <div class="info-item full">
-                  <span class="label">Temporal Coordinates</span>
+                  <span class="label">Waktu & Tanggal</span>
                   <span class="value">{{ displayDate }} • {{ displayTime }}</span>
                </div>
                <div v-if="tx.description" class="info-item full description">
-                 <span class="label">Mission Log</span>
+                 <span class="label">Catatan</span>
                  <span class="value">{{ tx.description }}</span>
                </div>
             </div>
@@ -79,19 +79,19 @@
             <div class="action-grid mt-24">
                <button @click="editTx" class="tonal-btn">
                   <span class="material-symbols-rounded">edit</span>
-                  Modify
+                  Ubah
                </button>
                <button @click="duplicateTx" class="tonal-btn">
                   <span class="material-symbols-rounded">content_copy</span>
-                  Duplicate
+                  Duplikat
                </button>
                <button @click="mergeTx" class="tonal-btn">
                   <span class="material-symbols-rounded">merge</span>
-                  Consolidate
+                  Gabungkan
                </button>
                <button @click="deleteTx" class="danger-btn-md3">
                   <span class="material-symbols-rounded">delete</span>
-                  Decommission
+                  Hapus
                </button>
             </div>
          </div>
@@ -102,16 +102,16 @@
        <div class="bottom-sheet merge-panel">
           <div class="sheet-drag-handle"></div>
           <div class="sheet-header">
-             <h3 class="sheet-title">Consolidation Archive</h3>
+             <h3 class="sheet-title">Gabungkan Transaksi</h3>
              <button @click="isMergePanelOpen = false" class="icon-btn">
                <span class="material-symbols-rounded">close</span>
              </button>
           </div>
-          <p class="sheet-desc">Select logs to absorb this financial payload.</p>
+          <p class="sheet-desc">Pilih transaksi untuk menjadi tujuan penggabungan data ini.</p>
           
           <div class="search-box">
              <span class="material-symbols-rounded">search</span>
-             <input type="text" v-model="mergeTargetSearch" placeholder="Search mission archives...">
+             <input type="text" v-model="mergeTargetSearch" placeholder="Cari riwayat transaksi...">
           </div>
 
           <div class="target-list">
@@ -125,9 +125,9 @@
                 </div>
                 <span class="material-symbols-rounded">chevron_right</span>
              </div>
-             <div v-if="filteredMergeTargets.length === 0" class="empty-state">No compatible archives found.</div>
+             <div v-if="filteredMergeTargets.length === 0" class="empty-state">Tidak ada transaksi yang cocok ditemukan.</div>
           </div>
-          <button @click="isMergePanelOpen = false" class="outline-btn-md3">Abort Protocol</button>
+          <button @click="isMergePanelOpen = false" class="outline-btn-md3">Batalkan</button>
        </div>
     </div>
   </div>
@@ -174,13 +174,13 @@ const filteredMergeTargets = computed(() => {
 const mergeTx = () => { isMergePanelOpen.value = true }
 
 const performMerge = (target) => {
-  if (!confirm(`Relocate financial payload from this log to "${target.itemName}"?`)) return
+  if (!confirm(`Pindahkan data finansial dari catatan ini ke "${target.itemName}"?`)) return
   
   const updatedTarget = { ...target }
   if (target.currency === props.tx.currency) {
     updatedTarget.total = (Number(updatedTarget.total) || 0) + (Number(props.tx.total) || 0)
     updatedTarget.quantity = (Number(updatedTarget.quantity) || 0) + (Number(props.tx.quantity) || 0)
-    updatedTarget.description = (updatedTarget.description || '') + ` (Merged from ID: ${props.tx.transactionID})`
+    updatedTarget.description = (updatedTarget.description || '') + ` (Gabungan dari ID: ${props.tx.transactionID})`
     store.updateTransaction(updatedTarget)
   }
   
@@ -190,7 +190,7 @@ const performMerge = (target) => {
 }
 
 const deleteTx = () => {
-  if (confirm('Permanently delete this expedition log?')) {
+  if (confirm('Hapus catatan transaksi ini secara permanen?')) {
     store.deleteTransaction(props.tx.transactionID)
     emit('close')
   }
@@ -210,7 +210,7 @@ const formatQty = (val) => {
 }
 
 const displayDate = computed(() => {
-  if (!props.tx.date) return 'Unknown Cycle'
+  if (!props.tx.date) return 'Waktu Tidak Diketahui'
   try {
     const d = new Date(props.tx.date)
     return isNaN(d.getTime()) ? props.tx.date : d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })

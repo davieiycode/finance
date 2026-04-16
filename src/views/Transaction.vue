@@ -228,15 +228,15 @@
               <div class="form-group">
                  <span class="field-label">Privilege</span>
                  <select v-model="form.membershipID" class="md-select-minimal">
-                    <option value="">No Membership</option>
+                    <option value="">Tanpa Member</option>
                     <option v-for="m in store.members" :key="m.memberID" :value="m.memberID">{{ m.memberName }}</option>
                  </select>
               </div>
               <div class="form-group border-left">
                  <span class="field-label">Voucher</span>
                  <select v-model="form.voucherID" class="md-select-minimal">
-                    <option value="">No Voucher</option>
-                    <option v-for="v in store.vouchers" :key="v.voucherID" :value="v.voucherID" :disabled="v.status === 'Used' || v.status === 'Exhausted'">
+                    <option value="">Tanpa Kupon</option>
+                    <option v-for="v in store.vouchers" :key="v.voucherID" :value="v.voucherID" :disabled="v.status === 'Terpakai' || v.status === 'Habis'">
                        {{ v.voucherName }}
                     </option>
                  </select>

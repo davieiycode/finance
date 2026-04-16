@@ -150,9 +150,9 @@ const formatDate = (dateStr) => {
 }
 
 const checkUpdates = () => {
-  store.notify('Verifying core integrity...', 'info')
+  store.notify('Memverifikasi integritas sistem...', 'info')
   setTimeout(() => {
-     store.notify('Protocol v5.3.0 is the latest stable release.', 'success')
+     store.notify('Protocol v5.4.0 adalah rilis stabil terbaru.', 'success')
   }, 1000)
 }
 
@@ -193,15 +193,15 @@ const upcomingReminders = computed(() => {
   
   // Detection Protocols (Keywords vs Regularity)
   const protocols = [
-    { id: 'elec', name: 'Electricity (PLN)', keywords: ['listrik', 'pln', 'token'], type: 'monthly', icon: 'zap' },
+    { id: 'elec', name: 'Listrik (PLN)', keywords: ['listrik', 'pln', 'token'], type: 'monthly', icon: 'zap' },
     { id: 'net', name: 'Internet / WiFi', keywords: ['internet', 'wifi', 'indihome', 'biznet', 'myrepublic'], type: 'monthly', icon: 'wifi' },
-    { id: 'mobile', name: 'Mobile / Pulsa', keywords: ['pulsa', 'kuota', 'telkomsel', 'xl', 'indosat'], type: 'monthly', icon: 'smartphone' },
-    { id: 'water', name: 'Water (PDAM)', keywords: ['pdam', 'air'], type: 'monthly', icon: 'droplet' },
-    { id: 'trash', name: 'Trash / Security', keywords: ['sampah', 'keamanan', 'iuran'], type: 'monthly', icon: 'shield-check' },
-    { id: 'tax', name: 'Property Tax (PBB)', keywords: ['pajak', 'pbb', 'samsat'], type: 'yearly', icon: 'file-text' },
-    { id: 'rent', name: 'Rent / Mortgage', keywords: ['sewa', 'cicilan', 'kpr'], type: 'monthly', icon: 'home' },
-    { id: 'sub', name: 'Subscritpions', keywords: ['netflix', 'spotify', 'youtube', 'cloud', 'icloud', 'disney'], type: 'monthly', icon: 'play' },
-    { id: 'donate', name: 'Donations / Zakat', keywords: ['donasi', 'zakat', 'sedekah', 'kitabisa'], type: 'monthly', icon: 'heart' }
+    { id: 'mobile', name: 'Seluler / Pulsa', keywords: ['pulsa', 'kuota', 'telkomsel', 'xl', 'indosat'], type: 'monthly', icon: 'smartphone' },
+    { id: 'water', name: 'Air (PDAM)', keywords: ['pdam', 'air'], type: 'monthly', icon: 'droplet' },
+    { id: 'trash', name: 'Sampah / Keamanan', keywords: ['sampah', 'keamanan', 'iuran'], type: 'monthly', icon: 'shield-check' },
+    { id: 'tax', name: 'Pajak (PBB)', keywords: ['pajak', 'pbb', 'samsat'], type: 'yearly', icon: 'file-text' },
+    { id: 'rent', name: 'Sewa / Cicilan', keywords: ['sewa', 'cicilan', 'kpr'], type: 'monthly', icon: 'home' },
+    { id: 'sub', name: 'Langganan', keywords: ['netflix', 'spotify', 'youtube', 'cloud', 'icloud', 'disney'], type: 'monthly', icon: 'play' },
+    { id: 'donate', name: 'Donasi / Zakat', keywords: ['donasi', 'zakat', 'sedekah', 'kitabisa'], type: 'monthly', icon: 'heart' }
   ]
 
   const reminders = []
@@ -230,7 +230,7 @@ const upcomingReminders = computed(() => {
         reminders.push({
           id: proto.id,
           name: proto.name,
-          period: proto.type === 'monthly' ? now.toLocaleString('default', { month: 'long' }) : currentYear,
+          period: proto.type === 'monthly' ? now.toLocaleString('id-ID', { month: 'long' }) : currentYear,
           lastDate: lastDate,
           icon: proto.icon
         })

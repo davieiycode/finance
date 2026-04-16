@@ -20,7 +20,7 @@ const initTransactions = () => {
         transactionID: 'TX-1711200001', 
         date: '2024-03-24', 
         time: '13:26', 
-        category: 'Food & Beverage', 
+        category: 'Makanan & Minuman', 
         merchant: 'Indomaret', 
         itemName: 'Mie Telur 3 Ayam', 
         amountPerUnit: 5300, 
@@ -34,7 +34,7 @@ const initTransactions = () => {
         membershipID: '',
         voucherID: '',
         localPhoto: '',
-        tags: 'daily, groceries', 
+        tags: 'harian, belanja', 
         projects: '', 
         author: 'Alex', 
         discount: 0, 
@@ -118,7 +118,7 @@ export const useFinanceStore = defineStore('finance', {
         localStorage.setItem('authors', JSON.stringify(this.authors))
       } catch (e) {
         console.error('Storage stabilization failed:', e)
-        this.notify('Vault Capacity Overload (Storage Full)', 'error')
+        this.notify('Kapasitas Brankas Penuh (Penyimpanan Penuh)', 'error')
       }
     },
 
@@ -128,7 +128,7 @@ export const useFinanceStore = defineStore('finance', {
       this.transactions.push(tx)
       this.saveAll()
       this.handleVoucherUsage(tx)
-      this.notify('Expedition Log Stabilized', 'success')
+      this.notify('Catatan Transaksi Berhasil Disimpan', 'success')
     },
     updateTransaction(tx) {
       const idx = this.transactions.findIndex(t => t.transactionID === tx.transactionID)
@@ -164,7 +164,7 @@ export const useFinanceStore = defineStore('finance', {
       this.accounts.push(acc)
       this.saveAll()
       this.pushToCloud()
-      this.notify('Account Authorized', 'success')
+      this.notify('Rekening Berhasil Ditambahkan', 'success')
     },
     updateAccount(acc) { 
       const idx = this.accounts.findIndex(a => a.accountID === acc.accountID)
@@ -173,43 +173,43 @@ export const useFinanceStore = defineStore('finance', {
         this.accounts[idx] = acc
         this.saveAll()
         this.pushToCloud()
-        this.notify('Account Updated', 'info')
+        this.notify('Rekening Diperbarui', 'info')
       } 
     },
     deleteAccount(id) { 
       this.accounts = this.accounts.filter(a => a.accountID !== id)
       this.saveAll()
       this.pushToCloud()
-      this.notify('Account Purged', 'warning')
+      this.notify('Rekening Dihapus', 'warning')
     },
 
-    addItem(item) { if (!item.itemID) item.itemID = 'ITEM-' + Date.now(); item.updateTime = new Date().toISOString(); this.items.push(item); this.saveAll(); this.pushToCloud(); this.notify('Item Registered', 'success') },
-    updateItem(item) { const idx = this.items.findIndex(i => i.itemID === item.itemID); if (idx !== -1) { item.updateTime = new Date().toISOString(); this.items[idx] = item; this.saveAll(); this.pushToCloud(); this.notify('Item Updated', 'info') } },
-    deleteItem(id) { this.items = this.items.filter(i => i.itemID !== id); this.saveAll(); this.pushToCloud(); this.notify('Item Removed', 'warning') },
+    addItem(item) { if (!item.itemID) item.itemID = 'ITEM-' + Date.now(); item.updateTime = new Date().toISOString(); this.items.push(item); this.saveAll(); this.pushToCloud(); this.notify('Barang Berhasil Didaftarkan', 'success') },
+    updateItem(item) { const idx = this.items.findIndex(i => i.itemID === item.itemID); if (idx !== -1) { item.updateTime = new Date().toISOString(); this.items[idx] = item; this.saveAll(); this.pushToCloud(); this.notify('Barang Diperbarui', 'info') } },
+    deleteItem(id) { this.items = this.items.filter(i => i.itemID !== id); this.saveAll(); this.pushToCloud(); this.notify('Barang Dihapus', 'warning') },
 
-    addMerchant(m) { if (!m.merchantID) m.merchantID = 'MCH-' + Date.now(); m.updateTime = new Date().toISOString(); this.merchants.push(m); this.saveAll(); this.pushToCloud(); this.notify('Vendor Activated', 'success') },
-    updateMerchant(m) { const idx = this.merchants.findIndex(i => i.merchantID === m.merchantID); if (idx !== -1) { m.updateTime = new Date().toISOString(); this.merchants[idx] = m; this.saveAll(); this.pushToCloud(); this.notify('Vendor Updated', 'info') } },
-    deleteMerchant(id) { this.merchants = this.merchants.filter(i => i.merchantID !== id); this.saveAll(); this.pushToCloud(); this.notify('Vendor Deactivated', 'warning') },
+    addMerchant(m) { if (!m.merchantID) m.merchantID = 'MCH-' + Date.now(); m.updateTime = new Date().toISOString(); this.merchants.push(m); this.saveAll(); this.pushToCloud(); this.notify('Vendor Aktif', 'success') },
+    updateMerchant(m) { const idx = this.merchants.findIndex(i => i.merchantID === m.merchantID); if (idx !== -1) { m.updateTime = new Date().toISOString(); this.merchants[idx] = m; this.saveAll(); this.pushToCloud(); this.notify('Vendor Diperbarui', 'info') } },
+    deleteMerchant(id) { this.merchants = this.merchants.filter(i => i.merchantID !== id); this.saveAll(); this.pushToCloud(); this.notify('Vendor Dinonaktifkan', 'warning') },
 
-    addMember(m) { if (!m.memberID) m.memberID = 'MEM-' + Date.now(); this.members.push(m); this.saveAll(); this.pushToCloud(); this.notify('Member Enrolled', 'success') },
-    updateMember(m) { const idx = this.members.findIndex(i => i.memberID === m.memberID); if (idx !== -1) { this.members[idx] = m; this.saveAll(); this.pushToCloud(); this.notify('Member Profile Updated', 'info') } },
-    deleteMember(id) { this.members = this.members.filter(i => i.memberID !== id); this.saveAll(); this.pushToCloud(); this.notify('Member Profile Purged', 'warning') },
+    addMember(m) { if (!m.memberID) m.memberID = 'MEM-' + Date.now(); this.members.push(m); this.saveAll(); this.pushToCloud(); this.notify('Member Terdaftar', 'success') },
+    updateMember(m) { const idx = this.members.findIndex(i => i.memberID === m.memberID); if (idx !== -1) { this.members[idx] = m; this.saveAll(); this.pushToCloud(); this.notify('Profil Member Diperbarui', 'info') } },
+    deleteMember(id) { this.members = this.members.filter(i => i.memberID !== id); this.saveAll(); this.pushToCloud(); this.notify('Profil Member Dihapus', 'warning') },
 
-    addVoucher(v) { if (!v.voucherID) v.voucherID = 'VOU-' + Date.now(); v.updateTime = new Date().toISOString(); this.vouchers.push(v); this.saveAll(); this.pushToCloud(); this.notify('Voucher Issued', 'success') },
-    updateVoucher(v) { const idx = this.vouchers.findIndex(i => i.voucherID === v.voucherID); if (idx !== -1) { v.updateTime = new Date().toISOString(); this.vouchers[idx] = v; this.saveAll(); this.pushToCloud(); this.notify('Voucher Redeployed', 'info') } },
-    deleteVoucher(id) { this.vouchers = this.vouchers.filter(i => i.voucherID !== id); this.saveAll(); this.pushToCloud(); this.notify('Voucher Invalidated', 'warning') },
+    addVoucher(v) { if (!v.voucherID) v.voucherID = 'VOU-' + Date.now(); v.updateTime = new Date().toISOString(); this.vouchers.push(v); this.saveAll(); this.pushToCloud(); this.notify('Voucher Diterbitkan', 'success') },
+    updateVoucher(v) { const idx = this.vouchers.findIndex(i => i.voucherID === v.voucherID); if (idx !== -1) { v.updateTime = new Date().toISOString(); this.vouchers[idx] = v; this.saveAll(); this.pushToCloud(); this.notify('Voucher Diatur Ulang', 'info') } },
+    deleteVoucher(id) { this.vouchers = this.vouchers.filter(i => i.voucherID !== id); this.saveAll(); this.pushToCloud(); this.notify('Voucher Dinonaktifkan', 'warning') },
 
-    addBudget(b) { if (!b.budgetID) b.budgetID = 'BUD-' + Date.now(); b.updateTime = new Date().toISOString(); this.budgets.push(b); this.saveAll(); this.pushToCloud(); this.notify('Budget Strategy Saved', 'success') },
-    updateBudget(b) { const idx = this.budgets.findIndex(i => i.budgetID === b.budgetID); if (idx !== -1) { b.updateTime = new Date().toISOString(); this.budgets[idx] = b; this.saveAll(); this.pushToCloud(); this.notify('Budget Reconfigured', 'info') } },
-    deleteBudget(id) { this.budgets = this.budgets.filter(i => i.budgetID !== id); this.saveAll(); this.pushToCloud(); this.notify('Budget Abolished', 'warning') },
+    addBudget(b) { if (!b.budgetID) b.budgetID = 'BUD-' + Date.now(); b.updateTime = new Date().toISOString(); this.budgets.push(b); this.saveAll(); this.pushToCloud(); this.notify('Strategi Anggaran Disimpan', 'success') },
+    updateBudget(b) { const idx = this.budgets.findIndex(i => i.budgetID === b.budgetID); if (idx !== -1) { b.updateTime = new Date().toISOString(); this.budgets[idx] = b; this.saveAll(); this.pushToCloud(); this.notify('Anggaran Dikonfigurasi Ulang', 'info') } },
+    deleteBudget(id) { this.budgets = this.budgets.filter(i => i.budgetID !== id); this.saveAll(); this.pushToCloud(); this.notify('Anggaran Dihapus', 'warning') },
 
-    addGoal(g) { if (!g.goalID) g.goalID = 'GOA-' + Date.now(); g.updateTime = new Date().toISOString(); this.goals.push(g); this.saveAll(); this.pushToCloud(); this.notify('Target Set', 'success') },
-    updateGoal(g) { const idx = this.goals.findIndex(i => i.goalID === g.goalID); if (idx !== -1) { g.updateTime = new Date().toISOString(); this.goals[idx] = g; this.saveAll(); this.pushToCloud(); this.notify('Target Refined', 'info') } },
-    deleteGoal(id) { this.goals = this.goals.filter(i => i.goalID !== id); this.saveAll(); this.pushToCloud(); this.notify('Target Abandoned', 'warning') },
+    addGoal(g) { if (!g.goalID) g.goalID = 'GOA-' + Date.now(); g.updateTime = new Date().toISOString(); this.goals.push(g); this.saveAll(); this.pushToCloud(); this.notify('Target Ditetapkan', 'success') },
+    updateGoal(g) { const idx = this.goals.findIndex(i => i.goalID === g.goalID); if (idx !== -1) { g.updateTime = new Date().toISOString(); this.goals[idx] = g; this.saveAll(); this.pushToCloud(); this.notify('Target Diperbarui', 'info') } },
+    deleteGoal(id) { this.goals = this.goals.filter(i => i.goalID !== id); this.saveAll(); this.pushToCloud(); this.notify('Target Dibatalkan', 'warning') },
 
-    addReceipt(r) { if (!r.receiptID) r.receiptID = 'RCP-' + Date.now(); this.receipts.push(r); this.saveAll(); this.notify('Artifact Vaulted', 'success') },
-    updateReceipt(r) { const idx = this.receipts.findIndex(i => i.receiptID === r.receiptID); if (idx !== -1) { this.receipts[idx] = r; this.saveAll(); this.notify('Artifact Re-Indexed', 'info') } },
-    deleteReceipt(id) { this.receipts = this.receipts.filter(i => i.receiptID !== id); this.saveAll(); this.notify('Artifact Redacted', 'warning') },
+    addReceipt(r) { if (!r.receiptID) r.receiptID = 'RCP-' + Date.now(); this.receipts.push(r); this.saveAll(); this.notify('Nota Berhasil Disimpan', 'success') },
+    updateReceipt(r) { const idx = this.receipts.findIndex(i => i.receiptID === r.receiptID); if (idx !== -1) { this.receipts[idx] = r; this.saveAll(); this.notify('Nota Diperbarui', 'info') } },
+    deleteReceipt(id) { this.receipts = this.receipts.filter(i => i.receiptID !== id); this.saveAll(); this.notify('Nota Dihapus', 'warning') },
 
     // Cloud Sync...
     async pullFromCloud(mode = 'overwrite') {
@@ -306,13 +306,13 @@ export const useFinanceStore = defineStore('finance', {
           this.saveAll()
           this.syncProgress = 100
           setTimeout(() => { this.isSyncing = false; this.syncProgress = 0 }, 1000)
-          this.notify('Core Chronicle Ingested', 'success')
+          this.notify('Data Utama Berhasil Diambil', 'success')
           return true
         }
       } catch (e) { 
         this.isSyncing = false
         this.syncProgress = 0
-        this.notify('Resonance Failure', 'error')
+        this.notify('Kegagalan Sinkronisasi', 'error')
         console.error('Cloud pull failed', e)
         return false 
       }
@@ -320,7 +320,7 @@ export const useFinanceStore = defineStore('finance', {
 
     forceRefresh() {
       this.isSyncing = true
-      this.notify('Re-initializing Terminal...', 'info')
+      this.notify('Memulai Ulang Terminal...', 'info')
       setTimeout(() => {
         window.location.reload()
       }, 500)
@@ -365,12 +365,12 @@ export const useFinanceStore = defineStore('finance', {
         })
         this.syncProgress = 100
         setTimeout(() => { this.isSyncing = false; this.syncProgress = 0 }, 1000)
-        this.notify('Current Logs Ascended', 'success')
+        this.notify('Catatan Berhasil Diunggah', 'success')
         return true
       } catch (e) { 
         this.isSyncing = false
         this.syncProgress = 0
-        this.notify('Transmission Failure', 'error')
+        this.notify('Kegagalan Transmisi', 'error')
         console.error('Cloud push failed', e); 
         return false 
       }
@@ -453,7 +453,7 @@ export const useFinanceStore = defineStore('finance', {
       if (type === 'unitScales') this.unitScales = this.unitScales.filter(u => u.unitScale !== sourceName)
 
       this.saveAll()
-      this.notify(`Consolidation Successful: ${sourceName} merged into ${targetName}`, 'success')
+      this.notify(`Penggabungan Berhasil: ${sourceName} digabung ke ${targetName}`, 'success')
     },
   }
 })
