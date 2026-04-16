@@ -289,16 +289,24 @@ export const useFinanceStore = defineStore('finance', {
                   let t = r.time ? String(r.time) : ''
                   let dStr = (r.dateTime || r.date) ? String(r.dateTime || r.date) : ''
 
-                  // If time is missing, try extracting from dateTime/date string
-                  if (!t || t === 'undefined' || t === '00:00') {
-                    if (dStr.includes('T')) {
-                      t = dStr.split('T')[1].substring(0, 5)
-                    } else if (dStr.includes(' ')) {
-                      t = dStr.split(' ')[1].substring(0, 5)
+                  // Robust Date & Time extraction to prevent timezone shifts (UTC vs Local)
+                  if (dStr) {
+                    const d = new Date(dStr)
+                    if (!isNaN(d.getTime())) {
+                       // Only extract time from dStr if we don't have a separate time column
+                       if (!t || t === 'undefined' || t === '00:00') {
+                          // Use local hours/mins regardless of Z suffix in source
+                          t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
+                       }
+                       // For the date part, use local components to avoid day-shifting
+                       r.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
                     }
                   }
 
-                  // Sanitize Time
+                  // Fallback: If r.date is still missing or wasn't a valid date
+                  if (!r.date && dStr) r.date = formatDate(dStr)
+
+                  // Final Time Sanitization
                   if (t.includes('T')) {
                     t = t.split('T')[1].substring(0, 5)
                   } else if (t.includes(':')) {
@@ -306,9 +314,6 @@ export const useFinanceStore = defineStore('finance', {
                     t = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0')
                   }
                   r.time = (t && t !== 'undefined') ? t : '00:00'
-                  
-                  // Sanitize Date
-                  r.date = formatDate(dStr)
                   
                   // Ensure numeric types
                   if (r.total) r.total = Number(r.total)
