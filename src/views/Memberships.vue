@@ -100,13 +100,15 @@
                       </div>
                    </div>
 
-                   <div class="action-grid">
-                      <button @click="modalMode = 'edit'" class="tonal-btn-lg">
-                         <span class="material-symbols-rounded">edit</span>
-                         UBAH DATA
-                      </button>
-                      <button @click="isModalOpen = false" class="outline-btn-lg">TUTUP</button>
-                   </div>
+                    <div class="action-grid mt-24">
+                       <button @click="modalMode = 'edit'" class="tonal-btn">
+                          <span class="material-symbols-rounded">edit</span>
+                          UBAH
+                       </button>
+                       <button @click="isModalOpen = false" class="tonal-btn">
+                          TUTUP
+                       </button>
+                    </div>
                 </div>
 
                 <!-- MODE: EDIT -->
@@ -128,16 +130,16 @@
                       <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                    </div>
 
-                   <div class="modal-actions">
-                      <button @click="saveMem" class="filled-btn-lg">
-                         <span class="material-symbols-rounded">save</span>
-                         SIMPAN DATA
-                      </button>
-                      <div v-if="editingMember.memberID" class="secondary-actions">
-                         <button @click="handleDuplicate" class="tonal-btn">Duplikat</button>
-                         <button @click="deleteMem" class="error-btn">Hapus</button>
-                      </div>
-                   </div>
+                    <div class="modal-actions mt-24">
+                       <button @click="saveMem" class="filled-btn">
+                          <span class="material-symbols-rounded">verified</span>
+                          SIMPAN SUBS
+                       </button>
+                       <div v-if="editingMember.memberID" class="secondary-actions">
+                          <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
+                          <button @click="deleteMem" class="danger-btn">Purge</button>
+                       </div>
+                    </div>
                 </div>
              </div>
           </div>
@@ -245,8 +247,6 @@ onBeforeUnmount(() => { uiStore.unregisterModal('memberships') })
 .footer-value { font-size: 12px; font-weight: 500; color: white; }
 .expired-tag { font-size: 10px; font-weight: 800; color: #ff5252; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; }
 
-.fab { position: fixed; bottom: 32px; right: 32px; width: 56px; height: 56px; border-radius: 16px; background-color: var(--primary); color: var(--on-primary); border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 1000; cursor: pointer; }
-
 .modal-backdrop-full { position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); z-index: 4000; display: flex; align-items: flex-end; }
 .bottom-sheet { width: 100%; background-color: var(--bg-primary); border-radius: 28px 28px 0 0; padding: 8px 16px 32px 16px; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1); }
 .sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
@@ -277,12 +277,10 @@ onBeforeUnmount(() => { uiStore.unregisterModal('memberships') })
 .toggle-btn { height: 48px; border-radius: 12px; border: 1px solid var(--outline); background: transparent; color: var(--on-surface); font-weight: 700; cursor: pointer; }
 .toggle-btn.active { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); }
 
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
-.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(168, 199, 250, 0.4); }
-.tonal-btn-lg { background-color: var(--primary-container); color: var(--on-primary-container); border: none; border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
-.outline-btn-lg { background-color: transparent; border: 1px solid var(--outline); color: var(--on-surface); border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; }
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-actions { display: flex; flex-direction: column; gap: 16px; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mt-24 { margin-top: 24px; }
+/* Global MD3 Buttons are used */
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }

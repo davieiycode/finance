@@ -111,16 +111,16 @@
                    <textarea v-model="formData.notes" class="md-textarea"></textarea>
                 </div>
 
-                <div class="modal-actions">
-                   <button @click="saveReceipt" class="filled-btn-lg">
-                      <span class="material-symbols-rounded">save</span>
-                      SAVE EVIDENCE
-                   </button>
-                   <div v-if="editingReceipt.receiptID" class="secondary-actions">
-                      <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
-                      <button @click="deleteReceipt" class="error-btn">Purge</button>
-                   </div>
-                </div>
+                 <div class="modal-actions mt-24">
+                    <button @click="saveReceipt" class="filled-btn">
+                       <span class="material-symbols-rounded">verified</span>
+                       SAVE EVIDENCE
+                    </button>
+                    <div v-if="editingReceipt.receiptID" class="secondary-actions">
+                       <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
+                       <button @click="deleteReceipt" class="danger-btn">Purge</button>
+                    </div>
+                 </div>
              </div>
           </div>
        </div>
@@ -232,25 +232,20 @@ onBeforeUnmount(() => { uiStore.unregisterModal('receipts') })
 
 /* TOP BAR SHARED */
 .app-bar-content h1 { flex: 1; font-size: 20px; font-weight: 500; margin: 0; }
-.icon-btn { width: 36px; height: 36px; border-radius: 18px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  flex: 1;
-  font-size: 22px;
-  font-weight: 400;
-  margin: 0;
+.icon-btn { 
+  width: 40px; 
+  height: 40px; 
+  border-radius: 20px; 
+  border: none; 
+  background: transparent; 
+  color: var(--on-surface-variant); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
 }
 
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  border: none;
-  background: transparent;
-  color: var(--on-surface-variant);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
+.mt-24 { margin-top: 24px; }
 
 .search-input-field { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 16px; outline: none; }
 
@@ -359,12 +354,11 @@ onBeforeUnmount(() => { uiStore.unregisterModal('receipts') })
 .st-meta { font-size: 11px; opacity: 0.6; }
 .link-btn { background: var(--primary); color: var(--on-primary); border: none; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
 
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
-.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 199, 250, 0.4); width: 100%; }
-.tonal-btn-lg { background-color: var(--primary-container); color: var(--on-primary-container); border: none; border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
-.outline-btn-lg { background-color: transparent; border: 1px solid var(--outline); color: var(--on-surface); border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; }
+.modal-actions { display: flex; flex-direction: column; gap: 16px; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.filled-btn { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; width: 100%; }
 .tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.danger-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }

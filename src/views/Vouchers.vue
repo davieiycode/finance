@@ -99,15 +99,15 @@
                       </div>
                    </div>
 
-                   <div class="action-grid">
-                      <button @click="modalMode = 'edit'" class="tonal-btn-lg">
-                         <span class="material-symbols-rounded">edit</span>
-                         UBAH
-                      </button>
-                      <button @click="isModalOpen = false" class="outline-btn-lg">
-                         TUTUP
-                      </button>
-                   </div>
+                    <div class="action-grid mt-24">
+                       <button @click="modalMode = 'edit'" class="tonal-btn">
+                          <span class="material-symbols-rounded">edit</span>
+                          UBAH
+                       </button>
+                       <button @click="isModalOpen = false" class="tonal-btn">
+                          TUTUP
+                       </button>
+                    </div>
                 </div>
 
                 <!-- MODE: EDIT -->
@@ -138,16 +138,16 @@
                       <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                    </div>
 
-                   <div class="modal-actions">
-                      <button @click="saveVou" class="filled-btn-lg">
-                         <span class="material-symbols-rounded">save</span>
-                         SIMPAN ASET
-                      </button>
-                      <div v-if="editingVoucher.voucherID" class="secondary-actions">
-                         <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
-                         <button @click="deleteVou" class="error-btn">Purge</button>
-                      </div>
-                   </div>
+                    <div class="modal-actions mt-24">
+                       <button @click="saveVou" class="filled-btn">
+                          <span class="material-symbols-rounded">verified</span>
+                          SIMPAN ASET
+                       </button>
+                       <div v-if="editingVoucher.voucherID" class="secondary-actions">
+                          <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
+                          <button @click="deleteVou" class="danger-btn">Purge</button>
+                       </div>
+                    </div>
                 </div>
              </div>
           </div>
@@ -315,12 +315,11 @@ onBeforeUnmount(() => { uiStore.unregisterModal('vouchers') })
 .md-input { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; height: 48px; padding: 0 12px; color: var(--on-surface); font-size: 14px; outline: none; }
 .md-textarea { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px; color: var(--on-surface); font-size: 14px; outline: none; min-height: 80px; resize: vertical; }
 
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
-.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(168, 199, 250, 0.4); }
-.tonal-btn-lg { background-color: var(--primary-container); color: var(--on-primary-container); border: none; border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
-.outline-btn-lg { background-color: transparent; border: 1px solid var(--outline); color: var(--on-surface); border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; }
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-actions { display: flex; flex-direction: column; gap: 16px; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mt-24 { margin-top: 24px; }
+/* Global MD3 Buttons are used */
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }

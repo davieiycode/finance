@@ -145,13 +145,15 @@
                       {{ itemAnalysis.insight }}
                    </p>
 
-                   <div class="action-grid">
-                      <button @click="modalMode = 'edit'" class="tonal-btn-lg">
-                         <span class="material-symbols-rounded">edit</span>
-                         UBAH
-                      </button>
-                      <button @click="isModalOpen = false" class="outline-btn-lg">CLOSE</button>
-                   </div>
+                   <div class="action-grid mt-24">
+                    <button @click="modalMode = 'edit'" class="tonal-btn">
+                       <span class="material-symbols-rounded">edit</span>
+                       UBAH
+                    </button>
+                    <button @click="isModalOpen = false" class="tonal-btn">
+                       TUTUP
+                    </button>
+                 </div>
                 </div>
 
                 <!-- MODE: EDIT -->
@@ -187,15 +189,15 @@
                       <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                    </div>
 
-                   <div class="modal-actions">
-                      <button @click="saveItem" class="filled-btn-lg">
-                         <span class="material-symbols-rounded">save</span>
-                         SAVE ITEM
+                   <div class="modal-actions mt-24">
+                      <button @click="saveItem" class="filled-btn">
+                         <span class="material-symbols-rounded">verified</span>
+                         SIMPAN ASET
                       </button>
                       <div v-if="editingItem.itemID" class="secondary-actions">
-                         <button @click="handleDuplicate" class="tonal-btn">Duplikat</button>
-                         <button @click="handleMerge" class="tonal-btn">Gabung</button>
-                         <button @click="deleteItem" class="error-btn">Hapus</button>
+                         <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
+                         <button @click="handleMerge" class="tonal-btn">Merge</button>
+                         <button @click="deleteItem" class="danger-btn">Purge</button>
                       </div>
                    </div>
                 </div>
@@ -401,15 +403,10 @@ onBeforeUnmount(() => { stopScanner(); uiStore.unregisterModal('items') })
 .input-with-action { display: flex; gap: 12px; }
 .action-btn-sm { width: 48px; height: 48px; border-radius: 12px; border: none; background: var(--primary-container); color: var(--on-primary-container); cursor: pointer; }
 
-.modal-actions { display: flex; flex-direction: column; gap: 16px; }
+.mt-24 { margin-top: 24px; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
-.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; width: 100%; }
-.tonal-btn-lg { background-color: var(--primary-container); color: var(--on-primary-container); border: none; border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
-.outline-btn-lg { background-color: transparent; border: 1px solid var(--outline); color: var(--on-surface); border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; }
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+/* Global MD3 Buttons are used */
 
 .scanner-layer { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; }
 .scanner-header { height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid #333; }

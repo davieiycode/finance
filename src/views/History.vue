@@ -290,23 +290,7 @@ onMounted(() => {
   margin-top: 16px;
 }
 
-.tonal-btn {
-  background-color: var(--primary-container);
-  color: var(--on-primary-container);
-  border: none;
-  border-radius: 20px;
-  padding: 8px 24px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.text-btn {
-  background: transparent;
-  border: none;
-  color: var(--primary);
-  font-weight: 500;
-  cursor: pointer;
-}
+/* Global MD3 Buttons are used */
 
 .log-list {
   display: flex;
