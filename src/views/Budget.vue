@@ -169,6 +169,11 @@ const searchQuery = ref('')
 const isMergePanelOpen = ref(false)
 const mergeTargetSearch = ref('')
 
+const totalBudget = computed(() => {
+  if (!Array.isArray(store.budgets)) return 0
+  return store.budgets.reduce((sum, b) => sum + (Number(b.amount) || 0), 0)
+})
+
 const filteredBudgets = computed(() => {
   if (!searchQuery.value) return store.budgets
   const q = searchQuery.value.toLowerCase()
@@ -218,12 +223,20 @@ onBeforeUnmount(() => { uiStore.unregisterModal('budget') })
 
 <style scoped>
 .budget-container { height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-primary); }
-.top-app-bar { padding: env(safe-area-inset-top) 16px 8px 16px; background-color: var(--bg-primary); border-bottom: 1px solid var(--border); z-index: 100; }
+.top-app-bar {
+  padding-top: max(env(safe-area-inset-top), 16px);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 8px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
 .app-bar-content { height: 64px; display: flex; align-items: center; gap: 12px; }
 .app-bar-content h1 { flex: 1; font-size: 22px; font-weight: 400; margin: 0; }
 .icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .search-input-field { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 16px; outline: none; }
-.content-scroll { flex: 1; overflow-y: auto; padding: 16px; }
+.content-scroll { flex: 1; overflow-y: auto; padding: 16px 16px 120px 16px; }
 
 .budget-list { display: flex; flex-direction: column; gap: 16px; }
 .budget-card { padding: 20px; cursor: pointer; }

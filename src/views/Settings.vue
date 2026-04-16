@@ -49,19 +49,7 @@
           </div>
         </div>
 
-        <div class="section-title">Personalisasi</div>
-        <div class="list-card card-md3">
-          <div class="list-item" @click="currentView = 'visual'">
-            <div class="list-icon-box primary">
-              <span class="material-symbols-rounded">palette</span>
-            </div>
-            <div class="list-text">
-              <span class="list-item-title">Atur Tampilan</span>
-              <span class="list-item-sub">Tema, warna, dan ukuran sudut</span>
-            </div>
-            <span class="material-symbols-rounded">chevron_right</span>
-          </div>
-        </div>
+        <!-- Section removed as requested: Personalisasi -->
 
         <div class="section-title">Data & Cadangan</div>
         <div class="list-card card-md3">
@@ -102,7 +90,7 @@
 
         <div class="version-badge">
            <p>CATATAN KEUANGAN</p>
-           <span>v5.4.0 • AKTIF</span>
+           <span>v5.0.2 • AKTIF</span>
         </div>
       </div>
 
@@ -148,36 +136,7 @@
           </button>
         </div>
 
-        <!-- Visual View -->
-        <div v-if="currentView === 'visual'" class="visual-settings">
-           <div class="section-card card-md3">
-             <span class="section-header-text">Tema Tampilan</span>
-             <div class="theme-grid">
-               <div v-for="t in themes" :key="t.id" class="theme-item" :class="{ active: userPrefs.theme === t.id }" @click="userPrefs.theme = t.id">
-                 <div class="theme-preview-box" :style="{ background: t.bg, borderColor: t.border }">
-                   <div v-if="userPrefs.theme === t.id" class="theme-check">
-                     <span class="material-symbols-rounded">check</span>
-                   </div>
-                 </div>
-                 <span class="theme-name">{{ t.name }}</span>
-               </div>
-             </div>
-           </div>
-
-           <div class="section-card card-md3">
-             <span class="section-header-text">Kelengkungan Sudut ({{ userPrefs.radius }}px)</span>
-             <div class="slider-container">
-               <span class="material-symbols-rounded">rounded_corner</span>
-               <input type="range" min="0" max="28" v-model="userPrefs.radius" class="md-slider">
-               <span class="material-symbols-rounded">square_foot</span>
-             </div>
-           </div>
-
-           <button class="filled-btn" @click="savePrefs">
-             <span class="material-symbols-rounded">done_all</span>
-             Terapkan Tampilan
-           </button>
-        </div>
+        <!-- Visual selection removed as requested -->
 
         <!-- Cloud View -->
         <div v-if="currentView === 'cloud'" class="cloud-settings">
@@ -265,7 +224,9 @@ const subTitles = {
 }
 
 const isSafe = typeof localStorage !== 'undefined'
-const userPrefs = ref(isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Pengguna","email":"","theme":"obsidian","radius":24,"color":"#A8C7FA"}') : {"name":"Pengguna","email":"","theme":"obsidian","radius":24,"color":"#A8C7FA"})
+const defaultPrefs = { name: "Pengguna", email: "", avatar: "👤", theme: "obsidian", radius: 24, color: "#A8C7FA" }
+const storedPrefs = isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{}') : {}
+const userPrefs = ref({ ...defaultPrefs, ...storedPrefs })
 const cloudUrl = ref(isSafe ? (localStorage.getItem('cloud_sheet_url') || '') : '')
 
 const themes = [

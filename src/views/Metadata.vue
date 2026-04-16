@@ -412,7 +412,10 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
 }
 
 .top-app-bar {
-  padding: env(safe-area-inset-top) 16px 8px 16px;
+  padding-top: max(env(safe-area-inset-top), 16px);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 8px;
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border);
   z-index: 100;
@@ -589,9 +592,29 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
 .icon-picker { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
 .icon-search-box { display: flex; align-items: center; gap: 12px; padding: 0 8px; }
 .icon-search-box input { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 13px; outline: none; }
-.icon-grid-scroll { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-height: 160px; overflow-y: auto; }
-.icon-select-btn { aspect-ratio: 1/1; border-radius: 8px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.icon-select-btn.active { background-color: var(--primary); color: var(--on-primary); }
+.icon-grid-scroll { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); 
+  gap: 8px; 
+  max-height: 240px; 
+  overflow-y: auto; 
+  padding: 8px;
+}
+.icon-select-btn { 
+  aspect-ratio: 1/1; 
+  border-radius: 12px; 
+  border: 1px solid var(--border); 
+  background: var(--surface-variant); 
+  color: var(--on-surface-variant); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+  transition: all 0.2s;
+}
+.icon-select-btn .material-symbols-rounded { font-size: 24px; }
+.icon-select-btn:hover { background-color: var(--primary-container); color: var(--on-primary-container); }
+.icon-select-btn.active { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); transform: scale(1.1); z-index: 1; }
 
 .edit-actions { display: flex; flex-direction: column; gap: 20px; }
 .secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }

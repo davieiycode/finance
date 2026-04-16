@@ -129,7 +129,7 @@
     <Teleport to="body">
        <div v-if="!isModalOpen && !selectedTx" class="floating-tabs">
           <button v-for="t in tabs" :key="t.id" @click="activeTab = t.id" :class="{ active: activeTab === t.id }" class="tab-chip">
-             <span class="material-symbols-rounded">{{ t.icon === 'git-pull-request' ? 'conversion_path' : (t.icon === 'arrow-down-left' ? 'download' : (t.icon === 'shopping-cart' ? 'shopping_basket' : (t.icon === 'hash' ? 'tag' : 'layers'))) }}</span>
+             <span class="material-symbols-rounded">{{ t.icon }}</span>
              <span class="tab-label">{{ t.label }}</span>
           </button>
        </div>
@@ -190,7 +190,7 @@ const modalData = ref(null)
 const isModalOpen = computed(() => !!modalData.value)
 
 const tabs = [
-  { id: 'cashflow', label: 'Aliran', icon: 'git-pull-request' },
+  { id: 'cashflow', label: 'Aliran', icon: 'conversion_path' },
   { id: 'income', label: 'Pemasukan', icon: 'download' },
   { id: 'spend', label: 'Pengeluaran', icon: 'shopping_basket' },
   { id: 'tag', label: 'Tag', icon: 'tag' },
@@ -435,7 +435,10 @@ watch(analysisMode, (newMode) => {
 
 /* TOP APP BAR */
 .top-app-bar {
-  padding: env(safe-area-inset-top) 16px 8px 16px;
+  padding-top: max(env(safe-area-inset-top), 16px);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 8px;
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border);
   z-index: 100;

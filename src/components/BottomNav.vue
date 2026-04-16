@@ -21,7 +21,7 @@ const isHidden = ref(false)
 
 const menuItems = [
   { path: '/', label: 'Beranda', icon: 'dashboard' },
-  { path: '/transaction', label: 'Tambah', icon: 'add' },
+  { path: '/transaction', icon: 'add' },
   { path: '/history', label: 'Riwayat', icon: 'history' }
 ]
 

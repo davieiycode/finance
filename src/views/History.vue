@@ -211,7 +211,10 @@ onMounted(() => {
 }
 
 .top-app-bar {
-  padding: env(safe-area-inset-top) 16px 8px 16px;
+  padding-top: max(env(safe-area-inset-top), 16px);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 8px;
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border);
   z-index: 100;
@@ -261,7 +264,7 @@ onMounted(() => {
 .content-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 16px 100px 16px;
+  padding: 16px 16px 120px 16px;
 }
 
 .card-md3 {

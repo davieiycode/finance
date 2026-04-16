@@ -290,7 +290,9 @@ export const useFinanceStore = defineStore('finance', {
                      try { prefs[s.key] = JSON.parse(s.value) } 
                      catch(e) { prefs[s.key] = s.value }
                    })
-                   localStorage.setItem('user_prefs', JSON.stringify(prefs))
+                    const currentPrefs = JSON.parse(localStorage.getItem('user_prefs') || '{}')
+                    const newPrefs = { ...currentPrefs, ...prefs }
+                    localStorage.setItem('user_prefs', JSON.stringify(newPrefs))
                  } catch(e) { console.error('Failed to parse settings', e) }
               } else if (mode === 'merge') {
                  incoming.forEach(inc => {

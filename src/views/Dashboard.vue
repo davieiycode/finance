@@ -7,7 +7,7 @@
           <div class="logo-box">
             <img src="/logo.png" alt="DompetKu">
           </div>
-          <h1>DompetKu</h1>
+          <h1>Jurney</h1>
         </div>
         
         <div class="app-bar-actions">
@@ -73,7 +73,7 @@
         <div class="reminder-list">
           <div v-for="rem in upcomingReminders" :key="rem.id" class="reminder-card">
             <div class="reminder-icon">
-              <span class="material-symbols-rounded">{{ rem.icon === 'zap' ? 'bolt' : rem.icon }}</span>
+              <span class="material-symbols-rounded">{{ rem.icon }}</span>
             </div>
             <div class="reminder-info">
               <span class="reminder-name">{{ rem.name }}</span>
@@ -95,8 +95,8 @@
           <div class="quick-label">Toko</div>
         </div>
         <div @click="$router.push('/memberships')" class="quick-card">
-          <div class="quick-icon info"><span class="material-symbols-rounded">card_membership</span></div>
-          <div class="quick-label">Member/Sewa</div>
+          <div class="quick-icon info"><span class="material-symbols-rounded">groups</span></div>
+          <div class="quick-label">Anggota</div>
         </div>
         <div @click="$router.push('/vouchers')" class="quick-card">
           <div class="quick-icon secondary"><span class="material-symbols-rounded">confirmation_number</span></div>
@@ -108,11 +108,15 @@
         </div>
         <div @click="$router.push('/audit')" class="quick-card anomaly">
           <div class="quick-icon danger"><span class="material-symbols-rounded">monitoring</span></div>
-          <div class="quick-label">Cek Data</div>
+          <div class="quick-label">Audit</div>
           <div v-if="anomalyCount > 0" class="badge-dot">{{ anomalyCount }}</div>
         </div>
       </div>
-
+      <!-- Footer -->
+      <div class="app-footer">
+        <p class="footer-core">VOID-CORE V5.0.2</p>
+        <p class="footer-status">SYSTEMS ACTIVE • ENCRYPTED</p>
+      </div>
     </div>
   </div>
 </template>
@@ -193,15 +197,15 @@ const upcomingReminders = computed(() => {
   
   // Detection Protocols (Keywords vs Regularity)
   const protocols = [
-    { id: 'elec', name: 'Listrik (PLN)', keywords: ['listrik', 'pln', 'token'], type: 'monthly', icon: 'zap' },
+    { id: 'elec', name: 'Listrik (PLN)', keywords: ['listrik', 'pln', 'token'], type: 'monthly', icon: 'bolt' },
     { id: 'net', name: 'Internet / WiFi', keywords: ['internet', 'wifi', 'indihome', 'biznet', 'myrepublic'], type: 'monthly', icon: 'wifi' },
     { id: 'mobile', name: 'Seluler / Pulsa', keywords: ['pulsa', 'kuota', 'telkomsel', 'xl', 'indosat'], type: 'monthly', icon: 'smartphone' },
-    { id: 'water', name: 'Air (PDAM)', keywords: ['pdam', 'air'], type: 'monthly', icon: 'droplet' },
-    { id: 'trash', name: 'Sampah / Keamanan', keywords: ['sampah', 'keamanan', 'iuran'], type: 'monthly', icon: 'shield-check' },
-    { id: 'tax', name: 'Pajak (PBB)', keywords: ['pajak', 'pbb', 'samsat'], type: 'yearly', icon: 'file-text' },
+    { id: 'water', name: 'Air (PDAM)', keywords: ['pdam', 'air'], type: 'monthly', icon: 'water_drop' },
+    { id: 'trash', name: 'Sampah / Keamanan', keywords: ['sampah', 'keamanan', 'iuran'], type: 'monthly', icon: 'security' },
+    { id: 'tax', name: 'Pajak (PBB)', keywords: ['pajak', 'pbb', 'samsat'], type: 'yearly', icon: 'description' },
     { id: 'rent', name: 'Sewa / Cicilan', keywords: ['sewa', 'cicilan', 'kpr'], type: 'monthly', icon: 'home' },
-    { id: 'sub', name: 'Langganan', keywords: ['netflix', 'spotify', 'youtube', 'cloud', 'icloud', 'disney'], type: 'monthly', icon: 'play' },
-    { id: 'donate', name: 'Donasi / Zakat', keywords: ['donasi', 'zakat', 'sedekah', 'kitabisa'], type: 'monthly', icon: 'heart' }
+    { id: 'sub', name: 'Langganan', keywords: ['netflix', 'spotify', 'youtube', 'cloud', 'icloud', 'disney'], type: 'monthly', icon: 'play_arrow' },
+    { id: 'donate', name: 'Donasi / Zakat', keywords: ['donasi', 'zakat', 'sedekah', 'kitabisa'], type: 'monthly', icon: 'favorite' }
   ]
 
   const reminders = []
@@ -293,7 +297,10 @@ onMounted(() => {
 
 /* TOP APP BAR */
 .top-app-bar {
-  padding: env(safe-area-inset-top) 16px 8px 16px;
+  padding-top: max(env(safe-area-inset-top), 16px);
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 8px;
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border);
   z-index: 100;
