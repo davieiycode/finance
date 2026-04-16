@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Budgets</h1>
+          <h1>Anggaran</h1>
           <button class="icon-btn" @click="showSearch = true">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -26,6 +26,11 @@
 
     <div class="content-scroll">
       <div class="budget-list">
+        <div class="wealth-card">
+          <span class="wealth-label">TOTAL ANGGARAN</span>
+          <h2 class="wealth-amount">Rp {{ totalBudget.toLocaleString('id-ID') }}</h2>
+          <span class="wealth-sub">{{ (store.budgets || []).length }} kategori aktif</span>
+        </div>
         <div v-for="b in filteredBudgets" :key="b.budgetID" @click="openModal(b)" class="budget-card card-md3">
            <div class="card-head">
               <div class="head-left">
@@ -39,17 +44,21 @@
               <div class="progress-track">
                  <div class="progress-fill" :style="{ width: calculateProgress(b) + '%', backgroundColor: getProgressColor(b) }"></div>
               </div>
-              <div class="progress-labels">
-                 <span class="label-left">{{ calculateProgress(b) }}% Allocated</span>
-                 <span class="label-right">Rp {{ getSpent(b).toLocaleString('id-ID') }} outflow</span>
+              <div class="budget-progress-info">
+                 <span class="spent-text">Terpakai Rp {{ getSpent(b).toLocaleString('id-ID') }}</span>
+                 <span class="percent-text">{{ calculateProgress(b) }}%</span>
               </div>
+           </div>
+           <div class="budget-status">
+              <span v-if="getSpent(b) < b.amount" class="status-chip safe">Aman</span>
+              <span v-else class="status-chip danger">Melebihi Batas</span>
            </div>
         </div>
       </div>
 
       <div v-if="filteredBudgets.length === 0" class="empty-state">
-        <span class="material-symbols-rounded">account_balance_wallet</span>
-        <p>No allocation protocols defined.</p>
+        <span class="material-symbols-rounded">pie_chart</span>
+        <p>Belum ada anggaran yang diatur.</p>
       </div>
     </div>
 
@@ -64,7 +73,7 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">Budget Configuration</h3>
+                <h3 class="sheet-title">{{ editingBud.budgetID ? 'Ubah Anggaran' : 'Tambah Anggaran' }}</h3>
                 <button @click="isModalOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
@@ -73,35 +82,35 @@
              <div class="sheet-content">
                 <div class="form-grid">
                    <div class="form-group full">
-                      <label>Category</label>
+                      <label>Kategori</label>
                       <input type="text" v-model="formData.category" list="cat-list" class="md-input">
                    </div>
                    <div class="form-group full">
-                      <label>Period</label>
+                      <label>Periode</label>
                       <select v-model="formData.period" class="md-input">
-                         <option>Monthly</option><option>Weekly</option><option>Yearly</option><option>Custom Project</option>
+                         <option>Bulanan</option><option>Mingguan</option><option>Tahunan</option><option>Proyek Khusus</option>
                       </select>
                    </div>
-                   <div class="form-group"><label>Allocation</label><input type="number" v-model.number="formData.amount" class="md-input"></div>
-                   <div class="form-group"><label>Currency</label><input type="text" v-model="formData.currency" class="md-input"></div>
+                   <div class="form-group"><label>Alokasi</label><input type="number" v-model.number="formData.amount" class="md-input"></div>
+                   <div class="form-group"><label>Mata Uang</label><input type="text" v-model="formData.currency" class="md-input"></div>
                    <div class="form-group full">
                       <label>Status</label>
                       <select v-model="formData.status" class="md-input">
-                         <option>Active</option><option>Paused</option><option>Completed</option>
+                         <option>Aktif</option><option>Jeda</option><option>Selesai</option>
                       </select>
                    </div>
-                   <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                   <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                 </div>
 
                 <div class="modal-actions">
                    <button @click="saveBud" class="filled-btn-lg">
                       <span class="material-symbols-rounded">save</span>
-                      SAVE ALLOCATION
+                      SIMPAN ANGGARAN
                    </button>
                    <div v-if="editingBud.budgetID" class="secondary-actions">
-                      <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
-                      <button @click="handleMerge" class="tonal-btn">Merge</button>
-                      <button @click="deleteBud" class="error-btn">Purge</button>
+                      <button @click="handleDuplicate" class="tonal-btn">Duplikat</button>
+                      <button @click="handleMerge" class="tonal-btn">Gabung</button>
+                      <button @click="deleteBud" class="error-btn">Hapus</button>
                    </div>
                 </div>
              </div>

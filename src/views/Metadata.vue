@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/settings')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Registry</h1>
+          <h1>Kategori & Label</h1>
           <button class="icon-btn" @click="showSearch = true">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -16,7 +16,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" :placeholder="'Search ' + activeTab" autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari data..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -40,7 +40,7 @@
 
         <div v-if="filteredList.length === 0" class="empty-state">
           <span class="material-symbols-rounded">inventory_2</span>
-          <p>No matching entries in this registry.</p>
+          <p>Data tidak ditemukan.</p>
         </div>
       </div>
     </div>
@@ -64,7 +64,7 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">{{ editingItem ? (modalMode === 'analysis' ? 'Intelligence' : 'Modify Record') : 'New Record' }}</h3>
+                <h3 class="sheet-title">{{ editingItem ? (modalMode === 'analysis' ? 'Detail Data' : 'Ubah Data') : 'Tambah Data Baru' }}</h3>
                 <button @click="isModalOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
@@ -79,30 +79,30 @@
                       </div>
                       <div class="hero-text">
                          <span class="hero-title">{{ getItemName(editingItem) }}</span>
-                         <span class="hero-sub">{{ activeTab.toUpperCase() }} Entry</span>
+                         <span class="hero-sub">Data {{ activeTab }}</span>
                       </div>
                    </div>
 
                    <div class="briefing-card tonal">
                       <div class="briefing-header">
                          <span class="material-symbols-rounded">info</span>
-                         <span class="briefing-label">Registry Analysis</span>
+                         <span class="briefing-label">Analisis Data</span>
                       </div>
                       <p>{{ getItemSub(editingItem) }}</p>
                    </div>
 
                    <div v-if="formData.description" class="description-card">
-                      <span class="card-label">PROTOCOL BRIEFING</span>
+                      <span class="card-label">CATATAN</span>
                       <p>{{ formData.description }}</p>
                    </div>
 
                    <div class="action-grid">
                       <button @click="modalMode = 'edit'" class="tonal-btn-lg">
                          <span class="material-symbols-rounded">edit</span>
-                         MODIFY
+                         UBAH DATA
                       </button>
                       <button @click="isModalOpen = false" class="outline-btn-lg">
-                         CLOSE
+                         TUTUP
                       </button>
                    </div>
                 </div>
@@ -113,15 +113,15 @@
                    <div class="form-grid">
                       <template v-if="activeTab === 'categories'">
                          <div class="form-group">
-                            <label>Name</label>
+                            <label>Nama Kategori</label>
                             <input type="text" v-model="formData.category" class="md-input">
                          </div>
                          <div class="form-group full">
-                            <label>Icon Selection</label>
+                            <label>Pilih Ikon</label>
                             <div class="icon-picker card-md3">
                                <div class="icon-search-box">
                                   <span class="material-symbols-rounded">search</span>
-                                  <input type="text" v-model="iconSearch" placeholder="Search icons...">
+                                  <input type="text" v-model="iconSearch" placeholder="Cari ikon...">
                                </div>
                                <div class="icon-grid-scroll">
                                   <button v-for="iconName in filteredIcons" :key="iconName" @click="formData.icon = iconName" 
@@ -131,49 +131,49 @@
                                </div>
                             </div>
                          </div>
-                         <div class="form-group"><label>Group</label><input type="text" v-model="formData.categoryGroup" class="md-input"></div>
+                         <div class="form-group"><label>Grup</label><input type="text" v-model="formData.categoryGroup" class="md-input"></div>
                          <div class="form-group">
-                            <label>Type</label>
+                            <label>Jenis</label>
                             <select v-model="formData.type" class="md-input">
-                               <option>Income</option><option>Expense</option><option>Transfer</option><option>Savings</option><option>Investment</option>
+                               <option value="Income">Pemasukan</option><option value="Expense">Pengeluaran</option>
                             </select>
                          </div>
                       </template>
 
                       <template v-if="activeTab === 'unitScales'">
-                         <div class="form-group"><label>Unit Code</label><input type="text" v-model="formData.unitScale" class="md-input" :disabled="isEditing"></div>
+                         <div class="form-group"><label>Kode Satuan</label><input type="text" v-model="formData.unitScale" class="md-input" :disabled="isEditing"></div>
                       </template>
 
                       <template v-if="activeTab === 'tags'">
-                         <div class="form-group"><label>Tag Name</label><input type="text" v-model="formData.tagName" class="md-input"></div>
-                         <div class="form-group"><label>Tag Group</label><input type="text" v-model="formData.tagGroup" class="md-input"></div>
+                         <div class="form-group"><label>Nama Label</label><input type="text" v-model="formData.tagName" class="md-input"></div>
+                         <div class="form-group"><label>Grup Label</label><input type="text" v-model="formData.tagGroup" class="md-input"></div>
                       </template>
 
                       <template v-if="activeTab === 'projects'">
-                         <div class="form-group full"><label>Project Name</label><input type="text" v-model="formData.projectName" class="md-input"></div>
-                         <div class="form-group"><label>Start</label><input type="date" v-model="formData.startDate" class="md-input"></div>
-                         <div class="form-group"><label>End</label><input type="date" v-model="formData.endDate" class="md-input"></div>
-                         <div class="form-group"><label>Budget</label><input type="number" v-model.number="formData.budgetAmount" class="md-input"></div>
+                         <div class="form-group full"><label>Nama Proyek</label><input type="text" v-model="formData.projectName" class="md-input"></div>
+                         <div class="form-group"><label>Mulai</label><input type="date" v-model="formData.startDate" class="md-input"></div>
+                         <div class="form-group"><label>Selesai</label><input type="date" v-model="formData.endDate" class="md-input"></div>
+                         <div class="form-group"><label>Target Anggaran</label><input type="number" v-model.number="formData.budgetAmount" class="md-input"></div>
                          <div class="form-group">
                             <label>Status</label>
                             <select v-model="formData.status" class="md-input">
-                               <option>Active</option><option>Completed</option><option>Planned</option>
+                               <option>Berjalan</option><option>Selesai</option><option>Direncanakan</option>
                             </select>
                          </div>
                       </template>
 
                       <template v-if="activeTab === 'authors'">
-                         <div class="form-group"><label>Name</label><input type="text" v-model="formData.authorName" class="md-input"></div>
+                         <div class="form-group"><label>Nama Orang</label><input type="text" v-model="formData.authorName" class="md-input"></div>
                          <div class="form-group">
-                            <label>Role</label>
+                            <label>Peran</label>
                             <select v-model="formData.roleType" class="md-input">
-                               <option>Admin</option><option>Explorer</option><option>Auditor</option>
+                               <option>Admin</option><option>Pengguna</option><option>Pemeriksa</option>
                             </select>
                          </div>
                       </template>
 
                       <div class="form-group full">
-                         <label>Notes</label>
+                         <label>Catatan</label>
                          <textarea v-model="formData.description" class="md-textarea"></textarea>
                       </div>
                    </div>
@@ -181,12 +181,12 @@
                    <div class="edit-actions">
                       <button @click="handleSave" class="filled-btn-lg">
                          <span class="material-symbols-rounded">save</span>
-                         SAVE CHANGES
+                         SIMPAN PERUBAHAN
                       </button>
                       <div v-if="isEditing" class="secondary-actions">
-                         <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
-                         <button @click="handleMerge" class="tonal-btn">Merge</button>
-                         <button @click="handleDelete" class="error-btn">Decommission</button>
+                         <button @click="handleDuplicate" class="tonal-btn">Duplikat</button>
+                         <button @click="handleMerge" class="tonal-btn">Gabungkan</button>
+                         <button @click="handleDelete" class="error-btn">Hapus</button>
                       </div>
                    </div>
                 </div>
@@ -201,16 +201,16 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">Merge Target</h3>
+                <h3 class="sheet-title">Pilih Target Penggabungan</h3>
                 <button @click="isMergePanelOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
              </div>
              <div class="sheet-content">
-                <p class="sheet-tip">Select record to absorb <b>{{ getItemName(editingItem) }}</b>.</p>
+                <p class="sheet-tip">Pilih data yang akan menerima semua catatan dari <b>{{ getItemName(editingItem) }}</b>.</p>
                 <div class="search-box card-md3">
                    <span class="material-symbols-rounded">search</span>
-                   <input type="text" v-model="mergeTargetSearch" placeholder="Search targets...">
+                   <input type="text" v-model="mergeTargetSearch" placeholder="Cari data...">
                 </div>
                 <div class="target-list">
                    <div v-for="t in filteredMergeTargets" :key="getItemName(t)" @click="performMerge(t)" class="target-item card-md3">
@@ -270,11 +270,11 @@ const filteredIcons = computed(() => {
 })
 
 const tabs = [
-  { id: 'categories', label: 'Cats', icon: 'sell' },
-  { id: 'unitScales', label: 'Units', icon: 'straighten' },
-  { id: 'tags', label: 'Tags', icon: 'tag' },
-  { id: 'projects', label: 'Projs', icon: 'layers' },
-  { id: 'authors', label: 'Auths', icon: 'groups' }
+  { id: 'categories', label: 'Kategori', icon: 'sell' },
+  { id: 'unitScales', label: 'Satuan', icon: 'straighten' },
+  { id: 'tags', label: 'Label', icon: 'tag' },
+  { id: 'projects', label: 'Proyek', icon: 'layers' },
+  { id: 'authors', label: 'Orang', icon: 'groups' }
 ]
 
 const colors = ['#A8C7FA', '#BEC6DC', '#DEBCDF', '#B4E8A8', '#F2B8B5', '#82D3D0']
@@ -287,20 +287,20 @@ const getItemIcon = (item) => {
 }
 
 const getItemName = (item) => {
-  if (activeTab.value === 'categories') return item.category || 'Untitled'
+  if (activeTab.value === 'categories') return item.category || 'Tanpa Judul'
   if (activeTab.value === 'unitScales') return item.unitScale || 'pcs'
   if (activeTab.value === 'tags') return item.tagName || 'label'
-  if (activeTab.value === 'projects') return item.projectName || 'Mission'
-  if (activeTab.value === 'authors') return item.authorName || 'Explorer'
-  return 'Unknown'
+  if (activeTab.value === 'projects') return item.projectName || 'Proyek'
+  if (activeTab.value === 'authors') return item.authorName || 'Pengguna'
+  return 'Tidak Diketahui'
 }
 
 const getItemSub = (item) => {
-  if (activeTab.value === 'categories') return `${item.categoryGroup || 'Gen'} • ${item.type}`
+  if (activeTab.value === 'categories') return `${item.categoryGroup || 'Umum'} • ${item.type === 'Income' ? 'Pemasukan' : 'Pengeluaran'}`
   if (activeTab.value === 'projects') return `${item.status} • Rp ${(item.budgetAmount || 0).toLocaleString('id-ID')}`
   if (activeTab.value === 'tags') return item.tagGroup || 'Global'
   if (activeTab.value === 'authors') return item.roleType || 'Member'
-  return 'Registry Entry'
+  return 'Data Tercatat'
 }
 
 const currentList = computed(() => store[activeTab.value] || [])
@@ -321,8 +321,8 @@ const openModal = (item) => {
      if (activeTab.value === 'categories') formData.value = { category: '', categoryGroup: '', type: 'Expense', description: '', icon: 'sell' }
      else if (activeTab.value === 'unitScales') formData.value = { unitScale: '', description: '' }
      else if (activeTab.value === 'tags') formData.value = { tagName: '', tagGroup: '', description: '' }
-     else if (activeTab.value === 'projects') formData.value = { projectName: '', startDate: '', endDate: '', budgetAmount: 0, status: 'Active', author: 'Self', description: '' }
-     else if (activeTab.value === 'authors') formData.value = { authorName: '', roleType: 'Explorer' }
+     else if (activeTab.value === 'projects') formData.value = { projectName: '', startDate: '', endDate: '', budgetAmount: 0, status: 'Berjalan', author: 'Saya Sendiri', description: '' }
+     else if (activeTab.value === 'authors') formData.value = { authorName: '', roleType: 'Pengguna' }
   }
   isModalOpen.value = true
 }
@@ -374,7 +374,7 @@ const handleMerge = () => { isMergePanelOpen.value = true }
 const performMerge = (target) => {
    const sourceName = getItemName(editingItem.value)
    const targetName = getItemName(target)
-   if (!confirm(`Merge ALL records from "${sourceName}" into "${targetName}"?`)) return
+   if (!confirm(`Pindahkan SEMUA catatan dari "${sourceName}" ke "${targetName}"?`)) return
    store.mergeEntities(activeTab.value, sourceName, targetName)
    if (activeTab.value === 'categories') store.deleteCategory(editingItem.value.categoryID)
    else if (activeTab.value === 'unitScales') store.deleteUnitScale(editingItem.value.unitScale)
@@ -386,7 +386,7 @@ const performMerge = (target) => {
 }
 
 const handleDelete = () => {
-   if (!confirm('Decommission this record?')) return
+   if (!confirm('Hapus data ini secara permanen?')) return
    if (activeTab.value === 'categories') store.deleteCategory(editingItem.value.categoryID)
    else if (activeTab.value === 'unitScales') store.deleteUnitScale(editingItem.value.unitScale)
    else if (activeTab.value === 'tags') store.deleteTag(editingItem.value.tagID)

@@ -6,11 +6,11 @@
         <button class="icon-btn" @click="$router.push('/')">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
-        <h1>{{ route.query.id ? 'Modify Identity' : 'New Identity' }}</h1>
+        <h1>{{ route.query.id ? 'Ubah Catatan' : 'Catatan Baru' }}</h1>
         <div class="app-bar-actions">
           <button class="tonal-btn" @click="saveTransaction">
             <span class="material-symbols-rounded">verified_user</span>
-            Authorize
+            Simpan
           </button>
         </div>
       </div>
@@ -23,25 +23,25 @@
         <section class="form-section-md3">
            <div class="section-header">
               <span class="material-symbols-rounded">schedule</span>
-              <h3>Temporal Coordinates</h3>
+              <h3>Waktu & Penulis</h3>
            </div>
            
            <div class="form-row">
               <div class="form-group">
-                 <span class="field-label">Date</span>
+                 <span class="field-label">Tanggal</span>
                  <input type="date" v-model="form.date" class="md-input">
               </div>
               <div class="form-group">
-                 <span class="field-label">Time</span>
+                 <span class="field-label">Jam</span>
                  <input type="time" v-model="form.time" class="md-input">
               </div>
            </div>
            
            <div class="form-group mt-12">
-              <span class="field-label">Author</span>
+              <span class="field-label">Penulis/Pemilik</span>
               <select v-model="form.author" class="md-input">
                  <option v-for="a in store.authors" :key="a.authorID" :value="a.authorName">{{ a.authorName }}</option>
-                 <option value="Self">Self (Standard)</option>
+                 <option value="Self">Saya Sendiri</option>
               </select>
            </div>
         </section>
@@ -50,18 +50,18 @@
         <section class="form-section-md3">
            <div class="section-header">
               <span class="material-symbols-rounded">fingerprint</span>
-              <h3>Object Identity</h3>
+              <h3>Detail Barang/Toko</h3>
            </div>
            
            <button type="button" @click="startScanner" class="scan-button">
               <span class="material-symbols-rounded">barcode_scanner</span>
-              INITIALIZE SCANNER
+              BUKA SCANNER BARCODE
            </button>
 
            <div class="form-group">
-              <span class="field-label">Item Designation *</span>
+              <span class="field-label">Nama Barang *</span>
               <div class="dropdown-wrapper">
-                 <input type="text" v-model="itemSearch" @focus="showItemDropdown = true" @blur="hideDropdown('item')" placeholder="Search Archives..." required class="md-input">
+                 <input type="text" v-model="itemSearch" @focus="showItemDropdown = true" @blur="hideDropdown('item')" placeholder="Cari nama barang..." required class="md-input">
                  <div v-if="showItemDropdown && filteredItems.length" class="dropdown-panel">
                     <div v-for="i in filteredItems" :key="i.itemID" @mousedown="selectItem(i)" class="dropdown-item">
                        <span class="item-main">{{ i.itemName }}</span>
@@ -73,9 +73,9 @@
 
            <div class="form-row">
               <div class="form-group">
-                 <span class="field-label">Vendor</span>
+                 <span class="field-label">Toko/Vendor</span>
                  <div class="dropdown-wrapper">
-                    <input type="text" v-model="merchantSearch" @focus="showMerchantDropdown = true" @blur="hideDropdown('merchant')" placeholder="Search Vendors..." class="md-input">
+                    <input type="text" v-model="merchantSearch" @focus="showMerchantDropdown = true" @blur="hideDropdown('merchant')" placeholder="Cari toko..." class="md-input">
                     <div v-if="showMerchantDropdown && filteredMerchants.length" class="dropdown-panel">
                        <div v-for="m in filteredMerchants" :key="m.merchantID" @mousedown="selectMerchant(m)" class="dropdown-item">
                           <span class="item-main">{{ m.merchantName }}</span>
@@ -85,9 +85,9 @@
                  </div>
               </div>
               <div class="form-group">
-                 <span class="field-label">Classification</span>
+                 <span class="field-label">Kategori</span>
                  <div class="dropdown-wrapper">
-                    <input type="text" v-model="categorySearch" @focus="showCategoryDropdown = true" @blur="hideDropdown('category')" placeholder="General" class="md-input">
+                    <input type="text" v-model="categorySearch" @focus="showCategoryDropdown = true" @blur="hideDropdown('category')" placeholder="Umum" class="md-input">
                     <div v-if="showCategoryDropdown && filteredCategories.length" class="dropdown-panel">
                        <div v-for="c in filteredCategories" :key="c.categoryID" @mousedown="selectCategory(c)" class="dropdown-item">
                           <span class="item-main">{{ c.category }}</span>
@@ -98,8 +98,8 @@
            </div>
 
            <div class="form-group mt-12">
-              <span class="field-label">Intelligence Briefing / Notes</span>
-              <textarea v-model="form.description" placeholder="Mission briefing or item specifics..." class="md-input" style="min-height: 100px;"></textarea>
+              <span class="field-label">Catatan Tambahan</span>
+              <textarea v-model="form.description" placeholder="Tambahkan detail atau informasi tambahan jika ada..." class="md-input" style="min-height: 100px;"></textarea>
            </div>
         </section>
 
@@ -107,37 +107,37 @@
         <section class="form-section-md3">
            <div class="section-header">
               <span class="material-symbols-rounded">sync_alt</span>
-              <h3>Logic & Flow</h3>
+              <h3>Jenis Transaksi</h3>
            </div>
            
            <div class="protocol-switcher">
-              <button v-for="t in ['Income', 'Expense', 'Transfer', 'Investment', 'Savings']" :key="t" type="button" @click="form.type = t" :class="{ active: form.type === t }" class="protocol-chip">
-                 {{ t }}
+              <button v-for="t in [['Income', 'Pemasukan'], ['Expense', 'Pengeluaran'], ['Transfer', 'Transfer'], ['Investment', 'Investasi'], ['Savings', 'Tabungan']]" :key="t[0]" type="button" @click="form.type = t[0]" :class="{ active: form.type === t[0] }" class="protocol-chip">
+                 {{ t[1] }}
               </button>
            </div>
            
            <div class="form-row mt-16">
               <div v-show="form.type !== 'Income'" class="form-group">
-                 <span class="field-label">Source Vault *</span>
+                 <span class="field-label">Dari Rekening *</span>
                  <select v-model="form.paymentSourceAccount" class="md-input">
-                    <option value="">Select Vault...</option>
+                    <option value="">Pilih Rekening Sumber...</option>
                     <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
                  </select>
               </div>
               <div v-show="form.type !== 'Expense'" class="form-group">
-                 <span class="field-label">Target Vault *</span>
+                 <span class="field-label">Ke Rekening *</span>
                  <select v-model="form.beneficiaryAccount" class="md-input">
-                    <option value="">Select Vault...</option>
+                    <option value="">Pilih Rekening Tujuan...</option>
                     <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
                  </select>
               </div>
            </div>
 
            <div class="receipt-section mt-16">
-              <span class="field-label">Receipt & Evidence</span>
+              <span class="field-label">Foto Nota / Bukti</span>
               <div class="receipt-actions">
                  <select v-model="form.receipt" class="md-input">
-                    <option value="">No Receipt Linked</option>
+                    <option value="">Tidak ada nota tertaut</option>
                     <option v-for="r in store.receipts" :key="r.receiptID" :value="r.receiptID">{{ r.merchant }} - {{ r.date }}</option>
                  </select>
                  <button type="button" @click="$refs.txPhoto.click()" class="icon-btn-outlined">
@@ -156,7 +156,7 @@
               <div v-if="suggestedReceipts.length > 0" class="suggestion-banner">
                  <div class="suggestion-header">
                     <span class="material-symbols-rounded">lightbulb</span>
-                    <span>Matching Receipts Found</span>
+                    <span>Ada nota yang mungkin cocok</span>
                  </div>
                  <div v-for="sr in suggestedReceipts" :key="sr.receiptID" @click="linkReceipt(sr)" class="suggestion-item">
                     <span>{{ sr.merchant }} • {{ sr.date }}</span>
@@ -166,8 +166,8 @@
 
               <button type="button" @click="form.cleared = (form.cleared === 'yes' ? 'no' : 'yes')" class="clearance-toggle" :class="{ verified: form.cleared === 'yes' }">
                  <div class="toggle-info">
-                    <span class="toggle-label">Clearance Protocol</span>
-                    <span class="toggle-status">{{ form.cleared === 'yes' ? 'VERIFIED' : 'PENDING' }}</span>
+                    <span class="toggle-label">Status Cek/Verifikasi</span>
+                    <span class="toggle-status">{{ form.cleared === 'yes' ? 'SUDAH DICEK' : 'BELUM DICEK' }}</span>
                  </div>
                  <span class="material-symbols-rounded">{{ form.cleared === 'yes' ? 'check_circle' : 'pending' }}</span>
               </button>
@@ -178,27 +178,27 @@
         <section class="form-section-md3 highlight">
            <div class="section-header">
               <span class="material-symbols-rounded">payments</span>
-              <h3>Calculation Protocols</h3>
+              <h3>Rincian Harga</h3>
            </div>
 
            <div class="form-row">
               <div class="form-group">
-                 <span class="field-label">Currency</span>
+                 <span class="field-label">Mata Uang</span>
                  <input type="text" v-model="form.currency" class="md-input" placeholder="IDR">
               </div>
               <div v-if="form.currency.toUpperCase() !== 'IDR'" class="form-group">
-                 <span class="field-label">X-Rate</span>
+                 <span class="field-label">Kurs (ke IDR)</span>
                  <input type="number" v-model.number="form.exchangeRate" step="any" class="md-input">
               </div>
            </div>
 
            <div class="form-row">
               <div class="form-group">
-                 <span class="field-label">Quantity</span>
+                 <span class="field-label">Jumlah</span>
                  <div class="unit-input-group">
                     <input type="number" v-model.number="form.quantity" step="any" class="md-input">
                     <div class="unit-dropdown">
-                       <input type="text" v-model="unitSearch" @focus="showUnitDropdown = true" @blur="hideDropdown('unit')" placeholder="UNIT" class="unit-search-field">
+                       <input type="text" v-model="unitSearch" @focus="showUnitDropdown = true" @blur="hideDropdown('unit')" placeholder="SATUAN" class="unit-search-field">
                        <div v-if="showUnitDropdown && filteredUnits.length" class="dropdown-panel top">
                           <div v-for="u in filteredUnits" :key="u.unitScale" @mousedown="selectUnit(u)" class="dropdown-item">
                              <span class="item-main">{{ u.unitScale }}</span>
@@ -208,18 +208,18 @@
                  </div>
               </div>
               <div class="form-group">
-                 <span class="field-label">Unit Cost</span>
+                 <span class="field-label">Harga Satuan</span>
                  <input type="number" v-model.number="form.amountPerUnit" step="any" class="md-input large-text">
               </div>
            </div>
 
            <div class="form-row dashed-top">
               <div class="form-group">
-                 <span class="field-label success-text">Reward Offset (-)</span>
+                 <span class="field-label success-text">Diskon/Potongan (-)</span>
                  <input type="number" :value="calculatedDiscount" readonly class="md-input success-bg" style="color: var(--green);">
               </div>
               <div class="form-group">
-                 <span class="field-label">Logistics Fee (+)</span>
+                 <span class="field-label">Biaya Tambahan (+)</span>
                  <input type="number" v-model.number="form.fee" step="any" class="md-input">
               </div>
            </div>
@@ -244,7 +244,7 @@
            </div>
 
            <div class="final-settlement-card">
-              <div class="settlement-label">SETTLEMENT AMOUNT</div>
+              <div class="settlement-label">TOTAL AKHIR</div>
               <div class="settlement-value">
                  <span class="currency-symbol">Rp</span>
                  <span class="amount-integer">{{ calculatedTotal.toLocaleString('id-ID') }}</span>
@@ -256,13 +256,13 @@
         <section class="form-section-md3">
            <div class="section-header">
               <span class="material-symbols-rounded">label</span>
-              <h3>Meta Coordinates</h3>
+              <h3>Label & Proyek</h3>
            </div>
            
            <div class="metadata-group">
               <div class="meta-header">
-                 <span class="field-label">Tags</span>
-                 <button type="button" @click="handleQuickAdd('tag')" class="text-action">+ Add</button>
+                 <span class="field-label">Label / Tag</span>
+                 <button type="button" @click="handleQuickAdd('tag')" class="text-action">+ Tambah</button>
               </div>
               <div class="chip-grid">
                  <button v-for="t in store.tags" :key="t.tagID" type="button" @click="form.tags = toggleValue(form.tags, t.tagName)" :class="{ active: isSelected(form.tags, t.tagName) }" class="filter-chip">
@@ -273,8 +273,8 @@
 
            <div class="metadata-group mt-16">
               <div class="meta-header">
-                 <span class="field-label">Projects</span>
-                 <button type="button" @click="handleQuickAdd('project')" class="text-action">+ Add</button>
+                 <span class="field-label">Proyek / Kegiatan</span>
+                 <button type="button" @click="handleQuickAdd('project')" class="text-action">+ Tambah</button>
               </div>
               <div class="chip-grid">
                  <button v-for="p in store.projects" :key="p.projectID" type="button" @click="form.projects = toggleValue(form.projects, p.projectName)" :class="{ active: isSelected(form.projects, p.projectName) }" class="filter-chip">
@@ -287,7 +287,7 @@
         <div class="bottom-actions">
            <button type="submit" class="primary-btn lg full">
               <span class="material-symbols-rounded">verified</span>
-              AUTHORIZE PROTOCOL
+              SIMPAN TRANSAKSI
            </button>
         </div>
       </form>
@@ -297,9 +297,9 @@
     <Teleport to="body">
       <div v-if="showScanner" class="scanner-overlay">
          <div class="scanner-header">
-            <h3>Scan SKU</h3>
+            <h3>Scan Barcode</h3>
             <button @click="stopScanner" class="icon-btn">
-              <span class="material-symbols-rounded">close</span>
+               <span class="material-symbols-rounded">close</span>
             </button>
          </div>
          <div class="scanner-container">
@@ -347,7 +347,7 @@ const form = ref({
   localPhoto: '',
   tags: '',
   projects: '',
-  author: 'Self',
+  author: 'Saya Sendiri',
   discount: 0,
   fee: 0,
   total: 0,
@@ -503,7 +503,7 @@ const calculatedTotal = computed(() => {
 })
 
 const saveTransaction = () => {
-  if (!form.value.itemName) return alert("Item Name required.")
+  if (!form.value.itemName) return alert("Nama barang wajib diisi.")
   form.value.discount = calculatedDiscount.value
   form.value.total = calculatedTotal.value
   form.value.updateTime = new Date().toISOString()
@@ -531,7 +531,7 @@ const isSelected = (current, value) => {
   return arr.includes(value)
 }
 const handleQuickAdd = (type) => {
-  const name = prompt(`Enter new ${type} name:`)
+  const name = prompt(`Masukkan nama ${type === 'tag' ? 'label' : 'proyek'} baru:`)
   if (!name) return
   if (type === 'tag') store.addTag({ tagName: name })
   else store.addProject({ projectName: name })
@@ -551,7 +551,7 @@ const startScanner = async () => {
         }
         stopScanner()
       }, () => {})
-    } catch (err) { alert("Scanner failure."); showScanner.value = false }
+    } catch (err) { alert("Gagal membuka kamera."); showScanner.value = false }
   })
 }
 const stopScanner = async () => {

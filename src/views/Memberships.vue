@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Privileges</h1>
+          <h1>Member & Langganan</h1>
           <button class="icon-btn" @click="showSearch = true">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -16,7 +16,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -43,17 +43,17 @@
            
            <div class="card-footer">
               <div class="valid-thru">
-                 <span class="footer-label">VALID THRU</span>
-                 <span class="footer-value">{{ m.expiryDate || 'PERPETUAL' }}</span>
+                 <span class="footer-label">BERLAKU SAMPAI</span>
+                 <span class="footer-value">{{ m.expiryDate || 'SELAMANYA' }}</span>
               </div>
-              <span v-if="isExpired(m.expiryDate)" class="expired-tag">EXPIRED</span>
+              <span v-if="isExpired(m.expiryDate)" class="expired-tag">HABIS</span>
            </div>
         </div>
       </div>
 
       <div v-if="filteredMembers.length === 0" class="empty-state">
         <span class="material-symbols-rounded">id_card</span>
-        <p>No active privilege identifiers detected.</p>
+        <p>Belum ada data member atau langganan.</p>
       </div>
     </div>
 
@@ -68,7 +68,7 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">{{ editingMember.memberID ? (modalMode === 'analysis' ? 'Membership Intel' : 'Modify Privilege') : 'New Privilege' }}</h3>
+                <h3 class="sheet-title">{{ editingMember.memberID ? (modalMode === 'analysis' ? 'Detail Langganan' : 'Ubah Data') : 'Tambah Baru' }}</h3>
                 <button @click="isModalOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
@@ -79,7 +79,7 @@
                 <div v-if="modalMode === 'analysis' && editingMember.memberID" class="analysis-view">
                    <div class="membership-hero-card" :style="{ backgroundColor: editingMember.color || 'var(--primary)' }">
                       <div class="hero-header">
-                         <span class="hero-protocol">MEMBER PROTOCOL</span>
+                         <span class="hero-protocol">KARTU MEMBER</span>
                          <span class="material-symbols-rounded">verified</span>
                       </div>
                       <h2 class="hero-name">{{ editingMember.memberName }}</h2>
@@ -88,11 +88,11 @@
 
                    <div class="analytics-grid">
                       <div class="stat-card card-md3 tonal">
-                         <span class="stat-label">BENEFIT RATIO</span>
-                         <span class="stat-value success">{{ editingMember.membershipDiscount }}% Off</span>
+                         <span class="stat-label">KEUNTUNGAN</span>
+                         <span class="stat-value success">Diskon {{ editingMember.membershipDiscount }}%</span>
                       </div>
                       <div class="stat-card card-md3">
-                         <span class="stat-label">PROTOCOL COST</span>
+                         <span class="stat-label">BIAYA LANGGANAN</span>
                          <span class="stat-value">Rp {{ (editingMember.membershipCost || 0).toLocaleString('id-ID') }}</span>
                       </div>
                    </div>
@@ -100,39 +100,39 @@
                    <div class="action-grid">
                       <button @click="modalMode = 'edit'" class="tonal-btn-lg">
                          <span class="material-symbols-rounded">edit</span>
-                         MODIFY
+                         UBAH DATA
                       </button>
-                      <button @click="isModalOpen = false" class="outline-btn-lg">CLOSE</button>
+                      <button @click="isModalOpen = false" class="outline-btn-lg">TUTUP</button>
                    </div>
                 </div>
 
                 <!-- MODE: EDIT -->
                 <div v-else class="edit-view">
                    <div class="form-grid">
-                      <div class="form-group full"><label>Member Name</label><input type="text" v-model="formData.memberName" class="md-input"></div>
-                      <div class="form-group"><label>Code / PID</label><input type="text" v-model="formData.code" class="md-input"></div>
-                      <div class="form-group"><label>Discount (%)</label><input type="number" v-model.number="formData.membershipDiscount" class="md-input"></div>
-                      <div class="form-group"><label>Expiry Date</label><input type="date" v-model="formData.expiryDate" class="md-input"></div>
-                      <div class="form-group"><label>Card Color</label><input type="color" v-model="formData.color" class="md-input color-picker"></div>
-                      <div class="form-group"><label>Protocol Cost</label><input type="number" v-model.number="formData.membershipCost" class="md-input"></div>
+                      <div class="form-group full"><label>Nama Member / Layanan</label><input type="text" v-model="formData.memberName" class="md-input"></div>
+                      <div class="form-group"><label>Kode / No Kartu</label><input type="text" v-model="formData.code" class="md-input"></div>
+                      <div class="form-group"><label>Diskon (%)</label><input type="number" v-model.number="formData.membershipDiscount" class="md-input"></div>
+                      <div class="form-group"><label>Berlaku Sampai</label><input type="date" v-model="formData.expiryDate" class="md-input"></div>
+                      <div class="form-group"><label>Warna Kartu</label><input type="color" v-model="formData.color" class="md-input color-picker"></div>
+                      <div class="form-group"><label>Biaya Berlangganan</label><input type="number" v-model.number="formData.membershipCost" class="md-input"></div>
                       <div class="form-group">
-                         <label>Class Status</label>
+                         <label>Status Bayar</label>
                          <button type="button" @click="formData.isPaid = !formData.isPaid" class="toggle-btn" :class="{ active: formData.isPaid }">
-                            {{ formData.isPaid ? 'PAID' : 'FREE' }}
+                            {{ formData.isPaid ? 'BERBAYAR' : 'GRATIS' }}
                          </button>
                       </div>
-                      <div class="form-group full"><label>Image URL (Logo/Card)</label><input type="text" v-model="formData.memberImage" class="md-input"></div>
-                      <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                      <div class="form-group full"><label>URL Gambar (Logo)</label><input type="text" v-model="formData.memberImage" class="md-input"></div>
+                      <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                    </div>
 
                    <div class="modal-actions">
                       <button @click="saveMem" class="filled-btn-lg">
                          <span class="material-symbols-rounded">save</span>
-                         SAVE MEMBER
+                         SIMPAN DATA
                       </button>
                       <div v-if="editingMember.memberID" class="secondary-actions">
-                         <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
-                         <button @click="deleteMem" class="error-btn">Purge</button>
+                         <button @click="handleDuplicate" class="tonal-btn">Duplikat</button>
+                         <button @click="deleteMem" class="error-btn">Hapus</button>
                       </div>
                    </div>
                 </div>

@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Logs</h1>
+          <h1>Riwayat</h1>
           <div class="app-bar-actions">
             <button class="icon-btn" @click="showSearch = true">
               <span class="material-symbols-rounded">search</span>
@@ -21,7 +21,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" placeholder="Search logs..." autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari riwayat..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -34,36 +34,36 @@
       <div v-if="showFilter" class="filter-panel card-md3">
          <div class="filter-grid">
             <div class="filter-group">
-               <span class="filter-label">From</span>
+               <span class="filter-label">Mulai Tanggal</span>
                <input type="date" v-model="filter.from" class="md-input">
             </div>
             <div class="filter-group">
-               <span class="filter-label">To</span>
+               <span class="filter-label">Sampai Tanggal</span>
                <input type="date" v-model="filter.to" class="md-input">
             </div>
             <div class="filter-group">
-               <span class="filter-label">Protocol</span>
+               <span class="filter-label">Jenis Transaksi</span>
                <select v-model="filter.type" class="md-input">
-                  <option value="">All Protocols</option>
-                  <option value="Expense">Expense</option>
-                  <option value="Income">Income</option>
+                  <option value="">Semua Jenis</option>
+                  <option value="Expense">Pengeluaran</option>
+                  <option value="Income">Pemasukan</option>
                   <option value="Transfer">Transfer</option>
-                  <option value="Investment">Investment</option>
-                  <option value="Savings">Savings</option>
+                  <option value="Investment">Investasi</option>
+                  <option value="Savings">Tabungan</option>
                </select>
             </div>
             <div class="filter-group">
-               <span class="filter-label">Clearance</span>
+               <span class="filter-label">Status Cek</span>
                <select v-model="filter.status" class="md-input">
-                  <option value="">All States</option>
-                  <option value="yes">Verified</option>
-                  <option value="no">Pending</option>
+                  <option value="">Semua Status</option>
+                  <option value="yes">Sudah Dicek</option>
+                  <option value="no">Belum Dicek</option>
                </select>
             </div>
          </div>
          <div class="filter-actions">
-            <button @click="resetFilter" class="text-btn">Reset</button>
-            <button @click="showFilter = false" class="tonal-btn">Apply</button>
+            <button @click="resetFilter" class="text-btn">Atur Ulang</button>
+            <button @click="showFilter = false" class="tonal-btn">Terapkan</button>
          </div>
       </div>
 
@@ -83,8 +83,8 @@
                   <span class="material-symbols-rounded">{{ getTxIcon(t.type, t.category) }}</span>
                </div>
                <div class="log-info">
-                  <span class="log-title">{{ t.itemName || t.merchant || 'Unknown Loot' }}</span>
-                  <span class="log-meta">{{ t.merchant ? t.merchant + ' • ' : '' }}{{ t.category || 'General' }} • {{ formatTime(t.time) }}</span>
+                  <span class="log-title">{{ t.itemName || t.merchant || 'Tanpa Nama' }}</span>
+                  <span class="log-meta">{{ t.merchant ? t.merchant + ' • ' : '' }}{{ t.category || 'Umum' }} • {{ formatTime(t.time) }}</span>
                </div>
                <div class="log-amount" :style="{ color: getTxColor(t.type) }">
                   {{ getTxSign(t.type) }}Rp {{ (Number(t.total) || 0).toLocaleString('id-ID') }}
@@ -94,7 +94,7 @@
 
          <div v-if="Object.keys(groupedTransactions).length === 0" class="empty-state">
             <span class="material-symbols-rounded">search_off</span>
-            <p>No records found in this sector.</p>
+            <p>Tidak ada catatan transaksi ditemukan.</p>
          </div>
       </div>
     </div>

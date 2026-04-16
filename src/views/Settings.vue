@@ -6,7 +6,7 @@
         <button class="icon-btn" @click="currentView === 'main' ? $router.push('/') : currentView = 'main'">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
-        <h1>{{ currentView === 'main' ? 'Settings' : subTitles[currentView] }}</h1>
+        <h1>{{ currentView === 'main' ? 'Pengaturan' : subTitles[currentView] }}</h1>
       </div>
     </div>
 
@@ -20,22 +20,22 @@
             <span v-else class="avatar-emoji">{{ userPrefs.avatar || '👤' }}</span>
           </div>
           <div class="profile-info">
-            <span class="profile-label">Authorized Explorer</span>
-            <span class="profile-name">{{ userPrefs.name || 'User' }}</span>
-            <span class="profile-meta">{{ userPrefs.email || 'No secure link established' }}</span>
+            <span class="profile-label">Profil Pengguna</span>
+            <span class="profile-name">{{ userPrefs.name || 'Pengguna' }}</span>
+            <span class="profile-meta">{{ userPrefs.email || 'Email belum diatur' }}</span>
           </div>
           <span class="material-symbols-rounded">chevron_right</span>
         </div>
 
-        <div class="section-title">System Protocol</div>
+        <div class="section-title">Sistem & Aplikasi</div>
         <div class="list-card card-md3">
           <div v-if="installPrompt" class="list-item" @click="installApp">
             <div class="list-icon-box tonal">
               <span class="material-symbols-rounded">download</span>
             </div>
             <div class="list-text">
-              <span class="list-item-title">Install Platform</span>
-              <span class="list-item-sub">Deploy to local desktop or mobile</span>
+              <span class="list-item-title">Pasang Aplikasi</span>
+              <span class="list-item-sub">Instal ke layar depan perangkat</span>
             </div>
           </div>
           <div class="list-item" @click="updateApp">
@@ -43,35 +43,35 @@
               <span class="material-symbols-rounded">refresh</span>
             </div>
             <div class="list-text">
-              <span class="list-item-title">Update Explorer</span>
-              <span class="list-item-sub">Sync with latest core version</span>
+              <span class="list-item-title">Perbarui Aplikasi</span>
+              <span class="list-item-sub">Sinkronkan versi terbaru</span>
             </div>
           </div>
         </div>
 
-        <div class="section-title">Interface Matrix</div>
+        <div class="section-title">Personalisasi</div>
         <div class="list-card card-md3">
           <div class="list-item" @click="currentView = 'visual'">
             <div class="list-icon-box primary">
               <span class="material-symbols-rounded">palette</span>
             </div>
             <div class="list-text">
-              <span class="list-item-title">Aesthetics & Geometry</span>
-              <span class="list-item-sub">Theme, colors, and layout structure</span>
+              <span class="list-item-title">Atur Tampilan</span>
+              <span class="list-item-sub">Tema, warna, dan ukuran sudut</span>
             </div>
             <span class="material-symbols-rounded">chevron_right</span>
           </div>
         </div>
 
-        <div class="section-title">Core Data</div>
+        <div class="section-title">Data & Cadangan</div>
         <div class="list-card card-md3">
           <div class="list-item" @click="currentView = 'cloud'">
             <div class="list-icon-box info">
               <span class="material-symbols-rounded">cloud_sync</span>
             </div>
             <div class="list-text">
-              <span class="list-item-title">Chronicle Vault</span>
-              <span class="list-item-sub">Cloud synchronization parameters</span>
+              <span class="list-item-title">Simpan ke Cloud</span>
+              <span class="list-item-sub">Sinkronisasi Google Sheet</span>
             </div>
             <span class="material-symbols-rounded">chevron_right</span>
           </div>
@@ -80,29 +80,29 @@
               <span class="material-symbols-rounded">database</span>
             </div>
             <div class="list-text">
-              <span class="list-item-title">Metadata Registry</span>
-              <span class="list-item-sub">Categories, Units, Tags & Projects</span>
+              <span class="list-item-title">Kategori & Label</span>
+              <span class="list-item-sub">Kelola Kategori, Satuan, Tag & Proyek</span>
             </div>
             <span class="material-symbols-rounded">chevron_right</span>
           </div>
         </div>
 
-        <div class="section-title danger">Security Protocols</div>
+        <div class="section-title danger">Keamanan & Reset</div>
         <div class="list-card card-md3 danger-border">
           <div class="list-item" @click="clearData">
             <div class="list-icon-box error">
               <span class="material-symbols-rounded">delete_forever</span>
             </div>
             <div class="list-text">
-              <span class="list-item-title danger">Abandon Journey</span>
-              <span class="list-item-sub">Factory reset all local intelligence</span>
+              <span class="list-item-title danger">Reset Total</span>
+              <span class="list-item-sub">Hapus semua data di aplikasi ini</span>
             </div>
           </div>
         </div>
 
         <div class="version-badge">
-           <p>JURNEY INTELLIGENCE CORE</p>
-           <span>v5.4.0 • PRODUCTION GRADE</span>
+           <p>CATATAN KEUANGAN</p>
+           <span>v5.4.0 • AKTIF</span>
         </div>
       </div>
 
@@ -119,7 +119,7 @@
             
             <div class="avatar-search card-md3">
               <span class="material-symbols-rounded">search</span>
-              <input type="text" v-model="avatarSearch" placeholder="Filter identifiers...">
+              <input type="text" v-model="avatarSearch" placeholder="Cari ikon...">
             </div>
 
             <div class="avatar-grid">
@@ -133,25 +133,25 @@
 
           <div class="list-card card-md3 field-group">
             <div class="field-item">
-              <span class="field-label">Explorer Callsign</span>
-              <input type="text" v-model="userPrefs.name" class="md-input-field" placeholder="Enter name">
+              <span class="field-label">Nama Pengguna</span>
+              <input type="text" v-model="userPrefs.name" class="md-input-field" placeholder="Masukkan nama">
             </div>
             <div class="field-item">
-              <span class="field-label">Communication Frequency</span>
-              <input type="email" v-model="userPrefs.email" class="md-input-field" placeholder="Enter email">
+              <span class="field-label">Alamat Email</span>
+              <input type="email" v-model="userPrefs.email" class="md-input-field" placeholder="Masukkan email">
             </div>
           </div>
 
           <button class="filled-btn" @click="savePrefs">
             <span class="material-symbols-rounded">save</span>
-            Update Profile
+            Simpan Profil
           </button>
         </div>
 
         <!-- Visual View -->
         <div v-if="currentView === 'visual'" class="visual-settings">
            <div class="section-card card-md3">
-             <span class="section-header-text">Atmospheric Theme</span>
+             <span class="section-header-text">Tema Tampilan</span>
              <div class="theme-grid">
                <div v-for="t in themes" :key="t.id" class="theme-item" :class="{ active: userPrefs.theme === t.id }" @click="userPrefs.theme = t.id">
                  <div class="theme-preview-box" :style="{ background: t.bg, borderColor: t.border }">
@@ -165,7 +165,7 @@
            </div>
 
            <div class="section-card card-md3">
-             <span class="section-header-text">Corner Geometry ({{ userPrefs.radius }}px)</span>
+             <span class="section-header-text">Kelengkungan Sudut ({{ userPrefs.radius }}px)</span>
              <div class="slider-container">
                <span class="material-symbols-rounded">rounded_corner</span>
                <input type="range" min="0" max="28" v-model="userPrefs.radius" class="md-slider">
@@ -175,41 +175,41 @@
 
            <button class="filled-btn" @click="savePrefs">
              <span class="material-symbols-rounded">done_all</span>
-             Apply Styles
+             Terapkan Tampilan
            </button>
         </div>
 
         <!-- Cloud View -->
         <div v-if="currentView === 'cloud'" class="cloud-settings">
           <div class="section-card card-md3">
-            <span class="section-header-text">Universal Core Link</span>
+            <span class="section-header-text">Tautan Google Sheet</span>
             <div class="input-with-button">
               <span class="material-symbols-rounded">key</span>
-              <input :type="showUrl ? 'text' : 'password'" v-model="cloudUrl" placeholder="Enter uplink string...">
+              <input :type="showUrl ? 'text' : 'password'" v-model="cloudUrl" placeholder="Masukkan URL Sheet...">
               <button @click="showUrl = !showUrl" class="icon-btn sm">
                 <span class="material-symbols-rounded">{{ showUrl ? 'visibility_off' : 'visibility' }}</span>
               </button>
             </div>
-            <p class="section-tip">Active encryption enabled via Jurney Protocol.</p>
+            <p class="section-tip">Pastikan URL Google Sheet Anda sudah disetel public/akses skrip.</p>
           </div>
 
           <div class="section-card card-md3">
-            <span class="section-header-text">Integration Mode</span>
+            <span class="section-header-text">Mode Sinkronisasi</span>
             <div class="segmented-control">
-               <button @click="syncMode = 'overwrite'" :class="{ active: syncMode === 'overwrite' }">FORCE OVERWRITE</button>
-               <button @click="syncMode = 'merge'" :class="{ active: syncMode === 'merge' }">HYBRID MERGE</button>
+               <button @click="syncMode = 'overwrite'" :class="{ active: syncMode === 'overwrite' }">TIMPA SEMUA</button>
+               <button @click="syncMode = 'merge'" :class="{ active: syncMode === 'merge' }">GABUNG DATA</button>
             </div>
-            <p class="mode-desc">{{ syncMode === 'overwrite' ? 'Warning: Full state replacement.' : 'Safe: Delta-based log integration.' }}</p>
+            <p class="mode-desc">{{ syncMode === 'overwrite' ? 'Peringatan: Data di HP akan diganti sepenuhnya.' : 'Aman: Menggabungkan data HP dan Cloud.' }}</p>
           </div>
 
           <div class="sync-actions">
             <button class="tonal-btn-lg" @click="pullData" :disabled="syncing">
               <span class="material-symbols-rounded">download</span>
-              {{ syncing ? 'Pulling...' : 'Pull Core' }}
+              {{ syncing ? 'Mengambil...' : 'Ambil dari Cloud' }}
             </button>
             <button class="filled-btn-lg" @click="pushData" :disabled="syncing">
               <span class="material-symbols-rounded">upload</span>
-              {{ syncing ? 'Pushing...' : 'Push Logs' }}
+              {{ syncing ? 'Mengirim...' : 'Kirim ke Cloud' }}
             </button>
           </div>
         </div>
@@ -246,9 +246,9 @@ const avatarList = ref([
   { url: '👤', tags: 'user, default, shadow' },
   { url: '🥷', tags: 'ninja, spy, black' },
   { url: '👨‍🚀', tags: 'astronaut, space, rocket' },
-  { url: '🧗', tags: 'climbing, explorer, mountain' },
+  { url: '🧗', tags: 'panjat tebing, gunung, olahraga' },
   { url: '🤖', tags: 'robot, bot, ai' },
-  { url: '👻', tags: 'ghost, dark, hollow' }
+  { url: '👻', tags: 'hantu, gelap, bayangan' }
 ])
 
 const filteredAvatars = computed(() => {
@@ -258,14 +258,14 @@ const filteredAvatars = computed(() => {
 })
 
 const subTitles = {
-  personal: 'Profile Details',
-  visual: 'Aesthetics',
-  cloud: 'Vault Sync',
-  metadata: 'Data Registry'
+  personal: 'Profil Pengguna',
+  visual: 'Atur Tampilan',
+  cloud: 'Sinkronisasi Cloud',
+  metadata: 'Kategori & Label'
 }
 
 const isSafe = typeof localStorage !== 'undefined'
-const userPrefs = ref(isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Explorer","email":"","theme":"obsidian","radius":24,"color":"#A8C7FA"}') : {"name":"Explorer","email":"","theme":"obsidian","radius":24,"color":"#A8C7FA"})
+const userPrefs = ref(isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Pengguna","email":"","theme":"obsidian","radius":24,"color":"#A8C7FA"}') : {"name":"Pengguna","email":"","theme":"obsidian","radius":24,"color":"#A8C7FA"})
 const cloudUrl = ref(isSafe ? (localStorage.getItem('cloud_sheet_url') || '') : '')
 
 const themes = [
@@ -285,7 +285,7 @@ const installApp = async () => {
 }
 
 const updateApp = () => {
-  if (confirm('Initiate update protocol? Explorer will reboot.')) {
+  if (confirm('Perbarui aplikasi sekarang?')) {
      window.location.reload()
   }
 }
@@ -301,7 +301,7 @@ const resolvedAvatar = computed(() => {
 
 const savePrefs = () => {
   if (isSafe) localStorage.setItem('user_prefs', JSON.stringify(userPrefs.value))
-  alert('Configuration successfully updated.')
+  alert('Pengaturan berhasil disimpan.')
 }
 
 const pullData = async () => {
@@ -321,7 +321,7 @@ const pushData = async () => {
 }
 
 const clearData = () => {
-  if (confirm('DANGER: This will purge all local chronicles. Continue?')) {
+  if (confirm('PERINGATAN: Ini akan menghapus SEMUA data Anda secara permanen. Lanjutkan?')) {
     localStorage.clear()
     window.location.reload()
   }

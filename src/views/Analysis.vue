@@ -6,12 +6,12 @@
         <button class="icon-btn" @click="$router.push('/')">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
-        <h1>Analysis</h1>
+        <h1>Analisis</h1>
         
         <!-- Segmented Button Switcher -->
         <div class="segmented-button">
-          <button @click="analysisMode = 'monthly'" :class="{ active: analysisMode === 'monthly' }">Monthly</button>
-          <button @click="analysisMode = 'yearly'" :class="{ active: analysisMode === 'yearly' }">Yearly</button>
+          <button @click="analysisMode = 'monthly'" :class="{ active: analysisMode === 'monthly' }">Bulanan</button>
+          <button @click="analysisMode = 'yearly'" :class="{ active: analysisMode === 'yearly' }">Tahunan</button>
         </div>
       </div>
     </div>
@@ -24,7 +24,7 @@
         </button>
         <div class="period-info">
           <span class="period-label">{{ displayPeriod }}</span>
-          <span class="period-sub">Cycle Analysis</span>
+          <span class="period-sub">Analisis Periode</span>
         </div>
         <button class="icon-btn sm" @click="changePeriod(1)">
           <span class="material-symbols-rounded">chevron_right</span>
@@ -35,19 +35,19 @@
       <div class="metrics-grid">
         <div class="metric-card income" @click="showModal('category', 'Income', 'Total Income')">
           <span class="metric-value">Rp {{ (metrics.income || 0).toLocaleString('id-ID') }}</span>
-          <span class="metric-label">Discovery</span>
+          <span class="metric-label">Pemasukan</span>
         </div>
         <div class="metric-card expense" @click="showModal('category', 'Expense', 'Total Expense')">
           <span class="metric-value">Rp {{ (metrics.expense || 0).toLocaleString('id-ID') }}</span>
-          <span class="metric-label">Consumption</span>
+          <span class="metric-label">Pengeluaran</span>
         </div>
         <div class="metric-card primary">
           <span class="metric-value">Rp {{ (metrics.profit || 0).toLocaleString('id-ID') }}</span>
-          <span class="metric-label">Net Cashflow</span>
+          <span class="metric-label">Arus Kas Bersih</span>
         </div>
         <div class="metric-card warning">
           <span class="metric-value">{{ metrics.savingRate }}%</span>
-          <span class="metric-label">Preservation</span>
+          <span class="metric-label">Tingkat Tabungan</span>
         </div>
       </div>
 
@@ -55,7 +55,7 @@
       <div class="briefing-card">
         <div class="briefing-header">
           <span class="material-symbols-rounded">auto_awesome</span>
-          <h3>Intelligence Briefing</h3>
+          <h3>Ringkasan Analisis</h3>
         </div>
         <p>{{ insightText }}</p>
       </div>
@@ -63,12 +63,12 @@
       <!-- Charts Section -->
       <div class="charts-section">
         <div v-show="activeTab === 'cashflow'" class="chart-container">
-          <h3 class="chart-title">Cashflow Linkage</h3>
+          <h3 class="chart-title">Aliran Kas</h3>
           <div id="cashflow-sankey" style="width: 100%; height: 400px;"></div>
         </div>
 
         <div v-show="activeTab === 'income'" class="chart-container">
-          <h3 class="chart-title">Income Categories</h3>
+          <h3 class="chart-title">Kategori Pemasukan</h3>
           <div id="income-treemap" style="width: 100%; height: 350px;"></div>
           <div class="ranking-list">
             <div v-for="(item, i) in categoryIncome" :key="item.name" @click="showModal('category', 'Income', item.name)" class="rank-item">
@@ -82,7 +82,7 @@
         </div>
 
         <div v-show="activeTab === 'spend'" class="chart-container">
-          <h3 class="chart-title">Spending Categories</h3>
+          <h3 class="chart-title">Kategori Pengeluaran</h3>
           <div id="spend-treemap" style="width: 100%; height: 350px;"></div>
           <div class="ranking-list">
             <div v-for="(item, i) in categorySpending" :key="item.name" @click="showModal('category', 'Expense', item.name)" class="rank-item">
@@ -96,7 +96,7 @@
         </div>
 
         <div v-show="activeTab === 'tag'" class="chart-container">
-          <h3 class="chart-title">Tag Density</h3>
+          <h3 class="chart-title">Kepadatan Tag</h3>
           <div id="tag-cloud" style="width: 100%; height: 350px;"></div>
           <div class="ranking-list">
              <div v-for="(item, i) in tagAnalysis" :key="item.name" @click="showModal('tag', null, item.name)" class="rank-item">
@@ -110,12 +110,12 @@
         </div>
 
         <div v-show="activeTab === 'project'" class="chart-container">
-          <h3 class="chart-title">Mission Distribution</h3>
+          <h3 class="chart-title">Distribusi Proyek</h3>
           <div id="project-pie" style="width: 100%; height: 350px;"></div>
           <div class="ranking-list">
              <div v-for="(item, i) in projectAnalysis" :key="item.name" @click="showModal('project', null, item.name)" class="rank-item">
                 <div class="rank-header">
-                  <span class="rank-name">{{ item.name || 'Standalone' }}</span>
+                  <span class="rank-name">{{ item.name || 'Lainnya' }}</span>
                   <span class="rank-value">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
                 </div>
                 <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value / maxProjectValue * 100) + '%', background: colors[i % colors.length] }"></div></div>
@@ -143,7 +143,7 @@
           <div class="sheet-header">
              <div class="sheet-title-group">
                 <h3 class="sheet-title">{{ modalData.title }}</h3>
-                <p class="sheet-subtitle">{{ filteredList.length }} Expeditions</p>
+                <p class="sheet-subtitle">{{ filteredList.length }} Transaksi</p>
              </div>
              <button @click="modalData = null" class="icon-btn">
                <span class="material-symbols-rounded">close</span>
@@ -158,7 +158,7 @@
                    </span>
                 </div>
                 <div class="tx-info">
-                   <span class="tx-name">{{ t.itemName || t.merchant || 'Unknown' }}</span>
+                   <span class="tx-name">{{ t.itemName || t.merchant || 'Tidak Diketahui' }}</span>
                    <span class="tx-meta">{{ t.date }} • {{ t.category }}</span>
                 </div>
                 <div class="tx-amount" :style="{ color: getTxColor(t.type) }">
@@ -190,18 +190,18 @@ const modalData = ref(null)
 const isModalOpen = computed(() => !!modalData.value)
 
 const tabs = [
-  { id: 'cashflow', label: 'Flow', icon: 'git-pull-request' },
-  { id: 'income', label: 'Income', icon: 'download' },
-  { id: 'spend', label: 'Spend', icon: 'shopping_basket' },
-  { id: 'tag', label: 'Tags', icon: 'tag' },
-  { id: 'project', label: 'Proj', icon: 'layers' }
+  { id: 'cashflow', label: 'Aliran', icon: 'git-pull-request' },
+  { id: 'income', label: 'Pemasukan', icon: 'download' },
+  { id: 'spend', label: 'Pengeluaran', icon: 'shopping_basket' },
+  { id: 'tag', label: 'Tag', icon: 'tag' },
+  { id: 'project', label: 'Proyek', icon: 'layers' }
 ]
 
 const colors = ['#D0BCFF', '#A8C7FA', '#B4E8A8', '#FFD98C', '#F2B8B5', '#7FCFFF', '#6DD5FA', '#CCC2DC', '#EFB8C8']
 
 const displayPeriod = computed(() => {
   if (analysisMode.value === 'monthly') {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
     return `${months[activeDate.value.getMonth()]} ${activeDate.value.getFullYear()}`
   }
   return `${activeDate.value.getFullYear()}`

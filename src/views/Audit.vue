@@ -6,26 +6,32 @@
         <button class="icon-btn" @click="$router.push('/')">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
-        <h1>Data Integrity</h1>
-        <div class="anomaly-counter">
-           <span class="count">{{ totalIssues }}</span>
-           <span class="label">ANOMALIES</span>
+        <div class="wealth-card">
+          <span class="wealth-label">PERLU DICEK</span>
+          <h2 class="wealth-amount">{{ totalIssues }} Catatan</h2>
+          <span class="wealth-sub">Menunggu verifikasi Anda</span>
         </div>
       </div>
     </div>
 
     <div class="content-scroll">
+      <div class="filter-switcher">
+         <button v-for="t in [['all', 'Semua'], ['unverified', 'Belum Dicek'], ['duplicate', 'Duplikat'], ['desync', 'Tidak Cocok']]" :key="t[0]" @click="filterType = t[0]" :class="{ active: filterType === t[0] }" class="filter-chip">
+            {{ t[1] }}
+         </button>
+      </div>
+
       <div class="audit-stack">
         <!-- Section: Pending Clearances -->
-        <section class="audit-section">
+        <section class="audit-section" v-if="filterType === 'all' || filterType === 'unverified'">
            <div class="section-title">
               <span class="material-symbols-rounded warning">report</span>
-              PENDING PROTOCOL CLEARANCES ({{ pendingClearances.length }})
+              BELUM DICEK ({{ pendingClearances.length }})
            </div>
            
-           <div v-if="pendingClearances.length === 0" class="audit-empty-state">
+           <div v-if="pendingClearances.length === 0 && filterType === 'unverified'" class="audit-empty-state">
               <span class="material-symbols-rounded">check_circle</span>
-              <p>System operational. No pending clearances.</p>
+              <p>Semua data sudah diverifikasi.</p>
            </div>
            
            <div v-else class="audit-list">
@@ -36,29 +42,29 @@
                  </div>
                  <div class="card-right">
                     <span class="item-total">-Rp {{ (tx.total || 0).toLocaleString('id-ID') }}</span>
-                    <span class="issue-tag warning">UNCLEARED</span>
+                    <span class="issue-tag warning">BELUM DICEK</span>
                  </div>
               </div>
            </div>
         </section>
 
         <!-- Section: Duplicate Protocols -->
-        <section class="audit-section">
+        <section class="audit-section" v-if="filterType === 'all' || filterType === 'duplicate'">
            <div class="section-title">
               <span class="material-symbols-rounded primary">layers</span>
-              DUPLICATE ENTRY CLUSTERS ({{ duplicateClusters.length }})
+              DUPLIKAT ({{ duplicateClusters.length }})
            </div>
 
-           <div v-if="duplicateClusters.length === 0" class="audit-empty-state">
+           <div v-if="duplicateClusters.length === 0 && filterType === 'duplicate'" class="audit-empty-state">
               <span class="material-symbols-rounded">verified</span>
-              <p>No redundant protocols found. Optimal state.</p>
+              <p>Semua data sudah bersih dan sesuai!</p>
            </div>
 
            <div v-else class="audit-list">
               <div v-for="(cluster, idx) in duplicateClusters" :key="idx" class="cluster-container card-md3 outline">
                  <div class="cluster-header">
-                    <span class="cluster-id">CLUSTER #{{ idx + 1 }} • {{ cluster.length }} COPIES</span>
-                    <button @click="resolveCluster(cluster)" class="resolve-btn">RESOLVE</button>
+                    <span class="cluster-id">KLUSTER #{{ idx + 1 }} • {{ cluster.length }} DATA</span>
+                    <button @click="resolveCluster(cluster)" class="resolve-btn">HAPUS DUPLIKAT</button>
                  </div>
                  <div class="cluster-items">
                     <div v-for="tx in cluster" :key="tx.transactionID" @click="openTx(tx)" class="cluster-item">
@@ -77,26 +83,26 @@
         </section>
 
         <!-- Section: Metadata Desync -->
-        <section class="audit-section">
+        <section class="audit-section" v-if="filterType === 'all' || filterType === 'desync'">
            <div class="section-title">
               <span class="material-symbols-rounded secondary">hub</span>
-              REGISTRY DESYNC (TAGS & PROJECTS)
+              TIDAK COCOK (TAG & PROYEK)
            </div>
 
-           <div v-if="desyncIssues.length === 0" class="audit-empty-state">
+           <div v-if="desyncIssues.length === 0 && filterType === 'desync'" class="audit-empty-state">
               <span class="material-symbols-rounded">published_with_changes</span>
-              <p>Registry alignment 100%. Data secure.</p>
+              <p>Data sudah sinkron.</p>
            </div>
 
            <div v-else class="audit-list">
               <div v-for="t in desyncIssues" :key="t.tx.transactionID" @click="openTx(t.tx)" class="audit-card card-md3">
                  <div class="card-left">
                     <span class="item-name">{{ t.tx.itemName }}</span>
-                    <span class="desync-warn">MISSING FROM CORE: {{ t.missing.join(', ') }}</span>
+                    <span class="desync-warn">TIDAK DITEMUKAN: {{ t.missing.join(', ') }}</span>
                  </div>
                  <button @click.stop="quickFixRegistry(t)" class="sync-action-btn">
                     <span class="material-symbols-rounded">sync</span>
-                    SYNC
+                    SINKRON
                  </button>
               </div>
            </div>
@@ -107,7 +113,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFinanceStore } from '../stores/finance'
 import { useUIStore } from '../stores/ui'
@@ -115,6 +121,7 @@ import { useUIStore } from '../stores/ui'
 const router = useRouter()
 const store = useFinanceStore()
 const uiStore = useUIStore()
+const filterType = ref('all')
 
 const pendingClearances = computed(() => {
   const txs = store.transactions || []

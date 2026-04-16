@@ -5,9 +5,9 @@
       <div class="app-bar-content">
         <div class="app-title-group">
           <div class="logo-box">
-            <img src="/logo.png" alt="Jurney">
+            <img src="/logo.png" alt="DompetKu">
           </div>
-          <h1>Jurney</h1>
+          <h1>DompetKu</h1>
         </div>
         
         <div class="app-bar-actions">
@@ -24,10 +24,10 @@
           </div>
         </div>
 
-        <!-- Search Overlay -->
+        <!-- Pencarian -->
         <div class="search-overlay" :class="{ 'active': showSearch }">
           <span class="material-symbols-rounded search-icon">search</span>
-          <input type="text" v-model="searchQuery" placeholder="Search transactions..." @blur="searchQuery ? null : showSearch = false">
+          <input type="text" v-model="searchQuery" placeholder="Cari transaksi..." @blur="searchQuery ? null : showSearch = false">
           <button @click="toggleSearch" class="close-search-btn">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -36,48 +36,39 @@
     </div>
 
     <div class="content-scroll">
-      <!-- System Status -->
-      <div class="status-row">
-        <div class="status-chip">
-          <span class="status-dot"></span>
-          <span class="status-label">v5.3.0 CORE</span>
-        </div>
-        <span class="status-text">PROD ACTIVE</span>
-      </div>
-
       <!-- Main Overview Cards -->
       <div class="stats-grid">
         <div class="stat-card" @click="$router.push('/accounts')">
           <div class="card-icon"><span class="material-symbols-rounded">account_balance_wallet</span></div>
-          <span class="card-title">Balance</span>
+          <span class="card-title">Total Saldo</span>
           <span class="card-value">Rp {{ Math.round(totalBalance || 0).toLocaleString('id-ID') }}</span>
-          <span class="card-sub">{{ (store.accounts || []).length }} accounts</span>
+          <span class="card-sub">{{ (store.accounts || []).length }} rekening</span>
         </div>
         <div class="stat-card spending" @click="$router.push('/analysis')">
           <div class="card-icon"><span class="material-symbols-rounded">trending_down</span></div>
-          <span class="card-title">Spending</span>
+          <span class="card-title">Pengeluaran</span>
           <span class="card-value">Rp {{ Math.round(monthSpending || 0).toLocaleString('id-ID') }}</span>
-          <span class="card-sub">This month</span>
+          <span class="card-sub">Bulan ini</span>
         </div>
         <div class="stat-card success" @click="$router.push('/budget')">
           <div class="card-icon"><span class="material-symbols-rounded">pie_chart</span></div>
-          <span class="card-title">Budget</span>
+          <span class="card-title">Anggaran</span>
           <span class="card-value">Rp {{ (totalBudget || 0).toLocaleString('id-ID') }}</span>
-          <span class="card-sub">{{ (store.budgets || []).length }} budgets</span>
+          <span class="card-sub">{{ (store.budgets || []).length }} kategori</span>
         </div>
         <div class="stat-card info" @click="$router.push('/goals')">
           <div class="card-icon"><span class="material-symbols-rounded">target</span></div>
-          <span class="card-title">Goals</span>
+          <span class="card-title">Target/Tabungan</span>
           <span class="card-value">{{ Math.round(goalProgress) }}%</span>
-          <span class="card-sub">{{ (store.goals || []).length }} active</span>
+          <span class="card-sub">{{ (store.goals || []).length }} target aktif</span>
         </div>
       </div>
 
-      <!-- Reminders Section -->
+      <!-- Pengingat -->
       <div v-if="upcomingReminders.length > 0" class="section">
         <div class="section-header">
-          <h2 class="section-title">Critical Reminders</h2>
-          <div class="badge danger">{{ upcomingReminders.length }} Signals</div>
+          <h2 class="section-title">Pengingat Penting</h2>
+          <div class="badge danger">{{ upcomingReminders.length }} Tagihan</div>
         </div>
         <div class="reminder-list">
           <div v-for="rem in upcomingReminders" :key="rem.id" class="reminder-card">
@@ -86,47 +77,42 @@
             </div>
             <div class="reminder-info">
               <span class="reminder-name">{{ rem.name }}</span>
-              <span class="reminder-desc">Pending for {{ rem.period }}</span>
+              <span class="reminder-desc">Belum dibayar ({{ rem.period }})</span>
             </div>
-            <button class="tonal-btn" @click="$router.push('/transaction')">Resolve</button>
+            <button class="tonal-btn" @click="$router.push('/transaction')">Bayar</button>
           </div>
         </div>
       </div>
 
-      <!-- Quick Access Grid -->
+      <!-- Menu Cepat -->
       <div class="quick-access-grid">
         <div @click="$router.push('/items')" class="quick-card">
           <div class="quick-icon success"><span class="material-symbols-rounded">inventory_2</span></div>
-          <div class="quick-label">Items</div>
+          <div class="quick-label">Barang</div>
         </div>
         <div @click="$router.push('/merchants')" class="quick-card">
           <div class="quick-icon warning"><span class="material-symbols-rounded">store</span></div>
-          <div class="quick-label">Vendors</div>
+          <div class="quick-label">Toko</div>
         </div>
         <div @click="$router.push('/memberships')" class="quick-card">
           <div class="quick-icon info"><span class="material-symbols-rounded">card_membership</span></div>
-          <div class="quick-label">Privileges</div>
+          <div class="quick-label">Member/Sewa</div>
         </div>
         <div @click="$router.push('/vouchers')" class="quick-card">
           <div class="quick-icon secondary"><span class="material-symbols-rounded">confirmation_number</span></div>
-          <div class="quick-label">Vouchers</div>
+          <div class="quick-label">Kupon</div>
         </div>
         <div @click="$router.push('/receipts')" class="quick-card">
           <div class="quick-icon tertiary"><span class="material-symbols-rounded">receipt_long</span></div>
-          <div class="quick-label">Evidence</div>
+          <div class="quick-label">Nota/Bukti</div>
         </div>
         <div @click="$router.push('/audit')" class="quick-card anomaly">
           <div class="quick-icon danger"><span class="material-symbols-rounded">monitoring</span></div>
-          <div class="quick-label">Intel Audit</div>
+          <div class="quick-label">Cek Data</div>
           <div v-if="anomalyCount > 0" class="badge-dot">{{ anomalyCount }}</div>
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="app-footer">
-        <span class="footer-core">v5.3.0 Intelligence Core</span>
-        <span class="footer-status">SYSTEM STABILIZED // MD3 OVERLAY</span>
-      </div>
     </div>
   </div>
 </template>
@@ -156,10 +142,10 @@ const toggleSearch = () => {
 }
 
 const formatDate = (dateStr) => {
-  if (!dateStr) return 'N/A'
+  if (!dateStr) return 'T/A'
   const d = new Date(dateStr)
   if (isNaN(d.getTime())) return dateStr
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
   return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 

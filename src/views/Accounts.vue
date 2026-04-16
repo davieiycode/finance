@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Vaults</h1>
+          <h1>Rekening</h1>
           <div class="app-bar-actions">
             <button class="icon-btn" @click="showSearch = true">
               <span class="material-symbols-rounded">search</span>
@@ -40,7 +40,7 @@
               <div v-else class="vault-icon-placeholder">
                  <span class="material-symbols-rounded">account_balance_wallet</span>
               </div>
-              <span v-if="acc.accountType === 'Credit Card'" class="vault-badge">CREDIT</span>
+              <span v-if="acc.accountType === 'Kredit'" class="vault-badge">KREDIT</span>
            </div>
            
            <div class="vault-body">
@@ -70,7 +70,7 @@
           <div class="sheet-drag-handle"></div>
           <div class="sheet-header">
              <div class="sheet-title-group">
-                <h3 class="sheet-title">{{ editingAcc.accountID ? (accountMode === 'analysis' ? 'Vault Intelligence' : 'Modify Vault') : 'New Vault' }}</h3>
+                <h3 class="sheet-title">{{ editingAcc.accountID ? (accountMode === 'analysis' ? 'Detail Rekening' : 'Ubah Rekening') : 'Rekening Baru' }}</h3>
              </div>
              <button @click="isModalOpen = false" class="icon-btn">
                <span class="material-symbols-rounded">close</span>
@@ -80,7 +80,6 @@
           <div class="sheet-content">
              <!-- MODE: ANALYSIS -->
              <div v-if="accountMode === 'analysis' && editingAcc.accountID" class="analysis-view">
-                <!-- Mini Card Preview -->
                 <div class="vault-card mini" :style="{ '--vault-color': editingAcc.cardColor || '#1e293b' }">
                    <div class="vault-body">
                       <span class="vault-name">{{ editingAcc.accountName }}</span>
@@ -91,30 +90,30 @@
                 <div class="metrics-grid">
                    <div class="metric-card success">
                       <span class="metric-value">Rp {{ (accAnalysis.inflow || 0).toLocaleString('id-ID') }}</span>
-                      <span class="metric-label">Inflow</span>
+                      <span class="metric-label">Pemasukan</span>
                    </div>
                    <div class="metric-card danger">
                       <span class="metric-value">Rp {{ (accAnalysis.outflow || 0).toLocaleString('id-ID') }}</span>
-                      <span class="metric-label">Outflow</span>
+                      <span class="metric-label">Pengeluaran</span>
                    </div>
                 </div>
 
                 <div class="briefing-card">
                    <div class="briefing-header">
                       <span class="material-symbols-rounded">analytics</span>
-                      <h3>Strategic Summary</h3>
+                      <h3>Ringkasan</h3>
                    </div>
-                   <div class="net-drift">Rp {{ (accAnalysis.net || 0).toLocaleString('id-ID') }} <small>Net Drift</small></div>
+                   <div class="net-drift">Rp {{ (accAnalysis.net || 0).toLocaleString('id-ID') }} <small>Selisih</small></div>
                    <p v-if="accAnalysis.insight">{{ accAnalysis.insight }}</p>
                 </div>
 
                 <div class="chart-box">
-                    <span class="chart-label">Flow Correlation</span>
+                    <span class="chart-label">Korelasi Arus</span>
                     <div id="acc-flow-chart" style="width: 100%; height: 180px;"></div>
                 </div>
 
                 <div class="recent-list">
-                    <h3>Recent Log Entries</h3>
+                    <h3>Transaksi Terakhir</h3>
                     <div v-for="t in accAnalysis.recentTransactions" :key="t.transactionID" class="mini-tx-item">
                         <div class="mini-tx-icon" :style="{ color: t.type === 'Income' ? 'var(--green)' : 'var(--red)' }">
                             <span class="material-symbols-rounded">{{ t.type === 'Income' ? 'north_east' : 'south_west' }}</span>
@@ -132,66 +131,66 @@
                 <div class="action-stack">
                    <button @click="accountMode = 'edit'" class="tonal-btn lg">
                       <span class="material-symbols-rounded">edit</span>
-                      MODIFY PROTOCOL
+                      UBAH DATA
                    </button>
-                   <button @click="isModalOpen = false" class="text-btn">Return to List</button>
+                   <button @click="isModalOpen = false" class="text-btn">Kembali</button>
                 </div>
              </div>
 
              <!-- MODE: EDIT -->
              <div v-else class="edit-view">
                 <div class="form-group">
-                   <span class="field-label">Vault Name</span>
-                   <input type="text" v-model="formData.accountName" class="md-input" placeholder="e.g. Primary Bank">
+                   <span class="field-label">Nama Rekening</span>
+                   <input type="text" v-model="formData.accountName" class="md-input" placeholder="Contoh: Bank Utama">
                 </div>
 
                 <div class="form-row">
                    <div class="form-group">
-                      <span class="field-label">Type</span>
+                      <span class="field-label">Jenis</span>
                       <select v-model="formData.accountType" class="md-input">
                          <option>Bank</option>
-                         <option>E-Wallet</option>
-                         <option>Cash</option>
-                         <option>Credit Card</option>
-                         <option>Investment</option>
+                         <option>Dompet Digital</option>
+                         <option>Tunai</option>
+                         <option>Kredit</option>
+                         <option>Investasi</option>
                       </select>
                    </div>
                    <div class="form-group">
-                      <span class="field-label">Currency</span>
+                      <span class="field-label">Mata Uang</span>
                       <input type="text" v-model="formData.currency" class="md-input">
                    </div>
                 </div>
 
                 <div class="form-row">
                    <div class="form-group">
-                      <span class="field-label">Account No</span>
+                      <span class="field-label">Nomor Rekening</span>
                       <input type="text" v-model="formData.accountNumber" class="md-input">
                    </div>
                    <div class="form-group">
-                      <span class="field-label">Card No</span>
+                      <span class="field-label">Nomor Kartu</span>
                       <input type="text" v-model="formData.cardNumber" class="md-input">
                    </div>
                 </div>
 
                 <div class="form-row">
                    <div class="form-group">
-                      <span class="field-label">Opening Balance</span>
+                      <span class="field-label">Saldo Awal</span>
                       <input type="number" v-model.number="formData.openingBalance" class="md-input">
                    </div>
                    <div class="form-group">
-                      <span class="field-label">Expiry (MM/YY)</span>
+                      <span class="field-label">Kadaluarsa (MM/YY)</span>
                       <input type="text" v-model="formData.expiryDate" class="md-input">
                    </div>
                 </div>
 
                 <div class="form-group">
-                   <span class="field-label">Live State Balance</span>
+                   <span class="field-label">Saldo Saat Ini</span>
                    <input type="number" v-model.number="formData.currentBalance" class="md-input">
                 </div>
 
                 <div class="form-row">
                    <div class="form-group">
-                      <span class="field-label">Card Color</span>
+                      <span class="field-label">Warna Kartu</span>
                       <div class="color-input-wrapper">
                          <input type="color" v-model="formData.cardColor">
                          <span>{{ formData.cardColor }}</span>
@@ -200,38 +199,38 @@
                    <div class="form-group">
                       <span class="field-label">Status</span>
                       <select v-model="formData.status" class="md-input">
-                        <option>Active</option>
-                        <option>Inactive</option>
+                        <option>Aktif</option>
+                        <option>Nonaktif</option>
                       </select>
                    </div>
                 </div>
 
                 <div class="form-group">
-                   <span class="field-label">Logo URL</span>
+                   <span class="field-label">URL Logo</span>
                    <input type="text" v-model="formData.accountImage" class="md-input">
                 </div>
 
                 <div class="form-group">
-                   <span class="field-label">Notes</span>
+                   <span class="field-label">Catatan</span>
                    <textarea v-model="formData.notes" class="md-input" style="min-height: 80px;"></textarea>
                 </div>
 
                 <div class="action-grid">
                    <button @click="saveAcc" class="primary-btn full">
                       <span class="material-symbols-rounded">check</span>
-                      SAVE VAULT
+                      SIMPAN
                    </button>
                    <button v-if="editingAcc.accountID" @click="handleDuplicate" class="outline-btn">
                       <span class="material-symbols-rounded">content_copy</span>
-                      DUPE
+                      DUPLIKAT
                    </button>
                    <button v-if="editingAcc.accountID" @click="handleMerge" class="outline-btn">
                       <span class="material-symbols-rounded">merge</span>
-                      MERGE
+                      GABUNG
                    </button>
                    <button v-if="editingAcc.accountID" @click="deleteAcc" class="danger-btn full">
                       <span class="material-symbols-rounded">delete</span>
-                      DELETE
+                      HAPUS
                    </button>
                 </div>
              </div>
@@ -245,16 +244,16 @@
        <div v-if="isMergePanelOpen" class="modal-backdrop-full dark">
        <div class="bottom-sheet center">
           <div class="sheet-header">
-             <h3 class="sheet-title">Consolidate</h3>
+             <h3 class="sheet-title">Gabungkan Rekening</h3>
              <button @click="isMergePanelOpen = false" class="icon-btn">
                <span class="material-symbols-rounded">close</span>
              </button>
           </div>
-          <p class="sheet-desc">Absorption target for <b>{{ editingAcc.accountName }}</b> logs.</p>
+          <p class="sheet-desc">Pindahkan semua data dari <b>{{ editingAcc.accountName }}</b> ke rekening tujuan.</p>
           
           <div class="search-box">
              <span class="material-symbols-rounded">search</span>
-             <input type="text" v-model="mergeTargetSearch" placeholder="Search vaults...">
+             <input type="text" v-model="mergeTargetSearch" placeholder="Cari rekening...">
           </div>
 
           <div class="target-list">

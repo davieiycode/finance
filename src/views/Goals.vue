@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Financial Targets</h1>
+          <h1>Target</h1>
           <button class="icon-btn" @click="showSearch = true">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -16,7 +16,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari target..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -30,7 +30,7 @@
            <div class="card-head">
               <div class="head-left">
                  <h2 class="goal-name">{{ g.goalName }}</h2>
-                 <span class="goal-deadline">Deadline: {{ g.deadline || 'Perpetual' }}</span>
+                 <span class="goal-deadline">Batas Waktu: {{ g.deadline || 'Tidak ada' }}</span>
               </div>
               <div class="head-right">
                  <span class="goal-status">{{ g.status }}</span>
@@ -41,7 +41,7 @@
            <div class="progress-container">
               <div class="progress-info">
                  <span class="percentage">{{ calculateProgress(g) }}%</span>
-                 <span class="saved">Rp {{ (g.currentAmount || 0).toLocaleString('id-ID') }} achieved</span>
+                 <span class="saved">Rp {{ (g.currentAmount || 0).toLocaleString('id-ID') }} terkumpul</span>
               </div>
               <div class="progress-bar">
                  <div class="bar-fill" :style="{ width: calculateProgress(g) + '%' }">
@@ -52,14 +52,14 @@
            
            <div v-if="g.deadline" class="card-foot">
               <span class="material-symbols-rounded timer-icon">schedule</span>
-              <span>{{ calculateDaysLeft(g.deadline) }} solar cycles remaining</span>
+              <span>{{ calculateDaysLeft(g.deadline) }} hari tersisa</span>
            </div>
         </div>
       </div>
 
       <div v-if="filteredGoals.length === 0" class="empty-state">
-        <span class="material-symbols-rounded">rocket_launch</span>
-        <p>No active missions toward financial targets.</p>
+        <span class="material-symbols-rounded">target</span>
+        <p>Belum ada target tabungan yang dibuat.</p>
       </div>
     </div>
 
@@ -74,7 +74,7 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">Mission Parameters</h3>
+                <h3 class="sheet-title">{{ editingGoal.goalID ? 'Ubah Target' : 'Tambah Target Baru' }}</h3>
                 <button @click="isModalOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
@@ -82,37 +82,38 @@
              
              <div class="sheet-content">
                 <div class="form-grid">
-                   <div class="form-group full"><label>Goal Name</label><input type="text" v-model="formData.goalName" class="md-input"></div>
                    <div class="form-group full">
-                      <label>Category</label>
-                      <input type="text" v-model="formData.category" list="cat-list" class="md-input">
+                      <label>Nama Target</label>
+                      <input type="text" v-model="formData.goalName" class="md-input" placeholder="Contoh: Beli Laptop">
                    </div>
                    <div class="form-group">
-                      <label>Target Amount</label>
+                      <label>Jumlah Target (Rp)</label>
                       <input type="number" v-model.number="formData.targetAmount" class="md-input">
                    </div>
                    <div class="form-group">
-                      <label>Current Status</label>
+                      <label>Sudah Ada (Rp)</label>
                       <input type="number" v-model.number="formData.currentAmount" class="md-input">
                    </div>
-                   <div class="form-group full"><label>Deadline</label><input type="date" v-model="formData.deadline" class="md-input"></div>
-                   <div class="form-group full">
-                      <label>Priority State</label>
+                   <div class="form-group">
+                      <label>Batas Waktu</label>
+                      <input type="date" v-model="formData.deadline" class="md-input">
+                   </div>
+                   <div class="form-group">
+                      <label>Status</label>
                       <select v-model="formData.status" class="md-input">
-                         <option>In Progress</option><option>Paused</option><option>Completed</option><option>Abandoned</option>
+                         <option>Berjalan</option><option>Ditunda</option><option>Selesai</option><option>Dibatalkan</option>
                       </select>
                    </div>
-                   <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                   <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                 </div>
 
                 <div class="modal-actions">
                    <button @click="saveGoal" class="filled-btn-lg">
-                      <span class="material-symbols-rounded">track_changes</span>
-                      SAVE PARAMETERS
+                      <span class="material-symbols-rounded">save</span>
+                      SIMPAN TARGET
                    </button>
                    <div v-if="editingGoal.goalID" class="secondary-actions">
-                      <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
-                      <button @click="deleteGoal" class="error-btn">Purge</button>
+                      <button @click="deleteGoal" class="error-btn">Hapus</button>
                    </div>
                 </div>
              </div>
