@@ -1,119 +1,136 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 2rem; position: relative;">
-    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
-        <div style="display: flex; align-items: center; gap: 0.8rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
-          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Evidence</h1>
-        </div>
-
-        <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-            <i data-lucide="search" style="width: 18px;"></i>
+  <div class="view-content receipts-container">
+    <!-- MD3 Top App Bar -->
+    <div class="top-app-bar" :class="{ 'has-search': showSearch }">
+      <div class="app-bar-content">
+        <template v-if="!showSearch">
+          <button class="icon-btn" @click="$router.push('/')">
+            <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 10px; height: 32px; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 700; display:flex; align-items:center; gap: 0.3rem; cursor:pointer;">
-            <i data-lucide="plus" style="width: 14px;"></i> New
+          <h1>Evidence</h1>
+          <button class="icon-btn" @click="showSearch = true">
+            <span class="material-symbols-rounded">search</span>
           </button>
-        </div>
-
-        <!-- Expanding Search Bar -->
-        <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 34px; display: flex; align-items: center; min-width: 250px;">
-              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Search archive..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
-              <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
-                 <i data-lucide="x" style="width: 14px;"></i>
-              </button>
-           </div>
-        </div>
-      </header>
-    </div>
-
-    <div class="receipt-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.5rem;">
-      <div v-for="r in filteredReceipts" :key="r.receiptID" @click="openModal(r)" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1rem; overflow: hidden; cursor: pointer; transition: 0.2s; aspect-ratio: 3/4; display: flex; flex-direction: column;">
-         <div style="flex: 1; position: relative; background: #111; overflow: hidden;">
-            <img v-if="r['foto/dokumen']" :src="r['foto/dokumen']" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
-            <div v-else style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); opacity: 0.2;">
-               <i data-lucide="file-text" style="width: 48px;"></i>
-            </div>
-            <div style="position: absolute; bottom: 0.5rem; left: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-radius: 8px; padding: 0.5rem;">
-               <div style="font-size: 0.7rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ r.merchant }}</div>
-               <div style="font-size: 0.6rem; opacity: 0.7;">{{ r.date }}</div>
-            </div>
-         </div>
+        </template>
+        <template v-else>
+          <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
+            <span class="material-symbols-rounded">arrow_back</span>
+          </button>
+          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </template>
       </div>
     </div>
 
+    <div class="content-scroll">
+      <div class="receipt-grid">
+        <div v-for="r in filteredReceipts" :key="r.receiptID" @click="openModal(r)" class="receipt-card card-md3">
+          <div class="receipt-preview">
+            <img v-if="r['foto/dokumen']" :src="r['foto/dokumen']" class="preview-img">
+            <div v-else class="preview-placeholder">
+               <span class="material-symbols-rounded">description</span>
+            </div>
+            <div class="receipt-overlay">
+               <span class="receipt-merchant">{{ r.merchant }}</span>
+               <span class="receipt-date">{{ r.date }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="filteredReceipts.length === 0" class="empty-state">
+        <span class="material-symbols-rounded">receipt_long</span>
+        <p>No evidence logs detected.</p>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button @click="openModal(null)" class="fab">
+      <span class="material-symbols-rounded">add_a_photo</span>
+    </button>
+
+    <!-- Bottom Sheet Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
-         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
-            <span style="font-weight: 800;">Evidence Detail</span>
-            <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-         </div>
-         <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-            <div style="background: rgba(255,255,255,0.02); border: 2px dashed var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; position: relative;" @click="$refs.fileInput.click()">
-               <img v-if="formData['foto/dokumen']" :src="formData['foto/dokumen']" style="max-height: 200px; border-radius: 8px; margin-bottom: 0.5rem;">
-               <div v-else style="color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-                  <i data-lucide="camera" style="width: 32px;"></i>
-                  <span style="font-weight: 700; font-size: 0.75rem;">UPLOAD OR CAPTURE RECEIPT</span>
-               </div>
-               <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" capture="environment" style="display: none;">
-            </div>
+       <div v-if="isModalOpen" class="modal-backdrop-full" @click.self="isModalOpen = false">
+          <div class="bottom-sheet">
+             <div class="sheet-drag-handle"></div>
+             <div class="sheet-header">
+                <h3 class="sheet-title">Evidence Detail</h3>
+                <button @click="isModalOpen = false" class="icon-btn">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+             </div>
+             
+             <div class="sheet-content">
+                <div class="upload-area card-md3" @click="$refs.fileInput.click()">
+                   <img v-if="formData['foto/dokumen']" :src="formData['foto/dokumen']" class="upload-preview">
+                   <div v-else class="upload-placeholder">
+                      <span class="material-symbols-rounded">add_a_photo</span>
+                      <span class="upload-label">UPLOAD OR CAPTURE</span>
+                   </div>
+                   <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" capture="environment" class="hidden-input">
+                </div>
 
-            <div><label class="f-label">Merchant *</label><input type="text" v-model="formData.merchant" list="mch-list" class="f-input"></div>
-            <div>
-               <label class="f-label">Payment Account</label>
-               <select v-model="formData.account" class="f-input">
-                  <option value="">Select Account...</option>
-                  <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
-               </select>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Date</label><input type="date" v-model="formData.date" class="f-input"></div>
-               <div><label class="f-label">Time</label><input type="time" v-model="formData.time" class="f-input"></div>
-            </div>
+                <div class="form-grid">
+                   <div class="form-group full">
+                      <label>Merchant</label>
+                      <input type="text" v-model="formData.merchant" list="mch-list" class="md-input">
+                   </div>
+                   <div class="form-group full">
+                      <label>Payment Source</label>
+                      <select v-model="formData.account" class="md-input">
+                         <option value="">Select Account...</option>
+                         <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
+                      </select>
+                   </div>
+                   <div class="form-group"><label>Date</label><input type="date" v-model="formData.date" class="md-input"></div>
+                   <div class="form-group"><label>Time</label><input type="time" v-model="formData.time" class="md-input"></div>
+                </div>
 
-            <div v-if="suggestedTransactions.length > 0" style="background: rgba(139, 92, 246, 0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 1rem; margin-top: 0.5rem;">
-               <div style="font-size: 0.65rem; font-weight: 800; color: var(--accent); margin-bottom: 0.75rem;">DETECTED SIMILAR TRANSACTIONS</div>
-               <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                  <div v-for="st in suggestedTransactions" :key="st.transactionID" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-primary); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border);">
-                     <div style="font-size: 0.75rem;">
-                        <div style="font-weight: 800;">{{ st.itemName }}</div>
-                        <div style="opacity: 0.6; font-size: 0.6rem;">{{ st.date }} • {{ (st.total || 0).toLocaleString('id-ID') }}</div>
-                     </div>
-                     <button @click="linkTransaction(st.transactionID)" style="background: var(--accent); color: white; border: none; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 800; font-size: 0.6rem; cursor: pointer;">
-                        LINK
-                     </button>
-                  </div>
-               </div>
-            </div>
+                <!-- Linked Transactions -->
+                <div v-if="suggestedTransactions.length > 0" class="suggestion-panel card-md3 tonal">
+                   <span class="panel-label">DETECTED SIMILAR TRANSACTIONS</span>
+                   <div class="suggestion-list">
+                      <div v-for="st in suggestedTransactions" :key="st.transactionID" class="suggestion-item card-md3">
+                         <div class="st-info">
+                            <span class="st-title">{{ st.itemName }}</span>
+                            <span class="st-meta">{{ st.date }} • Rp {{ (st.total || 0).toLocaleString('id-ID') }}</span>
+                         </div>
+                         <button @click="linkTransaction(st.transactionID)" class="link-btn">LINK</button>
+                      </div>
+                   </div>
+                </div>
 
-            <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
+                <div class="form-group full">
+                   <label>Notes</label>
+                   <textarea v-model="formData.notes" class="md-textarea"></textarea>
+                </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="saveReceipt" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE EVIDENCE
-               </button>
-               <button v-if="editingReceipt.receiptID" @click="handleDuplicate" style="padding: 1rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="copy" style="width: 14px;"></i> DUPE
-               </button>
-               <button v-if="editingReceipt.receiptID" @click="deleteReceipt" style="padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
-               </button>
-            </div>
-         </div>
-         <datalist id="mch-list">
-            <option v-for="m in store.merchants" :key="m.merchantID" :value="m.merchantName" />
-         </datalist>
-        </div>
-      </div>
+                <div class="modal-actions">
+                   <button @click="saveReceipt" class="filled-btn-lg">
+                      <span class="material-symbols-rounded">save</span>
+                      SAVE EVIDENCE
+                   </button>
+                   <div v-if="editingReceipt.receiptID" class="secondary-actions">
+                      <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
+                      <button @click="deleteReceipt" class="error-btn">Purge</button>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
     </Teleport>
+
+    <datalist id="mch-list">
+       <option v-for="m in store.merchants" :key="m.merchantID" :value="m.merchantName" />
+    </datalist>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 import { useUIStore } from '../stores/ui'
 
@@ -122,9 +139,9 @@ const uiStore = useUIStore()
 const isModalOpen = ref(false)
 const editingReceipt = ref({})
 const formData = ref({})
-
 const showSearch = ref(false)
 const searchQuery = ref('')
+const fileInput = ref(null)
 
 const filteredReceipts = computed(() => {
   if (!searchQuery.value) return store.receipts
@@ -140,13 +157,11 @@ const openModal = (r) => {
   if (r) { 
     editingReceipt.value = { ...r }
     formData.value = { ...r } 
-  }
-  else { 
+  } else { 
     editingReceipt.value = {}
     formData.value = { merchant: '', account: '', date: '', time: '', notes: '', transactions: '', 'foto/dokumen': '' } 
   }
   isModalOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
 const onFileChange = (e) => {
@@ -162,11 +177,9 @@ const suggestedTransactions = computed(() => {
   return store.transactions.filter(t => {
      const alreadyLinked = (formData.value.transactions || '').includes(t.transactionID)
      if (alreadyLinked) return false
-
      const sameMerchant = t.merchant === formData.value.merchant
      const sameDate = t.date === formData.value.date
      const sameAccount = t.paymentSourceAccount === formData.value.account
-     
      return (sameMerchant && sameDate) || (sameMerchant && sameAccount)
   }).slice(0, 3)
 })
@@ -187,43 +200,180 @@ const saveReceipt = () => {
 }
 
 const deleteReceipt = () => { 
-  if (confirm('Delete this receipt?')) { 
+  if (confirm('Permanently purge this record?')) { 
     store.deleteReceipt(editingReceipt.value.receiptID)
     isModalOpen.value = false 
   } 
 }
 
 const handleDuplicate = () => {
-  const data = { ...formData.value }
-  delete data.receiptID
-  editingReceipt.value = {}
-  formData.value = data
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+  const data = { ...formData.value }; delete data.receiptID
+  editingReceipt.value = {}; formData.value = data
 }
 
-// Visibility & Class Sync
 watch(isModalOpen, (val) => {
   if (val) uiStore.registerModal('receipts')
   else uiStore.unregisterModal('receipts')
 })
 
-// Lifecycle Management
-onMounted(() => {
-  if (window.lucide) window.lucide.createIcons()
-})
-
-onBeforeUnmount(() => {
-  uiStore.unregisterModal('receipts')
-})
-
-// Icon Re-rendering
-watch(isModalOpen, () => {
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-})
+onBeforeUnmount(() => { uiStore.unregisterModal('receipts') })
 </script>
 
 <style scoped>
-.f-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem; }
-.f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.receipts-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+.top-app-bar {
+  padding: env(safe-area-inset-top) 16px 8px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.app-bar-content {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-bar-content h1 {
+  flex: 1;
+  font-size: 22px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.search-input-field { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 16px; outline: none; }
+
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.receipt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.receipt-card {
+  border-radius: 24px;
+  overflow: hidden;
+  aspect-ratio: 3/4;
+  cursor: pointer;
+}
+
+.receipt-preview { width: 100%; height: 100%; position: relative; background-color: #000; }
+.preview-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+.preview-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.2; }
+.preview-placeholder .material-symbols-rounded { font-size: 64px; }
+
+.receipt-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  display: flex;
+  flex-direction: column;
+}
+
+.receipt-merchant { font-size: 14px; font-weight: 600; color: white; }
+.receipt-date { font-size: 10px; color: rgba(255,255,255,0.7); }
+
+.fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.modal-backdrop-full {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.6);
+  z-index: 4000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bottom-sheet {
+  width: 100%;
+  background-color: var(--bg-primary);
+  border-radius: 28px 28px 0 0;
+  padding: 8px 16px 32px 16px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
+.sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.sheet-title { font-size: 20px; font-weight: 400; margin: 0; }
+.sheet-content { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+.upload-area { height: 200px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px dashed var(--outline); position: relative; overflow: hidden; }
+.upload-preview { width: 100%; height: 100%; object-fit: contain; }
+.upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0.5; }
+.upload-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+.hidden-input { display: none; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: span 2; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--primary); margin-left: 4px; }
+
+.md-input { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; height: 48px; padding: 0 12px; color: var(--on-surface); font-size: 14px; outline: none; }
+.md-textarea { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px; color: var(--on-surface); font-size: 14px; outline: none; min-height: 80px; resize: vertical; }
+
+.suggestion-panel { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.suggestion-panel.tonal { background-color: var(--primary-container); color: var(--on-primary-container); }
+.panel-label { font-size: 11px; font-weight: 700; opacity: 0.7; }
+.suggestion-list { display: flex; flex-direction: column; gap: 8px; }
+.suggestion-item { padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); border: none; }
+.st-info { display: flex; flex-direction: column; }
+.st-title { font-size: 14px; font-weight: 600; }
+.st-meta { font-size: 11px; opacity: 0.6; }
+.link-btn { background: var(--primary); color: var(--on-primary); border: none; padding: 4px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+.modal-actions { display: flex; flex-direction: column; gap: 16px; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 199, 250, 0.4); }
+.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
 </style>

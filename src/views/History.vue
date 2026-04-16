@@ -1,105 +1,110 @@
 <template>
-  <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
-        <div style="display: flex; align-items: center; gap: 0.75rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
-          <h1 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin:0; white-space: nowrap;">Expedition Logbook</h1>
-        </div>
-        <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button @click="showSearch = true" class="back-btn" style="background:none; border:none; color:var(--text-primary); cursor:pointer;">
-            <i data-lucide="search" style="width: 18px;"></i>
+  <div class="view-content history-container">
+    <!-- MD3 Top App Bar -->
+    <div class="top-app-bar" :class="{ 'has-search': showSearch }">
+      <div class="app-bar-content">
+        <template v-if="!showSearch">
+          <button class="icon-btn" @click="$router.push('/')">
+            <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <button @click="showFilter = !showFilter" class="back-btn" style="border-radius: 12px; height: 36px; padding: 0 0.75rem; width: auto; font-size: 0.75rem; font-weight: 600; display:flex; align-items:center; gap: 0.4rem; background:rgba(255,255,255,0.05); color:white; border:1px solid var(--border); cursor:pointer;">
-            <i data-lucide="filter" style="width: 16px;"></i> Filter
+          <h1>Logs</h1>
+          <div class="app-bar-actions">
+            <button class="icon-btn" @click="showSearch = true">
+              <span class="material-symbols-rounded">search</span>
+            </button>
+            <button class="icon-btn" @click="showFilter = !showFilter" :class="{ 'active': isFilterActive }">
+              <span class="material-symbols-rounded">filter_list</span>
+            </button>
+          </div>
+        </template>
+        <template v-else>
+          <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
+            <span class="material-symbols-rounded">arrow_back</span>
           </button>
-        </div>
-
-        <!-- Expanding Search Bar -->
-        <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 36px; display: flex; align-items: center; min-width: 250px;">
-              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Search merchant, item, or category..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
-              <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
-                 <i data-lucide="x" style="width: 16px;"></i>
-              </button>
-           </div>
-        </div>
-      </header>
+          <input type="text" v-model="searchQuery" placeholder="Search logs..." autofocus class="search-input-field">
+          <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </template>
+      </div>
     </div>
 
-    <div v-show="showFilter" class="filter-panel" style="padding: 1.5rem; background: var(--glass, rgba(30,30,40,0.8)); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 1.5rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 1.25rem; box-shadow: 0 15px 35px rgba(0,0,0,0.3); animation: slideDown 0.3s ease-out; transform-origin: top;">
-         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div>
-               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block;">From</label>
-               <input type="date" v-model="filter.from" class="f-input">
+    <div class="content-scroll" ref="scrollContainer">
+      <!-- Filter Panel (MD3 style) -->
+      <div v-if="showFilter" class="filter-panel card-md3">
+         <div class="filter-grid">
+            <div class="filter-group">
+               <span class="filter-label">From</span>
+               <input type="date" v-model="filter.from" class="md-input">
             </div>
-            <div>
-               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block;">To</label>
-               <input type="date" v-model="filter.to" class="f-input">
+            <div class="filter-group">
+               <span class="filter-label">To</span>
+               <input type="date" v-model="filter.to" class="md-input">
             </div>
-         </div>
-         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div>
-               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block;">Type</label>
-               <select v-model="filter.type" class="f-input">
-                  <option value="">All Types</option>
+            <div class="filter-group">
+               <span class="filter-label">Protocol</span>
+               <select v-model="filter.type" class="md-input">
+                  <option value="">All Protocols</option>
                   <option value="Expense">Expense</option>
                   <option value="Income">Income</option>
                   <option value="Transfer">Transfer</option>
+                  <option value="Investment">Investment</option>
+                  <option value="Savings">Savings</option>
                </select>
             </div>
-            <div>
-               <label style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; margin-bottom: 0.5rem; display: block;">Status</label>
-               <select v-model="filter.status" class="f-input">
-                  <option value="">All Status</option>
-                  <option value="yes">Cleared</option>
-                  <option value="no">Uncleared</option>
+            <div class="filter-group">
+               <span class="filter-label">Clearance</span>
+               <select v-model="filter.status" class="md-input">
+                  <option value="">All States</option>
+                  <option value="yes">Verified</option>
+                  <option value="no">Pending</option>
                </select>
             </div>
          </div>
-         <div style="display: flex; gap: 1rem;">
-            <button @click="resetFilter" style="flex: 1; padding: 0.75rem; font-weight: 800; border-radius: 1rem; border: 1px solid var(--border); cursor: pointer; background:transparent; color:white;">Reset</button>
-            <button @click="applyFilter" style="flex: 2; padding: 0.75rem; font-weight: 800; border-radius: 1rem; background: var(--accent); color: white; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);">Apply</button>
+         <div class="filter-actions">
+            <button @click="resetFilter" class="text-btn">Reset</button>
+            <button @click="showFilter = false" class="tonal-btn">Apply</button>
          </div>
-    </div>
+      </div>
 
-    <div class="transaction-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
-       <template v-for="(group, dateRaw) in groupedTransactions" :key="dateRaw">
-          <div class="date-group-header" style="font-size: 0.725rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin: 2rem 0.5rem 1rem 0.5rem; display: flex; align-items: center; gap: 1rem;">
-            <span style="flex-shrink: 0; opacity: 0.6;">{{ group.dateFormatted }}</span>
-            <div style="flex: 1; height: 1px; background: linear-gradient(to right, var(--border), transparent); opacity: 0.5;"></div>
-            <div style="flex-shrink: 0; font-size: 0.75rem; background: rgba(255, 255, 255, 0.03); padding: 2px 10px; border-radius: 20px; border: 1px solid var(--border);" :style="{ color: group.net > 0 ? '#10b981' : (group.net < 0 ? '#ef4444' : '#3b82f6') }">
-              {{ group.net > 0 ? '+' : (group.net < 0 ? '-' : '') }}Rp {{ Math.abs(group.net).toLocaleString('id-ID') }}
+      <!-- Log List -->
+      <div class="log-list">
+         <template v-for="(group, dateRaw) in groupedTransactions" :key="dateRaw">
+            <div class="date-header">
+               <span class="date-label">{{ group.dateFormatted }}</span>
+               <div class="date-line"></div>
+               <div class="date-net" :class="{ 'pos': group.net > 0, 'neg': group.net < 0 }">
+                  {{ group.net > 0 ? '+' : (group.net < 0 ? '-' : '') }}Rp {{ Math.abs(group.net).toLocaleString('id-ID') }}
+               </div>
             </div>
-          </div>
-          
-          <div v-for="t in group.items" :key="t.transactionID" @click="openTx(t)" class="card-hover" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 1rem; cursor: pointer;">
-            <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border);" :style="{ color: getTxColor(t.type) }">
-               <i :data-lucide="store.resolveIcon(t.category, t.type)" style="width: 20px;" stroke-width="1.5"></i>
+            
+            <div v-for="t in group.items" :key="t.transactionID" @click="openTx(t)" class="log-item card-md3">
+               <div class="log-icon-box" :style="{ backgroundColor: getTxColor(t.type) + '15', color: getTxColor(t.type) }">
+                  <span class="material-symbols-rounded">{{ getTxIcon(t.type, t.category) }}</span>
+               </div>
+               <div class="log-info">
+                  <span class="log-title">{{ t.itemName || t.merchant || 'Unknown Loot' }}</span>
+                  <span class="log-meta">{{ t.merchant ? t.merchant + ' • ' : '' }}{{ t.category || 'General' }} • {{ formatTime(t.time) }}</span>
+               </div>
+               <div class="log-amount" :style="{ color: getTxColor(t.type) }">
+                  {{ getTxSign(t.type) }}Rp {{ (Number(t.total) || 0).toLocaleString('id-ID') }}
+               </div>
             </div>
-            <div style="flex: 1;">
-              <div style="font-weight: 600; font-size: 0.9375rem; color: var(--text-primary);">{{ t.itemName || t.merchant || 'Unknown Loot' }}</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ t.merchant ? t.merchant + ' • ' : '' }}{{ t.category || 'General' }} • {{ formatTime(t.time) }}</div>
-            </div>
-            <div style="text-align: right; font-weight: 700; font-size: 0.9375rem;" :style="{ color: getTxColor(t.type) }">
-              {{ getTxSign(t.type) }}Rp {{ (Number(t.total) || (Number(t.quantity || 0) * Number(t.amountPerUnit || 0)) || 0).toLocaleString('id-ID') }}
-            </div>
-          </div>
-       </template>
-       
-       <div v-if="Object.keys(groupedTransactions).length === 0" style="text-align:center; padding:4rem; opacity:0.5; font-size:0.875rem;">
-         No records found in this sector.
-       </div>
+         </template>
+
+         <div v-if="Object.keys(groupedTransactions).length === 0" class="empty-state">
+            <span class="material-symbols-rounded">search_off</span>
+            <p>No records found in this sector.</p>
+         </div>
+      </div>
     </div>
 
     <TransactionModal v-if="selectedTx" :tx="selectedTx" @close="selectedTx = null" />
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 import TransactionModal from '../components/TransactionModal.vue'
 
@@ -110,6 +115,8 @@ const showFilter = ref(false)
 const searchQuery = ref('')
 const filter = ref({ from: '', to: '', type: '', status: '' })
 const selectedTx = ref(null)
+
+const isFilterActive = computed(() => !!(filter.value.from || filter.value.to || filter.value.type || filter.value.status))
 
 const groupedTransactions = computed(() => {
   let list = [...store.transactions]
@@ -126,27 +133,26 @@ const groupedTransactions = computed(() => {
   if (filter.value.type) list = list.filter(t => t.type === filter.value.type)
   if (filter.value.status) list = list.filter(t => t.cleared === filter.value.status)
 
-  list.sort((a,b) => (b.date + b.time).localeCompare(a.date + a.time))
+  list.sort((a,b) => (b.date + (b.time||'')).localeCompare(a.date + (a.time||'')))
 
   const groups = {}
   list.forEach(t => {
-    const amount = Number(t.total) || (Number(t.quantity || 0) * Number(t.amountPerUnit || 0)) || 0
+    const amount = Number(t.total) || 0
     const type = (t.type || '').toLowerCase()
     
     if (!groups[t.date]) {
-       // Create human-readable date
        let label = t.date
        try {
          const d = new Date(t.date)
          if (!isNaN(d)) {
-           label = d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+           label = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
          }
        } catch (e) {}
        groups[t.date] = { dateFormatted: label, net: 0, items: [] }
     }
     
     if (type === 'income') groups[t.date].net += amount
-    else if (type === 'expense' || type === 'savings' || type === 'investment') groups[t.date].net -= amount
+    else groups[t.date].net -= amount
     
     groups[t.date].items.push(t)
   })
@@ -155,18 +161,29 @@ const groupedTransactions = computed(() => {
 
 const openTx = (t) => { selectedTx.value = t }
 const getTxColor = (type) => {
-  if (type === 'Income') return '#10b981'
-  if (type === 'Expense') return '#ef4444'
-  return '#3b82f6' // Transfer, Investment, Savings
+  if (type === 'Income') return 'var(--green)'
+  if (type === 'Expense') return 'var(--red)'
+  return 'var(--blue)'
+}
+
+const getTxIcon = (type, cat) => {
+  if (type === 'Income') return 'north_east'
+  if (type === 'Expense') {
+     const c = (cat || '').toLowerCase()
+     if (c.includes('food') || c.includes('makan')) return 'restaurant'
+     if (c.includes('transport')) return 'directions_car'
+     if (c.includes('shop')) return 'shopping_bag'
+     return 'south_west'
+  }
+  if (type === 'Transfer') return 'sync'
+  if (type === 'Savings') return 'savings'
+  if (type === 'Investment') return 'trending_up'
+  return 'receipt_long'
 }
 
 const formatTime = (time) => {
   if (!time) return '00:00'
   const t = String(time)
-  if (t.includes('1899-12-30')) {
-    const parts = t.split('T')
-    if (parts[1]) return parts[1].substring(0, 5)
-  }
   return t.length > 5 ? t.substring(0, 5) : t
 }
 
@@ -176,12 +193,230 @@ const getTxSign = (type) => {
   return ''
 }
 
+const resetFilter = () => {
+  filter.value = { from: '', to: '', type: '', status: '' }
+}
+
 onMounted(() => { 
   if (scrollContainer.value) scrollContainer.value.scrollTo(0, 0)
-  if (window.lucide) window.lucide.createIcons() 
 })
 </script>
 
 <style scoped>
-.f-input { width:100%; padding:0.875rem; background:var(--bg-input); border:1px solid var(--border); border-radius:12px; color:white; outline:none; }
+.history-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+.top-app-bar {
+  padding: env(safe-area-inset-top) 16px 8px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.app-bar-content {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-bar-content h1 {
+  flex: 1;
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: transparent;
+  border: none;
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon-btn.active {
+  color: var(--primary);
+  background-color: var(--primary-container);
+}
+
+.search-input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--on-surface);
+  font-size: 16px;
+  outline: none;
+}
+
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 100px 16px;
+}
+
+.card-md3 {
+  background-color: var(--bg-secondary);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+}
+
+.filter-panel {
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  margin-left: 4px;
+}
+
+.md-input {
+  background: var(--surface-variant);
+  border: 1px solid var(--outline-variant);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--on-surface);
+  font-size: 14px;
+  outline: none;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tonal-btn {
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  border: none;
+  border-radius: 20px;
+  padding: 8px 24px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.text-btn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.date-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 8px 8px 8px;
+}
+
+.date-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.date-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  opacity: 0.5;
+}
+
+.date-net {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--surface-variant);
+}
+
+.date-net.pos { color: var(--green); }
+.date-net.neg { color: var(--red); }
+
+.log-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.log-item:active { transform: scale(0.98); }
+
+.log-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.log-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.log-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.log-meta {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+}
+
+.log-amount {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.empty-state {
+  padding: 80px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0.5;
+}
+
+.empty-state .material-symbols-rounded { font-size: 48px; }
 </style>

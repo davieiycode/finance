@@ -1,219 +1,221 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 2rem; position: relative;">
-    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
-      <header style="display: flex; align-items: center; gap: 0.8rem; padding: 0.35rem 0;">
-        <button class="back-btn" @click="currentView === 'main' ? $router.push('/') : currentView = 'main'" style="background:none; border:none; color:var(--text-primary); cursor:pointer;">
-          <i :data-lucide="currentView === 'main' ? 'chevron-left' : 'arrow-left'" style="width:20px;"></i>
+  <div class="view-content settings-container">
+    <!-- MD3 Top App Bar -->
+    <div class="top-app-bar">
+      <div class="app-bar-content">
+        <button class="icon-btn" @click="currentView === 'main' ? $router.push('/') : currentView = 'main'">
+          <span class="material-symbols-rounded">arrow_back</span>
         </button>
-        <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">
-          {{ currentView === 'main' ? 'Settings' : subTitles[currentView] }}
-        </h1>
-      </header>
-    </div>
-
-    <!-- Main Settings Menu -->
-    <div v-show="currentView === 'main'" style="animation: fadeIn 0.4s ease;">
-      <div class="sett-card" style="margin: 1.5rem 0 2.5rem 0; padding: 1.75rem; display: flex; align-items: center; gap: 1.5rem; cursor: pointer;" @click="currentView = 'personal'">
-        <div style="width:72px; height:72px; border-radius:36px; background:rgba(139,92,246,0.1); display:flex; align-items:center; justify-content:center; border: 2px solid var(--accent); overflow: hidden;">
-          <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="resolvedAvatar" style="width: 70%; height: 70%; object-fit: contain;">
-          <span v-else style="font-size: 2rem;">{{ userPrefs.avatar || '👤' }}</span>
-        </div>
-        <div style="flex:1;">
-          <div class="sett-label">Active Identifier</div>
-          <div class="sett-value" style="font-size: 1.5rem; margin: 0.25rem 0;">{{ userPrefs.name || 'User' }}</div>
-          <div class="sett-sub">{{ userPrefs.email || 'No secure link established' }}</div>
-        </div>
-        <i data-lucide="chevron-right" style="opacity: 0.4;"></i>
-      </div>
-
-      <div class="section-title">System Status</div>
-      <div class="settings-list-card">
-        <div v-if="installPrompt" class="sett-list-item" @click="installApp">
-          <div class="sett-icon" style="color: var(--accent); border-color: var(--accent);"><i data-lucide="download"></i></div>
-          <div style="flex:1;">
-            <div class="sett-value">Install Protocol</div>
-            <div class="sett-sub">Deploy Jurney to your local desktop/mobile</div>
-          </div>
-        </div>
-        <div class="sett-list-item" @click="updateApp">
-          <div class="sett-icon" style="color: #10b981;"><i data-lucide="refresh-cw"></i></div>
-          <div style="flex:1;">
-            <div class="sett-value">Update Explorer</div>
-            <div class="sett-sub">Check for latest version and refresh</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-title">Visual Layout</div>
-      <div class="settings-grid" style="grid-template-columns: 1fr;">
-        <div class="sett-card" @click="currentView = 'visual'">
-           <div class="sett-icon" style="color: var(--accent);"><i data-lucide="swatch-book"></i></div>
-           <div class="sett-label">Interface</div>
-           <div class="sett-value">Aesthetics & Geometry</div>
-        </div>
-      </div>
-
-      <div class="section-title">Data Architect</div>
-      <div class="settings-list-card">
-        <div class="sett-list-item" @click="currentView = 'cloud'">
-          <div class="sett-icon" style="color: #0ea5e9;"><i data-lucide="cloud-cog"></i></div>
-          <div style="flex:1;">
-            <div class="sett-value">Chronicle Vault</div>
-            <div class="sett-sub">Pulse with the Universal Core</div>
-          </div>
-          <i data-lucide="chevron-right" style="opacity: 0.2;"></i>
-        </div>
-        <div class="sett-list-item" @click="$router.push('/metadata')">
-          <div class="sett-icon" style="color: var(--accent);"><i data-lucide="database"></i></div>
-          <div style="flex:1;">
-            <div class="sett-value">Metadata Registry</div>
-            <div class="sett-sub">Manage Categories, Units, Tags & Projects</div>
-          </div>
-          <i data-lucide="chevron-right" style="opacity: 0.2;"></i>
-        </div>
-      </div>
-
-      <div class="section-title" style="color:#ef4444;">Destructive Operations</div>
-      <div class="settings-list-card" style="border-color: rgba(239, 68, 68, 0.15);">
-        <div class="sett-list-item" @click="clearData">
-          <div class="sett-icon" style="color: #ef4444;"><i data-lucide="trash-2"></i></div>
-          <div style="flex:1;">
-            <div class="sett-value" style="color: #ef4444;">Abandon Journey</div>
-            <div class="sett-sub">Factory reset all local intelligence</div>
-          </div>
-        </div>
+        <h1>{{ currentView === 'main' ? 'Settings' : subTitles[currentView] }}</h1>
       </div>
     </div>
 
-    <!-- Personal View -->
-    <div v-show="currentView === 'personal'" class="sub-view">
-      <div style="display: flex; flex-direction: column; align-items: center; margin: 1rem 0 2rem 0;">
-        <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--bg-input); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; box-shadow: 0 0 30px rgba(139, 92, 246, 0.2); overflow: hidden;">
-          <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="resolvedAvatar" style="width: 60%; height: 60%; object-fit: contain;">
-          <span v-else style="font-size: 3rem;">{{ userPrefs.avatar || '👤' }}</span>
+    <div class="content-scroll">
+      <!-- Main Settings Menu -->
+      <div v-if="currentView === 'main'" class="main-menu" animate-fade-in>
+        <!-- Profile Hero -->
+        <div class="profile-hero card-md3" @click="currentView = 'personal'">
+          <div class="avatar-container">
+            <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="resolvedAvatar" class="avatar-img">
+            <span v-else class="avatar-emoji">{{ userPrefs.avatar || '👤' }}</span>
+          </div>
+          <div class="profile-info">
+            <span class="profile-label">Authorized Explorer</span>
+            <span class="profile-name">{{ userPrefs.name || 'User' }}</span>
+            <span class="profile-meta">{{ userPrefs.email || 'No secure link established' }}</span>
+          </div>
+          <span class="material-symbols-rounded">chevron_right</span>
         </div>
 
-        <!-- Avatar Search -->
-        <div style="width: 100%; max-width: 320px; margin-bottom: 1.5rem; position: relative;">
-          <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary); opacity: 0.5;"></i>
-          <input type="text" v-model="avatarSearch" placeholder="Search avatar keywords..." 
-            style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; font-size: 0.75rem; outline: none;">
+        <div class="section-title">System Protocol</div>
+        <div class="list-card card-md3">
+          <div v-if="installPrompt" class="list-item" @click="installApp">
+            <div class="list-icon-box tonal">
+              <span class="material-symbols-rounded">download</span>
+            </div>
+            <div class="list-text">
+              <span class="list-item-title">Install Platform</span>
+              <span class="list-item-sub">Deploy to local desktop or mobile</span>
+            </div>
+          </div>
+          <div class="list-item" @click="updateApp">
+            <div class="list-icon-box success">
+              <span class="material-symbols-rounded">refresh</span>
+            </div>
+            <div class="list-text">
+              <span class="list-item-title">Update Explorer</span>
+              <span class="list-item-sub">Sync with latest core version</span>
+            </div>
+          </div>
         </div>
+
+        <div class="section-title">Interface Matrix</div>
+        <div class="list-card card-md3">
+          <div class="list-item" @click="currentView = 'visual'">
+            <div class="list-icon-box primary">
+              <span class="material-symbols-rounded">palette</span>
+            </div>
+            <div class="list-text">
+              <span class="list-item-title">Aesthetics & Geometry</span>
+              <span class="list-item-sub">Theme, colors, and layout structure</span>
+            </div>
+            <span class="material-symbols-rounded">chevron_right</span>
+          </div>
+        </div>
+
+        <div class="section-title">Core Data</div>
+        <div class="list-card card-md3">
+          <div class="list-item" @click="currentView = 'cloud'">
+            <div class="list-icon-box info">
+              <span class="material-symbols-rounded">cloud_sync</span>
+            </div>
+            <div class="list-text">
+              <span class="list-item-title">Chronicle Vault</span>
+              <span class="list-item-sub">Cloud synchronization parameters</span>
+            </div>
+            <span class="material-symbols-rounded">chevron_right</span>
+          </div>
+          <div class="list-item" @click="$router.push('/metadata')">
+            <div class="list-icon-box secondary">
+              <span class="material-symbols-rounded">database</span>
+            </div>
+            <div class="list-text">
+              <span class="list-item-title">Metadata Registry</span>
+              <span class="list-item-sub">Categories, Units, Tags & Projects</span>
+            </div>
+            <span class="material-symbols-rounded">chevron_right</span>
+          </div>
+        </div>
+
+        <div class="section-title danger">Security Protocols</div>
+        <div class="list-card card-md3 danger-border">
+          <div class="list-item" @click="clearData">
+            <div class="list-icon-box error">
+              <span class="material-symbols-rounded">delete_forever</span>
+            </div>
+            <div class="list-text">
+              <span class="list-item-title danger">Abandon Journey</span>
+              <span class="list-item-sub">Factory reset all local intelligence</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="version-badge">
+           <p>JURNEY INTELLIGENCE CORE</p>
+           <span>v5.4.0 • PRODUCTION GRADE</span>
+        </div>
+      </div>
+
+      <!-- Sub-views -->
+      <div v-else class="sub-view" animate-fade-in>
         
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; max-width: 320px; max-height: 250px; overflow-y: auto; padding-right: 0.5rem; scrollbar-width: none;">
-           <button v-for="a in filteredAvatars" :key="a.url" @click="userPrefs.avatar = a.url" 
-             style="width: 100%; aspect-ratio: 1/1; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border); overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; padding: 0;"
-             :style="{ borderColor: userPrefs.avatar === a.url ? 'var(--accent)' : 'var(--border)', background: userPrefs.avatar === a.url ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }">
-             <template v-if="a.url.includes('.svg')">
-               <img :src="a.url" style="width: 80%; height: 80%; object-fit: contain;">
-             </template>
-             <template v-else>
-               <span style="font-size: 1.5rem;">{{ a.url }}</span>
-             </template>
-           </button>
-           <div v-if="filteredAvatars.length === 0" style="grid-column: span 4; text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.7rem;">No matching identifiers.</div>
-        </div>
-      </div>
+        <!-- Personalization View -->
+        <div v-if="currentView === 'personal'" class="personalization">
+          <div class="avatar-hero">
+            <div class="avatar-large">
+              <img v-if="userPrefs.avatar && userPrefs.avatar.includes('.svg')" :src="resolvedAvatar" class="avatar-img">
+              <span v-else class="avatar-emoji-large">{{ userPrefs.avatar || '👤' }}</span>
+            </div>
+            
+            <div class="avatar-search card-md3">
+              <span class="material-symbols-rounded">search</span>
+              <input type="text" v-model="avatarSearch" placeholder="Filter identifiers...">
+            </div>
 
-      <div class="settings-list-card" style="padding: 1.5rem; gap: 1.5rem;">
-        <div class="form-group">
-          <label class="sett-label">Expedition Callsign (Name)</label>
-          <input type="text" v-model="userPrefs.name" class="f-input" placeholder="Your Name" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white;">
-        </div>
-        <div class="form-group">
-          <label class="sett-label">Secure Comm-Link (Email)</label>
-          <input type="email" v-model="userPrefs.email" class="f-input" placeholder="your@email.com" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; color: white;">
-        </div>
-      </div>
-      <button class="action-btn" @click="savePrefs" style="background: var(--accent); color: white; padding: 1.25rem; border-radius: 14px; border: none; font-weight: 800; font-size: 1rem; cursor: pointer; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);">Update Profile Protocol</button>
-    </div>
-
-    <!-- Visual View -->
-    <div v-show="currentView === 'visual'" class="sub-view">
-      <div class="settings-list-card" style="padding: 1.5rem;">
-        <label class="sett-label">Atmospheric Theme</label>
-        <div class="theme-scroll">
-          <div v-for="t in themes" :key="t.id" class="theme-card" :class="{ active: userPrefs.theme === t.id }" @click="userPrefs.theme = t.id; applyThemeToRoot()">
-            <div class="theme-preview" :style="{ background: t.bg, borderColor: t.border }"></div>
-            <span class="sett-label">{{ t.name }}</span>
+            <div class="avatar-grid">
+              <button v-for="a in filteredAvatars" :key="a.url" @click="userPrefs.avatar = a.url" 
+                class="avatar-chip" :class="{ 'active': userPrefs.avatar === a.url }">
+                <img v-if="a.url.includes('.svg')" :src="a.url" class="avatar-mini">
+                <span v-else class="avatar-emoji-mini">{{ a.url }}</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="settings-list-card" style="padding: 1.5rem;">
-        <label class="sett-label">Corner Geometry ({{ userPrefs.radius }}px)</label>
-        <input type="range" min="0" max="24" v-model="userPrefs.radius" class="radius-slider" @input="applyThemeToRoot">
-      </div>
-      <button class="action-btn" @click="savePrefs">Apply & Save Aesthetics</button>
-    </div>
 
-    <div v-show="currentView === 'cloud'" class="sub-view">
-      <div class="settings-list-card" style="padding: 1.75rem; background: rgba(255,255,255,0.02); border-radius: 1.5rem;">
-        <label class="sett-label" style="display:flex; align-items:center; gap:0.6rem; margin-bottom: 1.25rem;">
-           <i data-lucide="shield-check" style="width:14px; color: var(--accent);"></i> CORE UPLINK COORDINATES
-        </label>
-        <div style="position: relative;">
-          <input :type="showUrl ? 'text' : 'password'" v-model="cloudUrl" class="f-input" placeholder="Coordinate String..." style="padding-right: 3.5rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border2);">
-          <button @click="showUrl = !showUrl" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px;">
-             <i :data-lucide="showUrl ? 'eye-off' : 'eye'" style="width: 18px;"></i>
+          <div class="list-card card-md3 field-group">
+            <div class="field-item">
+              <span class="field-label">Explorer Callsign</span>
+              <input type="text" v-model="userPrefs.name" class="md-input-field" placeholder="Enter name">
+            </div>
+            <div class="field-item">
+              <span class="field-label">Communication Frequency</span>
+              <input type="email" v-model="userPrefs.email" class="md-input-field" placeholder="Enter email">
+            </div>
+          </div>
+
+          <button class="filled-btn" @click="savePrefs">
+            <span class="material-symbols-rounded">save</span>
+            Update Profile
           </button>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; margin-top: 1rem;">
-           <div style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite;"></div>
-           <p style="font-size: 0.65rem; color: var(--text-secondary); line-height: 1.5; opacity: 0.6; margin: 0;">
-              Secure comm-link established via Jurney Encryption Protocol.
-           </p>
+
+        <!-- Visual View -->
+        <div v-if="currentView === 'visual'" class="visual-settings">
+           <div class="section-card card-md3">
+             <span class="section-header-text">Atmospheric Theme</span>
+             <div class="theme-grid">
+               <div v-for="t in themes" :key="t.id" class="theme-item" :class="{ active: userPrefs.theme === t.id }" @click="userPrefs.theme = t.id">
+                 <div class="theme-preview-box" :style="{ background: t.bg, borderColor: t.border }">
+                   <div v-if="userPrefs.theme === t.id" class="theme-check">
+                     <span class="material-symbols-rounded">check</span>
+                   </div>
+                 </div>
+                 <span class="theme-name">{{ t.name }}</span>
+               </div>
+             </div>
+           </div>
+
+           <div class="section-card card-md3">
+             <span class="section-header-text">Corner Geometry ({{ userPrefs.radius }}px)</span>
+             <div class="slider-container">
+               <span class="material-symbols-rounded">rounded_corner</span>
+               <input type="range" min="0" max="28" v-model="userPrefs.radius" class="md-slider">
+               <span class="material-symbols-rounded">square_foot</span>
+             </div>
+           </div>
+
+           <button class="filled-btn" @click="savePrefs">
+             <span class="material-symbols-rounded">done_all</span>
+             Apply Styles
+           </button>
         </div>
-      </div>
 
-      <div class="settings-list-card" style="padding: 1.75rem; background: rgba(255,255,255,0.02); border-radius: 1.5rem;">
-         <label class="sett-label" style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
-            <i data-lucide="zap" style="width: 14px; color: var(--accent);"></i> Resonance Strategy
-         </label>
-         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: rgba(0,0,0,0.3); padding: 0.4rem; border-radius: 16px; border: 1px solid var(--border2);">
-            <button @click="syncMode = 'overwrite'" 
-               style="padding: 0.85rem; border: none; border-radius: 12px; font-weight: 850; font-size: 0.65rem; cursor: pointer; transition: 0.3s; letter-spacing: 0.05em;"
-               :style="{ background: syncMode === 'overwrite' ? 'var(--accent)' : 'transparent', color: syncMode === 'overwrite' ? 'white' : 'var(--text-secondary)', boxShadow: syncMode === 'overwrite' ? '0 4px 12px rgba(139, 92, 246, 0.3)' : 'none' }">
-               FORCE OVERWRITE
-            </button>
-            <button @click="syncMode = 'merge'" 
-               style="padding: 0.85rem; border: none; border-radius: 12px; font-weight: 850; font-size: 0.65rem; cursor: pointer; transition: 0.3s; letter-spacing: 0.05em;"
-               :style="{ background: syncMode === 'merge' ? 'var(--accent)' : 'transparent', color: syncMode === 'merge' ? 'white' : 'var(--text-secondary)', boxShadow: syncMode === 'merge' ? '0 4px 12px rgba(139, 92, 246, 0.3)' : 'none' }">
-               HYBRID MERGE
-            </button>
-         </div>
-         <p style="font-size: 0.6rem; color: var(--text-secondary); margin-top: 1.25rem; text-align: center; opacity: 0.5; line-height: 1.4;">
-            {{ syncMode === 'overwrite' ? 'DANGER: Universal Core state will completely rewrite local vaults.' : 'SAFE: Incoming chronicles will merge seamlessly with existing local logs.' }}
-         </p>
-      </div>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-        <button class="sett-card" style="align-items: center; justify-content: center; background: rgba(14, 165, 233, 0.03); border: 1px dashed rgba(14, 165, 233, 0.3); padding: 2rem 1.25rem; min-height: 140px; margin: 0;" @click="pullData" :disabled="syncing">
-          <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(14, 165, 129, 0.1); display: flex; align-items: center; justify-content: center; color: #10b981; margin-bottom: 0.75rem;">
-             <i data-lucide="download-cloud" style="width: 24px;"></i>
+        <!-- Cloud View -->
+        <div v-if="currentView === 'cloud'" class="cloud-settings">
+          <div class="section-card card-md3">
+            <span class="section-header-text">Universal Core Link</span>
+            <div class="input-with-button">
+              <span class="material-symbols-rounded">key</span>
+              <input :type="showUrl ? 'text' : 'password'" v-model="cloudUrl" placeholder="Enter uplink string...">
+              <button @click="showUrl = !showUrl" class="icon-btn sm">
+                <span class="material-symbols-rounded">{{ showUrl ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            <p class="section-tip">Active encryption enabled via Jurney Protocol.</p>
           </div>
-          <span class="sett-label" style="font-size: 0.7rem; letter-spacing: 0.1em; color: #10b981;">{{ syncing ? 'SYNCING...' : 'PULL CORE' }}</span>
-        </button>
-        <button class="sett-card" style="align-items: center; justify-content: center; background: rgba(139, 92, 246, 0.03); border: 1px solid rgba(139, 92, 246, 0.2); padding: 2rem 1.25rem; min-height: 140px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin: 0;" @click="pushData" :disabled="syncing">
-          <div style="width: 52px; height: 52px; border-radius: 16px; background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 0.75rem; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);">
-             <i data-lucide="upload-cloud" style="width: 24px;"></i>
-          </div>
-          <span class="sett-label" style="font-size: 0.7rem; letter-spacing: 0.1em; color: var(--accent);">{{ syncing ? 'PUSHING...' : 'PUSH LOGS' }}</span>
-        </button>
-      </div>
 
-       <!-- System Version Info -->
-       <div style="margin-top: 5rem; text-align: center; border-top: 1px solid var(--border); padding-top: 2.5rem; margin-bottom: 3rem;">
-          <div style="font-size: 1.1rem; font-weight: 1000; letter-spacing: 0.5em; color: white; opacity: 0.9; margin-bottom: 0.6rem;">JURNEY</div>
-          <div style="font-size: 0.6rem; font-weight: 950; letter-spacing: 0.15em; color: var(--text-secondary); opacity: 0.5;">INTELLIGENCE CORE v5.3.0 • BUILT 2026-04-13</div>
-          <div style="display: flex; justify-content: center; gap: 1.25rem; margin-top: 2rem; opacity: 0.2;">
-             <div style="width: 4px; height: 4px; background: white; border-radius: 50%;"></div>
-             <div style="width: 4px; height: 4px; background: white; border-radius: 50%;"></div>
-             <div style="width: 4px; height: 4px; background: white; border-radius: 50%;"></div>
+          <div class="section-card card-md3">
+            <span class="section-header-text">Integration Mode</span>
+            <div class="segmented-control">
+               <button @click="syncMode = 'overwrite'" :class="{ active: syncMode === 'overwrite' }">FORCE OVERWRITE</button>
+               <button @click="syncMode = 'merge'" :class="{ active: syncMode === 'merge' }">HYBRID MERGE</button>
+            </div>
+            <p class="mode-desc">{{ syncMode === 'overwrite' ? 'Warning: Full state replacement.' : 'Safe: Delta-based log integration.' }}</p>
           </div>
-       </div>
+
+          <div class="sync-actions">
+            <button class="tonal-btn-lg" @click="pullData" :disabled="syncing">
+              <span class="material-symbols-rounded">download</span>
+              {{ syncing ? 'Pulling...' : 'Pull Core' }}
+            </button>
+            <button class="filled-btn-lg" @click="pushData" :disabled="syncing">
+              <span class="material-symbols-rounded">upload</span>
+              {{ syncing ? 'Pushing...' : 'Push Logs' }}
+            </button>
+          </div>
+        </div>
+
+      </div>
     </div>
-
-
   </div>
 </template>
 
@@ -257,21 +259,20 @@ const filteredAvatars = computed(() => {
 
 const subTitles = {
   personal: 'Profile Details',
-  visual: 'App Aesthetics',
-  security: 'Privacy Lab',
-  cloud: 'Cloud Node',
-  metadata: 'Metadata Lab'
+  visual: 'Aesthetics',
+  cloud: 'Vault Sync',
+  metadata: 'Data Registry'
 }
 
 const isSafe = typeof localStorage !== 'undefined'
-const userPrefs = ref(isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Explorer","email":"","theme":"obsidian","radius":16,"color":"#8b5cf6"}') : {"name":"Explorer","email":"","theme":"obsidian","radius":16,"color":"#8b5cf6"})
+const userPrefs = ref(isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{"name":"Explorer","email":"","theme":"obsidian","radius":24,"color":"#A8C7FA"}') : {"name":"Explorer","email":"","theme":"obsidian","radius":24,"color":"#A8C7FA"})
 const cloudUrl = ref(isSafe ? (localStorage.getItem('cloud_sheet_url') || '') : '')
 
 const themes = [
-  { id: 'dark', name: 'Midnight', bg: '#0D0D0D', border: '#1A1A1A' },
+  { id: 'dark', name: 'Midnight', bg: '#1A1C1E', border: '#44474E' },
   { id: 'obsidian', name: 'Obsidian', bg: '#000000', border: '#121212' },
   { id: 'explorer', name: 'Deep Teal', bg: '#051614', border: '#0A2522' },
-  { id: 'light', name: 'Arctic', bg: '#FFFFFF', border: '#E7E5E4' }
+  { id: 'arctic', name: 'Arctic', bg: '#F8F9FA', border: '#DEE2E6' }
 ]
 
 const installPrompt = ref(null)
@@ -280,23 +281,12 @@ const installApp = async () => {
   if (!installPrompt.value) return
   installPrompt.value.prompt()
   const { outcome } = await installPrompt.value.userChoice
-  if (outcome === 'accepted') {
-    installPrompt.value = null
-  }
+  if (outcome === 'accepted') installPrompt.value = null
 }
 
 const updateApp = () => {
-  if (confirm('Verify and initiate system update? This will refresh the explorer.')) {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (let registration of registrations) {
-          registration.update()
-        }
-        window.location.reload()
-      })
-    } else {
-      window.location.reload()
-    }
+  if (confirm('Initiate update protocol? Explorer will reboot.')) {
+     window.location.reload()
   }
 }
 
@@ -304,195 +294,321 @@ const resolvedAvatar = computed(() => {
   const av = userPrefs.value.avatar
   if (!av || !av.includes('.svg')) return av
   if (av.startsWith('http') || av.startsWith('data:')) return av
-  // If it starts with /avatars but missing base, add it
   const b = import.meta.env.BASE_URL.replace(/\/$/, '')
-  if (av.startsWith('/avatars') && b && !av.startsWith(b)) {
-     return b + av
-  }
+  if (av.startsWith('/avatars') && b && !av.startsWith(b)) return b + av
   return av
 })
 
 const savePrefs = () => {
   if (isSafe) localStorage.setItem('user_prefs', JSON.stringify(userPrefs.value))
-  applyThemeToRoot()
-  alert('Preferences saved!')
-}
-
-const applyThemeToRoot = () => {
-  const root = document.documentElement
-  const themeMap = {
-    dark: { bg: '#000000', card: '#0D0D0D', input: '#050505', text: '#F5F5F0', text2: '#9CA3AF', border: '#1A1A1A', accent: '#EAB308', glass: 'rgba(255,255,255,0.02)' },
-    obsidian: { bg: '#000000', card: '#080808', input: '#000000', text: '#ffffff', text2: '#94A3B8', border: '#121212', accent: '#6366f1', glass: 'rgba(255,255,255,0.01)' },
-    explorer: { bg: '#051614', card: '#0A2522', input: '#051614', text: '#E2E8F0', text2: '#94A3B8', border: 'rgba(255,255,255,0.05)', accent: '#10B981', glass: 'rgba(16, 185, 129, 0.05)' },
-    light: { bg: '#FFFFF0', card: '#FFFFFF', input: '#F8F8F0', text: '#1C1917', text2: '#57534E', border: '#E7E5E4', accent: '#78350F', glass: 'rgba(0,0,0,0.02)' }
-  }
-  const t = themeMap[userPrefs.value.theme] || themeMap.obsidian
-  root.style.setProperty('--bg-primary', t.bg)
-  root.style.setProperty('--bg-secondary', t.card)
-  root.style.setProperty('--bg-input', t.input)
-  root.style.setProperty('--text-primary', t.text)
-  root.style.setProperty('--text-secondary', t.text2)
-  root.style.setProperty('--border', t.border)
-  root.style.setProperty('--accent', t.accent)
-  root.style.setProperty('--glass', t.glass)
-  root.style.setProperty('--card-radius', userPrefs.value.radius + 'px')
-  
-  // Update Lucide icons if any
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+  alert('Configuration successfully updated.')
 }
 
 const pullData = async () => {
-  if (!cloudUrl.value) return alert('Enter Cloud URL first')
-  localStorage.setItem('cloud_sheet_url', cloudUrl.value)
+  if (!cloudUrl.value) return alert('No uplink coordinates.')
   syncing.value = true
   const success = await store.pullFromCloud(syncMode.value)
   syncing.value = false
-  if (success) alert('Sync Pull Success!')
-  else alert('Sync Pull Failed. Check URL.')
+  if (success) alert('Sync Complete.')
 }
 
 const pushData = async () => {
-  if (!cloudUrl.value) return alert('Enter Cloud URL first')
-  localStorage.setItem('cloud_sheet_url', cloudUrl.value)
+  if (!cloudUrl.value) return alert('No uplink coordinates.')
   syncing.value = true
   const success = await store.pushToCloud()
   syncing.value = false
-  if (success) alert('Sync Push Dispatched!')
-  else alert('Sync Push Failed.')
+  if (success) alert('Logs successfully uploaded.')
 }
 
 const clearData = () => {
-  if (confirm('DANGER: This will delete everything in your local ledger. Proceed?')) {
+  if (confirm('DANGER: This will purge all local chronicles. Continue?')) {
     localStorage.clear()
     window.location.reload()
   }
 }
-
-watch(userPrefs, () => {
-  applyThemeToRoot()
-}, { deep: true })
-
-watch(currentView, () => {
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-})
 
 onMounted(() => {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault()
     installPrompt.value = e
   })
-  applyThemeToRoot()
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 })
 </script>
 
 <style scoped>
-.section-title {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--text-secondary);
-  margin: 2rem 0 0.75rem 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  opacity: 0.6;
-}
-
-.settings-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.sett-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border);
-  border-radius: var(--card-radius);
-  padding: 1.25rem;
+.settings-container {
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: 0.3s;
+  background-color: var(--bg-primary);
 }
-.sett-card:hover { border-color: var(--accent); }
 
-.sett-icon {
+.top-app-bar {
+  padding: env(safe-area-inset-top) 16px 8px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.app-bar-content {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-bar-content h1 {
+  flex: 1;
+  font-size: 22px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon-btn.sm { width: 32px; height: 32px; }
+
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 80px 16px;
+}
+
+.card-md3 {
+  background-color: var(--bg-secondary);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+}
+
+.profile-hero {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 32px;
+  cursor: pointer;
+}
+
+.avatar-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 40px;
+  background-color: var(--primary-container);
+  border: 2px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar-img { width: 70%; height: 70%; object-fit: contain; }
+.avatar-emoji { font-size: 32px; }
+
+.profile-info { flex: 1; display: flex; flex-direction: column; }
+.profile-label { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+.profile-name { font-size: 20px; font-weight: 600; color: var(--on-surface); }
+.profile-meta { font-size: 13px; color: var(--on-surface-variant); }
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 24px 8px 12px 8px;
+}
+
+.section-title.danger { color: var(--error); }
+
+.list-card { display: flex; flex-direction: column; overflow: hidden; }
+.list-card.danger-border { border-color: rgba(242, 184, 181, 0.2); }
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-item:last-child { border-bottom: none; }
+.list-item:active { background-color: rgba(255, 255, 255, 0.05); }
+
+.list-icon-box {
   width: 40px;
   height: 40px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
 }
 
-.sett-label { font-size: 0.65rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
-.sett-value { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
-.sett-sub { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; }
+.list-icon-box.tonal { background-color: var(--surface-variant); color: var(--on-surface-variant); }
+.list-icon-box.success { background-color: rgba(180, 232, 168, 0.1); color: var(--green); }
+.list-icon-box.primary { background-color: var(--primary-container); color: var(--on-primary-container); }
+.list-icon-box.info { background-color: rgba(168, 199, 250, 0.1); color: var(--blue); }
+.list-icon-box.secondary { background-color: var(--secondary-container); color: var(--on-secondary-container); }
+.list-icon-box.error { background-color: rgba(242, 184, 181, 0.1); color: var(--error); }
 
-.settings-list-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border);
-  border-radius: var(--card-radius);
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
+.list-text { flex: 1; display: flex; flex-direction: column; }
+.list-item-title { font-size: 16px; font-weight: 500; color: var(--on-surface); }
+.list-item-title.danger { color: var(--error); }
+.list-item-sub { font-size: 12px; color: var(--on-surface-variant); }
+
+.version-badge {
+  margin-top: 48px;
+  text-align: center;
+  opacity: 0.35;
 }
 
-.sett-list-item {
+.version-badge p { font-size: 14px; font-weight: 700; letter-spacing: 4px; margin: 0; }
+.version-badge span { font-size: 10px; font-weight: 500; }
+
+.sub-view { display: flex; flex-direction: column; gap: 24px; animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1); }
+
+.avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  background-color: var(--primary-container);
+  border: 3px solid var(--primary);
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  cursor: pointer;
-  transition: 0.2s;
-  border-bottom: 1px solid var(--border);
+  justify-content: center;
+  margin: 0 auto 24px auto;
+  overflow: hidden;
 }
-.sett-list-item:last-child { border-bottom: none; }
-.sett-list-item:hover { background: rgba(255,255,255,0.03); }
 
-.sub-view { 
-  animation: fadeIn 0.4s ease;
-  padding-top: 1rem;
+.avatar-emoji-large { font-size: 48px; }
+
+.avatar-search {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 48px;
+  margin-bottom: 16px;
 }
 
-.theme-scroll {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding: 1rem 0;
-  scrollbar-width: none;
-}
-.theme-card { text-align: center; cursor: pointer; transition: 0.3s; }
-.theme-preview {
-  width: 90px;
-  height: 120px;
-  border-radius: 1rem;
-  border: 2px solid var(--border);
-  margin-bottom: 0.5rem;
-}
-.theme-card.active .theme-preview { border-color: var(--accent); transform: translateY(-4px); }
-
-.action-btn {
-  background: var(--accent);
-  color: white;
+.avatar-search input {
+  flex: 1;
+  background: transparent;
   border: none;
-  padding: 1rem;
-  border-radius: 1rem;
-  font-weight: 800;
+  color: var(--on-surface);
+  font-size: 14px;
+  outline: none;
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.avatar-chip {
+  aspect-ratio: 1/1;
+  border-radius: 12px;
+  background-color: var(--surface-variant);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   cursor: pointer;
 }
 
-.radius-slider {
-  width: 100%;
-  margin: 1rem 0;
-  accent-color: var(--accent);
+.avatar-chip.active { border: 2px solid var(--primary); background-color: var(--primary-container); }
+.avatar-mini { width: 70%; height: 70%; object-fit: contain; }
+
+.field-group { padding: 8px 0; }
+.field-item { display: flex; flex-direction: column; padding: 16px; border-bottom: 1px solid var(--border); }
+.field-item:last-child { border-bottom: none; }
+.field-label { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+.md-input-field { background: transparent; border: none; font-size: 16px; color: var(--on-surface); outline: none; }
+
+.filled-btn {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(168, 199, 250, 0.4);
 }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.section-card { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.section-header-text { font-size: 14px; font-weight: 700; color: var(--primary); text-transform: uppercase; }
+
+.theme-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.theme-item { display: flex; flex-direction: column; gap: 8px; cursor: pointer; }
+.theme-preview-box { height: 80px; border-radius: 16px; border: 2px solid var(--border); position: relative; }
+.theme-item.active .theme-preview-box { border-color: var(--primary); }
+.theme-check { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: var(--primary); color: var(--on-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; scale: 0.8; }
+.theme-name { font-size: 12px; text-align: center; font-weight: 500; }
+
+.slider-container { display: flex; align-items: center; gap: 16px; padding: 0 8px; }
+.md-slider { flex: 1; accent-color: var(--primary); height: 4px; }
+
+.input-with-button {
+  background-color: var(--surface-variant);
+  border-radius: 16px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.input-with-button input { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 14px; outline: none; }
+.section-tip { font-size: 11px; color: var(--on-surface-variant); margin: 0; opacity: 0.7; }
+
+.segmented-control {
+  background-color: var(--surface-variant);
+  padding: 4px;
+  border-radius: 16px;
+  display: flex;
+  gap: 4px;
+}
+
+.segmented-control button {
+  flex: 1;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.segmented-control button.active { background-color: var(--secondary-container); color: var(--on-secondary-container); }
+.mode-desc { font-size: 11px; text-align: center; color: var(--secondary); margin: 0; }
+
+.sync-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tonal-btn-lg { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 20px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 </style>

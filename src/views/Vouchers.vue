@@ -1,148 +1,160 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: 2rem; position: relative;">
-    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
-        <div style="display: flex; align-items: center; gap: 0.8rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
-          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Assets</h1>
-        </div>
-
-        <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-            <i data-lucide="search" style="width: 18px;"></i>
+  <div class="view-content vouchers-container">
+    <!-- MD3 Top App Bar -->
+    <div class="top-app-bar" :class="{ 'has-search': showSearch }">
+      <div class="app-bar-content">
+        <template v-if="!showSearch">
+          <button class="icon-btn" @click="$router.push('/')">
+            <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 10px; height: 32px; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 700; display:flex; align-items:center; gap: 0.3rem; cursor:pointer;">
-            <i data-lucide="plus" style="width: 14px;"></i> New
+          <h1>Assets</h1>
+          <button class="icon-btn" @click="showSearch = true">
+            <span class="material-symbols-rounded">search</span>
           </button>
-        </div>
+        </template>
+        <template v-else>
+          <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
+            <span class="material-symbols-rounded">arrow_back</span>
+          </button>
+          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </template>
+      </div>
+    </div>
 
-        <!-- Expanding Search Bar -->
-        <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 34px; display: flex; align-items: center; min-width: 250px;">
-              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Search archive..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
-              <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
-                 <i data-lucide="x" style="width: 14px;"></i>
-              </button>
+    <div class="content-scroll">
+      <div class="vouchers-list">
+        <div v-for="v in filteredVouchers" :key="v.voucherID" @click="openModal(v)" class="voucher-card card-md3">
+           <div class="voucher-main">
+              <div class="voucher-header">
+                 <span class="voucher-provider">{{ v.provider }}</span>
+                 <span class="status-badge" :class="v.status.toLowerCase()">{{ v.status }}</span>
+              </div>
+              <h2 class="voucher-name">{{ v.voucherName }}</h2>
+           </div>
+           <div class="voucher-footer">
+              <div class="expiry-box">
+                 <span class="footer-label">EXPIRY</span>
+                 <span class="footer-value">{{ v.expiryDate || 'N/A' }}</span>
+              </div>
+              <div class="code-box">
+                 {{ v.voucherCode }}
+              </div>
            </div>
         </div>
-      </header>
-    </div>
+      </div>
 
-    <div class="vouchers-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; margin-top: 1.5rem;">
-      <div v-for="v in filteredVouchers" :key="v.voucherID" @click="openModal(v)" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.5rem; overflow: hidden; cursor: pointer; transition: 0.2s;">
-         <div style="padding: 1.5rem; border-bottom: 1px dashed var(--border); position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-               <div style="font-size: 0.7rem; font-weight: 800; color: var(--accent); text-transform: uppercase;">{{ v.provider }}</div>
-               <div style="font-size: 0.65rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 2px 8px; border-radius: 10px; font-weight: 800;">{{ v.status }}</div>
-            </div>
-            <div style="font-size: 1.125rem; font-weight: 800; line-height: 1.3;">{{ v.voucherName }}</div>
-         </div>
-         <div style="padding: 1.25rem; background: rgba(255,255,255,0.01); display: flex; justify-content: space-between; align-items: center;">
-            <div>
-               <div style="font-size: 0.6rem; opacity: 0.5; text-transform: uppercase; font-weight: 700;">Expiry Date</div>
-               <div style="font-size: 0.8rem; font-weight: 700;">{{ v.expiryDate || 'N/A' }}</div>
-            </div>
-            <div style="font-family: monospace; font-weight: 800; color: var(--accent); border: 1px dashed var(--accent); padding: 4px 8px; border-radius: 6px;">
-               {{ v.voucherCode }}
-            </div>
-         </div>
+      <div v-if="filteredVouchers.length === 0" class="empty-state">
+        <span class="material-symbols-rounded">confirmation_number</span>
+        <p>No active assets found.</p>
       </div>
     </div>
 
+    <!-- FAB -->
+    <button @click="openModal(null)" class="fab">
+      <span class="material-symbols-rounded">add</span>
+    </button>
+
+    <!-- Bottom Sheet Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
-         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
-            <span style="font-weight: 800;">{{ editingVoucher.voucherID ? (modalMode === 'analysis' ? 'Voucher Intelligence' : 'Modify Asset') : 'New Asset' }}</span>
-            <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-         </div>
+       <div v-if="isModalOpen" class="modal-backdrop-full" @click.self="isModalOpen = false">
+          <div class="bottom-sheet">
+             <div class="sheet-drag-handle"></div>
+             <div class="sheet-header">
+                <h3 class="sheet-title">{{ editingVoucher.voucherID ? (modalMode === 'analysis' ? 'Assest Intelligence' : 'Modify Asset') : 'New Asset' }}</h3>
+                <button @click="isModalOpen = false" class="icon-btn">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+             </div>
+             
+             <div class="sheet-content">
+                <!-- MODE: ANALYSIS -->
+                <div v-if="modalMode === 'analysis' && editingVoucher.voucherID" class="analysis-view">
+                   <div class="asset-hero-card">
+                      <div class="hero-glow"></div>
+                      <div class="hero-top">
+                         <span class="hero-tag">ASSET PROTOCOL</span>
+                         <span class="hero-status">{{ editingVoucher.status }}</span>
+                      </div>
+                      <h2 class="hero-title">{{ editingVoucher.voucherName }}</h2>
+                      <p class="hero-code">{{ editingVoucher.voucherCode }}</p>
+                      <span class="material-symbols-rounded hero-icon">confirmation_number</span>
+                   </div>
 
-         <!-- MODE: ANALYSIS -->
-         <div v-if="modalMode === 'analysis' && editingVoucher.voucherID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
-            <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 1.5rem; border-radius: 20px; color: white; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2); position: relative; overflow: hidden;">
-               <div style="position: absolute; right: -20px; top: -20px; opacity: 0.2;"><i data-lucide="ticket" style="width: 120px; height: 120px;"></i></div>
-               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 1;">
-                  <span style="font-size: 0.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em;">Asset Protocol</span>
-                  <div style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; font-weight: 800;">{{ editingVoucher.status }}</div>
-               </div>
-               <div style="font-size: 1.5rem; font-weight: 950; position: relative; z-index: 1;">{{ editingVoucher.voucherName }}</div>
-               <div style="font-family: monospace; font-size: 0.9rem; margin-top: 0.5rem; letter-spacing: 0.1em; position: relative; z-index: 1;">{{ editingVoucher.voucherCode }}</div>
-            </div>
+                   <div class="analytics-grid">
+                      <div class="stat-card card-md3 tonal">
+                         <span class="stat-label">DISCOUNT POWER</span>
+                         <span class="stat-value">
+                            {{ editingVoucher.discountType === 'Percent' ? editingVoucher.discountValue + '%' : 'Rp ' + Number(editingVoucher.discountValue).toLocaleString('id-ID') }}
+                         </span>
+                      </div>
+                      <div class="stat-card card-md3">
+                         <span class="stat-label">REMAINING POTENCY</span>
+                         <span class="stat-value">Rp {{ Number(editingVoucher.balance).toLocaleString('id-ID') }}</span>
+                      </div>
+                   </div>
 
-            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
-               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                  <i data-lucide="bar-chart-3" style="width: 14px; color: #10b981;"></i>
-                  <span style="font-size: 0.7rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.1em;">Redemption Analytics</span>
-               </div>
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Discount Power</div>
-                     <div style="font-size: 1.25rem; font-weight: 950; color: #10b981; margin-top: 0.25rem;">
-                        {{ editingVoucher.discountType === 'Percent' ? editingVoucher.discountValue + '%' : 'Rp ' + Number(editingVoucher.discountValue).toLocaleString('id-ID') }}
-                     </div>
-                  </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Remaining Potency</div>
-                     <div style="font-size: 1.25rem; font-weight: 950; margin-top: 0.25rem;">Rp {{ Number(editingVoucher.balance).toLocaleString('id-ID') }}</div>
-                  </div>
-               </div>
-            </div>
+                   <div class="action-grid">
+                      <button @click="modalMode = 'edit'" class="tonal-btn-lg">
+                         <span class="material-symbols-rounded">edit</span>
+                         MODIFY
+                      </button>
+                      <button @click="isModalOpen = false" class="outline-btn-lg">
+                         CLOSE
+                      </button>
+                   </div>
+                </div>
 
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 950; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY ASSET
-               </button>
-               <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
-                  CLOSE INTELLIGENCE
-               </button>
-            </div>
-         </div>
+                <!-- MODE: EDIT -->
+                <div v-else class="edit-view">
+                   <div class="form-grid">
+                      <div class="form-group full"><label>Voucher Name</label><input type="text" v-model="formData.voucherName" class="md-input"></div>
+                      <div class="form-group full"><label>Provider / Store</label><input type="text" v-model="formData.provider" class="md-input"></div>
+                      <div class="form-group full"><label>Serial Code</label><input type="text" v-model="formData.voucherCode" class="md-input"></div>
+                      <div class="form-group">
+                         <label>Discount Type</label>
+                         <select v-model="formData.discountType" class="md-input">
+                            <option>Percent</option><option>Nominal</option>
+                         </select>
+                      </div>
+                      <div class="form-group"><label>Value</label><input type="number" v-model.number="formData.discountValue" class="md-input"></div>
+                      <div class="form-group"><label>Max Potency</label><input type="number" v-model.number="formData.balance" class="md-input"></div>
+                      <div class="form-group"><label>Expiry Date</label><input type="date" v-model="formData.expiryDate" class="md-input"></div>
+                      <div class="form-group">
+                         <label>Status</label>
+                         <select v-model="formData.status" class="md-input">
+                            <option>Active</option><option>Used</option><option>Expired</option><option>Exhausted</option>
+                         </select>
+                      </div>
+                      <div class="form-group checkbox-group">
+                         <input type="checkbox" v-model="formData.isSingleUse" id="chkSingle">
+                         <label for="chkSingle">Single Use Only</label>
+                      </div>
+                      <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                   </div>
 
-         <!-- MODE: EDIT -->
-         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
-            <div><label class="f-label">Voucher Name</label><input type="text" v-model="formData.voucherName" class="f-input"></div>
-            <div><label class="f-label">Voucher Code</label><input type="text" v-model="formData.voucherCode" class="f-input"></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Discount Type</label><select v-model="formData.discountType" class="f-input"><option>Percent</option><option>Nominal</option></select></div>
-               <div><label class="f-label">Discount Value</label><input type="number" v-model.number="formData.discountValue" class="f-input"></div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Current Balance / Max Discount</label><input type="number" v-model.number="formData.balance" class="f-input"></div>
-               <div><label class="f-label">Expiry Date</label><input type="date" v-model="formData.expiryDate" class="f-input"></div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Used</option><option>Expired</option><option>Exhausted</option></select></div>
-               <div style="display: flex; align-items: center; gap: 0.5rem; height: 50px;">
-                  <input type="checkbox" v-model="formData.isSingleUse" id="chkSingle">
-                  <label for="chkSingle" class="f-label" style="margin: 0;">Single Use Only</label>
-               </div>
-            </div>
-            <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="saveVou" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE ASSET
-               </button>
-               <button v-if="editingVoucher.voucherID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="copy" style="width: 14px;"></i> DUPE
-               </button>
-               <button v-if="editingVoucher.voucherID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="combine" style="width: 14px;"></i> MERGE
-               </button>
-               <button v-if="editingVoucher.voucherID" @click="deleteVou" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
-               </button>
-            </div>
-         </div>
-      </div>
-      </div>
+                   <div class="modal-actions">
+                      <button @click="saveVou" class="filled-btn-lg">
+                         <span class="material-symbols-rounded">save</span>
+                         SAVE ASSET
+                      </button>
+                      <div v-if="editingVoucher.voucherID" class="secondary-actions">
+                         <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
+                         <button @click="deleteVou" class="error-btn">Purge</button>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
     </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 import { useUIStore } from '../stores/ui'
 
@@ -152,7 +164,6 @@ const isModalOpen = ref(false)
 const modalMode = ref('analysis')
 const editingVoucher = ref({})
 const formData = ref({})
-
 const showSearch = ref(false)
 const searchQuery = ref('')
 
@@ -175,14 +186,12 @@ const openModal = (v) => {
       discountValue: Number(v.discountValue) || 0
     } 
     modalMode.value = 'analysis'
-  }
-  else { 
+  } else { 
     editingVoucher.value = {}
     formData.value = { voucherName: '', provider: '', voucherCode: '', discountType: 'Nominal', discountValue: 0, balance: 0, expiryDate: '', status: 'Active', isSingleUse: false, notes: '' } 
     modalMode.value = 'edit'
   }
   isModalOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
 const saveVou = () => {
@@ -192,43 +201,120 @@ const saveVou = () => {
   isModalOpen.value = false
 }
 
-const deleteVou = () => { if (confirm('Delete this voucher?')) { store.deleteVoucher(editingVoucher.value.voucherID); isModalOpen.value = false } }
+const deleteVou = () => { if (confirm('Purge this asset?')) { store.deleteVoucher(editingVoucher.value.voucherID); isModalOpen.value = false } }
 
 const handleDuplicate = () => {
-  const data = { ...formData.value }
-  delete data.voucherID
-  editingVoucher.value = {}
-  formData.value = data
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
+  const data = { ...formData.value }; delete data.voucherID
+  editingVoucher.value = {}; formData.value = data
 }
 
-const handleMerge = () => {
-  alert('VOUCHER Merge Engine coming soon.')
-}
-
-// Visibility & Class Sync
 watch(isModalOpen, (val) => {
   if (val) uiStore.registerModal('vouchers')
   else uiStore.unregisterModal('vouchers')
 })
 
-// Lifecycle Management
-onMounted(() => {
-  if (window.lucide) window.lucide.createIcons()
-})
-
-onBeforeUnmount(() => {
-  uiStore.unregisterModal('vouchers')
-})
-
-// Icon Re-rendering
-watch([isModalOpen, modalMode], () => {
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-})
+onBeforeUnmount(() => { uiStore.unregisterModal('vouchers') })
 </script>
 
 <style scoped>
-.f-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem; }
-.f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.vouchers-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+.top-app-bar {
+  padding: env(safe-area-inset-top) 16px 8px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.app-bar-content { height: 64px; display: flex; align-items: center; gap: 12px; }
+.app-bar-content h1 { flex: 1; font-size: 22px; font-weight: 400; margin: 0; }
+
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent;
+  color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+
+.search-input-field { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 16px; outline: none; }
+
+.content-scroll { flex: 1; overflow-y: auto; padding: 16px; }
+
+.vouchers-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+.voucher-card { overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s; }
+.voucher-card:active { transform: scale(0.98); }
+
+.voucher-main { padding: 20px; flex: 1; border-bottom: 1px dashed var(--border); }
+.voucher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.voucher-provider { font-size: 12px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+.status-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
+.status-badge.active { background-color: rgba(180, 232, 168, 0.2); color: var(--green); }
+.status-badge.used { background-color: var(--surface-variant); color: var(--on-surface-variant); }
+
+.voucher-name { font-size: 20px; font-weight: 500; margin: 0; }
+
+.voucher-footer { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; background-color: rgba(255,255,255,0.02); }
+.footer-label { font-size: 10px; font-weight: 700; opacity: 0.5; margin-right: 8px; }
+.footer-value { font-size: 13px; font-weight: 500; }
+.code-box { font-family: monospace; font-size: 14px; font-weight: 700; color: var(--primary); background: var(--primary-container); padding: 4px 12px; border-radius: 8px; }
+
+.fab {
+  position: fixed; bottom: 32px; right: 32px; width: 56px; height: 56px; border-radius: 16px;
+  background-color: var(--primary); color: var(--on-primary); border: none;
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 1000; cursor: pointer;
+}
+
+.modal-backdrop-full { position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); z-index: 4000; display: flex; align-items: flex-end; }
+
+.bottom-sheet {
+  width: 100%; background-color: var(--bg-primary); border-radius: 28px 28px 0 0;
+  padding: 8px 16px 32px 16px; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
+.sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.sheet-title { font-size: 20px; font-weight: 400; margin: 0; }
+.sheet-content { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 24px; }
+
+.asset-hero-card {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  padding: 24px; border-radius: 24px; color: var(--on-primary); position: relative; overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+}
+
+.hero-glow { position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%); }
+.hero-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; }
+.hero-status { font-size: 10px; font-weight: 700; background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 20px; }
+.hero-title { font-size: 28px; font-weight: 600; margin: 0; }
+.hero-code { font-family: monospace; font-size: 18px; margin-top: 8px; opacity: 0.9; letter-spacing: 1px; }
+.hero-icon { position: absolute; bottom: -10px; right: -10px; font-size: 120px; opacity: 0.1; }
+
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.stat-card { padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.stat-card.tonal { background-color: var(--primary-container); border: none; }
+.stat-label { font-size: 10px; font-weight: 700; opacity: 0.6; }
+.stat-value { font-size: 18px; font-weight: 600; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: span 2; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--primary); margin-left: 4px; }
+.checkbox-group { flex-direction: row; align-items: center; gap: 12px; padding: 12px 0; }
+
+.md-input { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; height: 48px; padding: 0 12px; color: var(--on-surface); font-size: 14px; outline: none; }
+.md-textarea { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px; color: var(--on-surface); font-size: 14px; outline: none; min-height: 80px; resize: vertical; }
+
+.modal-actions { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; }
+.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
 </style>

@@ -1,129 +1,152 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
-        <div style="display: flex; align-items: center; gap: 0.8rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
-          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Budgets</h1>
-        </div>
-
-        <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-            <i data-lucide="search" style="width: 18px;"></i>
+  <div class="view-content budget-container">
+    <!-- MD3 Top App Bar -->
+    <div class="top-app-bar" :class="{ 'has-search': showSearch }">
+      <div class="app-bar-content">
+        <template v-if="!showSearch">
+          <button class="icon-btn" @click="$router.push('/')">
+            <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 10px; height: 32px; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 700; display:flex; align-items:center; gap: 0.3rem; cursor:pointer;">
-            <i data-lucide="plus" style="width: 14px;"></i> New
+          <h1>Budgets</h1>
+          <button class="icon-btn" @click="showSearch = true">
+            <span class="material-symbols-rounded">search</span>
           </button>
-        </div>
+        </template>
+        <template v-else>
+          <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
+            <span class="material-symbols-rounded">arrow_back</span>
+          </button>
+          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </template>
+      </div>
+    </div>
 
-        <!-- Expanding Search Bar -->
-        <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 34px; display: flex; align-items: center; min-width: 250px;">
-              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Search archive..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
-              <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
-                 <i data-lucide="x" style="width: 14px;"></i>
-              </button>
+    <div class="content-scroll">
+      <div class="budget-list">
+        <div v-for="b in filteredBudgets" :key="b.budgetID" @click="openModal(b)" class="budget-card card-md3">
+           <div class="card-head">
+              <div class="head-left">
+                 <span class="budget-meta">{{ b.period }} • {{ b.category }}</span>
+                 <h2 class="budget-amount">{{ b.currency }} {{ (b.amount || 0).toLocaleString('id-ID') }}</h2>
+              </div>
+              <span class="status-badge" :class="b.status.toLowerCase()">{{ b.status }}</span>
+           </div>
+           
+           <div class="progress-section">
+              <div class="progress-track">
+                 <div class="progress-fill" :style="{ width: calculateProgress(b) + '%', backgroundColor: getProgressColor(b) }"></div>
+              </div>
+              <div class="progress-labels">
+                 <span class="label-left">{{ calculateProgress(b) }}% Allocated</span>
+                 <span class="label-right">Rp {{ getSpent(b).toLocaleString('id-ID') }} outflow</span>
+              </div>
            </div>
         </div>
-      </header>
-    </div>
+      </div>
 
-    <div class="budget-list" style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.5rem;">
-      <div v-for="b in filteredBudgets" :key="b.budgetID" @click="openModal(b)" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; cursor: pointer; transition: 0.2s;">
-         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-            <div>
-               <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase;">{{ b.period }} / {{ b.category }}</div>
-               <div style="font-size: 1.125rem; font-weight: 800; margin-top: 0.2rem;">{{ b.currency }} {{ (b.amount || 0).toLocaleString('id-ID') }}</div>
-            </div>
-            <div style="font-size: 0.65rem; background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 2px 8px; border-radius: 10px; font-weight: 800;">{{ b.status }}</div>
-         </div>
-         
-         <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 0.5rem;">
-            <div :style="{ width: calculateProgress(b) + '%', background: getProgressColor(b) }" style="height: 100%; transition: 0.5s;"></div>
-         </div>
-         <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; opacity: 0.6;">
-            <span>{{ calculateProgress(b) }}% Used</span>
-            <span>Rp {{ getSpent(b).toLocaleString('id-ID') }} spent</span>
-         </div>
+      <div v-if="filteredBudgets.length === 0" class="empty-state">
+        <span class="material-symbols-rounded">account_balance_wallet</span>
+        <p>No allocation protocols defined.</p>
       </div>
     </div>
 
+    <!-- FAB -->
+    <button @click="openModal(null)" class="fab">
+      <span class="material-symbols-rounded">add</span>
+    </button>
+
+    <!-- Bottom Sheet Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out;">
-         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
-            <span style="font-weight: 800;">Budget Detail</span>
-            <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-         </div>
-         <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-            <div><label class="f-label">Category</label><input type="text" v-model="formData.category" list="cat-list" class="f-input"></div>
-            <div><label class="f-label">Period</label><select v-model="formData.period" class="f-input"><option>Monthly</option><option>Weekly</option><option>Yearly</option><option>Custom Project</option></select></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Budget Amount</label><input type="number" v-model.number="formData.amount" class="f-input"></div>
-               <div><label class="f-label">Currency</label><input type="text" v-model="formData.currency" class="f-input"></div>
-            </div>
-            <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Paused</option><option>Completed</option></select></div>
-            <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
+       <div v-if="isModalOpen" class="modal-backdrop-full" @click.self="isModalOpen = false">
+          <div class="bottom-sheet">
+             <div class="sheet-drag-handle"></div>
+             <div class="sheet-header">
+                <h3 class="sheet-title">Budget Configuration</h3>
+                <button @click="isModalOpen = false" class="icon-btn">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+             </div>
+             
+             <div class="sheet-content">
+                <div class="form-grid">
+                   <div class="form-group full">
+                      <label>Category</label>
+                      <input type="text" v-model="formData.category" list="cat-list" class="md-input">
+                   </div>
+                   <div class="form-group full">
+                      <label>Period</label>
+                      <select v-model="formData.period" class="md-input">
+                         <option>Monthly</option><option>Weekly</option><option>Yearly</option><option>Custom Project</option>
+                      </select>
+                   </div>
+                   <div class="form-group"><label>Allocation</label><input type="number" v-model.number="formData.amount" class="md-input"></div>
+                   <div class="form-group"><label>Currency</label><input type="text" v-model="formData.currency" class="md-input"></div>
+                   <div class="form-group full">
+                      <label>Status</label>
+                      <select v-model="formData.status" class="md-input">
+                         <option>Active</option><option>Paused</option><option>Completed</option>
+                      </select>
+                   </div>
+                   <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="saveBud" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE BUDGET
-               </button>
-               <button v-if="editingBud.budgetID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="copy" style="width: 14px;"></i> DUPE
-               </button>
-               <button v-if="editingBud.budgetID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="combine" style="width: 14px;"></i> MERGE
-               </button>
-               <button v-if="editingBud.budgetID" @click="deleteBud" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
-               </button>
-            </div>
-         </div>
-      </div>
-    </div>
+                <div class="modal-actions">
+                   <button @click="saveBud" class="filled-btn-lg">
+                      <span class="material-symbols-rounded">save</span>
+                      SAVE ALLOCATION
+                   </button>
+                   <div v-if="editingBud.budgetID" class="secondary-actions">
+                      <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
+                      <button @click="handleMerge" class="tonal-btn">Merge</button>
+                      <button @click="deleteBud" class="error-btn">Purge</button>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </Teleport>
+
+    <!-- Merge Layer -->
+    <Teleport to="body">
+       <div v-if="isMergePanelOpen" class="modal-backdrop-full" @click.self="isMergePanelOpen = false">
+          <div class="bottom-sheet">
+             <div class="sheet-drag-handle"></div>
+             <div class="sheet-header">
+                <h3 class="sheet-title">Consolidate Allocations</h3>
+                <button @click="isMergePanelOpen = false" class="icon-btn">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+             </div>
+             <div class="sheet-content">
+                <div class="search-box card-md3">
+                   <span class="material-symbols-rounded">search</span>
+                   <input v-model="mergeTargetSearch" type="text" placeholder="Search budget categories...">
+                </div>
+                <div class="target-list">
+                   <div v-for="t in filteredMergeTargets" :key="t.budgetID" @click="performMerge(t)" class="target-item card-md3">
+                      <span class="material-symbols-rounded">account_balance</span>
+                      <div class="target-info">
+                         <span class="name">{{ t.category }}</span>
+                         <span class="sub">{{ t.period }} • Rp {{ (t.amount || 0).toLocaleString('id-ID') }}</span>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
     </Teleport>
 
     <datalist id="cat-list">
        <option v-for="c in store.categories" :key="c.categoryID" :value="c.category" />
     </datalist>
-
-    <Teleport to="body">
-       <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
-       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 440px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; animation: slideUp 0.3s ease-out;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span style="font-weight: 800; font-size: 1rem;">Budget Consolidation</span>
-             <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-          </div>
-          <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the target budget that will absorb the allocation from <b>{{ editingBud.category }}</b>.</p>
-          
-          <div style="position: relative;">
-             <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
-             <input type="text" v-model="mergeTargetSearch" placeholder="Search budgets..." class="f-input" style="padding-left: 2.5rem; height: 44px; font-size: 0.8rem;">
-          </div>
-
-          <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
-             <div v-for="t in filteredMergeTargets" :key="t.budgetID" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
-                <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center;">
-                   <i data-lucide="landmark" style="width: 14px;"></i>
-                </div>
-                <div>
-                   <div style="font-weight: 700; font-size: 0.85rem;">{{ t.category }}</div>
-                   <div style="font-size: 0.6rem; opacity: 0.5;">{{ t.period }} • Rp {{ (t.amount || 0).toLocaleString('id-ID') }}</div>
-                </div>
-             </div>
-             <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid budgets found.</div>
-          </div>
-           <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
-        </div>
-     </div>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 import { useUIStore } from '../stores/ui'
 
@@ -132,30 +155,26 @@ const uiStore = useUIStore()
 const isModalOpen = ref(false)
 const editingBud = ref({})
 const formData = ref({})
-
 const showSearch = ref(false)
 const searchQuery = ref('')
+const isMergePanelOpen = ref(false)
+const mergeTargetSearch = ref('')
 
 const filteredBudgets = computed(() => {
   if (!searchQuery.value) return store.budgets
   const q = searchQuery.value.toLowerCase()
-  return store.budgets.filter(b => 
-    (b.category || '').toLowerCase().includes(q) ||
-    (b.period || '').toLowerCase().includes(q)
-  )
+  return store.budgets.filter(b => (b.category || '').toLowerCase().includes(q))
+})
+
+const filteredMergeTargets = computed(() => {
+  const q = mergeTargetSearch.value.toLowerCase()
+  return store.budgets.filter(b => b.budgetID !== editingBud.value.budgetID && (b.category || '').toLowerCase().includes(q))
 })
 
 const openModal = (b) => {
-  if (b) { 
-    editingBud.value = { ...b }
-    formData.value = { 
-      ...b,
-      amount: Number(b.amount) || 0
-    } 
-  }
+  if (b) { editingBud.value = { ...b }; formData.value = { ...b, amount: Number(b.amount) || 0 } }
   else { editingBud.value = {}; formData.value = { category: '', period: 'Monthly', amount: 0, currency: 'IDR', status: 'Active', notes: '' } }
   isModalOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
 const saveBud = () => {
@@ -165,89 +184,81 @@ const saveBud = () => {
   isModalOpen.value = false
 }
 
-const deleteBud = () => { if (confirm('Delete this budget?')) { store.deleteBudget(editingBud.value.budgetID); isModalOpen.value = false } }
-
-const handleDuplicate = () => {
-  const data = { ...formData.value }
-  delete data.budgetID
-  editingBud.value = {}
-  formData.value = data
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-}
-
-const isMergePanelOpen = ref(false)
-const mergeTargetSearch = ref('')
-const filteredMergeTargets = computed(() => {
-  const q = mergeTargetSearch.value.toLowerCase()
-  return store.budgets.filter(b => 
-    b.budgetID !== editingBud.value.budgetID &&
-    (b.category || '').toLowerCase().includes(q)
-  )
-})
-
-const handleMerge = () => {
-  isMergePanelOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-}
+const deleteBud = () => { if (confirm('Purge this allocation?')) { store.deleteBudget(editingBud.value.budgetID); isModalOpen.value = false } }
+const handleDuplicate = () => { const data = { ...formData.value }; delete data.budgetID; editingBud.value = {}; formData.value = data }
+const handleMerge = () => isMergePanelOpen.value = true
 
 const performMerge = (target) => {
-  const sourceName = editingBud.value.category
-  const targetName = target.category
-  
-  if (!confirm(`Append the allocation from budget "${sourceName}" into "${targetName}"? This will add Rp ${editingBud.value.amount} to the target and delete the source.`)) return
-  
-  const updatedTarget = { ...target }
-  updatedTarget.amount = (Number(updatedTarget.amount) || 0) + (Number(editingBud.value.amount) || 0)
-  
-  store.updateBudget(updatedTarget)
-  store.deleteBudget(editingBud.value.budgetID)
-  
-  isMergePanelOpen.value = false
-  isModalOpen.value = false
+  if (!confirm(`Append "${editingBud.value.category}" allocation to "${target.category}"?`)) return
+  const updatedTarget = { ...target, amount: (Number(target.amount) || 0) + (Number(editingBud.value.amount) || 0) }
+  store.updateBudget(updatedTarget); store.deleteBudget(editingBud.value.budgetID)
+  isMergePanelOpen.value = false; isModalOpen.value = false
 }
 
-const getSpent = (b) => {
-  return store.transactions
-    .filter(t => t.category === b.category && t.type === 'Expense')
-    .reduce((acc, t) => acc + (t.total || 0), 0)
-}
+const getSpent = (b) => store.transactions.filter(t => t.category === b.category && t.type === 'Expense').reduce((acc, t) => acc + (t.total || 0), 0)
+const calculateProgress = (b) => b.amount ? Math.min(Math.round((getSpent(b) / b.amount) * 100), 100) : 0
+const getProgressColor = (b) => { const p = calculateProgress(b); if (p > 90) return 'var(--error)'; if (p > 70) return '#f59e0b'; return 'var(--primary)'; }
 
-const calculateProgress = (b) => {
-  if (!b.amount) return 0
-  const spent = getSpent(b)
-  return Math.min(Math.round((spent / b.amount) * 100), 100)
-}
-
-const getProgressColor = (b) => {
-  const p = calculateProgress(b)
-  if (p > 90) return '#ef4444'
-  if (p > 70) return '#f59e0b'
-  return 'var(--accent)'
-}
-
-// Visibility & Class Sync
-watch([isModalOpen, isMergePanelOpen], ([m, mp]) => {
-  if (m || mp) uiStore.registerModal('budget')
+watch(isModalOpen, (val) => {
+  if (val) uiStore.registerModal('budget')
   else uiStore.unregisterModal('budget')
 })
 
-// Lifecycle Management
-onMounted(() => {
-  if (window.lucide) window.lucide.createIcons()
-})
-
-onBeforeUnmount(() => {
-  uiStore.unregisterModal('budget')
-})
-
-// Icon Re-rendering
-watch([isModalOpen, isMergePanelOpen], () => {
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-})
+onBeforeUnmount(() => { uiStore.unregisterModal('budget') })
 </script>
 
 <style scoped>
-.f-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem; }
-.f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.budget-container { height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-primary); }
+.top-app-bar { padding: env(safe-area-inset-top) 16px 8px 16px; background-color: var(--bg-primary); border-bottom: 1px solid var(--border); z-index: 100; }
+.app-bar-content { height: 64px; display: flex; align-items: center; gap: 12px; }
+.app-bar-content h1 { flex: 1; font-size: 22px; font-weight: 400; margin: 0; }
+.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.search-input-field { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 16px; outline: none; }
+.content-scroll { flex: 1; overflow-y: auto; padding: 16px; }
+
+.budget-list { display: flex; flex-direction: column; gap: 16px; }
+.budget-card { padding: 20px; cursor: pointer; }
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.budget-meta { font-size: 10px; font-weight: 700; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 1px; }
+.budget-amount { font-size: 22px; font-weight: 500; margin: 4px 0 0 0; }
+.status-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; }
+.status-badge.active { background: rgba(180, 232, 168, 0.2); color: var(--green); }
+
+.progress-section { display: flex; flex-direction: column; gap: 8px; }
+.progress-track { height: 8px; background: var(--surface-variant); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s ease; }
+.progress-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 500; opacity: 0.6; }
+
+.fab { position: fixed; bottom: 32px; right: 32px; width: 56px; height: 56px; border-radius: 16px; background-color: var(--primary); color: var(--on-primary); border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 1000; cursor: pointer; }
+
+.modal-backdrop-full { position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); z-index: 4000; display: flex; align-items: flex-end; }
+.bottom-sheet { width: 100%; background-color: var(--bg-primary); border-radius: 28px 28px 0 0; padding: 8px 16px 32px 16px; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1); }
+.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
+.sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.sheet-title { font-size: 20px; font-weight: 400; margin: 0; }
+.sheet-content { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 24px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: span 2; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--primary); margin-left: 4px; }
+.md-input { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; height: 48px; padding: 0 12px; color: var(--on-surface); font-size: 14px; outline: none; }
+.md-textarea { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px; color: var(--on-surface); font-size: 14px; outline: none; min-height: 80px; resize: vertical; }
+
+.modal-actions { display: flex; flex-direction: column; gap: 16px; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; }
+.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+
+.search-box { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 56px; margin-bottom: 12px; }
+.search-box input { flex: 1; background: transparent; border: none; color: white; outline: none; }
+.target-list { display: flex; flex-direction: column; gap: 8px; }
+.target-item { display: flex; align-items: center; gap: 16px; padding: 12px; cursor: pointer; }
+.target-info { display: flex; flex-direction: column; }
+.name { font-size: 14px; font-weight: 600; }
+.sub { font-size: 11px; opacity: 0.5; }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
 </style>

@@ -1,231 +1,196 @@
 <template>
-  <div class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
-        <div style="display: flex; align-items: center; gap: 0.8rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
-          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Vendors</h1>
-        </div>
-
-        <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-            <i data-lucide="search" style="width: 18px;"></i>
+  <div class="view-content merchants-container">
+    <!-- MD3 Top App Bar -->
+    <div class="top-app-bar" :class="{ 'has-search': showSearch }">
+      <div class="app-bar-content">
+        <template v-if="!showSearch">
+          <button class="icon-btn" @click="$router.push('/')">
+            <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 10px; height: 32px; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 700; display:flex; align-items:center; gap: 0.3rem; cursor:pointer;">
-            <i data-lucide="plus" style="width: 14px;"></i> New
+          <h1>Vendors</h1>
+          <button class="icon-btn" @click="showSearch = true">
+            <span class="material-symbols-rounded">search</span>
           </button>
-        </div>
-
-        <!-- Expanding Search Bar -->
-        <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 34px; display: flex; align-items: center; min-width: 250px;">
-              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Search archive..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
-              <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
-                 <i data-lucide="x" style="width: 14px;"></i>
-              </button>
-           </div>
-        </div>
-      </header>
-    </div>
-
-    <div class="merchant-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
-      <div v-for="m in filteredMerchants" :key="m.merchantID" @click="openModal(m)" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.2s;">
-        <div style="width: 48px; height: 48px; border-radius: 1.25rem; display: flex; align-items: center; justify-content: center; background: rgba(139,92,246,0.1); color: var(--accent); font-weight: 800; font-size: 1.25rem; flex-shrink: 0;">
-           {{ String(m.merchantName || 'M')[0].toUpperCase() }}
-        </div>
-        <div style="flex: 1;">
-          <div style="font-weight: 700; color: white;">{{ m.merchantName }}</div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">{{ m.category || 'General' }} • {{ m.address || 'No Address' }}</div>
-        </div>
-        <div style="font-size: 0.7rem; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--text-secondary);">{{ m.status }}</div>
+        </template>
+        <template v-else>
+          <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
+            <span class="material-symbols-rounded">arrow_back</span>
+          </button>
+          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </template>
       </div>
     </div>
 
+    <div class="content-scroll">
+      <div class="merchant-list">
+        <div v-for="m in filteredMerchants" :key="m.merchantID" @click="openModal(m)" class="merchant-item card-md3">
+          <div class="merchant-icon-box" :style="{ backgroundColor: getInitColor(m.merchantName) + '15', color: getInitColor(m.merchantName) }">
+            {{ String(m.merchantName || 'M')[0].toUpperCase() }}
+          </div>
+          <div class="merchant-info">
+            <span class="merchant-name">{{ m.merchantName }}</span>
+            <span class="merchant-meta">{{ m.category || 'General' }} • {{ m.address || 'No location' }}</span>
+          </div>
+          <span class="status-chip">{{ m.status }}</span>
+        </div>
+
+        <div v-if="filteredMerchants.length === 0" class="empty-state">
+          <span class="material-symbols-rounded">storefront</span>
+          <p>No vendor signatures detected.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button @click="openModal(null)" class="fab">
+      <span class="material-symbols-rounded">add</span>
+    </button>
+
+    <!-- Bottom Sheet Modal -->
     <Teleport to="body">
-      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; padding-bottom: 5rem;">
-         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary);">
-            <span style="font-weight: 800;">Merchant Detail</span>
-            <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-         </div>
-         
-         <!-- MODE: ANALYSIS -->
-         <div v-if="modalMode === 'analysis' && editingMerchant.merchantID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
-            <div style="display: flex; gap: 1.5rem; align-items: center;">
-               <div style="width: 70px; height: 70px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 4px;">
-                  <img v-if="editingMerchant.merchantImage" :src="editingMerchant.merchantImage" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                  <i v-else data-lucide="building-2" style="width: 28px; color: var(--accent);"></i>
-               </div>
-               <div>
-                  <div style="font-size: 1.25rem; font-weight: 950; letter-spacing: -0.02em;">{{ editingMerchant.merchantName }}</div>
-                  <div style="font-size: 0.75rem; opacity: 0.5; margin-top: 0.2rem;">{{ editingMerchant.website || 'No Digital Identity' }}</div>
-               </div>
-            </div>
+       <div v-if="isModalOpen" class="modal-backdrop-full" @click.self="isModalOpen = false">
+          <div class="bottom-sheet">
+             <div class="sheet-drag-handle"></div>
+             <div class="sheet-header">
+                <h3 class="sheet-title">Vendor Intelligence</h3>
+                <button @click="isModalOpen = false" class="icon-btn">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+             </div>
+             
+             <div class="sheet-content">
+                <!-- MODE: ANALYSIS -->
+                <div v-if="modalMode === 'analysis' && editingMerchant.merchantID" class="analysis-view">
+                   <div class="analysis-hero">
+                      <div class="hero-avatar card-md3">
+                         <img v-if="editingMerchant.merchantImage" :src="editingMerchant.merchantImage" class="hero-img">
+                         <span v-else class="hero-initial">{{ String(editingMerchant.merchantName)[0] }}</span>
+                      </div>
+                      <div class="hero-text">
+                         <h2 class="hero-title">{{ editingMerchant.merchantName }}</h2>
+                         <span class="hero-site">{{ editingMerchant.website || 'No digital link' }}</span>
+                      </div>
+                   </div>
 
-            <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 1.25rem; padding: 1.25rem;">
-               <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                  <i data-lucide="activity" style="width: 14px; color: var(--accent);"></i>
-                  <span style="font-size: 0.7rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em;">Merchant Economics</span>
-               </div>
-               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Total Protocol Flow</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: #ef4444; margin-top: 0.25rem;">Rp {{ (merchantAnalysis.totalSpend || 0).toLocaleString('id-ID') }}</div>
-                  </div>
-                  <div style="background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                     <div style="font-size: 0.55rem; opacity: 0.6; font-weight: 800; text-transform: uppercase;">Mission Count</div>
-                     <div style="font-size: 1rem; font-weight: 950; color: white; margin-top: 0.25rem;">{{ merchantAnalysis.txCount }}</div>
-                  </div>
-               </div>
-               <div v-if="merchantAnalysis.insight" style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; border-top: 1px solid rgba(139, 92, 246, 0.1); padding-top: 1rem;">
-                  <i data-lucide="zap" style="width: 12px; display: inline-block; margin-right: 4px; color: var(--accent);"></i>
-                  {{ merchantAnalysis.insight }}
-               </div>
-            </div>
+                   <div class="analytics-grid">
+                      <div class="stat-card card-md3 tonal">
+                         <span class="stat-label">TOTAL SPEND</span>
+                         <span class="stat-value error">Rp {{ (merchantAnalysis.totalSpend || 0).toLocaleString('id-ID') }}</span>
+                      </div>
+                      <div class="stat-card card-md3">
+                         <span class="stat-label">LOGS DETECTED</span>
+                         <span class="stat-value">{{ merchantAnalysis.txCount }}</span>
+                      </div>
+                   </div>
 
-            <!-- Favorite Items -->
-            <div v-if="merchantAnalysis.topItems.length > 0">
-               <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem;">Highest Payload Items</div>
-               <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                  <div v-for="item in merchantAnalysis.topItems" :key="item.name" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 0.5rem 0.75rem; border-radius: 10px; font-size: 0.75rem; font-weight: 700;">
-                     {{ item.name }} <span style="opacity: 0.4; font-weight: 400; margin-left: 4px;">x{{ item.count }}</span>
-                  </div>
-               </div>
-            </div>
+                   <p v-if="merchantAnalysis.insight" class="insight-text">
+                      <span class="material-symbols-rounded">bolt</span>
+                      {{ merchantAnalysis.insight }}
+                   </p>
 
-            <!-- Members & Vouchers -->
-            <div v-if="merchantAnalysis.members.length > 0 || merchantAnalysis.vouchers.length > 0" style="display: flex; flex-direction: column; gap: 1rem;">
-                <div v-if="merchantAnalysis.members.length > 0">
-                    <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem;">Loyalty Protocols</div>
-                    <div v-for="mem in merchantAnalysis.members" :key="mem.memberID" style="background: linear-gradient(90deg, rgba(139, 92, 246, 0.1), transparent); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
-                        <i data-lucide="id-card" style="width: 16px; color: var(--accent);"></i>
-                        <div>
-                            <div style="font-size: 0.8rem; font-weight: 800;">{{ mem.memberCardName }}</div>
-                            <div style="font-size: 0.6rem; opacity: 0.5;">{{ mem.memberIDValue || 'Internal Identifier' }}</div>
-                        </div>
-                    </div>
-                </div>
-                <div v-if="merchantAnalysis.vouchers.length > 0">
-                    <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem;">Available Stimuli (Vouchers)</div>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div v-for="v in merchantAnalysis.vouchers" :key="v.voucherID" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem; display: flex; justify-content: space-between; align-items: center;" :style="{ opacity: v.status === 'Used' || v.status === 'Expired' ? 0.4 : 1 }">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <i data-lucide="ticket" style="width: 16px; color: #10b981;"></i>
-                                <div>
-                                    <div style="font-size: 0.8rem; font-weight: 700;">{{ v.voucherName }}</div>
-                                    <div style="font-size: 0.55rem; opacity: 0.5;">Exp: {{ v.expiryDate || 'Indefinite' }}</div>
-                                </div>
+                   <div v-if="merchantAnalysis.topItems.length > 0" class="items-section">
+                      <span class="section-label">PAYLOAD FREQUENCY</span>
+                      <div class="tag-cloud">
+                         <div v-for="item in merchantAnalysis.topItems" :key="item.name" class="tag-chip">
+                            {{ item.name }} <span class="tag-count">x{{ item.count }}</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <!-- History List -->
+                   <div class="history-section">
+                      <span class="section-label">CHRONOLOGICAL LOGS</span>
+                      <div class="mini-logs">
+                         <div v-for="t in merchantAnalysis.recentTxs" :key="t.transactionID" class="mini-log-item">
+                            <div class="log-left">
+                               <span class="log-title">{{ t.itemName }}</span>
+                               <span class="log-sub">{{ t.date }}</span>
                             </div>
-                            <div style="font-size: 0.6rem; font-weight: 900; text-transform: uppercase; padding: 2px 8px; border-radius: 4px;" :style="{ background: v.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.05)', color: v.status === 'Active' ? '#10b981' : 'white' }">
-                                {{ v.status }}
-                            </div>
-                        </div>
-                    </div>
+                            <span class="log-amount">-Rp {{ (t.total || 0).toLocaleString('id-ID') }}</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <div class="action-grid">
+                      <button @click="modalMode = 'edit'" class="tonal-btn-lg">
+                         <span class="material-symbols-rounded">edit</span>
+                         MODIFY
+                      </button>
+                      <button @click="isModalOpen = false" class="outline-btn-lg">CLOSE</button>
+                   </div>
                 </div>
-            </div>
 
-            <!-- Transaction List -->
-            <div>
-               <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem;">Chronological Mission Logs</div>
-               <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                  <div v-for="t in merchantAnalysis.recentTxs" :key="t.transactionID" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 0.75rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                     <div>
-                        <div style="font-size: 0.8rem; font-weight: 700;">{{ t.itemName }}</div>
-                        <div style="font-size: 0.55rem; opacity: 0.4;">{{ t.date }} • {{ t.paymentSourceAccount }}</div>
-                     </div>
-                     <div style="text-align: right;">
-                        <div style="font-weight: 900; font-size: 0.85rem; color: #ef4444;">-Rp {{ (t.total || 0).toLocaleString('id-ID') }}</div>
-                        <div style="font-size: 0.55rem; opacity: 0.4;">{{ t.quantity }} unit</div>
-                     </div>
-                  </div>
-               </div>
-            </div>
+                <!-- MODE: EDIT -->
+                <div v-else class="edit-view">
+                   <div class="form-grid">
+                      <div class="form-group full"><label>Vendor Name</label><input type="text" v-model="formData.merchantName" class="md-input"></div>
+                      <div class="form-group"><label>Category</label><input type="text" v-model="formData.category" class="md-input"></div>
+                      <div class="form-group">
+                         <label>Status</label>
+                         <select v-model="formData.status" class="md-input">
+                            <option>Active</option><option>Inactive</option>
+                         </select>
+                      </div>
+                      <div class="form-group"><label>Phone</label><input type="text" v-model="formData.phone" class="md-input"></div>
+                      <div class="form-group"><label>Email</label><input type="email" v-model="formData.email" class="md-input"></div>
+                      <div class="form-group full"><label>Address</label><textarea v-model="formData.address" class="md-textarea"></textarea></div>
+                      <div class="form-group full"><label>Website</label><input type="text" v-model="formData.website" class="md-input"></div>
+                      <div class="form-group full"><label>Logo URL</label><input type="text" v-model="formData.merchantImage" class="md-input"></div>
+                      <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                   </div>
 
-            <div v-if="editingMerchant.address" style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 14px; border: 1px solid var(--border);">
-               <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 0.5rem;">Coordinates</div>
-               <div style="font-size: 0.8rem; opacity: 0.8;">{{ editingMerchant.address }}</div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="modalMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 950; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY MERCHANT
-               </button>
-               <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
-                  CLOSE INTEL
-               </button>
-            </div>
-         </div>
-
-         <!-- MODE: EDIT -->
-         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
-            <div><label class="f-label">Merchant Name</label><input type="text" v-model="formData.merchantName" class="f-input"></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Category</label><input type="text" v-model="formData.category" class="f-input"></div>
-               <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Phone</label><input type="text" v-model="formData.phone" class="f-input"></div>
-               <div><label class="f-label">Email</label><input type="email" v-model="formData.email" class="f-input"></div>
-            </div>
-            <div><label class="f-label">Address</label><textarea v-model="formData.address" class="f-input" style="min-height: 60px;"></textarea></div>
-            <div><label class="f-label">GMaps Link</label><input type="text" v-model="formData.gMapsLink" class="f-input" placeholder="https://goo.gl/maps/..."></div>
-            <div><label class="f-label">Website</label><input type="text" v-model="formData.website" class="f-input" placeholder="https://..."></div>
-            <div><label class="f-label">Bank Account Details</label><input type="text" v-model="formData.bankAccountDetails" class="f-input" placeholder="Bank Name - Account Number"></div>
-            <div><label class="f-label">Logo URL</label><input type="text" v-model="formData.merchantImage" class="f-input"></div>
-            <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="saveMerchant" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE MERCHANT
-               </button>
-               <button v-if="editingMerchant.merchantID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="copy" style="width: 14px;"></i> DUPE
-               </button>
-               <button v-if="editingMerchant.merchantID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="combine" style="width: 14px;"></i> MERGE
-               </button>
-               <button v-if="editingMerchant.merchantID" @click="deleteMerchant" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
-               </button>
-            </div>
-         </div>
+                   <div class="modal-actions">
+                      <button @click="saveMerchant" class="filled-btn-lg">
+                         <span class="material-symbols-rounded">save</span>
+                         SAVE VENDOR
+                      </button>
+                      <div v-if="editingMerchant.merchantID" class="secondary-actions">
+                         <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
+                         <button @click="handleMerge" class="tonal-btn">Merge</button>
+                         <button @click="deleteMerchant" class="error-btn">Purge</button>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
        </div>
-      </div>
-      </Teleport>
+    </Teleport>
 
+    <!-- Merge Panel -->
     <Teleport to="body">
-        <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
-           <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 440px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; animation: slideUp 0.3s ease-out;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                 <span style="font-weight: 800; font-size: 1rem;">Merchant Consolidation</span>
-                 <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-              </div>
-              <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the merchant that will absorb all logs and historical data from <b>{{ editingMerchant.merchantName }}</b>.</p>
-              
-              <div style="position: relative;">
-                 <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
-                 <input type="text" v-model="mergeTargetSearch" placeholder="Search merchants..." class="f-input" style="padding-left: 2.5rem; height: 44px; font-size: 0.8rem;">
-              </div>
-
-              <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
-                 <div v-for="t in filteredMergeTargets" :key="t.merchantID" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
-                    <div style="background: rgba(139, 92, 246, 0.1); color: var(--accent); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                       <i data-lucide="store" style="width: 14px;"></i>
-                    </div>
-                    <div style="font-weight: 700; font-size: 0.85rem;">{{ t.merchantName }}</div>
-                 </div>
-                 <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid merchants found.</div>
-              </div>
-              <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
-           </div>
-        </div>
-      </Teleport>
-    </div>
+       <div v-if="isMergePanelOpen" class="modal-backdrop-full" @click.self="isMergePanelOpen = false">
+          <div class="bottom-sheet">
+             <div class="sheet-drag-handle"></div>
+             <div class="sheet-header">
+                <h3 class="sheet-title">Consolidate Nodes</h3>
+                <button @click="isMergePanelOpen = false" class="icon-btn">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+             </div>
+             <div class="sheet-content">
+                <p class="sheet-tip">Select target provider for <b>{{ editingMerchant.merchantName }}</b> logs.</p>
+                <div class="search-box card-md3">
+                   <span class="material-symbols-rounded">search</span>
+                   <input v-model="mergeTargetSearch" type="text" placeholder="Search target vendors...">
+                </div>
+                <div class="target-list">
+                   <div v-for="t in filteredMergeTargets" :key="t.merchantID" @click="performMerge(t)" class="target-item card-md3">
+                      <div class="target-avatar">{{ String(t.merchantName)[0] }}</div>
+                      <span>{{ t.merchantName }}</span>
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
 import { useFinanceStore } from '../stores/finance'
 import { useUIStore } from '../stores/ui'
 
@@ -235,70 +200,39 @@ const isModalOpen = ref(false)
 const modalMode = ref('analysis')
 const editingMerchant = ref({})
 const formData = ref({})
-
 const showSearch = ref(false)
 const searchQuery = ref('')
+const isMergePanelOpen = ref(false)
+const mergeTargetSearch = ref('')
 
 const merchantAnalysis = computed(() => {
   if (!editingMerchant.value.merchantID) return { totalSpend: 0, txCount: 0, topItems: [], recentTxs: [], members: [], vouchers: [], insight: '' }
   const name = editingMerchant.value.merchantName
   const txs = store.transactions.filter(t => t.merchant === name)
-  
   const totalSpend = txs.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
   const txCount = txs.length
-  
-  // Top Items
   const itemMap = txs.reduce((acc, t) => { acc[t.itemName] = (acc[t.itemName] || 0) + 1; return acc }, {})
-  const topItems = Object.entries(itemMap)
-    .sort((a,b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, count]) => ({ name, count }))
-
-  // Recent Transactions
-  const recentTxs = [...txs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10)
-
-  // Members & Vouchers
-  const members = store.members.filter(m => m.merchantName === name || m.merchantID === editingMerchant.value.merchantID)
-  const vouchers = store.vouchers
-    .filter(v => v.merchantName === name || v.merchantID === editingMerchant.value.merchantID)
-    .sort((a,b) => {
-        const order = { 'Active': 0, 'Pending': 1, 'Used': 2, 'Expired': 3 }
-        return (order[a.status] || 9) - (order[b.status] || 9)
-    })
-
-  // Insight
-  let insight = ''
-  if (totalSpend > 1000000) insight = 'High-yield partner. Significant capital deployment detected in this sector.'
-  else if (txCount > 5) insight = 'Frequent operational node. Consider establishing deeper loyalty protocols.'
-  else insight = 'Emerging vendor relation. Insufficient logs for advanced behavioral modeling.'
-
-  return { totalSpend, txCount, topItems, recentTxs, members, vouchers, insight }
+  const topItems = Object.entries(itemMap).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([name, count]) => ({ name, count }))
+  const recentTxs = [...txs].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 5)
+  let insight = txCount > 10 ? 'Strategic partner node.' : 'Emerging operational node.'
+  return { totalSpend, txCount, topItems, recentTxs, insight }
 })
 
 const filteredMerchants = computed(() => {
   if (!searchQuery.value) return store.merchants
   const q = searchQuery.value.toLowerCase()
-  return store.merchants.filter(m => 
-    (m.merchantName || '').toLowerCase().includes(q) ||
-    (m.category || '').toLowerCase().includes(q) ||
-    (m.address || '').toLowerCase().includes(q) ||
-    (m.email || '').toLowerCase().includes(q)
-  )
+  return store.merchants.filter(m => (m.merchantName || '').toLowerCase().includes(q))
+})
+
+const filteredMergeTargets = computed(() => {
+  const q = mergeTargetSearch.value.toLowerCase()
+  return store.merchants.filter(m => m.merchantID !== editingMerchant.value.merchantID && (m.merchantName || '').toLowerCase().includes(q))
 })
 
 const openModal = (m) => {
-  if (m) { 
-    editingMerchant.value = { ...m }
-    formData.value = { ...m } 
-    modalMode.value = 'analysis'
-  }
-  else { 
-    editingMerchant.value = {}
-    formData.value = { merchantName: '', category: 'General', status: 'Active', phone: '', email: '', address: '', website: '', gMapsLink: '', bankAccountDetails: '', notes: '', merchantImage: '' } 
-    modalMode.value = 'edit'
-  }
+  if (m) { editingMerchant.value = { ...m }; formData.value = { ...m }; modalMode.value = 'analysis' }
+  else { editingMerchant.value = {}; formData.value = { merchantName: '', category: 'General', status: 'Active', phone: '', email: '', address: '', website: '', notes: '', merchantImage: '' }; modalMode.value = 'edit' }
   isModalOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
 const saveMerchant = () => {
@@ -308,67 +242,106 @@ const saveMerchant = () => {
   isModalOpen.value = false
 }
 
-const deleteMerchant = () => { 
-  if (confirm('Delete this merchant?')) { 
-    store.deleteMerchant(editingMerchant.value.merchantID)
-    isModalOpen.value = false 
-  } 
-}
-
-const handleDuplicate = () => {
-  const data = { ...formData.value }
-  delete data.merchantID
-  editingMerchant.value = {}
-  formData.value = data
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-}
-
-const isMergePanelOpen = ref(false)
-const mergeTargetSearch = ref('')
-const filteredMergeTargets = computed(() => {
-  const q = mergeTargetSearch.value.toLowerCase()
-  return store.merchants
-    .filter(m => m.merchantID !== editingMerchant.value.merchantID)
-    .filter(m => (m.merchantName || '').toLowerCase().includes(q))
-    .slice(0, 10)
-})
-
-const handleMerge = () => {
-  isMergePanelOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-}
+const deleteMerchant = () => { if (confirm('Purge this record?')) { store.deleteMerchant(editingMerchant.value.merchantID); isModalOpen.value = false } }
+const handleDuplicate = () => { const data = { ...formData.value }; delete data.merchantID; editingMerchant.value = {}; formData.value = data }
+const handleMerge = () => { isMergePanelOpen.value = true }
 
 const performMerge = (target) => {
-  if (confirm(`Relocate financial payload from "${editingMerchant.value.merchantName}" to "${target.merchantName}"? This will update all transaction logs and delete the source merchant.`)) {
+  if (confirm(`Consolidate "${editingMerchant.value.merchantName}" into "${target.merchantName}"?`)) {
     store.mergeEntities('merchants', editingMerchant.value.merchantName, target.merchantName)
-    isMergePanelOpen.value = false
-    isModalOpen.value = false
+    isMergePanelOpen.value = false; isModalOpen.value = false
   }
 }
 
-// Visibility & Class Sync
-watch([isModalOpen, isMergePanelOpen], ([m, mp]) => {
-  if (m || mp) uiStore.registerModal('merchants')
+const getInitColor = (name) => {
+  const colors = ['#A8C7FA', '#BEC6DC', '#DEBCDF', '#B4E8A8', '#F2B8B5', '#82D3D0']
+  return colors[String(name).length % colors.length]
+}
+
+watch(isModalOpen, (val) => {
+  if (val) uiStore.registerModal('merchants')
   else uiStore.unregisterModal('merchants')
 })
 
-// Lifecycle Management
-onMounted(() => {
-  if (window.lucide) window.lucide.createIcons()
-})
-
-onBeforeUnmount(() => {
-  uiStore.unregisterModal('merchants')
-})
-
-// Icon Re-rendering
-watch([isModalOpen, isMergePanelOpen, modalMode], () => {
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-})
+onBeforeUnmount(() => { uiStore.unregisterModal('merchants') })
 </script>
 
 <style scoped>
-.f-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem; }
-.f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.merchants-container { height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-primary); }
+.top-app-bar { padding: env(safe-area-inset-top) 16px 8px 16px; background-color: var(--bg-primary); border-bottom: 1px solid var(--border); z-index: 100; }
+.app-bar-content { height: 64px; display: flex; align-items: center; gap: 12px; }
+.app-bar-content h1 { flex: 1; font-size: 22px; font-weight: 400; margin: 0; }
+.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.search-input-field { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 16px; outline: none; }
+.content-scroll { flex: 1; overflow-y: auto; padding: 16px; }
+.merchant-list { display: flex; flex-direction: column; gap: 12px; }
+.merchant-item { display: flex; align-items: center; gap: 16px; padding: 16px; cursor: pointer; }
+.merchant-icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; }
+.merchant-info { flex: 1; display: flex; flex-direction: column; }
+.merchant-name { font-size: 16px; font-weight: 500; }
+.merchant-meta { font-size: 12px; color: var(--on-surface-variant); }
+.status-chip { font-size: 10px; padding: 2px 8px; border-radius: 12px; background: var(--surface-variant); color: var(--on-surface-variant); }
+
+.fab { position: fixed; bottom: 32px; right: 32px; width: 56px; height: 56px; border-radius: 16px; background-color: var(--primary); color: var(--on-primary); border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 1000; cursor: pointer; }
+
+.modal-backdrop-full { position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); z-index: 4000; display: flex; align-items: flex-end; }
+.bottom-sheet { width: 100%; background-color: var(--bg-primary); border-radius: 28px 28px 0 0; padding: 8px 16px 32px 16px; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1); }
+.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
+.sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.sheet-title { font-size: 20px; font-weight: 400; margin: 0; }
+.sheet-content { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 24px; }
+
+.analysis-view { display: flex; flex-direction: column; gap: 24px; }
+.analysis-hero { display: flex; align-items: center; gap: 20px; }
+.hero-avatar { width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; background: var(--surface-variant); overflow: hidden; }
+.hero-img { width: 100%; height: 100%; object-fit: contain; }
+.hero-initial { font-size: 32px; font-weight: 800; color: var(--primary); }
+.hero-title { font-size: 24px; font-weight: 600; margin: 0; }
+.hero-site { font-size: 13px; color: var(--primary); font-weight: 500; }
+
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.stat-card { padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.stat-card.tonal { background-color: var(--primary-container); color: var(--on-primary-container); border: none; }
+.stat-label { font-size: 10px; font-weight: 700; opacity: 0.6; }
+.stat-value { font-size: 18px; font-weight: 700; }
+.stat-value.error { color: var(--error); }
+
+.insight-text { font-size: 13px; color: var(--on-surface-variant); display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px; background: var(--surface-variant); border-radius: 12px; }
+.section-label { font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 1px; margin-bottom: 12px; display: block; }
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-chip { padding: 6px 12px; background: var(--surface-variant); border-radius: 8px; font-size: 13px; }
+.tag-count { opacity: 0.5; margin-left: 4px; }
+
+.mini-logs { display: flex; flex-direction: column; gap: 8px; }
+.mini-log-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(0,0,0,0.1); border-radius: 12px; }
+.log-left { display: flex; flex-direction: column; }
+.log-title { font-size: 14px; font-weight: 600; }
+.log-sub { font-size: 11px; opacity: 0.5; }
+.log-amount { font-size: 14px; font-weight: 700; color: var(--error); }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: span 2; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--primary); margin-left: 4px; }
+.md-input { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; height: 48px; padding: 0 12px; color: var(--on-surface); font-size: 14px; outline: none; }
+.md-textarea { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px; color: var(--on-surface); font-size: 14px; outline: none; min-height: 80px; resize: vertical; }
+
+.modal-actions { display: flex; flex-direction: column; gap: 16px; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; }
+.tonal-btn-lg { background-color: var(--primary-container); color: var(--on-primary-container); border: none; border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; }
+.outline-btn-lg { background-color: transparent; border: 1px solid var(--outline); color: var(--on-surface); border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; }
+.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+
+.target-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+.target-item { display: flex; align-items: center; gap: 12px; padding: 12px; cursor: pointer; }
+.target-avatar { width: 32px; height: 32px; border-radius: 8px; background: var(--primary-container); color: var(--on-primary-container); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.search-box { display: flex; align-items: center; gap: 12px; padding: 0 12px; height: 48px; margin-bottom: 12px; }
+.search-box input { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 14px; outline: none; }
+.sheet-tip { font-size: 12px; color: var(--on-surface-variant); margin-bottom: 16px; }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
 </style>

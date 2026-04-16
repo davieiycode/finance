@@ -1,30 +1,30 @@
 :root {
-  /* MD3 Dark Theme Palette */
-  --primary: #D0BCFF;
-  --on-primary: #381E72;
-  --primary-container: #4F378B;
-  --on-primary-container: #EADDFF;
+  /* MD3 Dark Theme Palette - Sky Blue (Google-style) */
+  --primary: #A8C7FA;
+  --on-primary: #062E6F;
+  --primary-container: #004494;
+  --on-primary-container: #D3E4FF;
   
-  --secondary: #CCC2DC;
-  --on-secondary: #332D41;
-  --secondary-container: #4A4458;
-  --on-secondary-container: #E8DEF8;
+  --secondary: #BEC6DC;
+  --on-secondary: #283141;
+  --secondary-container: #3E4759;
+  --on-secondary-container: #DAE2F9;
   
-  --tertiary: #EFB8C8;
-  --on-tertiary: #492532;
-  --tertiary-container: #633B48;
-  --on-tertiary-container: #FFD8E4;
+  --tertiary: #DEBCDF;
+  --on-tertiary: #402843;
+  --tertiary-container: #583E5B;
+  --on-tertiary-container: #FBD7FC;
   
   --error: #F2B8B5;
   --on-error: #601410;
   
-  --bg-primary: #1C1B1F;
-  --bg-secondary: #252429;
-  --surface: #1C1B1F;
-  --surface-variant: #49454F;
-  --on-surface: #E6E1E5;
-  --on-surface-variant: #CAC4D0;
-  --outline: #938F99;
+  --bg-primary: #1A1C1E;
+  --bg-secondary: #212428;
+  --surface: #1A1C1E;
+  --surface-variant: #44474E;
+  --on-surface: #E2E2E6;
+  --on-surface-variant: #C4C6D0;
+  --outline: #8E9199;
   
   /* Semantic Spectrum (MD3 inspired) */
   --green: #B4E8A8;
@@ -69,8 +69,8 @@ body::after {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  background-image: radial-gradient(circle at 50% 50%, rgba(208, 188, 255, 0.05), transparent 100%);
-  opacity: 0.5;
+  background-image: radial-gradient(circle at 50% 0%, rgba(168, 199, 250, 0.08), transparent 70%);
+  opacity: 1;
 }
 
 .container {
