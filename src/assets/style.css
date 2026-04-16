@@ -123,14 +123,14 @@ body::after {
 
 /* MD3 TOP APP BAR SYSTEM (High Density) */
 .top-app-bar {
-  padding: max(env(safe-area-inset-top), 8px) 16px 4px 16px;
+  padding: max(env(safe-area-inset-top), 8px) 16px 8px 16px;
   background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;-  
+  border-bottom: 2px solid var(--border);
+  z-index: 1000;
 }
 
 .app-bar-content {
-  height: 52px;
+  height: 56px;
   display: flex;
   align-items: center;
   gap: 12px;
