@@ -4,7 +4,7 @@
     <div class="top-app-bar" :class="{ 'has-search': showSearch }">
       <div class="app-bar-content">
         <template v-if="!showSearch">
-          <button class="icon-btn" @click="$router.push('/')">
+          <button class="icon-btn" @click="$router.back()">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
           <h1>Riwayat</h1>
@@ -18,13 +18,15 @@
           </div>
         </template>
         <template v-else>
-          <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
-            <span class="material-symbols-rounded">arrow_back</span>
-          </button>
-          <input type="text" v-model="searchQuery" placeholder="Cari riwayat..." autofocus class="search-input-field">
-          <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
-            <span class="material-symbols-rounded">close</span>
-          </button>
+          <div class="search-bar-container">
+            <button class="icon-btn" @click="showSearch = false; searchQuery = ''" style="color: inherit">
+              <span class="material-symbols-rounded">arrow_back</span>
+            </button>
+            <input type="text" v-model="searchQuery" placeholder="Cari riwayat..." autofocus class="search-bar-input">
+            <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''" style="color: inherit">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
         </template>
       </div>
     </div>

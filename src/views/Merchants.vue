@@ -4,7 +4,7 @@
     <div class="top-app-bar" :class="{ 'has-search': showSearch }">
       <div class="app-bar-content">
         <template v-if="!showSearch">
-          <button class="icon-btn" @click="$router.push('/')">
+          <button class="icon-btn" @click="$router.back()">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
           <h1>Vendor & Toko</h1>

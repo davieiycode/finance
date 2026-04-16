@@ -1,5 +1,8 @@
 <template>
   <div class="app-layout">
+    <div v-if="store.isSyncing" class="md3-progress-container">
+      <div class="md3-progress-indicator"></div>
+    </div>
     <div class="main-content">
       <router-view />
     </div>
@@ -12,6 +15,9 @@
 import './assets/style.css'
 import StatusHub from './components/StatusHub.vue'
 import BottomNav from './components/BottomNav.vue'
+import { useFinanceStore } from './stores/finance'
+
+const store = useFinanceStore()
 </script>
 
 <style>

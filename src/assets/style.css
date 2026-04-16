@@ -230,6 +230,61 @@ body::after {
 
 .md-textarea { padding: 12px 16px; height: auto; min-height: 80px; resize: vertical; }
 
+/* SHARED SEARCH SYSTEM */
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--secondary-container);
+  border-radius: var(--input-radius);
+  padding: 0 8px;
+  height: 48px;
+  width: 100%;
+  animation: searchFade 0.2s ease-out;
+}
+
+@keyframes searchFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+.search-bar-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--on-secondary-container);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+
+/* MD3 EXPRESSIVE PROGRESS BAR */
+.md3-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: transparent;
+  z-index: 10000;
+  overflow: hidden;
+}
+
+.md3-progress-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: var(--primary);
+  width: 100%;
+  transform-origin: left;
+  animation: md3-indeterminate 2.2s cubic-bezier(0.2, 0, 0, 1) infinite;
+}
+
+@keyframes md3-indeterminate {
+  0% { transform: scaleX(0.08) translateX(-10%); }
+  33% { transform: scaleX(0.4) translateX(0%); }
+  66% { transform: scaleX(0.25) translateX(250%); }
+  100% { transform: scaleX(0.08) translateX(1200%); }
+}
+
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-label { font-size: 12px; font-weight: 600; color: var(--primary); margin-left: 4px; opacity: 0.9; }
 

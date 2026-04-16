@@ -3,7 +3,7 @@
     <!-- MD3 Top App Bar -->
     <div class="top-app-bar">
       <div class="app-bar-content">
-        <button class="icon-btn" @click="currentView === 'main' ? $router.push('/') : currentView = 'main'">
+        <button class="icon-btn" @click="currentView === 'main' ? $router.back() : currentView = 'main'">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
         <h1>{{ currentView === 'main' ? 'Pengaturan' : subTitles[currentView] }}</h1>

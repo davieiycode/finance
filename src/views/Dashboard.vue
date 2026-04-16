@@ -11,9 +11,6 @@
         </div>
         
         <div class="app-bar-actions">
-          <button @click="store.forceRefresh" class="icon-btn" :class="{ 'spin': store.isSyncing }">
-            <span class="material-symbols-rounded">refresh</span>
-          </button>
           <button @click="toggleSearch" class="icon-btn">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -26,11 +23,13 @@
 
         <!-- Pencarian -->
         <div class="search-overlay" :class="{ 'active': showSearch }">
-          <span class="material-symbols-rounded search-icon">search</span>
-          <input type="text" v-model="searchQuery" placeholder="Cari transaksi..." @blur="searchQuery ? null : showSearch = false">
-          <button @click="toggleSearch" class="close-search-btn">
-            <span class="material-symbols-rounded">close</span>
-          </button>
+          <div class="search-bar-container">
+            <span class="material-symbols-rounded" style="opacity: 0.6">search</span>
+            <input type="text" v-model="searchQuery" placeholder="Cari transaksi..." class="search-bar-input" @keyup.esc="toggleSearch">
+            <button @click="toggleSearch" class="icon-btn" style="color: inherit">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -112,11 +111,7 @@
           <div v-if="anomalyCount > 0" class="badge-dot">{{ anomalyCount }}</div>
         </div>
       </div>
-      <!-- Footer -->
-      <div class="app-footer">
-        <p class="footer-core">VOID-CORE V5.0.2</p>
-        <p class="footer-status">SYSTEMS ACTIVE • ENCRYPTED</p>
-      </div>
+
     </div>
   </div>
 </template>
@@ -432,7 +427,25 @@ onMounted(() => {
 
 .search-icon {
   color: var(--on-surface-variant);
-  margin-left: 8px;
+  margin-left: 12px;
+}
+
+.close-search-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.close-search-btn:hover {
+  background-color: var(--surface-variant);
 }
 
 /* CONTENT SCROLL */

@@ -3,7 +3,7 @@
     <!-- MD3 Top App Bar -->
     <div class="top-app-bar">
       <div class="app-bar-content">
-        <button class="icon-btn" @click="$router.push('/')">
+        <button class="icon-btn" @click="$router.back()">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
         <h1>Analisis</h1>
