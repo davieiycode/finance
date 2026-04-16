@@ -264,9 +264,13 @@ export const useFinanceStore = defineStore('finance', {
 
           const formatDate = (val) => {
             if (!val) return ''
+            const s = String(val)
+            // If it starts with YYYY-MM-DD, extract it directly to avoid timezone shifts
+            const match = s.match(/^(\d{4}-\d{2}-\d{2})/)
+            if (match) return match[1]
+            
             const d = new Date(val)
             if (isNaN(d.getTime())) return val
-            // Consistent local YYYY-MM-DD
             return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
           }
 
@@ -281,23 +285,30 @@ export const useFinanceStore = defineStore('finance', {
                 incoming = incoming.map(row => {
                   const r = { ...row }
                   
-                  // Handle merged Date/Time columns (if time is missing but date has T)
+                  // Handle merged Date/Time columns (supporting 'dateTime', 'date', or 'time')
                   let t = r.time ? String(r.time) : ''
-                  if ((!t || t === 'undefined') && r.date && String(r.date).includes('T')) {
-                    t = String(r.date).split('T')[1].substring(0, 5)
+                  let dStr = (r.dateTime || r.date) ? String(r.dateTime || r.date) : ''
+
+                  // If time is missing, try extracting from dateTime/date string
+                  if (!t || t === 'undefined' || t === '00:00') {
+                    if (dStr.includes('T')) {
+                      t = dStr.split('T')[1].substring(0, 5)
+                    } else if (dStr.includes(' ')) {
+                      t = dStr.split(' ')[1].substring(0, 5)
+                    }
                   }
 
-                  // Sanitize Time (Convert various formats to HH:mm)
+                  // Sanitize Time
                   if (t.includes('T')) {
                     t = t.split('T')[1].substring(0, 5)
                   } else if (t.includes(':')) {
                     const parts = t.split(':')
                     t = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0')
                   }
-                  r.time = t || '00:00'
+                  r.time = (t && t !== 'undefined') ? t : '00:00'
                   
-                  // Sanitize Date (Always convert to local YYYY-MM-DD for app state)
-                  if (r.date) r.date = formatDate(r.date)
+                  // Sanitize Date
+                  r.date = formatDate(dStr)
                   
                   // Ensure numeric types
                   if (r.total) r.total = Number(r.total)
@@ -310,6 +321,7 @@ export const useFinanceStore = defineStore('finance', {
                 })
               } else {
                  incoming = incoming.map(row => {
+                    if (row.dateTime) row.date = formatDate(row.dateTime)
                     if (row.date) row.date = formatDate(row.date)
                     if (row.expiryDate) row.expiryDate = formatDate(row.expiryDate)
                     return row
@@ -376,8 +388,8 @@ export const useFinanceStore = defineStore('finance', {
       const payload = {
         transaction: this.transactions.map(t => ({
           ...t,
-          // Merge date and time for spreadsheet compatibility (ISO-like local string)
-          date: `${t.date} ${t.time || '00:00'}:00`
+          // Merge date and time for spreadsheet compatibility (key matches column name 'dateTime')
+          dateTime: `${t.date} ${t.time || '00:00'}:00`
         })),
         account: this.accounts,
         merchant: this.merchants,
