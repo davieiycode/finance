@@ -583,26 +583,12 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
 
 .action-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 16px; }
 
-.edit-view { display: flex; flex-direction: column; gap: 24px; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group.full { grid-column: span 2; }
-.form-group label { font-size: 12px; font-weight: 700; color: var(--primary); margin-left: 4px; }
+.edit-actions { display: flex; flex-direction: column; gap: 20px; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
-.md-input { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; height: 48px; padding: 0 12px; color: var(--on-surface); font-size: 14px; outline: none; }
-.md-textarea { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px; color: var(--on-surface); font-size: 14px; outline: none; min-height: 80px; resize: vertical; }
-
-.icon-picker { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
-.icon-search-box { display: flex; align-items: center; gap: 12px; padding: 0 8px; }
-.icon-search-box input { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 13px; outline: none; }
-.icon-grid-scroll { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); 
-  gap: 8px; 
-  max-height: 240px; 
-  overflow-y: auto; 
-  padding: 8px;
-}
+/* Action Buttons Overrides */
+.tonal-btn-lg, .outline-btn-lg, .filled-btn-lg { height: 52px; width: 100%; font-size: 14px; }
+.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 40px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .icon-select-btn { 
   aspect-ratio: 1/1; 
   border-radius: 12px; 
@@ -622,10 +608,6 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
 .edit-actions { display: flex; flex-direction: column; gap: 20px; }
 .secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
-.tonal-btn-lg { background-color: var(--primary-container); color: var(--on-primary-container); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; }
-.outline-btn-lg { background-color: transparent; border: 1px solid var(--outline); color: var(--on-surface); border-radius: 20px; height: 56px; font-weight: 600; cursor: pointer; }
-.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(168, 199, 250, 0.4); }
-.tonal-btn { background-color: var(--surface-variant); color: var(--on-surface-variant); border: none; border-radius: 12px; height: 40px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 40px; font-size: 12px; font-weight: 600; cursor: pointer; }
 
 .target-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }

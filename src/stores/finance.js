@@ -84,10 +84,26 @@ export const useFinanceStore = defineStore('finance', {
       this.syncProgress = val
     },
     resolveIcon(categoryName, txType) {
-      if (!categoryName) return this.getTypeFallbackIcon(txType)
-      const cat = this.categories.find(c => (c.category || '').toLowerCase() === categoryName.toLowerCase())
-      if (cat && cat.icon && cat.icon.trim()) return cat.icon
-      return this.getTypeFallbackIcon(txType)
+      if (!categoryName || !categoryName.trim()) return this.getTypeFallbackIcon(txType)
+      const target = categoryName.trim().toLowerCase()
+      const cat = this.categories.find(c => (c.category || '').trim().toLowerCase() === target)
+      return this.sanitizeIcon(cat?.icon) || this.getTypeFallbackIcon(txType)
+    },
+
+    sanitizeIcon(iconName) {
+      if (!iconName || !iconName.trim()) return null
+      let name = iconName.trim().toLowerCase().replace(/-/g, '_')
+      const mapping = {
+        'piggy_bank': 'savings',
+        'banknote': 'payments',
+        'moving_stats': 'monitoring',
+        'file_text': 'description',
+        'user_check': 'person_check',
+        'shopping_bag': 'shopping_basket',
+        'credit_card': 'credit_card',
+        'briefcase': 'work'
+      }
+      return mapping[name] || name
     },
 
     getAccount(name) {
@@ -96,11 +112,11 @@ export const useFinanceStore = defineStore('finance', {
     },
 
     getTypeFallbackIcon(txType) {
-      if (txType === 'Income') return 'banknote'
-      if (txType === 'Transfer' || txType === 'Internal Transfer' || txType === 'Internal') return 'repeat'
-      if (txType === 'Investment') return 'trending-up'
-      if (txType === 'Savings') return 'piggy-bank'
-      return 'shopping-cart'
+      if (txType === 'Income') return 'payments'
+      if (txType === 'Transfer' || txType === 'Internal Transfer' || txType === 'Internal') return 'sync'
+      if (txType === 'Investment') return 'trending_up'
+      if (txType === 'Savings') return 'savings'
+      return 'shopping_cart'
     },
 
     // Generic Save methods

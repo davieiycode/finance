@@ -36,11 +36,12 @@
   --text-primary: var(--on-surface);
   --text-secondary: var(--on-surface-variant);
   --accent: var(--primary);
-  --border: var(--surface-variant);
-  --border2: var(--outline);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
   --font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
-  --card-radius: 24px;
-  --btn-radius: 32px;
+  --card-radius: 20px;
+  --btn-radius: 16px;
+  --input-radius: 16px;
   --glass: rgba(255, 255, 255, 0.04);
 }
 
@@ -180,62 +181,63 @@ body::after {
   color: var(--text-primary);
 }
 
+/* SHARED MD3 BUTTONS SYSTEM */
+.tonal-btn, .filled-btn, .outline-btn, .text-btn { 
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center;
+  gap: 8px; 
+  padding: 8px 16px; 
+  border-radius: var(--btn-radius); 
+  font-size: 14px; 
+  font-weight: 500; 
+  cursor: pointer; 
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); }
+.filled-btn { background-color: var(--primary); color: var(--on-primary); }
+.outline-btn { background: transparent; border: 1px solid var(--outline); color: var(--primary); }
+.text-btn { background: transparent; color: var(--primary); padding: 8px 12px; }
+
+.tonal-btn:active, .filled-btn:active, .outline-btn:active, .text-btn:active { transform: scale(0.96); opacity: 0.8; }
+.tonal-btn:hover, .filled-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* SHARED FORM CONTROLS SYSTEM */
+.md-input, .md-select, .md-textarea {
+  width: 100%;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--input-radius);
+  padding: 0 16px;
+  height: 48px;
+  color: var(--on-surface);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.md-input:focus, .md-select:focus, .md-textarea:focus {
+  border-color: var(--primary);
+  background-color: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 0 2px rgba(168, 199, 250, 0.1);
+}
+
+.md-textarea { padding: 12px 16px; height: auto; min-height: 80px; resize: vertical; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--primary); margin-left: 4px; opacity: 0.9; }
+
 .app-bar-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
-.tonal-btn { 
-  background-color: var(--secondary-container); 
-  color: var(--on-secondary-container); 
-  border: none; 
-  border-radius: 20px; 
-  padding: 8px 16px; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
-  font-size: 14px; 
-  font-weight: 500; 
-  cursor: pointer; 
-  transition: all 0.2s;
-}
-
-.tonal-btn:active { transform: scale(0.95); opacity: 0.8; }
-
-.filled-btn { 
-  background-color: var(--primary); 
-  color: var(--on-primary); 
-  border: none; 
-  border-radius: 20px; 
-  padding: 8px 16px; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
-  font-size: 14px; 
-  font-weight: 500; 
-  cursor: pointer; 
-  transition: all 0.2s;
-}
-
-.filled-btn:active { transform: scale(0.95); opacity: 0.8; }
-
-.outline-btn { 
-  background: transparent; 
-  border: 1px solid var(--outline); 
-  color: var(--primary); 
-  border-radius: 20px; 
-  padding: 8px 16px; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
-  font-size: 14px; 
-  font-weight: 500; 
-  cursor: pointer; 
-  transition: all 0.2s;
-}
-
-.outline-btn:active { transform: scale(0.95); opacity: 0.8; }
 
 .btn-primary:hover {
   background: var(--accent-hover);

@@ -626,9 +626,7 @@ watch(() => route.query, () => initForm(), { deep: true })
 .form-group { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
 .field-label { font-size: 12px; font-weight: 500; color: var(--on-surface-variant); margin-left: 4px; }
-.md-input { width: 100%; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 16px; padding: 12px 16px; color: var(--on-surface); outline: none; transition: border-color 0.2s; font-size: 16px; box-sizing: border-box; }
-.md-input:focus { border-color: var(--primary); }
-.md-input.large-text { font-size: 24px; font-weight: 700; }
+.md-input.large-text { font-size: 20px; font-weight: 700; height: 56px; }
 
 /* DROPDOWN */
 .dropdown-wrapper { position: relative; }
@@ -710,10 +708,8 @@ watch(() => route.query, () => initForm(), { deep: true })
 .full { width: 100%; }
 .lg { padding: 16px; border-radius: 20px; }
 
-/* BUTTONS */
-.primary-btn { background-color: var(--primary); color: var(--on-primary); border: none; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: filter 0.2s; }
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 20px; padding: 10px 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.icon-btn { width: 44px; height: 44px; border-radius: 22px; border: none; background: transparent; color: var(--on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+/* Standard buttons used from global stylesheet */
+.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .icon-btn-outlined { width: 48px; height: 48px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
 @media (max-width: 480px) {

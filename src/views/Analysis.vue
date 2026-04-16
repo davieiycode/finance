@@ -154,7 +154,7 @@
              <div v-for="t in filteredList" :key="t.transactionID" @click="selectedTx = t" class="tx-list-item">
                 <div class="tx-icon" :style="{ backgroundColor: getTxColor(t.type) + '20', color: getTxColor(t.type) }">
                    <span class="material-symbols-rounded">
-                      {{ t.type === 'Income' ? 'north_east' : (t.type.includes('Transfer') ? 'sync' : (t.type === 'Savings' ? 'savings' : (t.type === 'Investment' ? 'trending_up' : 'shopping_cart'))) }}
+                      {{ store.resolveIcon(t.category, t.type) }}
                    </span>
                 </div>
                 <div class="tx-info">

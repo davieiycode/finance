@@ -10,7 +10,7 @@
            </div>
            <div class="header-info">
              <div v-if="accountInfo" class="account-watermark" :style="{ color: accountInfo.color || 'var(--primary)' }">
-               <span class="material-symbols-rounded" v-if="accountInfo.icon">{{ accountInfo.icon }}</span>
+               <span class="material-symbols-rounded" v-if="accountInfo.icon">{{ store.sanitizeIcon(accountInfo.icon) }}</span>
                <span>{{ accountInfo.accountName }}</span>
              </div>
              <h2 class="sheet-title">Ringkasan Transaksi</h2>
@@ -280,7 +280,7 @@ onUnmounted(() => { uiStore.unregisterModal('transaction-detail') })
 .item-name { font-size: 16px; font-weight: 500; opacity: 0.8; margin-bottom: 8px; }
 .main-amount { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
 .currency { font-size: 20px; font-weight: 400; opacity: 0.7; }
-.hero-value { font-size: 40px; font-weight: 700; }
+.hero-value { font-size: 32px; font-weight: 700; }
 
 .details-section { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; border-bottom: 1px dashed var(--border); padding-bottom: 24px; }
 .detail-row { display: flex; justify-content: space-between; font-size: 14px; }

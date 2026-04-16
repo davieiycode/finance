@@ -80,7 +80,7 @@
             
             <div v-for="t in group.items" :key="t.transactionID" @click="openTx(t)" class="log-item card-md3">
                <div class="log-icon-box" :style="{ backgroundColor: getTxColor(t.type) + '15', color: getTxColor(t.type) }">
-                  <span class="material-symbols-rounded">{{ getTxIcon(t.type, t.category) }}</span>
+                  <span class="material-symbols-rounded">{{ store.resolveIcon(t.category, t.type) }}</span>
                </div>
                <div class="log-info">
                   <span class="log-title">{{ t.itemName || t.merchant || 'Tanpa Nama' }}</span>
@@ -166,20 +166,7 @@ const getTxColor = (type) => {
   return 'var(--blue)'
 }
 
-const getTxIcon = (type, cat) => {
-  if (type === 'Income') return 'north_east'
-  if (type === 'Expense') {
-     const c = (cat || '').toLowerCase()
-     if (c.includes('food') || c.includes('makan')) return 'restaurant'
-     if (c.includes('transport')) return 'directions_car'
-     if (c.includes('shop')) return 'shopping_bag'
-     return 'south_west'
-  }
-  if (type === 'Transfer') return 'sync'
-  if (type === 'Savings') return 'savings'
-  if (type === 'Investment') return 'trending_up'
-  return 'receipt_long'
-}
+// Removed local getTxIcon in favor of store.resolveIcon
 
 const formatTime = (time) => {
   if (!time) return '00:00'
