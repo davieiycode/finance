@@ -145,9 +145,13 @@ const groupedTransactions = computed(() => {
     if (!groups[t.date]) {
        let label = t.date
        try {
-         const d = new Date(t.date)
-         if (!isNaN(d)) {
-           label = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+         const parts = String(t.date).split('-')
+         if (parts.length === 3) {
+            const d = new Date(parts[0], parts[1] - 1, parts[2])
+            label = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+         } else {
+            const d = new Date(t.date)
+            if (!isNaN(d)) label = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
          }
        } catch (e) {}
        groups[t.date] = { dateFormatted: label, net: 0, items: [] }
@@ -171,9 +175,14 @@ const getTxColor = (type) => {
 // Removed local getTxIcon in favor of store.resolveIcon
 
 const formatTime = (time) => {
-  if (!time) return '00:00'
+  if (!time) return '--:--'
   const t = String(time)
-  return t.length > 5 ? t.substring(0, 5) : t
+  if (t.includes('T')) return t.split('T')[1].substring(0, 5)
+  if (t.includes(':')) {
+    const parts = t.split(':')
+    return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0')
+  }
+  return t
 }
 
 const getTxSign = (type) => {

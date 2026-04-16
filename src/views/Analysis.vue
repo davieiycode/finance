@@ -159,7 +159,7 @@
                 </div>
                 <div class="tx-info">
                    <span class="tx-name">{{ t.itemName || t.merchant || 'Tidak Diketahui' }}</span>
-                   <span class="tx-meta">{{ t.date }} • {{ t.category }}</span>
+                   <span class="tx-meta">{{ formatDate(t.date) }} • {{ t.category }}</span>
                 </div>
                 <div class="tx-amount" :style="{ color: getTxColor(t.type) }">
                    {{ getTxSign(t.type) }}Rp {{ (t.total || 0).toLocaleString('id-ID') }}
@@ -286,6 +286,18 @@ const insightText = computed(() => {
   if (savingRate > 30) return 'Performa Normal. Tingkat pengeluaran stabil dan tingkat penyimpanan berada dalam parameter yang diharapkan.'
   return 'Sedikit gejolak dalam pengelolaan sumber daya. Tingkat penyimpanan di bawah 30%. Pertimbangkan untuk mengoptimalkan pengeluaran.'
 })
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '-'
+  try {
+    const parts = String(dateStr).split('-')
+    if (parts.length === 3) {
+      const d = new Date(parts[0], parts[1] - 1, parts[2])
+      return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+    }
+    return dateStr
+  } catch (e) { return dateStr }
+}
 
 const changePeriod = (delta) => {
   const d = new Date(activeDate.value)
