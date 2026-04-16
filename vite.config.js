@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'VOID-CORE Finance',
-        short_name: 'VoidCore',
-        description: 'Elite Financial Intelligence Hub',
+        name: 'Jurney Finance',
+        short_name: 'Jurney',
+        description: 'Personal Finance Tracking',
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
