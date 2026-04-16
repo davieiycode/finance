@@ -230,8 +230,8 @@ const userPrefs = ref({ ...defaultPrefs, ...storedPrefs })
 const cloudUrl = ref(isSafe ? (localStorage.getItem('cloud_sheet_url') || '') : '')
 
 const themes = [
-  { id: 'dark', name: 'Midnight', bg: '#1A1C1E', border: '#44474E' },
-  { id: 'obsidian', name: 'Obsidian', bg: '#000000', border: '#121212' },
+  { id: 'dark', name: 'Midnight', bg: '#1c1c1e', border: '#44474E' },
+  { id: 'obsidian', name: 'Obsidian', bg: '#1c1c1e', border: '#2c2c2e' },
   { id: 'explorer', name: 'Deep Teal', bg: '#051614', border: '#0A2522' },
   { id: 'arctic', name: 'Arctic', bg: '#F8F9FA', border: '#DEE2E6' }
 ]

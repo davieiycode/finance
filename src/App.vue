@@ -26,7 +26,7 @@ const store = useFinanceStore()
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  background: var(--bg-primary, #020617);
+  background: var(--bg-primary, #1c1c1e);
   position: relative;
   overflow: hidden; /* Prevent body scroll */
 }

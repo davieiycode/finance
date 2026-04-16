@@ -57,7 +57,7 @@
         </div>
         <div class="stat-card info" @click="$router.push('/goals')">
           <div class="card-icon"><span class="material-symbols-rounded">target</span></div>
-          <span class="card-title">Target/Tabungan</span>
+          <span class="card-title">Target</span>
           <span class="card-value">{{ Math.round(goalProgress) }}%</span>
           <span class="card-sub">{{ (store.goals || []).length }} target aktif</span>
         </div>

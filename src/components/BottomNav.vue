@@ -20,9 +20,9 @@ const uiStore = useUIStore()
 const isHidden = ref(false)
 
 const menuItems = [
-  { path: '/', label: 'Beranda', icon: 'dashboard' },
+  { path: '/', icon: 'dashboard' },
   { path: '/transaction', icon: 'add' },
-  { path: '/history', label: 'Riwayat', icon: 'history' }
+  { path: '/history',icon: 'history' }
 ]
 
 const isActive = (path) => {
