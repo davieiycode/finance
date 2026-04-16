@@ -1,229 +1,277 @@
 <template>
-  <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
-        <div style="display: flex; align-items: center; gap: 0.8rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button class="back-btn" @click="$router.push('/')" style="background:none; border:none; color:var(--text-primary); cursor:pointer;"><i data-lucide="chevron-left" style="width:20px;"></i></button>
-          <h1 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); margin:0;">Vaults</h1>
-        </div>
-
-        <div style="display: flex; gap: 0.5rem; align-items: center;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <button @click="showSearch = true" style="background:none; border:none; color:var(--text-primary); cursor:pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-            <i data-lucide="search" style="width: 18px;"></i>
+  <div class="view-content accounts-container">
+    <!-- MD3 Top App Bar -->
+    <div class="top-app-bar" :class="{ 'has-search': showSearch }">
+      <div class="app-bar-content">
+        <template v-if="!showSearch">
+          <button class="icon-btn" @click="$router.push('/')">
+            <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <button @click="openModal(null)" style="background: var(--accent); color: white; border: none; border-radius: 10px; height: 32px; padding: 0 0.75rem; font-size: 0.75rem; font-weight: 700; display:flex; align-items:center; gap: 0.3rem; cursor:pointer;">
-            <i data-lucide="plus" style="width: 14px;"></i> New
+          <h1>Vaults</h1>
+          <div class="app-bar-actions">
+            <button class="icon-btn" @click="showSearch = true">
+              <span class="material-symbols-rounded">search</span>
+            </button>
+            <button class="tonal-btn" @click="openModal(null)">
+              <span class="material-symbols-rounded">add</span>
+              New
+            </button>
+          </div>
+        </template>
+        <template v-else>
+          <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
+            <span class="material-symbols-rounded">arrow_back</span>
           </button>
-        </div>
+          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </template>
+      </div>
+    </div>
 
-        <!-- Expanding Search Bar -->
-        <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 34px; display: flex; align-items: center; min-width: 250px;">
-              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Search archives..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
-              <button @click="showSearch = false; searchQuery = ''" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
-                 <i data-lucide="x" style="width: 14px;"></i>
-              </button>
+    <div class="content-scroll">
+      <div class="accounts-grid">
+        <div v-for="acc in filteredAccounts" :key="acc.accountID" @click="openModal(acc)" class="vault-card" :style="{ '--vault-color': acc.cardColor || '#1e293b' }">
+           <div class="vault-header">
+              <div v-if="acc.accountImage" class="vault-logo">
+                 <img :src="acc.accountImage">
+              </div>
+              <div v-else class="vault-icon-placeholder">
+                 <span class="material-symbols-rounded">account_balance_wallet</span>
+              </div>
+              <span v-if="acc.accountType === 'Credit Card'" class="vault-badge">CREDIT</span>
+           </div>
+           
+           <div class="vault-body">
+              <span class="vault-name">{{ acc.accountName }}</span>
+              <span class="vault-balance">Rp {{ (acc.currentBalance || 0).toLocaleString('id-ID') }}</span>
+              
+              <div class="vault-number">
+                 {{ maskNumber(acc.cardNumber || acc.accountNumber) }}
+              </div>
+           </div>
+
+           <div class="vault-footer">
+              <span class="vault-type">{{ acc.accountType }}</span>
+              <div v-if="acc.expiryDate" class="vault-expiry">
+                 <span class="expiry-label">EXP</span>
+                 <span class="expiry-value">{{ acc.expiryDate }}</span>
+              </div>
            </div>
         </div>
-      </header>
-    </div>
-
-    <div class="accounts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
-      <div v-for="acc in filteredAccounts" :key="acc.accountID" @click="openModal(acc)" class="account-card-premium card-hover" :style="{ background: `linear-gradient(135deg, ${acc.cardColor || '#1e293b'}, ${adjustColor(acc.cardColor || '#1e293b', -30)})` }">
-         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div v-if="acc.accountImage" style="width: 44px; height: 44px; border-radius: 10px; overflow: hidden; background: white; padding: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
-               <img :src="acc.accountImage" style="width:100%; height:100%; object-fit: contain;">
-            </div>
-            <div v-else style="width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-               <i data-lucide="shield-check" style="width: 22px; color: white;"></i>
-            </div>
-            <div v-if="acc.accountType === 'Credit Card'" style="font-size: 0.5rem; background: rgba(255,255,255,0.1); padding: 0.25rem 0.5rem; border-radius: 4px; color: white; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;">PREMIUM</div>
-         </div>
-         
-         <div style="margin-top: 1.5rem;">
-            <div style="font-size: 0.65rem; font-weight: 800; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; color: white;">{{ acc.accountName }}</div>
-            <div style="font-size: 1.6rem; font-weight: 900; letter-spacing: -0.02em; color: white; margin: 0.2rem 0;">Rp {{ (acc.currentBalance || 0).toLocaleString('id-ID') }}</div>
-            
-            <div v-if="acc.cardNumber" style="font-family: 'Courier New', Courier, monospace; font-size: 1rem; letter-spacing: 2.5px; margin-top: 1.25rem; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-               {{ maskNumber(acc.cardNumber) }}
-            </div>
-            <div v-else-if="acc.accountNumber" style="font-family: monospace; font-size: 0.8rem; letter-spacing: 2px; margin-top: 1rem; color: white; opacity: 0.6;">
-               {{ maskNumber(acc.accountNumber) }}
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 1.25rem;">
-               <div style="font-size: 0.6rem; color: white; opacity: 0.8; font-weight: 700;">{{ acc.accountType }}</div>
-               <div v-if="acc.expiryDate" style="text-align: right; color: white;">
-                  <div style="font-size: 0.45rem; opacity: 0.6; text-transform: uppercase; font-weight: 800;">Exp End</div>
-                  <div style="font-size: 0.8rem; font-weight: 800; font-family: monospace;">{{ acc.expiryDate }}</div>
-               </div>
-            </div>
-         </div>
       </div>
     </div>
 
+    <!-- MODAL / BOTTOM SHEET -->
     <Teleport to="body">
-      <div v-if="isModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-      <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; padding-bottom: 5rem;">
-         <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-primary); z-index: 5;">
-            <span style="font-weight: 800; font-size: 1.1rem;">{{ editingAcc.accountID ? (accountMode === 'analysis' ? 'Vault Intelligence' : 'Modify Vault') : 'New Vault' }}</span>
-            <button @click="isModalOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-         </div>
+      <div v-if="isModalOpen" class="modal-backdrop-full">
+       <div class="bottom-sheet">
+          <div class="sheet-drag-handle"></div>
+          <div class="sheet-header">
+             <div class="sheet-title-group">
+                <h3 class="sheet-title">{{ editingAcc.accountID ? (accountMode === 'analysis' ? 'Vault Intelligence' : 'Modify Vault') : 'New Vault' }}</h3>
+             </div>
+             <button @click="isModalOpen = false" class="icon-btn">
+               <span class="material-symbols-rounded">close</span>
+             </button>
+          </div>
 
-         <!-- MODE: ANALYSIS -->
-         <div v-if="accountMode === 'analysis' && editingAcc.accountID" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
-            <!-- Premium Card Preview -->
-            <div class="account-card-premium" :style="{ background: `linear-gradient(135deg, ${editingAcc.cardColor || '#1e293b'}, ${adjustColor(editingAcc.cardColor || '#1e293b', -30)})`, margin: '0 auto', width: '100%', transform: 'scale(0.95)' }">
-               <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                  <div v-if="editingAcc.accountImage" style="width: 32px; height: 32px; border-radius: 6px; overflow: hidden; background: white; padding: 2px;">
-                     <img :src="editingAcc.accountImage" style="width:100%; height:100%; object-fit: contain;">
-                  </div>
-                  <i v-else data-lucide="shield-check" style="width: 20px; color: rgba(255,255,255,0.5);"></i>
-               </div>
-               <div style="margin-top: 1rem;">
-                  <div style="font-size: 0.5rem; font-weight: 800; opacity: 0.6; text-transform: uppercase;">{{ editingAcc.accountName }}</div>
-                  <div style="font-size: 1.4rem; font-weight: 950;">Rp {{ (editingAcc.currentBalance || 0).toLocaleString('id-ID') }}</div>
-                  <div style="font-family: monospace; font-size: 0.7rem; margin-top: 1rem; opacity: 0.5;">{{ maskNumber(editingAcc.accountNumber || editingAcc.cardNumber) }}</div>
-               </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
-                  <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase;">Protocol Inflow</div>
-                  <div style="font-size: 1rem; font-weight: 900; color: #10b981; margin-top: 0.2rem;">Rp {{ (accAnalysis.inflow || 0).toLocaleString('id-ID') }}</div>
-               </div>
-               <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
-                  <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase;">Protocol Outflow</div>
-                  <div style="font-size: 1rem; font-weight: 900; color: #ef4444; margin-top: 0.2rem;">Rp {{ (accAnalysis.outflow || 0).toLocaleString('id-ID') }}</div>
-               </div>
-            </div>
-
-            <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid var(--accent); border-radius: 1.25rem; padding: 1.25rem;">
-               <div style="font-size: 0.6rem; color: var(--accent); font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Strategic Summary</div>
-               <div style="font-size: 1.1rem; font-weight: 900;">Rp {{ (accAnalysis.net || 0).toLocaleString('id-ID') }} <span style="font-size: 0.6rem; opacity: 0.5; font-weight: 400;">Net Drift</span></div>
-               <div v-if="accAnalysis.insight" style="font-size: 0.75rem; margin-top: 0.75rem; line-height: 1.5; color: var(--text-secondary); border-top: 1px solid rgba(139, 92, 246, 0.2); padding-top: 0.75rem;">
-                  <i data-lucide="zap" style="width: 12px; display: inline-block; margin-right: 4px; color: var(--accent);"></i>
-                  {{ accAnalysis.insight }}
-               </div>
-            </div>
-
-            <!-- Flow Visualizer Chart -->
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem;">
-                <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem;">Vault Inflow/Outflow Correlation</div>
-                <div id="acc-flow-chart" style="width: 100%; height: 200px;"></div>
-            </div>
-
-            <!-- Related Logbook Entries -->
-            <div style="margin-top: 0.5rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <div style="font-size: 0.55rem; opacity: 0.4; font-weight: 800; text-transform: uppercase;">Recent Protocol Entries</div>
-                    <div style="font-size: 0.5rem; opacity: 0.4;">Showing last 5 items</div>
+          <div class="sheet-content">
+             <!-- MODE: ANALYSIS -->
+             <div v-if="accountMode === 'analysis' && editingAcc.accountID" class="analysis-view">
+                <!-- Mini Card Preview -->
+                <div class="vault-card mini" :style="{ '--vault-color': editingAcc.cardColor || '#1e293b' }">
+                   <div class="vault-body">
+                      <span class="vault-name">{{ editingAcc.accountName }}</span>
+                      <span class="vault-balance">Rp {{ (editingAcc.currentBalance || 0).toLocaleString('id-ID') }}</span>
+                   </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div v-for="t in accAnalysis.recentTransactions" :key="t.transactionID" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 0.75rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; items-center; gap: 0.75rem;">
-                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;">
-                                <i :data-lucide="t.type === 'Income' ? 'trending-up' : 'trending-down'" :style="{ color: t.type === 'Income' ? '#10b981' : '#ef4444' }" style="width: 14px;"></i>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.8rem; font-weight: 700;">{{ t.merchant || t.itemName }}</div>
-                                <div style="font-size: 0.55rem; opacity: 0.4;">{{ t.date }} • {{ t.category }}</div>
-                            </div>
+
+                <div class="metrics-grid">
+                   <div class="metric-card success">
+                      <span class="metric-value">Rp {{ (accAnalysis.inflow || 0).toLocaleString('id-ID') }}</span>
+                      <span class="metric-label">Inflow</span>
+                   </div>
+                   <div class="metric-card danger">
+                      <span class="metric-value">Rp {{ (accAnalysis.outflow || 0).toLocaleString('id-ID') }}</span>
+                      <span class="metric-label">Outflow</span>
+                   </div>
+                </div>
+
+                <div class="briefing-card">
+                   <div class="briefing-header">
+                      <span class="material-symbols-rounded">analytics</span>
+                      <h3>Strategic Summary</h3>
+                   </div>
+                   <div class="net-drift">Rp {{ (accAnalysis.net || 0).toLocaleString('id-ID') }} <small>Net Drift</small></div>
+                   <p v-if="accAnalysis.insight">{{ accAnalysis.insight }}</p>
+                </div>
+
+                <div class="chart-box">
+                    <span class="chart-label">Flow Correlation</span>
+                    <div id="acc-flow-chart" style="width: 100%; height: 180px;"></div>
+                </div>
+
+                <div class="recent-list">
+                    <h3>Recent Log Entries</h3>
+                    <div v-for="t in accAnalysis.recentTransactions" :key="t.transactionID" class="mini-tx-item">
+                        <div class="mini-tx-icon" :style="{ color: t.type === 'Income' ? 'var(--green)' : 'var(--red)' }">
+                            <span class="material-symbols-rounded">{{ t.type === 'Income' ? 'north_east' : 'south_west' }}</span>
                         </div>
-                        <div :style="{ color: t.type === 'Income' ? '#10b981' : '#ef4444' }" style="font-weight: 800; font-size: 0.8rem;">
-                            {{ t.type === 'Income' ? '+' : '-' }} {{ (t.total || 0).toLocaleString('id-ID') }}
+                        <div class="mini-tx-info">
+                            <span class="mini-tx-name">{{ t.merchant || t.itemName }}</span>
+                            <span class="mini-tx-date">{{ t.date }}</span>
                         </div>
+                        <span class="mini-tx-amount" :class="t.type === 'Income' ? 'text-success' : 'text-danger'">
+                            {{ t.type === 'Income' ? '+' : '-' }}{{ (t.total || 0).toLocaleString('id-ID') }}
+                        </span>
                     </div>
                 </div>
-            </div>
 
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="accountMode = 'edit'" style="padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;">
-                  <i data-lucide="edit-3" style="width: 14px;"></i> MODIFY PROTOCOL
-               </button>
-               <button @click="isModalOpen = false" style="padding: 1rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">
-                  RETURN TO LIST
-               </button>
-            </div>
-         </div>
+                <div class="action-stack">
+                   <button @click="accountMode = 'edit'" class="tonal-btn lg">
+                      <span class="material-symbols-rounded">edit</span>
+                      MODIFY PROTOCOL
+                   </button>
+                   <button @click="isModalOpen = false" class="text-btn">Return to List</button>
+                </div>
+             </div>
 
-         <!-- MODE: EDIT -->
-         <div v-else style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
-            <div><label class="f-label">Name</label><input type="text" v-model="formData.accountName" class="f-input"></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Type</label><select v-model="formData.accountType" class="f-input"><option>Bank</option><option>E-Wallet</option><option>Cash</option><option>Credit Card</option><option>Investment</option></select></div>
-               <div><label class="f-label">Currency</label><input type="text" v-model="formData.currency" class="f-input"></div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Account Number</label><input type="text" v-model="formData.accountNumber" placeholder="Bank account" class="f-input"></div>
-               <div><label class="f-label">Card Number</label><input type="text" v-model="formData.cardNumber" placeholder="xxxx xxxx xxxx" class="f-input"></div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Opening Balance</label><input type="number" v-model.number="formData.openingBalance" class="f-input"></div>
-               <div><label class="f-label">Expiry Date (MM/YY)</label><input type="text" v-model="formData.expiryDate" placeholder="12/29" class="f-input"></div>
-            </div>
-            <div><label class="f-label">Current Balance (Live State)</label><input type="number" v-model.number="formData.currentBalance" class="f-input"></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-               <div><label class="f-label">Card Color</label><input type="color" v-model="formData.cardColor" style="height: 44px; padding: 4px;" class="f-input"></div>
-               <div><label class="f-label">Status</label><select v-model="formData.status" class="f-input"><option>Active</option><option>Inactive</option></select></div>
-            </div>
-            <div><label class="f-label">Logo URL</label><input type="text" v-model="formData.accountImage" placeholder="https://..." class="f-input"></div>
-            <div><label class="f-label">Notes</label><textarea v-model="formData.notes" class="f-input" style="min-height: 80px;"></textarea></div>
+             <!-- MODE: EDIT -->
+             <div v-else class="edit-view">
+                <div class="form-group">
+                   <span class="field-label">Vault Name</span>
+                   <input type="text" v-model="formData.accountName" class="md-input" placeholder="e.g. Primary Bank">
+                </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem;">
-               <button @click="saveAcc" style="padding: 0.8rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="check-circle" style="width: 14px;"></i> SAVE VAULT
-               </button>
-               <button v-if="editingAcc.accountID" @click="handleDuplicate" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="copy" style="width: 14px;"></i> DUPE
-               </button>
-               <button v-if="editingAcc.accountID" @click="handleMerge" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                  <i data-lucide="combine" style="width: 14px;"></i> MERGE
-               </button>
-               <button v-if="editingAcc.accountID" @click="deleteAcc" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; grid-column: span 2;">
-                  <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
-               </button>
-            </div>
-         </div>
+                <div class="form-row">
+                   <div class="form-group">
+                      <span class="field-label">Type</span>
+                      <select v-model="formData.accountType" class="md-input">
+                         <option>Bank</option>
+                         <option>E-Wallet</option>
+                         <option>Cash</option>
+                         <option>Credit Card</option>
+                         <option>Investment</option>
+                      </select>
+                   </div>
+                   <div class="form-group">
+                      <span class="field-label">Currency</span>
+                      <input type="text" v-model="formData.currency" class="md-input">
+                   </div>
+                </div>
+
+                <div class="form-row">
+                   <div class="form-group">
+                      <span class="field-label">Account No</span>
+                      <input type="text" v-model="formData.accountNumber" class="md-input">
+                   </div>
+                   <div class="form-group">
+                      <span class="field-label">Card No</span>
+                      <input type="text" v-model="formData.cardNumber" class="md-input">
+                   </div>
+                </div>
+
+                <div class="form-row">
+                   <div class="form-group">
+                      <span class="field-label">Opening Balance</span>
+                      <input type="number" v-model.number="formData.openingBalance" class="md-input">
+                   </div>
+                   <div class="form-group">
+                      <span class="field-label">Expiry (MM/YY)</span>
+                      <input type="text" v-model="formData.expiryDate" class="md-input">
+                   </div>
+                </div>
+
+                <div class="form-group">
+                   <span class="field-label">Live State Balance</span>
+                   <input type="number" v-model.number="formData.currentBalance" class="md-input">
+                </div>
+
+                <div class="form-row">
+                   <div class="form-group">
+                      <span class="field-label">Card Color</span>
+                      <div class="color-input-wrapper">
+                         <input type="color" v-model="formData.cardColor">
+                         <span>{{ formData.cardColor }}</span>
+                      </div>
+                   </div>
+                   <div class="form-group">
+                      <span class="field-label">Status</span>
+                      <select v-model="formData.status" class="md-input">
+                        <option>Active</option>
+                        <option>Inactive</option>
+                      </select>
+                   </div>
+                </div>
+
+                <div class="form-group">
+                   <span class="field-label">Logo URL</span>
+                   <input type="text" v-model="formData.accountImage" class="md-input">
+                </div>
+
+                <div class="form-group">
+                   <span class="field-label">Notes</span>
+                   <textarea v-model="formData.notes" class="md-input" style="min-height: 80px;"></textarea>
+                </div>
+
+                <div class="action-grid">
+                   <button @click="saveAcc" class="primary-btn full">
+                      <span class="material-symbols-rounded">check</span>
+                      SAVE VAULT
+                   </button>
+                   <button v-if="editingAcc.accountID" @click="handleDuplicate" class="outline-btn">
+                      <span class="material-symbols-rounded">content_copy</span>
+                      DUPE
+                   </button>
+                   <button v-if="editingAcc.accountID" @click="handleMerge" class="outline-btn">
+                      <span class="material-symbols-rounded">merge</span>
+                      MERGE
+                   </button>
+                   <button v-if="editingAcc.accountID" @click="deleteAcc" class="danger-btn full">
+                      <span class="material-symbols-rounded">delete</span>
+                      DELETE
+                   </button>
+                </div>
+             </div>
+          </div>
+       </div>
       </div>
-    </div>
     </Teleport>
 
     <!-- Merge Selection Panel -->
     <Teleport to="body">
-       <div v-if="isMergePanelOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(20px);">
-       <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 440px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; animation: slideUp 0.3s ease-out;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span style="font-weight: 800; font-size: 1rem;">Vault Consolidation</span>
-             <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
+       <div v-if="isMergePanelOpen" class="modal-backdrop-full dark">
+       <div class="bottom-sheet center">
+          <div class="sheet-header">
+             <h3 class="sheet-title">Consolidate</h3>
+             <button @click="isMergePanelOpen = false" class="icon-btn">
+               <span class="material-symbols-rounded">close</span>
+             </button>
           </div>
-          <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the vault that will absorb all logs and historical data from <b>{{ editingAcc.accountName }}</b>.</p>
+          <p class="sheet-desc">Absorption target for <b>{{ editingAcc.accountName }}</b> logs.</p>
           
-          <div style="position: relative;">
-             <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
-             <input type="text" v-model="mergeTargetSearch" placeholder="Search vaults..." class="f-input" style="padding-left: 2.5rem; height: 44px; font-size: 0.8rem;">
+          <div class="search-box">
+             <span class="material-symbols-rounded">search</span>
+             <input type="text" v-model="mergeTargetSearch" placeholder="Search vaults...">
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto; padding-right: 0.5rem;">
-             <div v-for="t in filteredMergeTargets" :key="t.accountID" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
-                <div :style="{ background: t.cardColor || '#8b5cf6', color: 'white' }" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 900;">
-                   {{ t.accountName.substring(0, 2).toUpperCase() }}
+          <div class="target-list">
+             <div v-for="t in filteredMergeTargets" :key="t.accountID" @click="performMerge(t)" class="target-item">
+                <div class="target-indicator" :style="{ backgroundColor: t.cardColor || 'var(--primary)' }"></div>
+                <div class="target-info">
+                   <span class="target-name">{{ t.accountName }}</span>
+                   <span class="target-meta">{{ t.accountType }}</span>
                 </div>
-                <div>
-                   <div style="font-weight: 700; font-size: 0.85rem;">{{ t.accountName }}</div>
-                   <div style="font-size: 0.6rem; opacity: 0.5;">{{ t.accountType }} • {{ t.currency }}</div>
-                </div>
+                <span class="material-symbols-rounded">chevron_right</span>
              </div>
-             <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid vaults found.</div>
+             <div v-if="filteredMergeTargets.length === 0" class="empty-state">No valid vaults found.</div>
           </div>
-          <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
+          <button @click="isMergePanelOpen = false" class="outline-btn">Cancel Mission</button>
        </div>
       </div>
     </Teleport>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '../stores/finance'
@@ -231,7 +279,6 @@ import { useUIStore } from '../stores/ui'
 
 const store = useFinanceStore()
 const uiStore = useUIStore()
-const scrollContainer = ref(null)
 const isModalOpen = ref(false)
 const accountMode = ref('analysis') // 'analysis' or 'edit'
 const editingAcc = ref({})
@@ -249,10 +296,8 @@ const accAnalysis = computed(() => {
   const inflow = inTx.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
   const outflow = outTx.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
   
-  // Recent transactions (last 5)
   const allRelated = [...inTx, ...outTx].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
 
-  // Insight Logic
   let insight = ''
   if (outflow > inflow * 2 && inflow > 0) insight = 'Critical alert: Outflow exceeds inflow by 100%. Protocol recalibration recommended.'
   else if (inflow > outflow && outflow > 0) insight = 'Optimal resonance: Inflow is outpacing consumption. Core strength increasing.'
@@ -294,10 +339,6 @@ const openModal = (acc) => {
     accountMode.value = 'edit'
   }
   isModalOpen.value = true
-  nextTick(() => { 
-    if (window.lucide) window.lucide.createIcons()
-    if (accountMode.value === 'analysis') initAnalysisChart()
-  })
 }
 
 let flowChart = null
@@ -305,38 +346,31 @@ const initAnalysisChart = () => {
     const chartDom = document.getElementById('acc-flow-chart')
     if (!chartDom) return
     if (flowChart) flowChart.dispose()
-    flowChart = window.echarts.init(chartDom)
+    flowChart = window.echarts.init(chartDom, 'dark')
     
     const option = {
         backgroundColor: 'transparent',
-        tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#fff' } },
+        tooltip: { trigger: 'axis', backgroundColor: '#1C1B1F', borderColor: '#49454F', textStyle: { color: '#E6E1E5' } },
         grid: { top: '10%', left: '3%', right: '4%', bottom: '3%', containLabel: true },
-        xAxis: { type: 'category', data: ['Inflow', 'Outflow'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 10 } },
+        xAxis: { type: 'category', data: ['Inflow', 'Outflow'], axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#CAC4D0', fontSize: 10 } },
         yAxis: { type: 'value', splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }, axisLabel: { show: false } },
         series: [
             {
                 data: [
-                    { value: accAnalysis.value.inflow, itemStyle: { color: '#10b981', borderRadius: [8, 8, 0, 0] } },
-                    { value: accAnalysis.value.outflow, itemStyle: { color: '#ef4444', borderRadius: [8, 8, 0, 0] } }
+                    { value: accAnalysis.value.inflow, itemStyle: { color: '#B4E8A8', borderRadius: [8, 8, 0, 0] } },
+                    { value: accAnalysis.value.outflow, itemStyle: { color: '#F2B8B5', borderRadius: [8, 8, 0, 0] } }
                 ],
                 type: 'bar',
                 barWidth: '40%',
-                label: {
-                    show: true,
-                    position: 'top',
-                    formatter: (params) => 'Rp ' + (params.value / 1000).toFixed(0) + 'k',
-                    color: 'rgba(255,255,255,0.7)',
-                    fontSize: 10,
-                    fontWeight: 'bold'
-                }
+                label: { show: true, position: 'top', formatter: (p) => 'Rp ' + (p.value / 1000).toFixed(0) + 'k', color: '#CAC4D0', fontSize: 10, fontWeight: 'bold' }
             }
         ]
     }
     flowChart.setOption(option)
 }
 
-watch(accountMode, (newVal) => {
-    if (newVal === 'analysis') {
+watch([accountMode, isModalOpen], ([mode, open]) => {
+    if (mode === 'analysis' && open) {
         nextTick(() => initAnalysisChart())
     }
 })
@@ -355,7 +389,6 @@ const handleDuplicate = () => {
   delete data.accountID
   editingAcc.value = {}
   formData.value = data
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
 }
 
 const isMergePanelOpen = ref(false)
@@ -368,20 +401,14 @@ const filteredMergeTargets = computed(() => {
   )
 })
 
-const handleMerge = () => {
-  isMergePanelOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-}
+const handleMerge = () => { isMergePanelOpen.value = true }
 
 const performMerge = (target) => {
   const sourceName = editingAcc.value.accountName
   const targetName = target.accountName
-  
-  if (!confirm(`Relocate ALL logs from vault "${sourceName}" to "${targetName}"? This protocol will decommission the "${sourceName}" vault.`)) return
-  
+  if (!confirm(`Relocate ALL logs from vault "${sourceName}" to "${targetName}"?`)) return
   store.mergeEntities('accounts', sourceName, targetName)
   store.deleteAccount(editingAcc.value.accountID)
-  
   isMergePanelOpen.value = false
   isModalOpen.value = false
 }
@@ -390,61 +417,264 @@ const maskNumber = (n) => {
   if (!n) return ''
   const s = String(n).replace(/\s/g, '')
   if (s.length < 8) return s
-  return s.substring(0, 4) + ' •••• •••• ' + s.substring(s.length - 4)
+  return s.substring(0, 4) + ' •••' + s.substring(s.length - 4)
 }
 
-const adjustColor = (hex, percent) => {
-  if (!hex || hex[0] !== '#') return hex
-  const num = parseInt(hex.replace("#", ""), 16)
-  const amt = Math.round(2.55 * percent)
-  const R = (num >> 16) + amt
-  const G = (num >> 8 & 0x00FF) + amt
-  const B = (num & 0x0000FF) + amt
-  return "#" + (0x1000000 + (R < 255 ? R < 0 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 0 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 0 ? 0 : B : 255)).toString(16).slice(1)
-}
-
-// Visibility & Class Sync
 watch(isModalOpen, (val) => {
   if (val) uiStore.registerModal('accounts')
   else uiStore.unregisterModal('accounts')
 })
 
-// Lifecycle Management
 onMounted(() => {
-  if (scrollContainer.value) scrollContainer.value.scrollTo(0, 0)
-  if (window.lucide) window.lucide.createIcons()
+  window.addEventListener('resize', () => flowChart && flowChart.resize())
 })
 
 onBeforeUnmount(() => {
   uiStore.unregisterModal('accounts')
 })
-
-// Icon Re-rendering
-watch([accountMode, isModalOpen], () => {
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-})
 </script>
 
 <style scoped>
-.account-card-premium {
-   padding: 1.5rem;
-   border-radius: 1.5rem;
-   border: 1px solid rgba(255,255,255,0.1);
-   cursor: pointer;
-   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-   position: relative;
-   overflow: hidden;
-   display: flex;
-   flex-direction: column;
-   justify-content: space-between;
-   min-height: 180px;
+.accounts-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  color: var(--on-surface);
+  overflow: hidden;
 }
-.account-card-premium:hover {
-   transform: translateY(-5px);
-   box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-   border-color: rgba(255,255,255,0.2);
+
+/* TOP APP BAR */
+.top-app-bar {
+  padding: env(safe-area-inset-top) 16px 8px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
 }
-.f-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem; }
-.f-input { width: 100%; padding: 0.8rem 1rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.app-bar-content {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-bar-content h1 {
+  flex: 1;
+  font-size: 22px;
+  font-weight: 400;
+  font-family: 'Outfit', sans-serif;
+  margin: 0;
+}
+
+.app-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--on-surface);
+  outline: none;
+}
+
+/* CONTENT SCROLL */
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 120px 16px;
+}
+
+/* CARDS */
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.vault-card {
+  background-color: var(--vault-color);
+  padding: 24px;
+  border-radius: 28px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.vault-card:active { transform: scale(0.98); }
+
+.vault-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 150px;
+  height: 150px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50%;
+}
+
+.vault-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.vault-logo img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  background: white;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.vault-icon-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.vault-badge {
+  background: rgba(255,255,255,0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  color: white;
+}
+
+.vault-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vault-name { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; }
+.vault-balance { font-size: 24px; font-weight: 700; color: white; }
+.vault-number { font-family: monospace; font-size: 14px; color: rgba(255,255,255,0.5); letter-spacing: 2px; }
+
+.vault-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.vault-type { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); }
+
+.vault-expiry { display: flex; flex-direction: column; align-items: flex-end; }
+.expiry-label { font-size: 8px; color: rgba(255,255,255,0.4); }
+.expiry-value { font-size: 12px; font-weight: 600; color: white; }
+
+/* BOTTOM SHEET */
+.modal-backdrop-full {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.6);
+  z-index: 4000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bottom-sheet {
+  width: 100%;
+  background-color: var(--bg-primary);
+  border-radius: 28px 28px 0 0;
+  padding: 8px 16px 32px 16px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
+.sheet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.sheet-title { font-size: 22px; font-weight: 400; margin: 0; }
+.sheet-content { overflow-y: auto; flex: 1; }
+
+/* ANALYSIS VIEW */
+.vault-card.mini { min-height: 100px; padding: 16px; margin-bottom: 24px; }
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.metric-card { background-color: var(--bg-secondary); padding: 16px; border-radius: 20px; display: flex; flex-direction: column; }
+.metric-card.success { border-bottom: 3px solid var(--green); }
+.metric-card.danger { border-bottom: 3px solid var(--red); }
+.metric-value { font-size: 16px; font-weight: 700; }
+.metric-label { font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; }
+
+.briefing-card { background-color: var(--primary-container); color: var(--on-primary-container); padding: 16px; border-radius: 24px; margin-bottom: 24px; }
+.briefing-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.briefing-header h3 { font-size: 14px; font-weight: 500; margin: 0; }
+.net-drift { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.briefing-card p { font-size: 13px; opacity: 0.9; margin: 0; }
+
+.chart-box { background-color: var(--bg-secondary); border-radius: 24px; padding: 16px; margin-bottom: 24px; }
+.chart-label { font-size: 11px; color: var(--on-surface-variant); text-transform: uppercase; display: block; margin-bottom: 12px; }
+
+.recent-list h3 { font-size: 14px; font-weight: 500; margin-bottom: 16px; color: var(--on-surface-variant); }
+.mini-tx-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: var(--bg-secondary); margin-bottom: 8px; }
+.mini-tx-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 8px; }
+.mini-tx-info { flex: 1; display: flex; flex-direction: column; }
+.mini-tx-name { font-size: 14px; font-weight: 500; }
+.mini-tx-date { font-size: 11px; color: var(--on-surface-variant); }
+.mini-tx-amount { font-size: 14px; font-weight: 700; }
+
+.action-stack { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+
+/* FORM */
+.form-group { margin-bottom: 16px; }
+.field-label { display: block; font-size: 12px; font-weight: 500; color: var(--on-surface-variant); margin-bottom: 8px; margin-left: 4px; }
+.md-input { width: 100%; background: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px 16px; color: var(--on-surface); outline: none; transition: border-color 0.2s; }
+.md-input:focus { border-color: var(--primary); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.color-input-wrapper { display: flex; align-items: center; gap: 12px; background: var(--surface-variant); border-radius: 12px; padding: 8px 16px; }
+.color-input-wrapper input { width: 32px; height: 32px; border: none; background: none; }
+
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+.full { grid-column: span 2; }
+
+/* MD3 BUTTONS */
+.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 20px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.tonal-btn.lg { border-radius: 28px; padding: 16px; justify-content: center; }
+.primary-btn { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 28px; padding: 16px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; justify-content: center; }
+.outline-btn { background: transparent; border: 1px solid var(--outline); color: var(--primary); border-radius: 28px; padding: 16px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; justify-content: center; }
+.danger-btn { background: rgba(242, 184, 181, 0.1); border: 1px solid var(--red); color: var(--red); border-radius: 28px; padding: 16px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; justify-content: center; }
+.text-btn { background: transparent; border: none; color: var(--primary); font-weight: 500; padding: 8px; cursor: pointer; }
+
+.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+/* MERGE */
+.dark { background-color: rgba(0,0,0,0.8); }
+.center { width: calc(100% - 32px); max-width: 400px; margin: auto auto 32px auto; border-radius: 28px; }
+.sheet-desc { font-size: 14px; color: var(--on-surface-variant); margin-bottom: 24px; }
+.search-box { display: flex; align-items: center; gap: 12px; background: var(--surface-variant); padding: 12px 16px; border-radius: 28px; margin-bottom: 16px; }
+.search-box input { background: transparent; border: none; outline: none; color: var(--on-surface); flex: 1; }
+.target-list { margin-bottom: 24px; max-height: 250px; overflow-y: auto; }
+.target-item { display: flex; align-items: center; gap: 16px; padding: 12px; border-radius: 12px; cursor: pointer; }
+.target-item:active { background: var(--surface-variant); }
+.target-indicator { width: 12px; height: 12px; border-radius: 6px; }
+.target-info { flex: 1; display: flex; flex-direction: column; }
+.target-name { font-size: 16px; font-weight: 500; }
+.target-meta { font-size: 12px; color: var(--on-surface-variant); }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.text-success { color: var(--green); }
+.text-danger { color: var(--red); }
 </style>

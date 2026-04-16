@@ -1,175 +1,132 @@
 <template>
-  <div ref="scrollContainer" class="view-content container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem; overflow-y: auto; height: 100%; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative;">
-    <div class="sticky-nav" style="width: 92%; margin: 0 auto; padding: calc(0.2rem + env(safe-area-inset-top)) 1rem 0.2rem 1rem; border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; position: sticky; top: 0; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(20px); z-index: 100; box-shadow: 0 8px 30px rgba(0,0,0,0.2);">
-      <header style="display: flex; justify-content: space-between; align-items: center; position: relative; padding: 0.35rem 0;">
-        <div :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }" style="display: flex; align-items: center; gap: 0.6rem;">
-          <div style="width: 28px; height: 28px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); flex-shrink: 0;">
-            <img src="/logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="Jurney Logo">
+  <div ref="scrollContainer" class="view-content dashboard-container">
+    <!-- MD3 Top App Bar -->
+    <div class="top-app-bar">
+      <div class="app-bar-content">
+        <div class="app-title-group">
+          <div class="logo-box">
+            <img src="/logo.png" alt="Jurney">
           </div>
-          <h1 style="font-size: 1.1rem; font-weight: 950; color: var(--text-primary); margin: 0; white-space: nowrap; letter-spacing: -0.04em;">Jurney</h1>
+          <h1>Jurney</h1>
         </div>
-        <div style="display: flex; gap: 0.6rem; align-items: center; padding-right: 0.25rem;" :style="{ opacity: showSearch ? 0 : 1, transition: 'opacity 0.2s', pointerEvents: showSearch ? 'none' : 'auto' }">
-          <div @click="store.forceRefresh" class="profile-icon" style="width: 32px; height: 32px; border-radius: 10px; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent);">
-            <i data-lucide="refresh-cw" :class="{ 'spin-active': store.isSyncing }" style="width: 16px;"></i>
+        
+        <div class="app-bar-actions">
+          <button @click="store.forceRefresh" class="icon-btn" :class="{ 'spin': store.isSyncing }">
+            <span class="material-symbols-rounded">refresh</span>
+          </button>
+          <button @click="toggleSearch" class="icon-btn">
+            <span class="material-symbols-rounded">search</span>
+          </button>
+          <div @click="$router.push('/settings')" class="avatar-box">
+             <img v-if="userAvatar.includes('.svg')" :src="userAvatar">
+             <span v-else>{{ userAvatar }}</span>
+             <div class="status-indicator"></div>
           </div>
-          <div @click="toggleSearch" class="profile-icon" style="width: 32px; height: 32px; border-radius: 10px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-            <i data-lucide="search" style="width: 16px;"></i>
-          </div>
-          <div class="user-meta" style="display: flex; align-items: center; gap: 0.75rem;">
-            <div @click="$router.push('/settings')" class="profile-icon" style="width: 32px; height: 32px; border-radius: 10px; background: var(--border); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; overflow: hidden; position: relative;">
-               <img v-if="userAvatar.includes('.svg')" :src="userAvatar" style="width: 20px; height: 20px; object-fit: contain;">
-               <span v-else>{{ userAvatar }}</span>
-               <div style="position: absolute; bottom: 0; right: 0; width: 8px; height: 8px; background: #10b981; border: 1.5px solid var(--bg-primary); border-radius: 50%;"></div>
+        </div>
+
+        <!-- Search Overlay -->
+        <div class="search-overlay" :class="{ 'active': showSearch }">
+          <span class="material-symbols-rounded search-icon">search</span>
+          <input type="text" v-model="searchQuery" placeholder="Search transactions..." @blur="if(!searchQuery) showSearch = false">
+          <button @click="toggleSearch" class="close-search-btn">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-scroll">
+      <!-- System Status -->
+      <div class="status-row">
+        <div class="status-chip">
+          <span class="status-dot"></span>
+          <span class="status-label">v5.3.0 CORE</span>
+        </div>
+        <span class="status-text">PROD ACTIVE</span>
+      </div>
+
+      <!-- Main Overview Cards -->
+      <div class="stats-grid">
+        <div class="stat-card" @click="$router.push('/accounts')">
+          <div class="card-icon"><span class="material-symbols-rounded">account_balance_wallet</span></div>
+          <span class="card-title">Balance</span>
+          <span class="card-value">Rp {{ Math.round(totalBalance || 0).toLocaleString('id-ID') }}</span>
+          <span class="card-sub">{{ (store.accounts || []).length }} accounts</span>
+        </div>
+        <div class="stat-card spending" @click="$router.push('/analysis')">
+          <div class="card-icon"><span class="material-symbols-rounded">trending_down</span></div>
+          <span class="card-title">Spending</span>
+          <span class="card-value">Rp {{ Math.round(monthSpending || 0).toLocaleString('id-ID') }}</span>
+          <span class="card-sub">This month</span>
+        </div>
+        <div class="stat-card success" @click="$router.push('/budget')">
+          <div class="card-icon"><span class="material-symbols-rounded">pie_chart</span></div>
+          <span class="card-title">Budget</span>
+          <span class="card-value">Rp {{ (totalBudget || 0).toLocaleString('id-ID') }}</span>
+          <span class="card-sub">{{ (store.budgets || []).length }} budgets</span>
+        </div>
+        <div class="stat-card info" @click="$router.push('/goals')">
+          <div class="card-icon"><span class="material-symbols-rounded">target</span></div>
+          <span class="card-title">Goals</span>
+          <span class="card-value">{{ Math.round(goalProgress) }}%</span>
+          <span class="card-sub">{{ (store.goals || []).length }} active</span>
+        </div>
+      </div>
+
+      <!-- Reminders Section -->
+      <div v-if="upcomingReminders.length > 0" class="section">
+        <div class="section-header">
+          <h2 class="section-title">Critical Reminders</h2>
+          <div class="badge danger">{{ upcomingReminders.length }} Signals</div>
+        </div>
+        <div class="reminder-list">
+          <div v-for="rem in upcomingReminders" :key="rem.id" class="reminder-card">
+            <div class="reminder-icon">
+              <span class="material-symbols-rounded">{{ rem.icon === 'zap' ? 'bolt' : rem.icon }}</span>
             </div>
+            <div class="reminder-info">
+              <span class="reminder-name">{{ rem.name }}</span>
+              <span class="reminder-desc">Pending for {{ rem.period }}</span>
+            </div>
+            <button class="tonal-btn" @click="$router.push('/transaction')">Resolve</button>
           </div>
         </div>
+      </div>
 
-        <!-- Expanding Search Bar -->
-        <div :style="{ width: showSearch ? '100%' : '0px', opacity: showSearch ? 1 : 0, pointerEvents: showSearch ? 'auto' : 'none' }" style="position: absolute; right: 0; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5;">
-           <div style="position: relative; width: 100%; height: 36px; display: flex; align-items: center; min-width: 250px;">
-              <i data-lucide="search" style="position: absolute; left: 1rem; width: 16px; color: var(--text-secondary);"></i>
-              <input type="text" v-model="searchQuery" placeholder="Scan expeditions..." style="width: 100%; height: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 18px; padding: 0 2.5rem 0 2.5rem; color: var(--text-primary); outline: none; font-size: 0.8125rem;">
-              <button @click="toggleSearch" style="position: absolute; right: 0.75rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 12px;">
-                 <i data-lucide="x" style="width: 16px;"></i>
-              </button>
-           </div>
+      <!-- Quick Access Grid -->
+      <div class="quick-access-grid">
+        <div @click="$router.push('/items')" class="quick-card">
+          <div class="quick-icon success"><span class="material-symbols-rounded">inventory_2</span></div>
+          <div class="quick-label">Items</div>
         </div>
-      </header>
-    </div>
+        <div @click="$router.push('/merchants')" class="quick-card">
+          <div class="quick-icon warning"><span class="material-symbols-rounded">store</span></div>
+          <div class="quick-label">Vendors</div>
+        </div>
+        <div @click="$router.push('/memberships')" class="quick-card">
+          <div class="quick-icon info"><span class="material-symbols-rounded">card_membership</span></div>
+          <div class="quick-label">Privileges</div>
+        </div>
+        <div @click="$router.push('/vouchers')" class="quick-card">
+          <div class="quick-icon secondary"><span class="material-symbols-rounded">confirmation_number</span></div>
+          <div class="quick-label">Vouchers</div>
+        </div>
+        <div @click="$router.push('/receipts')" class="quick-card">
+          <div class="quick-icon tertiary"><span class="material-symbols-rounded">receipt_long</span></div>
+          <div class="quick-label">Evidence</div>
+        </div>
+        <div @click="$router.push('/audit')" class="quick-card anomaly">
+          <div class="quick-icon danger"><span class="material-symbols-rounded">monitoring</span></div>
+          <div class="quick-label">Intel Audit</div>
+          <div v-if="anomalyCount > 0" class="badge-dot">{{ anomalyCount }}</div>
+        </div>
+      </div>
 
-    <!-- System Status Bar -->
-    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 1rem; padding: 0 0.5rem;">
-       <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <div style="display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
-             <span style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; display: block;"></span>
-             <span style="font-size: 0.7rem; font-weight: 950; color: #10b981; letter-spacing: 0.05em; line-height: 1;">CORE v5.3.0</span>
-          </div>
-          <div style="font-size: 0.6rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">PROD ACTIVE</div>
-       </div>
-       <div @click="checkUpdates" style="font-size: 0.6rem; color: var(--accent); font-weight: 800; text-transform: uppercase; cursor: pointer; letter-spacing: 0.05em; border-bottom: 1px solid rgba(139,92,246,0.3); padding-bottom: 2px;">Verify Integrity</div>
-    </div>
-
-    <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; margin-top: 1.5rem;">
-      <div class="stat-card card-hover" @click="$router.push('/accounts')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
-        <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="wallet" style="width: 60px; height: 60px;"></i></div>
-        <i data-lucide="wallet" style="width: 14px; color: var(--accent); margin-bottom: 0.2rem;"></i>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Treasure Vault</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: var(--text-primary); letter-spacing: -0.02em;">Rp {{ Math.round(totalBalance || 0).toLocaleString('id-ID') }}</span>
-        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ (store.accounts || []).length }} ACTIVE VAULTS</div>
+      <!-- Footer -->
+      <div class="app-footer">
+        <span class="footer-core">v5.3.0 Intelligence Core</span>
+        <span class="footer-status">SYSTEM STABILIZED // MD3 OVERLAY</span>
       </div>
-      <div class="stat-card card-hover" @click="$router.push('/analysis')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
-        <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="trending-up" style="width: 60px; height: 60px;"></i></div>
-        <i data-lucide="line-chart" style="width: 14px; color: #ef4444; margin-bottom: 0.2rem;"></i>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Supplies Used</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: #ef4444; letter-spacing: -0.02em;">Rp {{ Math.round(monthSpending || 0).toLocaleString('id-ID') }}</span>
-        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">CONSUMPTION THIS CYCLE</div>
-      </div>
-      <div class="stat-card card-hover" @click="$router.push('/budget')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
-        <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="pie-chart" style="width: 60px; height: 60px;"></i></div>
-        <i data-lucide="pie-chart" style="width: 14px; color: #22c55e; margin-bottom: 0.2rem;"></i>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Ration Limit</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: #22c55e; letter-spacing: -0.02em;">Rp {{ (totalBudget || 0).toLocaleString('id-ID') }}</span>
-        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ (store.budgets || []).length }} PROTOCOLS ACTIVE</div>
-      </div>
-      <div class="stat-card card-hover" @click="$router.push('/goals')" style="background: var(--glass); border: 1px solid var(--border); border-radius: var(--card-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; cursor: pointer; position: relative; overflow: hidden;">
-        <div style="position: absolute; right: -10px; top: -10px; opacity: 0.05;"><i data-lucide="target" style="width: 60px; height: 60px;"></i></div>
-        <i data-lucide="target" style="width: 14px; color: #0ea5e9; margin-bottom: 0.2rem;"></i>
-        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Destinations</span>
-        <span style="font-size: 1.25rem; font-weight: 900; color: #0ea5e9; letter-spacing: -0.02em;">{{ Math.round(goalProgress) }}% Done</span>
-        <div style="font-size: 0.6rem; opacity: 0.5; font-weight: 700;">{{ (store.goals || []).length }} ACTIVE MISSIONS</div>
-      </div>
-    </div>
-    
-    <!-- Recurring Protocol Reminders (Smart Detection) -->
-    <div v-if="upcomingReminders.length > 0" style="margin-bottom: 2rem; animation: slideUp 0.4s ease;">
-       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-left: 0.5rem;">
-          <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.15em;">Critical Reminders</div>
-          <div style="font-size: 0.55rem; color: #ef4444; font-weight: 800; display: flex; align-items: center; gap: 4px;">
-             <span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; display: block; animation: pulse 1.5s infinite;"></span>
-             {{ upcomingReminders.length }} SIGNALS DETECTED
-          </div>
-       </div>
-       <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-          <div v-for="rem in upcomingReminders" :key="rem.id" class="reminder-card" style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; position: relative; overflow: hidden;">
-             <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444; flex-shrink: 0;">
-                <i :data-lucide="rem.icon" style="width: 20px;"></i>
-             </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 0.875rem; font-weight: 800; color: white;">{{ rem.name }}</div>
-                <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                   Missing log for {{ rem.period }}. Last seen {{ formatDate(rem.lastDate) }}.
-                </div>
-              </div>
-             <button @click="$router.push('/transaction')" style="background: rgba(239, 68, 68, 0.2); border: none; padding: 0.5rem 0.75rem; border-radius: 8px; color: white; font-size: 0.6rem; font-weight: 800; cursor: pointer;">RESOLVE</button>
-          </div>
-       </div>
-    </div>
-
-
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; margin-bottom: 2rem;">
-      <div @click="$router.push('/items')" class="card-hover" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer;">
-        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0;">
-          <i data-lucide="package" style="width: 22px;"></i>
-        </div>
-        <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Items</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.items || []).length }} REGISTERED</p>
-        </div>
-      </div>
-      <div @click="$router.push('/merchants')" class="card-hover" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer;">
-        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(249, 115, 22, 0.1); display: flex; align-items: center; justify-content: center; color: #f97316; flex-shrink: 0;">
-          <i data-lucide="building-2" style="width: 22px;"></i>
-        </div>
-        <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Vendors</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.merchants || []).length }} LOCATIONS</p>
-        </div>
-      </div>
-      <div @click="$router.push('/memberships')" class="card-hover" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer;">
-        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0;">
-          <i data-lucide="credit-card" style="width: 22px;"></i>
-        </div>
-        <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Privileges</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.members || []).length }} ACTIVE CARDS</p>
-        </div>
-      </div>
-      <div @click="$router.push('/vouchers')" class="card-hover" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer;">
-        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #f59e0b; flex-shrink: 0;">
-          <i data-lucide="ticket" style="width: 22px;"></i>
-        </div>
-        <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Assets</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.vouchers || []).filter(v => v.status === 'Active').length }} USABLE</p>
-        </div>
-      </div>
-      <div @click="$router.push('/receipts')" class="card-hover" style="background: var(--glass, rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer;">
-        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(14, 165, 233, 0.1); display: flex; align-items: center; justify-content: center; color: #0ea5e9; flex-shrink: 0;">
-          <i data-lucide="file-text" style="width: 22px;"></i>
-        </div>
-        <div>
-          <div style="font-size: 0.8125rem; font-weight: 700;">Evidence</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ (store.receipts || []).length }} ARCHIVED</p>
-        </div>
-      </div>
-      <div @click="$router.push('/audit')" style="background: var(--glass, rgba(239, 68, 68, 0.05)); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 1.25rem; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.3s; position: relative;">
-        <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: #ef4444; flex-shrink: 0;">
-          <i data-lucide="activity" style="width: 22px;"></i>
-        </div>
-        <div>
-          <div style="font-size: 0.8125rem; font-weight: 700; color: #ef4444;">Intel Audit</div>
-          <p style="font-size: 0.6rem; color: var(--text-secondary); line-height: 1.2; margin: 0;">{{ anomalyCount }} Anomalies</p>
-        </div>
-        <div v-if="anomalyCount > 0" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: white; font-size: 0.6rem; font-weight: 950; padding: 2px 6px; border-radius: 10px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">
-          {{ anomalyCount }}
-        </div>
-      </div>
-    </div>
-    
-    <!-- System Footer -->
-    <div style="margin-top: 3rem; text-align: center; padding-bottom: 2rem; opacity: 0.3;">
-       <div style="font-size: 0.55rem; font-weight: 900; letter-spacing: 0.2em; color: var(--text-secondary); text-transform: uppercase;">v5.3.0 Intelligence Core</div>
-       <div style="font-size: 0.45rem; margin-top: 0.5rem; letter-spacing: 0.1em;">TERMINAL STABILIZED // NORECALL PROTOCOL ACTIVE</div>
     </div>
   </div>
 </template>
@@ -339,6 +296,418 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes pulse { 0% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.4; transform: scale(1); } }
+.dashboard-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  color: var(--on-surface);
+  overflow: hidden;
+}
+
+/* TOP APP BAR */
+.top-app-bar {
+  padding: env(safe-area-inset-top) 16px 8px 16px;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+}
+
+.app-bar-content {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.app-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-box {
+  width: 32px;
+  height: 32px;
+  background-color: white;
+  border-radius: 8px;
+  padding: 4px;
+  display: flex; /* Added display: flex */
+  align-items: center; /* Added align-items: center */
+  justify-content: center; /* Added justify-content: center */
+}
+
+.logo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.app-title-group h1 {
+  font-size: 22px;
+  font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  margin: 0;
+}
+
+.app-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.icon-btn:hover {
+  background-color: var(--surface-variant);
+}
+
+.avatar-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background-color: var(--surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  margin-left: 4px;
+  overflow: hidden;
+}
+
+.avatar-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: #4CAF50;
+  border: 2px solid var(--bg-primary);
+  border-radius: 50%;
+}
+
+/* SEARCH OVERLAY */
+.search-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.search-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.search-overlay input {
+  flex: 1;
+  height: 48px;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--on-surface);
+  outline: none;
+}
+
+.search-icon {
+  color: var(--on-surface-variant);
+  margin-left: 8px;
+}
+
+/* CONTENT SCROLL */
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 120px 16px;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.status-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: rgba(180, 232, 168, 0.1);
+  border-radius: 8px;
+  color: var(--green);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green);
+}
+
+.status-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.status-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+}
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background-color: var(--bg-secondary);
+  border-radius: 24px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 0.2s, background-color 0.2s;
+  cursor: pointer;
+}
+
+.stat-card:active {
+  transform: scale(0.97);
+  background-color: var(--surface-variant);
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.stat-card.spending .card-icon { background-color: rgba(242, 184, 181, 0.2); color: var(--red); }
+.stat-card.success .card-icon { background-color: rgba(180, 232, 168, 0.2); color: var(--green); }
+.stat-card.info .card-icon { background-color: rgba(168, 199, 250, 0.2); color: var(--blue); }
+
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+}
+
+.card-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.card-sub {
+  font-size: 11px;
+  color: var(--on-surface-variant);
+  opacity: 0.7;
+}
+
+/* SECTIONS */
+.section {
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--on-surface);
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.badge.danger {
+  background-color: rgba(242, 184, 181, 0.2);
+  color: var(--red);
+}
+
+/* REMINDERS */
+.reminder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reminder-card {
+  background-color: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.reminder-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: var(--surface-variant);
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reminder-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.reminder-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.reminder-desc {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+}
+
+.tonal-btn {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* QUICK ACCESS */
+.quick-access-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.quick-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+}
+
+.quick-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: var(--surface-variant);
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.quick-icon.success { background-color: rgba(180, 232, 168, 0.15); color: var(--green); }
+.quick-icon.warning { background-color: rgba(255, 217, 140, 0.15); color: var(--amber); }
+.quick-icon.info { background-color: rgba(168, 199, 250, 0.15); color: var(--blue); }
+.quick-icon.secondary { background-color: var(--secondary-container); color: var(--on-secondary-container); }
+.quick-icon.tertiary { background-color: var(--tertiary-container); color: var(--on-tertiary-container); }
+.quick-icon.danger { background-color: rgba(242, 184, 181, 0.15); color: var(--red); }
+
+.quick-card:hover .quick-icon {
+  transform: translateY(-4px);
+  filter: brightness(1.1);
+}
+
+.quick-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  text-align: center;
+}
+
+.badge-dot {
+  position: absolute;
+  top: -4px;
+  right: 12px;
+  background-color: var(--red);
+  color: var(--on-error);
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-primary);
+}
+
+/* FOOTER */
+.app-footer {
+  text-align: center;
+  opacity: 0.4;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer-core { font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+.footer-status { font-size: 8px; letter-spacing: 0.5px; }
+
+/* ANIMATIONS */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.spin span { animation: spin 1s infinite linear; }
 </style>

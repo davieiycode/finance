@@ -1,57 +1,47 @@
 :root {
-  /* Brand Spectrum: Teal (Primary) */
-  --teal-50: #E1F5EE;
-  --teal-100: #9FE1CB;
-  --teal-200: #5DCAA5;
-  --teal-400: #1D9E75;
-  --teal-600: #0F6E56;
-  --teal-800: #085041;
-  --teal-900: #04342C;
-
-  /* Brand Spectrum: Amber (Secondary) */
-  --amber-50: #FAEEDA;
-  --amber-100: #FAC775;
-  --amber-200: #EF9F27;
-  --amber-400: #BA7517;
-  --amber-600: #854F0B;
-  --amber-800: #633806;
-  --amber-900: #412402;
-
-  /* Semantic Spectrum */
-  --green: #639922;      /* Positive / Income */
-  --green-soft: rgba(99, 153, 34, 0.1);
-  --red: #E24B4A;        /* Negative / Expense */
-  --red-soft: rgba(226, 75, 74, 0.1);
-  --blue: #378ADD;       /* Info / Analytic */
-  --blue-soft: rgba(55, 138, 221, 0.1);
-  --purple: #7F77DD;     /* Commerce / Catalog */
-  --purple-soft: rgba(127, 119, 221, 0.1);
-  --coral: #D85A30;      /* Reward / Voucher */
-  --coral-soft: rgba(216, 90, 48, 0.1);
-
-  /* Neutral Spectrum: Gray */
-  --gray-50: #F1EFE8;
-  --gray-200: #B4B2A9;
-  --gray-400: #888780;
-  --gray-600: #5F5E5A;
-  --gray-800: #444441;
-  --gray-900: #2C2C2A;
-
-  /* Functional Mapping (Dynamic Variables) */
-  --bg-primary: #000000;
-  --bg-secondary: #050505;
-  --bg-input: rgba(255, 255, 255, 0.03);
-  --text-primary: #ffffff;
-  --text-secondary: var(--gray-400);
-  --accent: var(--teal-400);
-  --accent-secondary: var(--amber-400);
-  --border: rgba(255, 255, 255, 0.05);
-  --border2: rgba(255, 255, 255, 0.1);
-  --danger: var(--red);
-  --success: var(--green);
-  --font-family: 'Inter', -apple-system, sans-serif;
-  --card-radius: 1.5rem;
-  --glass: rgba(255, 255, 255, 0.02);
+  /* MD3 Dark Theme Palette */
+  --primary: #D0BCFF;
+  --on-primary: #381E72;
+  --primary-container: #4F378B;
+  --on-primary-container: #EADDFF;
+  
+  --secondary: #CCC2DC;
+  --on-secondary: #332D41;
+  --secondary-container: #4A4458;
+  --on-secondary-container: #E8DEF8;
+  
+  --tertiary: #EFB8C8;
+  --on-tertiary: #492532;
+  --tertiary-container: #633B48;
+  --on-tertiary-container: #FFD8E4;
+  
+  --error: #F2B8B5;
+  --on-error: #601410;
+  
+  --bg-primary: #1C1B1F;
+  --bg-secondary: #252429;
+  --surface: #1C1B1F;
+  --surface-variant: #49454F;
+  --on-surface: #E6E1E5;
+  --on-surface-variant: #CAC4D0;
+  --outline: #938F99;
+  
+  /* Semantic Spectrum (MD3 inspired) */
+  --green: #B4E8A8;
+  --red: #F2B8B5;
+  --blue: #A8C7FA;
+  --amber: #FFD98C;
+  
+  /* Functional Mapping */
+  --text-primary: var(--on-surface);
+  --text-secondary: var(--on-surface-variant);
+  --accent: var(--primary);
+  --border: var(--surface-variant);
+  --border2: var(--outline);
+  --font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  --card-radius: 24px;
+  --btn-radius: 32px;
+  --glass: rgba(255, 255, 255, 0.04);
 }
 
 * {
@@ -59,17 +49,18 @@
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1), transform 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 body {
-  background-color: var(--bg-primary, #000);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-family);
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body::after {
@@ -78,9 +69,8 @@ body::after {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.035;
-  mix-blend-mode: overlay;
+  background-image: radial-gradient(circle at 50% 50%, rgba(208, 188, 255, 0.05), transparent 100%);
+  opacity: 0.5;
 }
 
 .container {

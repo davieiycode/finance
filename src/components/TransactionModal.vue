@@ -1,126 +1,134 @@
 <template>
 <Teleport to="body">
-  <div v-if="tx" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 4000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(10px);">
-    <div style="background: var(--bg-primary, #000); border: 1px solid var(--border); border-radius: 2rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; position: relative; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
-        <button @click="$emit('close')" style="position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(255,255,255,0.05); border: none; color: white; cursor: pointer; width: 32px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; z-index: 10;">
-           <i data-lucide="x" style="width: 18px;"></i>
-        </button>
+  <div v-if="tx" class="modal-backdrop-full" @click.self="$emit('close')">
+    <div class="bottom-sheet transaction-summary">
+        <div class="sheet-drag-handle"></div>
         
-        <div style="text-align: center; margin-bottom: 2rem; margin-top: 1rem;">
-          <div :style="{ background: getTxColor(tx.type) + '15', color: getTxColor(tx.type) }" style="margin: 0 auto 0.75rem auto; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <i :data-lucide="store.resolveIcon(tx.category, tx.type)" style="width: 28px;"></i>
-          </div>
-          <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;">Expedition Summary</h2>
-          <div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em; margin-top: 0.25rem;">ID: {{ tx.transactionID }}</div>
+        <div class="sheet-header">
+           <div class="summary-icon-container" :style="{ color: getTxColor(tx.type), backgroundColor: getTxColor(tx.type) + '15' }">
+              <span class="material-symbols-rounded">{{ store.resolveIcon(tx.category, tx.type) }}</span>
+           </div>
+           <div class="header-info">
+             <h2 class="sheet-title">Expedition Summary</h2>
+             <span class="tx-id">LOG ID: {{ tx.transactionID }}</span>
+           </div>
+           <button @click="$emit('close')" class="icon-btn">
+              <span class="material-symbols-rounded">close</span>
+           </button>
         </div>
 
-         <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1.5rem;">
-            <div style="text-align: center; margin-bottom: 1.5rem;">
-               <div style="font-size: 0.875rem; font-weight: 700; color: white; opacity: 0.9;">{{ tx.itemName }}</div>
-            </div>
-
-            <!-- Calculation Breakdown -->
-            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; border-bottom: 1px dashed var(--border); padding-bottom: 1.5rem;">
-               <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-                  <span style="color: var(--text-secondary);">Quantity</span>
-                  <span style="font-weight: 700; color: white;">{{ formatQty(tx.quantity) }} {{ tx.unitScale }}</span>
-               </div>
-               <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-                  <span style="color: var(--text-secondary);">Price/Unit</span>
-                  <span style="font-weight: 700; color: white;">{{ (tx.amountPerUnit || 0).toLocaleString('id-ID') }}</span>
-               </div>
-               <div v-if="tx.discount" style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-                  <span style="color: var(--success);">Discount (-)</span>
-                  <span style="font-weight: 700; color: var(--success);">-{{ (tx.discount || 0).toLocaleString('id-ID') }}</span>
-               </div>
-               <div v-if="tx.fee" style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-                  <span style="color: #ef4444;">Fee (+)</span>
-                  <span style="font-weight: 700; color: #ef4444;">+{{ (tx.fee || 0).toLocaleString('id-ID') }}</span>
-               </div>
-               <div v-if="tx.currency !== 'IDR' || tx.exchangeRate !== 1" style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.05); pt: 0.5rem;">
-                  <span style="color: var(--text-secondary);">Currency / Rate</span>
-                  <span style="font-weight: 700; color: white;">{{ tx.currency }} @ {{ tx.exchangeRate }}</span>
+         <div class="sheet-content">
+            <div class="hero-card">
+               <div class="item-name">{{ tx.itemName }}</div>
+               <div class="main-amount" :style="{ color: getTxColor(tx.type) }">
+                  <span class="currency">Rp</span>
+                  <span class="value">{{ formatCurrency(tx.total || (tx.amountPerUnit * tx.quantity)) }}</span>
                </div>
             </div>
 
-            <div style="text-align: center;">
-               <div style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.25rem;">TOTAL AUTHORIZATION</div>
-               <div style="font-size: 2.25rem; font-weight: 950; letter-spacing: -0.02em;" :style="{ color: getTxColor(tx.type) }">
-                  Rp {{ formatCurrency(tx.total || (tx.amountPerUnit * tx.quantity)) }}
+            <div class="details-section">
+               <div class="detail-row">
+                  <span class="label">Quantity</span>
+                  <span class="value">{{ formatQty(tx.quantity) }} {{ tx.unitScale }}</span>
+               </div>
+               <div class="detail-row">
+                  <span class="label">Price per Unit</span>
+                  <span class="value">{{ (tx.amountPerUnit || 0).toLocaleString('id-ID') }}</span>
+               </div>
+               <div v-if="tx.discount" class="detail-row success">
+                  <span class="label">Reward Offset (-)</span>
+                  <span class="value">-{{ (tx.discount || 0).toLocaleString('id-ID') }}</span>
+               </div>
+               <div v-if="tx.fee" class="detail-row danger">
+                  <span class="label">Logistics Fee (+)</span>
+                  <span class="value">+{{ (tx.fee || 0).toLocaleString('id-ID') }}</span>
+               </div>
+               <div v-if="tx.currency !== 'IDR' || tx.exchangeRate !== 1" class="detail-row outline">
+                  <span class="label">Exchange Info</span>
+                  <span class="value">{{ tx.currency }} @ {{ tx.exchangeRate }}</span>
                </div>
             </div>
-            
-            <div style="margin-top: 1.5rem; border-top: 1px dashed var(--border); padding-top: 1.5rem; text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-               <div>
-                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">CATEGORY</label>
-                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.category || 'Unclassified' }}</div>
+
+            <div class="info-grid">
+               <div class="info-item">
+                 <span class="label">Classification</span>
+                 <span class="value">{{ tx.category || 'Unclassified' }}</span>
                </div>
-               <div>
-                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">MERCHANT</label>
-                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.merchant || 'Unknown' }}</div>
+               <div class="info-item">
+                 <span class="label">Merchant</span>
+                 <span class="value">{{ tx.merchant || 'Unknown' }}</span>
                </div>
-               <div v-if="tx.type !== 'Income'">
-                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">SOURCE</label>
-                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.paymentSourceAccount || '-' }}</div>
+               <div v-if="tx.type !== 'Income'" class="info-item">
+                 <span class="label">Source Vault</span>
+                 <span class="value">{{ tx.paymentSourceAccount || '-' }}</span>
                </div>
-               <div v-if="tx.type !== 'Expense'">
-                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">BENEFICIARY</label>
-                 <div style="font-weight: 700; font-size: 0.8125rem;">{{ tx.beneficiaryAccount || '-' }}</div>
+               <div v-if="tx.type !== 'Expense'" class="info-item">
+                 <span class="label">Target Vault</span>
+                 <span class="value">{{ tx.beneficiaryAccount || '-' }}</span>
                </div>
-                <div style="grid-column: span 2;">
-                  <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">TEMPORAL COORDINATES</label>
-                  <div style="font-weight: 700; font-size: 0.8125rem;">{{ displayDate }} • {{ displayTime }}</div>
+               <div class="info-item full">
+                  <span class="label">Temporal Coordinates</span>
+                  <span class="value">{{ displayDate }} • {{ displayTime }}</span>
                </div>
-               <div v-if="tx.description" style="grid-column: span 2;">
-                 <label style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 0.4rem;">LOG ENTRY</label>
-                 <div style="font-weight: 500; font-size: 0.75rem; line-height: 1.5; color: var(--text-secondary);">{{ tx.description }}</div>
+               <div v-if="tx.description" class="info-item full description">
+                 <span class="label">Mission Log</span>
+                 <span class="value">{{ tx.description }}</span>
                </div>
+            </div>
+
+            <div class="action-grid mt-24">
+               <button @click="editTx" class="tonal-btn">
+                  <span class="material-symbols-rounded">edit</span>
+                  Modify
+               </button>
+               <button @click="duplicateTx" class="tonal-btn">
+                  <span class="material-symbols-rounded">content_copy</span>
+                  Duplicate
+               </button>
+               <button @click="mergeTx" class="tonal-btn">
+                  <span class="material-symbols-rounded">merge</span>
+                  Consolidate
+               </button>
+               <button @click="deleteTx" class="danger-btn-md3">
+                  <span class="material-symbols-rounded">delete</span>
+                  Decommission
+               </button>
             </div>
          </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-           <button @click="editTx" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-              <i data-lucide="edit-3" style="width: 14px;"></i> EDIT
-           </button>
-           <button @click="duplicateTx" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-              <i data-lucide="copy" style="width: 14px;"></i> DUPE
-           </button>
-           <button @click="mergeTx" style="padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); color: white; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-              <i data-lucide="combine" style="width: 14px;"></i> MERGE
-           </button>
-           <button @click="deleteTx" style="padding: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-              <i data-lucide="trash-2" style="width: 14px;"></i> DELETE
-           </button>
-        </div>
-        <button @click="$emit('close')" style="width: 100%; margin-top: 1rem; padding: 1rem; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer;">DISMISS</button>
     </div>
 
-    <!-- Merge Selection Panel -->
-    <div v-if="isMergePanelOpen" style="position: absolute; inset: 0; background: var(--bg-primary, #000); z-index: 3000; border-radius: 2rem; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border);">
-       <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 800; font-size: 1rem;">Consolidation Target</span>
-          <button @click="isMergePanelOpen = false" style="background: none; border: none; color: white; cursor: pointer;"><i data-lucide="x"></i></button>
-       </div>
-       <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.5;">Select the mission log that will absorb the financial payload from this entry.</p>
-       
-       <div style="position: relative;">
-          <i data-lucide="search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 14px; color: var(--text-secondary);"></i>
-          <input type="text" v-model="mergeTargetSearch" placeholder="Search logs..." style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem 0.8rem 2.5rem; color: white; font-size: 0.8rem; outline: none;">
-       </div>
-
-       <div style="display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; flex: 1;">
-          <div v-for="t in filteredMergeTargets" :key="t.transactionID" @click="performMerge(t)" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 0.8rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: 0.2s;">
-             <div style="background: rgba(139, 92, 246, 0.1); color: var(--accent); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="history" style="width: 14px;"></i>
-             </div>
-             <div>
-                <div style="font-weight: 700; font-size: 0.85rem;">{{ t.itemName }}</div>
-                <div style="font-size: 0.6rem; opacity: 0.5;">{{ t.date }} • Rp {{ (t.total || 0).toLocaleString('id-ID') }}</div>
-             </div>
+    <!-- Merge Panel (Nested Sheet) -->
+    <div v-if="isMergePanelOpen" class="merge-sheet-overlay">
+       <div class="bottom-sheet merge-panel">
+          <div class="sheet-drag-handle"></div>
+          <div class="sheet-header">
+             <h3 class="sheet-title">Consolidation Archive</h3>
+             <button @click="isMergePanelOpen = false" class="icon-btn">
+               <span class="material-symbols-rounded">close</span>
+             </button>
           </div>
-          <div v-if="filteredMergeTargets.length === 0" style="text-align: center; padding: 2rem; opacity: 0.4; font-size: 0.75rem;">No valid logs found in range.</div>
+          <p class="sheet-desc">Select logs to absorb this financial payload.</p>
+          
+          <div class="search-box">
+             <span class="material-symbols-rounded">search</span>
+             <input type="text" v-model="mergeTargetSearch" placeholder="Search mission archives...">
+          </div>
+
+          <div class="target-list">
+             <div v-for="t in filteredMergeTargets" :key="t.transactionID" @click="performMerge(t)" class="target-item">
+                <div class="target-icon">
+                   <span class="material-symbols-rounded">history</span>
+                </div>
+                <div class="target-info">
+                   <span class="target-name">{{ t.itemName }}</span>
+                   <span class="target-meta">{{ t.date }} • Rp {{ (t.total || 0).toLocaleString('id-ID') }}</span>
+                </div>
+                <span class="material-symbols-rounded">chevron_right</span>
+             </div>
+             <div v-if="filteredMergeTargets.length === 0" class="empty-state">No compatible archives found.</div>
+          </div>
+          <button @click="isMergePanelOpen = false" class="outline-btn-md3">Abort Protocol</button>
        </div>
-       <button @click="isMergePanelOpen = false" style="width: 100%; padding: 0.8rem; background: transparent; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; cursor: pointer;">Cancel Mission</button>
     </div>
   </div>
 </Teleport>
@@ -163,17 +171,12 @@ const filteredMergeTargets = computed(() => {
     ).slice(0, 10)
 })
 
-const mergeTx = () => {
-  isMergePanelOpen.value = true
-  nextTick(() => { if (window.lucide) window.lucide.createIcons() })
-}
+const mergeTx = () => { isMergePanelOpen.value = true }
 
 const performMerge = (target) => {
-  if (!confirm(`Relocate financial payload from this log to "${target.itemName}" (${target.date})? This will delete the current log.`)) return
+  if (!confirm(`Relocate financial payload from this log to "${target.itemName}"?`)) return
   
   const updatedTarget = { ...target }
-  // Logic: either add total or just decommission source.
-  // For simplicity, we add the totals if currencies match.
   if (target.currency === props.tx.currency) {
     updatedTarget.total = (Number(updatedTarget.total) || 0) + (Number(props.tx.total) || 0)
     updatedTarget.quantity = (Number(updatedTarget.quantity) || 0) + (Number(props.tx.quantity) || 0)
@@ -195,8 +198,7 @@ const deleteTx = () => {
 
 const formatCurrency = (val) => {
   if (!val) return '0'
-  const s = String(val).replace(/[^0-9.-]+/g,"")
-  const num = Number(s)
+  const num = Number(String(val).replace(/[^0-9.-]+/g,""))
   return isNaN(num) ? '0' : num.toLocaleString('id-ID')
 }
 
@@ -204,7 +206,6 @@ const formatQty = (val) => {
   if (val === undefined || val === null) return '0'
   const num = Number(val)
   if (isNaN(num)) return val
-  // Gunakan presisi hingga 8 desimal agar akurat untuk bensin/investasi
   return parseFloat(num.toFixed(8)).toLocaleString('id-ID', { maximumFractionDigits: 8 })
 }
 
@@ -212,37 +213,101 @@ const displayDate = computed(() => {
   if (!props.tx.date) return 'Unknown Cycle'
   try {
     const d = new Date(props.tx.date)
-    if (isNaN(d.getTime())) return props.tx.date
-    return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+    return isNaN(d.getTime()) ? props.tx.date : d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
   } catch (e) { return props.tx.date }
 })
 
 const displayTime = computed(() => {
   if (!props.tx.time) return '--:--'
   const t = String(props.tx.time)
-  if (t.includes('1899-12-30')) {
-    const parts = t.split('T')
-    if (parts[1]) return parts[1].substring(0, 5)
-  }
-  return t
+  return t.includes('1899-12-30') ? t.split('T')[1]?.substring(0, 5) : t
 })
 
 const getTxColor = (type) => {
-  if (type === 'Income') return '#10b981'
-  if (type === 'Expense') return '#ef4444'
-  return '#3b82f6' // Transfer, Investment, Savings
+  if (type === 'Income') return 'var(--green)'
+  if (type === 'Expense') return 'var(--red)'
+  return 'var(--primary)'
 }
 
-onMounted(() => {
-  uiStore.registerModal('transaction-detail')
-  if (window.lucide) window.lucide.createIcons()
-})
-
-onUnmounted(() => {
-  uiStore.unregisterModal('transaction-detail')
-})
+onMounted(() => { uiStore.registerModal('transaction-detail') })
+onUnmounted(() => { uiStore.unregisterModal('transaction-detail') })
 </script>
 
 <style scoped>
-@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-backdrop-full {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.6);
+  z-index: 4000;
+  display: flex;
+  align-items: flex-end;
+  backdrop-filter: blur(8px);
+}
+
+.bottom-sheet {
+  width: 100%;
+  background-color: var(--bg-primary);
+  border-radius: 28px 28px 0 0;
+  padding: 8px 16px 32px 16px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
+
+.sheet-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.summary-icon-container { width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; }
+.header-info { flex: 1; display: flex; flex-direction: column; }
+.sheet-title { font-size: 22px; font-weight: 400; margin: 0; font-family: 'Outfit', sans-serif; }
+.tx-id { font-size: 10px; font-weight: 700; opacity: 0.5; letter-spacing: 1px; }
+
+.sheet-content { overflow-y: auto; flex: 1; }
+
+.hero-card { background: var(--surface-variant); padding: 24px; border-radius: 24px; text-align: center; margin-bottom: 24px; }
+.item-name { font-size: 16px; font-weight: 500; opacity: 0.8; margin-bottom: 8px; }
+.main-amount { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
+.currency { font-size: 20px; font-weight: 400; opacity: 0.7; }
+.value { font-size: 40px; font-weight: 700; }
+
+.details-section { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; border-bottom: 1px dashed var(--border); padding-bottom: 24px; }
+.detail-row { display: flex; justify-content: space-between; font-size: 14px; }
+.detail-row .label { color: var(--on-surface-variant); }
+.detail-row .value { font-weight: 600; }
+.detail-row.success .value { color: var(--green); }
+.detail-row.danger .value { color: var(--red); }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.info-item { display: flex; flex-direction: column; gap: 4px; }
+.info-item.full { grid-column: span 2; }
+.info-item .label { font-size: 11px; font-weight: 600; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 1px; }
+.info-item .value { font-size: 14px; font-weight: 500; }
+.info-item.description .value { line-height: 1.5; opacity: 0.8; }
+
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* MD3 BUTTONS */
+.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 20px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.danger-btn-md3 { background: rgba(242, 184, 181, 0.1); border: 1px solid var(--red); color: var(--red); border-radius: 20px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.outline-btn-md3 { background: transparent; border: 1px solid var(--outline); color: var(--primary); border-radius: 28px; padding: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 16px; }
+
+.icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+/* MERGE PANEL */
+.merge-sheet-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); border-radius: 28px 28px 0 0; z-index: 4500; display: flex; align-items: flex-end; }
+.merge-panel { background: var(--bg-secondary); border-top: 1px solid var(--border); }
+.sheet-desc { font-size: 14px; color: var(--on-surface-variant); margin-bottom: 16px; }
+.search-box { display: flex; align-items: center; gap: 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 16px; padding: 10px 16px; margin-bottom: 16px; }
+.search-box input { background: transparent; border: none; color: var(--on-surface); outline: none; flex: 1; }
+.target-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+.target-item { display: flex; align-items: center; gap: 16px; padding: 12px; border-radius: 16px; background: var(--bg-primary); cursor: pointer; }
+.target-icon { width: 40px; height: 40px; border-radius: 20px; background: var(--secondary-container); color: var(--on-secondary-container); display: flex; align-items: center; justify-content: center; }
+.target-name { font-size: 14px; font-weight: 600; display: block; }
+.target-meta { font-size: 11px; opacity: 0.6; }
+.empty-state { text-align: center; padding: 32px; opacity: 0.5; font-size: 14px; }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.mt-24 { margin-top: 24px; }
 </style>
