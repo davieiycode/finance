@@ -621,18 +621,11 @@ onBeforeUnmount(() => {
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .color-input-wrapper { display: flex; align-items: center; gap: 12px; background: var(--surface-variant); border-radius: 12px; padding: 8px 16px; }
-.color-input-wrapper input { width: 32px; height: 32px; border: none; background: none; }
-
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+.color-input-wrapper input { width: 32px; height: 32px; border: none; background: non/* MD3 BUTTONS SYSTEM IS GLOBAL */
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .full { grid-column: span 2; }
-
-/* MD3 BUTTONS */
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 20px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
-.tonal-btn.lg { border-radius: 28px; padding: 16px; justify-content: center; }
-.primary-btn { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 28px; padding: 16px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; justify-content: center; }
-.outline-btn { background: transparent; border: 1px solid var(--outline); color: var(--primary); border-radius: 28px; padding: 16px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; justify-content: center; }
-.danger-btn { background: rgba(242, 184, 181, 0.1); border: 1px solid var(--red); color: var(--red); border-radius: 28px; padding: 16px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; justify-content: center; }
-.text-btn { background: transparent; border: none; color: var(--primary); font-weight: 500; padding: 8px; cursor: pointer; }
+.secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; grid-column: span 2; }
+.mt-24 { margin-top: 24px; }ter; }
 
 .icon-btn { width: 40px; height: 40px; border-radius: 20px; border: none; background: transparent; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 

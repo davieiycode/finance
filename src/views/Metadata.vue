@@ -96,15 +96,15 @@
 
                    <div v-if="formData.description" class="description-card">
                       <span class="card-label">CATATAN</span>
-                      <p>{{ formData.description }}</p>
+                      <p class="desc-pre">{{ formData.description }}</p>
                    </div>
 
-                   <div class="action-grid">
-                      <button @click="modalMode = 'edit'" class="tonal-btn-lg">
+                   <div class="action-grid mt-24">
+                      <button @click="modalMode = 'edit'" class="tonal-btn">
                          <span class="material-symbols-rounded">edit</span>
                          UBAH DATA
                       </button>
-                      <button @click="isModalOpen = false" class="outline-btn-lg">
+                      <button @click="isModalOpen = false" class="tonal-btn">
                          TUTUP
                       </button>
                    </div>
@@ -126,14 +126,14 @@
                                   <span class="material-symbols-rounded">search</span>
                                   <input type="text" v-model="iconSearch" placeholder="Cari ikon...">
                                </div>
-                               <div class="icon-grid-scroll">
-                                  <button v-for="iconName in filteredIcons" :key="iconName" @click="formData.icon = iconName" 
-                                    class="icon-select-btn" :class="{ active: formData.icon === iconName }">
-                                     <span class="material-symbols-rounded">{{ iconName }}</span>
-                                  </button>
-                               </div>
-                            </div>
-                         </div>
+                                <div class="icon-grid-scroll">
+                                   <button v-for="iconName in filteredIcons" :key="iconName" @click="formData.icon = iconName" 
+                                     class="icon-select-btn" :class="{ active: formData.icon === iconName }" type="button">
+                                      <span class="material-symbols-rounded">{{ iconName }}</span>
+                                   </button>
+                                </div>
+                             </div>
+                          </div>
                          <div class="form-group"><label>Grup</label><input type="text" v-model="formData.categoryGroup" class="md-input"></div>
                          <div class="form-group">
                             <label>Jenis</label>
@@ -181,15 +181,15 @@
                       </div>
                    </div>
 
-                   <div class="edit-actions">
-                      <button @click="handleSave" class="filled-btn-lg">
-                         <span class="material-symbols-rounded">save</span>
+                   <div class="edit-actions mt-24">
+                      <button @click="handleSave" class="filled-btn" style="height: 52px; width: 100%; border-radius: 26px;">
+                         <span class="material-symbols-rounded">verified</span>
                          SIMPAN PERUBAHAN
                       </button>
                       <div v-if="isEditing" class="secondary-actions">
                          <button @click="handleDuplicate" class="tonal-btn">Duplikat</button>
                          <button @click="handleMerge" class="tonal-btn">Gabungkan</button>
-                         <button @click="handleDelete" class="error-btn">Hapus</button>
+                         <button @click="handleDelete" class="error-btn-md3">Hapus</button>
                       </div>
                    </div>
                 </div>
@@ -586,24 +586,38 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
 .edit-actions { display: flex; flex-direction: column; gap: 20px; }
 .secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
-/* Action Buttons Overrides */
-.tonal-btn-lg, .outline-btn-lg, .filled-btn-lg { height: 52px; width: 100%; font-size: 14px; }
-.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 40px; font-size: 12px; font-weight: 600; cursor: pointer; }
+/* SHARED BUTTONS ARE GLOBAL */
+.mt-24 { margin-top: 24px; }
+.briefing-card.tonal { background-color: rgba(168, 199, 250, 0.1); border: 1px solid rgba(168, 199, 250, 0.2); color: var(--primary); }
+.registry-item:hover { background-color: var(--surface-variant); border-color: var(--primary); }
+.icon-grid-scroll { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); 
+  gap: 12px; 
+  max-height: 240px; 
+  overflow-y: auto; 
+  padding: 12px; 
+}
+
 .icon-select-btn { 
-  aspect-ratio: 1/1; 
+  width: 48px;
+  height: 48px; 
   border-radius: 12px; 
   border: 1px solid var(--border); 
-  background: var(--surface-variant); 
+  background: var(--bg-primary); 
   color: var(--on-surface-variant); 
   display: flex; 
   align-items: center; 
   justify-content: center; 
   cursor: pointer; 
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
+
 .icon-select-btn .material-symbols-rounded { font-size: 24px; }
-.icon-select-btn:hover { background-color: var(--primary-container); color: var(--on-primary-container); }
-.icon-select-btn.active { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); transform: scale(1.1); z-index: 1; }
+.icon-select-btn:hover { background-color: var(--secondary-container); color: var(--on-secondary-container); }
+.icon-select-btn.active { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); transform: scale(1.1); }
+
+.desc-pre { white-space: pre-wrap; font-size: 14px; line-height: 1.6; opacity: 0.9; }
 
 .edit-actions { display: flex; flex-direction: column; gap: 20px; }
 .secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }

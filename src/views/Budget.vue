@@ -270,11 +270,9 @@ onBeforeUnmount(() => { uiStore.unregisterModal('budget') })
 .md-input { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; height: 48px; padding: 0 12px; color: var(--on-surface); font-size: 14px; outline: none; }
 .md-textarea { background-color: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px; color: var(--on-surface); font-size: 14px; outline: none; min-height: 80px; resize: vertical; }
 
-.modal-actions { display: flex; flex-direction: column; gap: 16px; }
+.modal-actions { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
 .secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 600; cursor: pointer; }
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); border: none; border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
-.error-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--error); border: 1px solid var(--error); border-radius: 12px; height: 48px; font-weight: 600; cursor: pointer; }
+/* Global MD3 Buttons are used */
 
 .search-box { display: flex; align-items: center; gap: 12px; padding: 0 16px; height: 56px; margin-bottom: 12px; }
 .search-box input { flex: 1; background: transparent; border: none; color: white; outline: none; }

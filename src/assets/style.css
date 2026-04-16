@@ -196,29 +196,41 @@ body::after {
 }
 
 /* SHARED MD3 BUTTONS SYSTEM */
-.tonal-btn, .filled-btn, .outline-btn, .text-btn { 
+.tonal-btn, .filled-btn, .outline-btn, .text-btn, .danger-btn,
+.tonal-btn-lg, .filled-btn-lg, .outline-btn-lg { 
   display: inline-flex; 
   align-items: center; 
   justify-content: center;
-  gap: 8px; 
-  padding: 8px 16px; 
-  border-radius: var(--btn-radius); 
+  gap: 10px; 
+  padding: 0 24px; 
+  height: 48px;
+  border-radius: 24px; 
   font-size: 14px; 
-  font-weight: 500; 
+  font-weight: 600; 
   cursor: pointer; 
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
   border: none;
   font-family: inherit;
   white-space: nowrap;
+  user-select: none;
 }
 
-.tonal-btn { background-color: var(--secondary-container); color: var(--on-secondary-container); }
-.filled-btn { background-color: var(--primary); color: var(--on-primary); }
-.outline-btn { background: transparent; border: 1px solid var(--outline); color: var(--primary); }
-.text-btn { background: transparent; color: var(--primary); padding: 8px 12px; }
+.filled-btn-lg, .tonal-btn-lg, .outline-btn-lg { height: 52px; width: 100%; border-radius: 26px; }
 
-.tonal-btn:active, .filled-btn:active, .outline-btn:active, .text-btn:active { transform: scale(0.96); opacity: 0.8; }
-.tonal-btn:hover, .filled-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.tonal-btn, .tonal-btn-lg { background-color: var(--secondary-container); color: var(--on-secondary-container); }
+.filled-btn, .filled-btn-lg { background-color: var(--primary); color: var(--on-primary); box-shadow: 0 4px 12px rgba(168, 199, 250, 0.2); }
+.outline-btn, .outline-btn-lg { background: transparent; border: 1px solid var(--outline); color: var(--primary); }
+.text-btn { background: transparent; color: var(--primary); padding: 0 12px; }
+.danger-btn { background-color: rgba(242, 184, 181, 0.1); color: var(--red); border: 1px solid rgba(242, 184, 181, 0.3); }
+
+.tonal-btn:active, .filled-btn:active, .outline-btn:active, .text-btn:active, .danger-btn:active,
+.tonal-btn-lg:active, .filled-btn-lg:active, .outline-btn-lg:active { transform: scale(0.95); opacity: 0.9; }
+.tonal-btn:hover, .tonal-btn-lg:hover { background-color: var(--surface-variant); }
+.filled-btn:hover, .filled-btn-lg:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(168, 199, 250, 0.3); }
+.outline-btn:hover, .outline-btn-lg:hover { background-color: rgba(168, 199, 250, 0.05); }
+.danger-btn:hover { background-color: rgba(242, 184, 181, 0.2); }
+
+
 
 /* SHARED FORM CONTROLS SYSTEM */
 .md-input, .md-select, .md-textarea {

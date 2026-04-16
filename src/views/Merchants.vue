@@ -117,12 +117,12 @@
                       </div>
                    </div>
 
-                   <div class="action-grid">
-                      <button @click="modalMode = 'edit'" class="tonal-btn-lg">
+                   <div class="action-grid mt-24">
+                      <button @click="modalMode = 'edit'" class="tonal-btn">
                          <span class="material-symbols-rounded">edit</span>
                          UBAH
                       </button>
-                      <button @click="isModalOpen = false" class="outline-btn-lg">TUTUP</button>
+                      <button @click="isModalOpen = false" class="tonal-btn">TUTUP</button>
                    </div>
                 </div>
 
@@ -145,15 +145,15 @@
                       <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                    </div>
 
-                   <div class="modal-actions">
-                      <button @click="saveMerchant" class="filled-btn-lg">
-                         <span class="material-symbols-rounded">save</span>
+                   <div class="modal-actions mt-24">
+                      <button @click="saveMerchant" class="filled-btn">
+                         <span class="material-symbols-rounded">verified</span>
                          SAVE VENDOR
                       </button>
                       <div v-if="editingMerchant.merchantID" class="secondary-actions">
                          <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
                          <button @click="handleMerge" class="tonal-btn">Merge</button>
-                         <button @click="deleteMerchant" class="error-btn">Purge</button>
+                         <button @click="deleteMerchant" class="danger-btn">Purge</button>
                       </div>
                    </div>
                 </div>
@@ -321,7 +321,9 @@ onBeforeUnmount(() => { uiStore.unregisterModal('merchants') })
 
 .modal-actions { display: flex; flex-direction: column; gap: 16px; }
 .secondary-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mt-24 { margin-top: 24px; }
+/* Global MD3 Buttons are used */
 
 .target-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
 .target-item { display: flex; align-items: center; gap: 12px; padding: 12px; cursor: pointer; }
