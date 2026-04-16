@@ -14,7 +14,7 @@
             </button>
             <button class="tonal-btn" @click="openModal(null)">
               <span class="material-symbols-rounded">add</span>
-              New
+              Baru
             </button>
           </div>
         </template>
@@ -22,7 +22,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari rekening..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -301,14 +301,14 @@ const accAnalysis = computed(() => {
   const allRelated = [...inTx, ...outTx].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 5)
 
   let insight = ''
-  if (outflow > inflow * 2 && inflow > 0) insight = 'Critical alert: Outflow exceeds inflow by 100%. Protocol recalibration recommended.'
-  else if (inflow > outflow && outflow > 0) insight = 'Optimal resonance: Inflow is outpacing consumption. Core strength increasing.'
+  if (outflow > inflow * 2 && inflow > 0) insight = 'Peringatan kritis: Pengeluaran melebihi pemasukan sebesar 100%. Disarankan penyesuaian anggaran.'
+  else if (inflow > outflow && outflow > 0) insight = 'Kondisi optimal: Pemasukan lebih besar dari pengeluaran. Saldo terus bertumbuh.'
   else if (allRelated.length > 3) {
       const topCat = allRelated.reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + 1; return acc }, {})
       const favorite = Object.keys(topCat).reduce((a, b) => topCat[a] > topCat[b] ? a : b)
-      insight = `Frequent mission vector identified: "${favorite}". Monitor consumption patterns.`
+      insight = `Kategori pengeluaran tersering: "${favorite}". Monitor pola belanja Anda.`
   } else {
-      insight = 'Insufficient mission local logs to generate predictive intelligence.'
+      insight = 'Data transaksi belum cukup untuk menghasilkan ringkasan informasi.'
   }
 
   return { inflow, outflow, net: inflow - outflow, recentTransactions: allRelated, insight }

@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Vendors</h1>
+          <h1>Vendor & Toko</h1>
           <button class="icon-btn" @click="showSearch = true">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -16,7 +16,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari toko..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -32,7 +32,7 @@
           </div>
           <div class="merchant-info">
             <span class="merchant-name">{{ m.merchantName }}</span>
-            <span class="merchant-meta">{{ m.category || 'General' }} • {{ m.address || 'No location' }}</span>
+            <span class="merchant-meta">{{ m.category || 'Umum' }} • {{ m.address || 'Tanpa lokasi' }}</span>
           </div>
           <span class="status-chip">{{ m.status }}</span>
         </div>
@@ -55,7 +55,7 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">Vendor Intelligence</h3>
+                <h3 class="sheet-title">Informasi Vendor</h3>
                 <button @click="isModalOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
@@ -77,11 +77,11 @@
 
                    <div class="analytics-grid">
                       <div class="stat-card card-md3 tonal">
-                         <span class="stat-label">TOTAL SPEND</span>
+                         <span class="stat-label">TOTAL BELANJA</span>
                          <span class="stat-value error">Rp {{ (merchantAnalysis.totalSpend || 0).toLocaleString('id-ID') }}</span>
                       </div>
                       <div class="stat-card card-md3">
-                         <span class="stat-label">LOGS DETECTED</span>
+                         <span class="stat-label">JUMLAH TRANSAKSI</span>
                          <span class="stat-value">{{ merchantAnalysis.txCount }}</span>
                       </div>
                    </div>
@@ -117,29 +117,29 @@
                    <div class="action-grid">
                       <button @click="modalMode = 'edit'" class="tonal-btn-lg">
                          <span class="material-symbols-rounded">edit</span>
-                         MODIFY
+                         UBAH
                       </button>
-                      <button @click="isModalOpen = false" class="outline-btn-lg">CLOSE</button>
+                      <button @click="isModalOpen = false" class="outline-btn-lg">TUTUP</button>
                    </div>
                 </div>
 
                 <!-- MODE: EDIT -->
                 <div v-else class="edit-view">
                    <div class="form-grid">
-                      <div class="form-group full"><label>Vendor Name</label><input type="text" v-model="formData.merchantName" class="md-input"></div>
-                      <div class="form-group"><label>Category</label><input type="text" v-model="formData.category" class="md-input"></div>
+                      <div class="form-group full"><label>Nama Toko/Vendor</label><input type="text" v-model="formData.merchantName" class="md-input"></div>
+                      <div class="form-group"><label>Kategori</label><input type="text" v-model="formData.category" class="md-input"></div>
                       <div class="form-group">
                          <label>Status</label>
                          <select v-model="formData.status" class="md-input">
                             <option>Active</option><option>Inactive</option>
                          </select>
                       </div>
-                      <div class="form-group"><label>Phone</label><input type="text" v-model="formData.phone" class="md-input"></div>
+                      <div class="form-group"><label>Telepon</label><input type="text" v-model="formData.phone" class="md-input"></div>
                       <div class="form-group"><label>Email</label><input type="email" v-model="formData.email" class="md-input"></div>
-                      <div class="form-group full"><label>Address</label><textarea v-model="formData.address" class="md-textarea"></textarea></div>
-                      <div class="form-group full"><label>Website</label><input type="text" v-model="formData.website" class="md-input"></div>
-                      <div class="form-group full"><label>Logo URL</label><input type="text" v-model="formData.merchantImage" class="md-input"></div>
-                      <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                      <div class="form-group full"><label>Alamat</label><textarea v-model="formData.address" class="md-textarea"></textarea></div>
+                      <div class="form-group full"><label>Situs Web</label><input type="text" v-model="formData.website" class="md-input"></div>
+                      <div class="form-group full"><label>URL Logo</label><input type="text" v-model="formData.merchantImage" class="md-input"></div>
+                      <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                    </div>
 
                    <div class="modal-actions">

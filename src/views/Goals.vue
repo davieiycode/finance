@@ -159,7 +159,7 @@ const saveGoal = () => {
   isModalOpen.value = false
 }
 
-const deleteGoal = () => { if (confirm('Purge this mission?')) { store.deleteGoal(editingGoal.value.goalID); isModalOpen.value = false } }
+const deleteGoal = () => { if (confirm('Hapus target ini secara permanen?')) { store.deleteGoal(editingGoal.value.goalID); isModalOpen.value = false } }
 const handleDuplicate = () => { const data = { ...formData.value }; delete data.goalID; editingGoal.value = {}; formData.value = data }
 
 const calculateProgress = (g) => g.targetAmount ? Math.min(Math.round(((g.currentAmount || 0) / g.targetAmount) * 100), 100) : 0

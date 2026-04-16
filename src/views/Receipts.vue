@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Evidence</h1>
+          <h1>Bukti Transaksi</h1>
           <button class="icon-btn" @click="showSearch = true">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -193,14 +193,14 @@ const linkTransaction = (id) => {
 }
 
 const saveReceipt = () => {
-  if (!formData.value.merchant) return alert('Merchant required')
+  if (!formData.value.merchant) return alert('Penerbit/Merchant wajib diisi')
   if (editingReceipt.value.receiptID) store.updateReceipt({ ...formData.value })
   else store.addReceipt({ ...formData.value })
   isModalOpen.value = false
 }
 
 const deleteReceipt = () => { 
-  if (confirm('Permanently purge this record?')) { 
+  if (confirm('Hapus bukti ini secara permanen?')) { 
     store.deleteReceipt(editingReceipt.value.receiptID)
     isModalOpen.value = false 
   } 

@@ -305,19 +305,19 @@ const savePrefs = () => {
 }
 
 const pullData = async () => {
-  if (!cloudUrl.value) return alert('No uplink coordinates.')
+  if (!cloudUrl.value) return alert('URL Cloud belum diatur.')
   syncing.value = true
   const success = await store.pullFromCloud(syncMode.value)
   syncing.value = false
-  if (success) alert('Sync Complete.')
+  if (success) alert('Sinkronisasi selesai.')
 }
 
 const pushData = async () => {
-  if (!cloudUrl.value) return alert('No uplink coordinates.')
+  if (!cloudUrl.value) return alert('URL Cloud belum diatur.')
   syncing.value = true
   const success = await store.pushToCloud()
   syncing.value = false
-  if (success) alert('Logs successfully uploaded.')
+  if (success) alert('Data berhasil dikirim ke Cloud.')
 }
 
 const clearData = () => {

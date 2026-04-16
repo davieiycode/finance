@@ -16,7 +16,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari aset..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -88,7 +88,7 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">{{ editingItem.itemID ? (modalMode === 'analysis' ? 'Item Intelligence' : 'Modify Item' ) : 'New Item' }}</h3>
+                <h3 class="sheet-title">{{ editingItem.itemID ? (modalMode === 'analysis' ? 'Informasi Barang' : 'Ubah Barang' ) : 'Tambah Barang' }}</h3>
                 <button @click="isModalOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
@@ -110,11 +110,11 @@
 
                    <div class="analytics-grid">
                       <div class="stat-card card-md3 tonal">
-                         <span class="stat-label">LIVE PRICE</span>
+                         <span class="stat-label">HARGA TERAKHIR</span>
                          <span class="stat-value info">Rp {{ (itemAnalysis.lastPrice || 0).toLocaleString('id-ID') }}</span>
                       </div>
                       <div class="stat-card card-md3">
-                         <span class="stat-label">TOTAL OUTFLOW</span>
+                         <span class="stat-label">TOTAL PENGELUARAN</span>
                          <span class="stat-value error">Rp {{ (itemAnalysis.totalSpend || 0).toLocaleString('id-ID') }}</span>
                       </div>
 
@@ -128,11 +128,11 @@
                       </div>
 
                       <div class="stat-card card-md3">
-                         <span class="stat-label">HARVESTED</span>
+                         <span class="stat-label">JUMLAH BELI</span>
                          <span class="stat-value">{{ itemAnalysis.totalQty }} {{ editingItem.unitScale }}</span>
                       </div>
                       <div class="stat-card card-md3">
-                         <span class="stat-label">AVG COST</span>
+                         <span class="stat-label">BIAYA RATA-RATA</span>
                          <span class="stat-value">Rp {{ Math.round(itemAnalysis.avgPrice).toLocaleString('id-ID') }}</span>
                       </div>
                    </div>
@@ -145,7 +145,7 @@
                    <div class="action-grid">
                       <button @click="modalMode = 'edit'" class="tonal-btn-lg">
                          <span class="material-symbols-rounded">edit</span>
-                         MODIFY
+                         UBAH
                       </button>
                       <button @click="isModalOpen = false" class="outline-btn-lg">CLOSE</button>
                    </div>
@@ -154,34 +154,34 @@
                 <!-- MODE: EDIT -->
                 <div v-else class="edit-view">
                    <div class="form-grid">
-                      <div class="form-group full"><label>Item Name</label><input type="text" v-model="formData.itemName" class="md-input"></div>
+                      <div class="form-group full"><label>Nama Barang</label><input type="text" v-model="formData.itemName" class="md-input"></div>
                       <div class="form-group">
-                         <label>Category</label>
+                         <label>Kategori</label>
                          <select v-model="formData.itemCategory" class="md-input">
                             <option v-for="c in store.categories" :key="c.categoryID" :value="c.category">{{ c.category }}</option>
                          </select>
                       </div>
                       <div class="form-group">
-                         <label>Unit</label>
+                         <label>Satuan</label>
                          <select v-model="formData.unitScale" class="md-input">
                             <option v-for="u in store.unitScales" :key="u.unitScale" :value="u.unitScale">{{ u.unitScale }}</option>
                          </select>
                       </div>
-                      <div class="form-group"><label>Value</label><input type="number" v-model.number="formData.amountPerUnit" class="md-input"></div>
-                      <div class="form-group"><label>Currency</label><input type="text" v-model="formData.currency" class="md-input"></div>
+                      <div class="form-group"><label>Harga</label><input type="number" v-model.number="formData.amountPerUnit" class="md-input"></div>
+                      <div class="form-group"><label>Mata Uang</label><input type="text" v-model="formData.currency" class="md-input"></div>
                       <div class="form-group full">
-                         <label>SKU Artifact</label>
+                         <label>Kode SKU</label>
                          <div class="input-with-action">
-                            <input type="text" v-model="formData.SKU" class="md-input" placeholder="Type or scan...">
+                            <input type="text" v-model="formData.SKU" class="md-input" placeholder="Ketik atau pindai...">
                             <button @click="startScanner" class="action-btn-sm">
                                <span class="material-symbols-rounded">scan</span>
                             </button>
                          </div>
                       </div>
-                      <div class="form-group"><label>Manufacturer</label><input type="text" v-model="formData.manufacturer" class="md-input"></div>
+                      <div class="form-group"><label>Produsen</label><input type="text" v-model="formData.manufacturer" class="md-input"></div>
                       <div class="form-group"><label>Model</label><input type="text" v-model="formData.model" class="md-input"></div>
-                      <div class="form-group full"><label>Logo URL</label><input type="text" v-model="formData.itemImage" class="md-input"></div>
-                      <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                      <div class="form-group full"><label>URL Logo</label><input type="text" v-model="formData.itemImage" class="md-input"></div>
+                      <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                    </div>
 
                    <div class="modal-actions">
@@ -190,9 +190,9 @@
                          SAVE ITEM
                       </button>
                       <div v-if="editingItem.itemID" class="secondary-actions">
-                         <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
-                         <button @click="handleMerge" class="tonal-btn">Merge</button>
-                         <button @click="deleteItem" class="error-btn">Purge</button>
+                         <button @click="handleDuplicate" class="tonal-btn">Duplikat</button>
+                         <button @click="handleMerge" class="tonal-btn">Gabung</button>
+                         <button @click="deleteItem" class="error-btn">Hapus</button>
                       </div>
                    </div>
                 </div>
@@ -255,14 +255,14 @@ let html5QrCode = null
 const itemAnalysis = computed(() => {
   if (!editingItem.value.itemID) return { totalSpend: 0, totalQty: 0, avgPrice: 0, lastPrice: 0, bestPrice: 0, bestMerchant: '', bestDate: '', insight: '' }
   const txs = store.transactions.filter(t => t.itemName === editingItem.value.itemName && t.type === 'Expense')
-  if (txs.length === 0) return { totalSpend: 0, totalQty: 0, avgPrice: 0, lastPrice: 0, bestPrice: 0, bestMerchant: '', bestDate: '', insight: 'No mission data recorded.' }
+  if (txs.length === 0) return { totalSpend: 0, totalQty: 0, avgPrice: 0, lastPrice: 0, bestPrice: 0, bestMerchant: '', bestDate: '', insight: 'Belum ada data transaksi tercatat.' }
   const sortedTxs = [...txs].sort((a,b) => b.date.localeCompare(a.date))
   const lastPrice = sortedTxs[0].amountPerUnit || 0
   const totalSpend = txs.reduce((sum, t) => sum + (Number(t.total) || 0), 0)
   const totalQty = txs.reduce((sum, t) => sum + (Number(t.quantity) || 0), 0)
   const avgPrice = totalQty > 0 ? totalSpend / totalQty : 0
   const best = txs.reduce((min, t) => (t.amountPerUnit < min.amountPerUnit) ? t : min, txs[0])
-  return { totalSpend, totalQty, avgPrice, lastPrice, bestPrice: best.amountPerUnit, bestMerchant: best.merchant, bestDate: best.date, insight: lastPrice > avgPrice * 1.1 ? 'Market surge detected.' : 'Stable asset value.' }
+  return { totalSpend, totalQty, avgPrice, lastPrice, bestPrice: best.amountPerUnit, bestMerchant: best.merchant, bestDate: best.date, insight: lastPrice > avgPrice * 1.1 ? 'Terdeteksi lonjakan harga pasar.' : 'Nilai aset stabil.' }
 })
 
 const uniqueCategories = computed(() => [...new Set(store.items.map(i => i.itemCategory).filter(Boolean))].sort())
@@ -287,17 +287,17 @@ const openModal = (item) => {
 }
 
 const saveItem = () => {
-  if (!formData.value.itemName) return alert('Name required')
+  if (!formData.value.itemName) return alert('Nama wajib diisi')
   if (editingItem.value.itemID) store.updateItem({ ...formData.value })
   else store.addItem({ ...formData.value })
   isModalOpen.value = false
 }
 
-const deleteItem = () => { if (confirm('Purge this record?')) { store.deleteItem(editingItem.value.itemID); isModalOpen.value = false } }
+const deleteItem = () => { if (confirm('Hapus catatan ini secara permanen?')) { store.deleteItem(editingItem.value.itemID); isModalOpen.value = false } }
 const handleDuplicate = () => { const data = { ...formData.value }; delete data.itemID; editingItem.value = {}; formData.value = data }
 const handleMerge = () => isMergePanelOpen.value = true
 const performMerge = (target) => {
-  if (confirm(`Consolidate logs from "${editingItem.value.itemName}" to "${target.itemName}"?`)) {
+  if (confirm(`Gabungkan riwayat transaksi dari "${editingItem.value.itemName}" ke "${target.itemName}"?`)) {
     store.mergeEntities('items', editingItem.value.itemName, target.itemName)
     isMergePanelOpen.value = false; isModalOpen.value = false
   }

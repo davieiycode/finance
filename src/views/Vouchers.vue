@@ -7,7 +7,7 @@
           <button class="icon-btn" @click="$router.push('/')">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <h1>Assets</h1>
+          <h1>Kupon & Aset</h1>
           <button class="icon-btn" @click="showSearch = true">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -16,7 +16,7 @@
           <button class="icon-btn" @click="showSearch = false; searchQuery = ''">
             <span class="material-symbols-rounded">arrow_back</span>
           </button>
-          <input type="text" v-model="searchQuery" placeholder="Search archive..." autofocus class="search-input-field">
+          <input type="text" v-model="searchQuery" placeholder="Cari aset..." autofocus class="search-input-field">
           <button v-if="searchQuery" class="icon-btn" @click="searchQuery = ''">
             <span class="material-symbols-rounded">close</span>
           </button>
@@ -36,8 +36,8 @@
            </div>
            <div class="voucher-footer">
               <div class="expiry-box">
-                 <span class="footer-label">EXPIRY</span>
-                 <span class="footer-value">{{ v.expiryDate || 'N/A' }}</span>
+                 <span class="footer-label">KADALUWARSA</span>
+                 <span class="footer-value">{{ v.expiryDate || 'Tidak Ada' }}</span>
               </div>
               <div class="code-box">
                  {{ v.voucherCode }}
@@ -63,7 +63,7 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">{{ editingVoucher.voucherID ? (modalMode === 'analysis' ? 'Assest Intelligence' : 'Modify Asset') : 'New Asset' }}</h3>
+                <h3 class="sheet-title">{{ editingVoucher.voucherID ? (modalMode === 'analysis' ? 'Informasi Aset' : 'Ubah Aset') : 'Aset Baru' }}</h3>
                 <button @click="isModalOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
@@ -99,10 +99,10 @@
                    <div class="action-grid">
                       <button @click="modalMode = 'edit'" class="tonal-btn-lg">
                          <span class="material-symbols-rounded">edit</span>
-                         MODIFY
+                         UBAH
                       </button>
                       <button @click="isModalOpen = false" class="outline-btn-lg">
-                         CLOSE
+                         TUTUP
                       </button>
                    </div>
                 </div>
@@ -110,18 +110,18 @@
                 <!-- MODE: EDIT -->
                 <div v-else class="edit-view">
                    <div class="form-grid">
-                      <div class="form-group full"><label>Voucher Name</label><input type="text" v-model="formData.voucherName" class="md-input"></div>
-                      <div class="form-group full"><label>Provider / Store</label><input type="text" v-model="formData.provider" class="md-input"></div>
-                      <div class="form-group full"><label>Serial Code</label><input type="text" v-model="formData.voucherCode" class="md-input"></div>
+                      <div class="form-group full"><label>Nama Voucher/Aset</label><input type="text" v-model="formData.voucherName" class="md-input"></div>
+                      <div class="form-group full"><label>Penerbit / Toko</label><input type="text" v-model="formData.provider" class="md-input"></div>
+                      <div class="form-group full"><label>Kode Serial</label><input type="text" v-model="formData.voucherCode" class="md-input"></div>
                       <div class="form-group">
-                         <label>Discount Type</label>
+                         <label>Tipe Diskon</label>
                          <select v-model="formData.discountType" class="md-input">
                             <option>Percent</option><option>Nominal</option>
                          </select>
                       </div>
-                      <div class="form-group"><label>Value</label><input type="number" v-model.number="formData.discountValue" class="md-input"></div>
-                      <div class="form-group"><label>Max Potency</label><input type="number" v-model.number="formData.balance" class="md-input"></div>
-                      <div class="form-group"><label>Expiry Date</label><input type="date" v-model="formData.expiryDate" class="md-input"></div>
+                      <div class="form-group"><label>Nilai</label><input type="number" v-model.number="formData.discountValue" class="md-input"></div>
+                      <div class="form-group"><label>Saldo Maksimal</label><input type="number" v-model.number="formData.balance" class="md-input"></div>
+                      <div class="form-group"><label>Tanggal Kadaluwarsa</label><input type="date" v-model="formData.expiryDate" class="md-input"></div>
                       <div class="form-group">
                          <label>Status</label>
                          <select v-model="formData.status" class="md-input">
@@ -130,15 +130,15 @@
                       </div>
                       <div class="form-group checkbox-group">
                          <input type="checkbox" v-model="formData.isSingleUse" id="chkSingle">
-                         <label for="chkSingle">Single Use Only</label>
+                         <label for="chkSingle">Sekali Pakai</label>
                       </div>
-                      <div class="form-group full"><label>Notes</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
+                      <div class="form-group full"><label>Catatan</label><textarea v-model="formData.notes" class="md-textarea"></textarea></div>
                    </div>
 
                    <div class="modal-actions">
                       <button @click="saveVou" class="filled-btn-lg">
                          <span class="material-symbols-rounded">save</span>
-                         SAVE ASSET
+                         SIMPAN ASET
                       </button>
                       <div v-if="editingVoucher.voucherID" class="secondary-actions">
                          <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>

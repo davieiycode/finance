@@ -148,10 +148,10 @@ export const useFinanceStore = defineStore('finance', {
       if (vIdx !== -1) {
         const v = this.vouchers[vIdx]
         if (v.isSingleUse) {
-           v.status = 'Used'
+           v.status = 'Terpakai'
         } else if (v.balance > 0) {
            v.balance -= (tx.discount || 0)
-           if (v.balance <= 0) { v.balance = 0; v.status = 'Exhausted' }
+           if (v.balance <= 0) { v.balance = 0; v.status = 'Habis' }
         }
         this.saveAll()
       }
