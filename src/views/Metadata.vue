@@ -119,12 +119,21 @@
                             <label>Nama Kategori</label>
                             <input type="text" v-model="formData.category" class="md-input">
                          </div>
+                         <div class="form-group">
+                            <label>Nama Ikon (Material Rounded)</label>
+                            <div class="icon-input-wrapper card-md3">
+                               <input type="text" v-model="formData.icon" class="icon-name-input" placeholder="Contoh: shopping_cart">
+                               <div class="icon-preview-box">
+                                  <span class="material-symbols-rounded">{{ formData.icon || 'sell' }}</span>
+                               </div>
+                            </div>
+                         </div>
                          <div class="form-group full">
-                            <label>Pilih Ikon</label>
+                            <label>Pilih Cepat</label>
                             <div class="icon-picker card-md3">
                                <div class="icon-search-box">
                                   <span class="material-symbols-rounded">search</span>
-                                  <input type="text" v-model="iconSearch" placeholder="Cari ikon...">
+                                  <input type="text" v-model="iconSearch" placeholder="Cari di koleksi...">
                                </div>
                                 <div class="icon-grid-scroll">
                                    <button v-for="iconName in filteredIcons" :key="iconName" @click="formData.icon = iconName" 
@@ -616,6 +625,43 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
 .icon-select-btn .material-symbols-rounded { font-size: 24px; }
 .icon-select-btn:hover { background-color: var(--secondary-container); color: var(--on-secondary-container); }
 .icon-select-btn.active { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); transform: scale(1.1); }
+
+.icon-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 12px;
+  background-color: var(--surface-variant);
+  border-radius: 12px;
+  border: 1px solid var(--outline-variant);
+  height: 52px;
+}
+
+.icon-name-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--on-surface);
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.icon-preview-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.icon-preview-box .material-symbols-rounded {
+  font-size: 20px;
+}
 
 .desc-pre { white-space: pre-wrap; font-size: 14px; line-height: 1.6; opacity: 0.9; }
 

@@ -289,22 +289,25 @@ export const useFinanceStore = defineStore('finance', {
                   let t = r.time ? String(r.time) : ''
                   let dStr = (r.dateTime || r.date) ? String(r.dateTime || r.date) : ''
 
-                  // Robust Date & Time extraction to prevent timezone shifts (UTC vs Local)
+                  // Robust extraction using regex to avoid timezone shifts
                   if (dStr) {
-                    const d = new Date(dStr)
-                    if (!isNaN(d.getTime())) {
-                       // Only extract time from dStr if we don't have a separate time column
-                       if (!t || t === 'undefined' || t === '00:00') {
-                          // Use local hours/mins regardless of Z suffix in source
-                          t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
+                    // Try to match YYYY-MM-DD and HH:mm from strings like "2024-04-19 13:00" or "2024-04-19T13:00Z"
+                    const isoMatch = dStr.match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}))?/)
+                    if (isoMatch) {
+                      r.date = isoMatch[1]
+                      if (!t || t === 'undefined' || t === '00:00') {
+                        t = isoMatch[2] || '00:00'
+                      }
+                    } else {
+                       const d = new Date(dStr)
+                       if (!isNaN(d.getTime())) {
+                          if (!t || t === 'undefined' || t === '00:00') {
+                             t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
+                          }
+                          r.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
                        }
-                       // For the date part, use local components to avoid day-shifting
-                       r.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
                     }
                   }
-
-                  // Fallback: If r.date is still missing or wasn't a valid date
-                  if (!r.date && dStr) r.date = formatDate(dStr)
 
                   // Final Time Sanitization
                   if (t.includes('T')) {
@@ -394,7 +397,7 @@ export const useFinanceStore = defineStore('finance', {
         transaction: this.transactions.map(t => ({
           ...t,
           // Merge date and time for spreadsheet compatibility (key matches column name 'dateTime')
-          dateTime: `${t.date} ${t.time || '00:00'}:00`
+          dateTime: `${t.date}T${t.time || '00:00'}:00`
         })),
         account: this.accounts,
         merchant: this.merchants,

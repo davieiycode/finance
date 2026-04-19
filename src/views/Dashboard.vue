@@ -142,9 +142,17 @@ const toggleSearch = () => {
 
 const formatDate = (dateStr) => {
   if (!dateStr) return 'T/A'
+  
+  // Robust parsing for YYYY-MM-DD to avoid timezone shifts
+  const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/)
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+  
+  if (match) {
+     return `${match[3]} ${months[parseInt(match[2]) - 1]} ${match[1]}`
+  }
+
   const d = new Date(dateStr)
   if (isNaN(d.getTime())) return dateStr
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
   return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]} ${d.getFullYear()}`
 }
 
