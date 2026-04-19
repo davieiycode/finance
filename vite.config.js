@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: 'Jurney',
         description: 'Personal Finance Tracking',
         theme_color: '#000000',
-        background_color: '#000000',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/finance/',
