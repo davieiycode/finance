@@ -289,26 +289,29 @@ export const useFinanceStore = defineStore('finance', {
                   let t = r.time ? String(r.time) : ''
                   let dStr = (r.dateTime || r.date) ? String(r.dateTime || r.date) : ''
 
-                  // Robust extraction using regex to avoid timezone shifts
-                  if (dStr) {
-                    // Try to match YYYY-MM-DD and HH:mm from strings like "2024-04-19 13:00" or "2024-04-19T13:00Z"
+                  // Robust extraction: Detect if the incoming string is UTC/ISO or naive local 
+                  // If it has 'Z' or a timezone offset, we MUST parse it via Date() to get local time
+                  const isIso = dStr.includes('Z') || /[+-]\d{2}(:?\d{2})?$/.test(dStr)
+
+                  if (isIso) {
+                    const d = new Date(dStr)
+                    if (!isNaN(d.getTime())) {
+                      r.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+                      if (!t || t === 'undefined' || t === '00:00') {
+                         t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
+                      }
+                    }
+                  } else {
+                    // Fallback to naive regex for local strings (like our own legacy format)
                     const isoMatch = dStr.match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}))?/)
                     if (isoMatch) {
                       r.date = isoMatch[1]
                       if (!t || t === 'undefined' || t === '00:00') {
                         t = isoMatch[2] || '00:00'
                       }
-                    } else {
-                       const d = new Date(dStr)
-                       if (!isNaN(d.getTime())) {
-                          if (!t || t === 'undefined' || t === '00:00') {
-                             t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
-                          }
-                          r.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
-                       }
                     }
                   }
-
+                  
                   // Final Time Sanitization
                   if (t.includes('T')) {
                     t = t.split('T')[1].substring(0, 5)
@@ -394,11 +397,21 @@ export const useFinanceStore = defineStore('finance', {
       } catch (e) { console.error('Settings parse failed', e) }
 
       const payload = {
-        transaction: this.transactions.map(t => ({
-          ...t,
-          // Merge date and time for spreadsheet compatibility (key matches column name 'dateTime')
-          dateTime: `${t.date}T${t.time || '00:00'}:00`
-        })),
+        transaction: this.transactions.map(t => {
+          // Robustly combine date and time into a Date object to get an unambiguous ISO string
+          let isoDateTime = ''
+          try {
+             const d = new Date(`${t.date}T${t.time || '00:00'}:00`)
+             isoDateTime = isNaN(d.getTime()) ? `${t.date}T${t.time || '00:00'}:00` : d.toISOString()
+          } catch(e) {
+             isoDateTime = `${t.date}T${t.time || '00:00'}:00`
+          }
+
+          return {
+            ...t,
+            dateTime: isoDateTime
+          }
+        }),
         account: this.accounts,
         merchant: this.merchants,
         item: this.items,
