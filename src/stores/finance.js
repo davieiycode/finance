@@ -263,10 +263,20 @@ export const useFinanceStore = defineStore('finance', {
           ]
 
           const unwrapImage = (val) => {
-            if (typeof val === 'string' && val.startsWith('=IMAGE("') && val.endsWith('")')) {
-              return val.substring(8, val.length - 2)
+            if (typeof val !== 'string') return val
+            let url = val
+            // Handle =IMAGE("url") or =IMAGE('url') with optional spaces or leading single quote
+            const match = val.match(/^'?=\s*IMAGE\s*\(\s*["'](.+?)["']\s*\)/i)
+            if (match) url = match[1]
+            
+            // Resolve Google Drive URLs to direct links
+            if (url.includes('drive.google.com')) {
+              const idMatch = url.match(/id=([^&]+)/) || url.match(/\/d\/([^/]+)/)
+              if (idMatch && idMatch[1]) {
+                return `https://drive.google.com/uc?id=${idMatch[1]}&export=download`
+              }
             }
-            return val
+            return url
           }
 
           const formatDate = (val) => {
