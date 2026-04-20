@@ -296,10 +296,9 @@ export const useFinanceStore = defineStore('finance', {
                   if (isIso) {
                     const d = new Date(dStr)
                     if (!isNaN(d.getTime())) {
+                      // Always prioritize dateTime for consistency across devices
                       r.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
-                      if (!t || t === 'undefined' || t === '00:00') {
-                         t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
-                      }
+                      t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
                     }
                   } else {
                     // Fallback to naive regex for local strings (like our own legacy format)
