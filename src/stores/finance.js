@@ -442,6 +442,10 @@ export const useFinanceStore = defineStore('finance', {
 
       const wrapImage = (val) => {
         if (typeof val === 'string' && (val.startsWith('http') || val.startsWith('https'))) {
+          // Only wrap if it's already a URL. 
+          // If it's base64 (starts with data:image), we don't wrap it here 
+          // so that AppScript can detect and upload it to Drive.
+          if (val.startsWith('=IMAGE')) return val
           return `=IMAGE("${val}")`
         }
         return val
