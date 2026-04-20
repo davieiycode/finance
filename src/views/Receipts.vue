@@ -60,67 +60,124 @@
           <div class="bottom-sheet">
              <div class="sheet-drag-handle"></div>
              <div class="sheet-header">
-                <h3 class="sheet-title">Evidence Detail</h3>
+                <h3 class="sheet-title">{{ isEditing ? 'Edit Evidence' : 'Evidence Detail' }}</h3>
                 <button @click="isModalOpen = false" class="icon-btn">
                   <span class="material-symbols-rounded">close</span>
                 </button>
              </div>
              
              <div class="sheet-content">
-                <div class="upload-area card-md3" @click="$refs.fileInput.click()">
-                   <img v-if="formData['foto/dokumen']" :src="formData['foto/dokumen']" class="upload-preview">
-                   <div v-else class="upload-placeholder">
-                      <span class="material-symbols-rounded">add_a_photo</span>
-                      <span class="upload-label">UPLOAD OR CAPTURE</span>
+                <!-- VIEW MODE -->
+                <div v-if="!isEditing" class="view-mode-content">
+                   <div class="preview-hero card-md3">
+                      <img v-if="formData['foto/dokumen']" :src="formData['foto/dokumen']" class="hero-img">
+                      <div v-else class="hero-placeholder">
+                         <span class="material-symbols-rounded">no_photography</span>
+                         <p>Gambar tidak tersedia</p>
+                      </div>
+                      <div v-if="formData['foto/dokumen']" class="hero-actions">
+                         <button @click="downloadPhoto" class="fab-sm tonal">
+                            <span class="material-symbols-rounded">download</span>
+                         </button>
+                      </div>
                    </div>
-                   <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" capture="environment" class="hidden-input">
-                </div>
 
-                <div class="form-grid">
-                   <div class="form-group full">
-                      <label>Merchant</label>
-                      <input type="text" v-model="formData.merchant" list="mch-list" class="md-input">
-                   </div>
-                   <div class="form-group full">
-                      <label>Payment Source</label>
-                      <select v-model="formData.account" class="md-input">
-                         <option value="">Select Account...</option>
-                         <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
-                      </select>
-                   </div>
-                   <div class="form-group"><label>Date</label><input type="date" v-model="formData.date" class="md-input"></div>
-                   <div class="form-group"><label>Time</label><input type="time" v-model="formData.time" class="md-input"></div>
-                </div>
-
-                <!-- Linked Transactions -->
-                <div v-if="suggestedTransactions.length > 0" class="suggestion-panel card-md3 tonal">
-                   <span class="panel-label">DETECTED SIMILAR TRANSACTIONS</span>
-                   <div class="suggestion-list">
-                      <div v-for="st in suggestedTransactions" :key="st.transactionID" class="suggestion-item card-md3">
-                         <div class="st-info">
-                            <span class="st-title">{{ st.itemName }}</span>
-                            <span class="st-meta">{{ st.date }} • Rp {{ (st.total || 0).toLocaleString('id-ID') }}</span>
+                   <div class="insight-card card-md3">
+                      <div class="insight-item">
+                         <span class="material-symbols-rounded">store</span>
+                         <div class="ii-text">
+                            <span class="ii-label">Merchant/Toko</span>
+                            <span class="ii-val">{{ formData.merchant || '-' }}</span>
                          </div>
-                         <button @click="linkTransaction(st.transactionID)" class="link-btn">LINK</button>
+                      </div>
+                      <div class="insight-item">
+                         <span class="material-symbols-rounded">calendar_today</span>
+                         <div class="ii-text">
+                            <span class="ii-label">Tanggal & Waktu</span>
+                            <span class="ii-val">{{ formData.date || '-' }} {{ formData.time || '' }}</span>
+                         </div>
+                      </div>
+                      <div v-if="formData.account" class="insight-item">
+                         <span class="material-symbols-rounded">account_balance_wallet</span>
+                         <div class="ii-text">
+                            <span class="ii-label">Rekening</span>
+                            <span class="ii-val">{{ formData.account }}</span>
+                         </div>
+                      </div>
+                      <div v-if="formData.notes" class="insight-item">
+                         <span class="material-symbols-rounded">notes</span>
+                         <div class="ii-text">
+                            <span class="ii-label">Catatan</span>
+                            <span class="ii-val">{{ formData.notes }}</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <!-- Suggested Transactions (Always visible in view) -->
+                   <div v-if="suggestedTransactions.length > 0" class="suggestion-panel card-md3 tonal">
+                      <span class="panel-label">TRANSAKSI TERKAIT</span>
+                      <div class="suggestion-list">
+                         <div v-for="st in suggestedTransactions" :key="st.transactionID" class="suggestion-item card-md3">
+                            <div class="st-info">
+                               <span class="st-title">{{ st.itemName }}</span>
+                               <span class="st-meta">{{ st.date }} • Rp {{ (st.total || 0).toLocaleString('id-ID') }}</span>
+                            </div>
+                            <button @click="linkTransaction(st.transactionID)" class="link-btn">LINK</button>
+                         </div>
+                      </div>
+                   </div>
+
+                   <div class="modal-actions mt-24">
+                      <button @click="isEditing = true" class="filled-btn">
+                         <span class="material-symbols-rounded">edit</span>
+                         EDIT DETAIL
+                      </button>
+                   </div>
+                </div>
+
+                <!-- EDIT MODE -->
+                <div v-else class="edit-mode-content">
+                   <div class="upload-area card-md3" @click="$refs.fileInput.click()">
+                      <img v-if="formData['foto/dokumen']" :src="formData['foto/dokumen']" class="upload-preview">
+                      <div v-else class="upload-placeholder">
+                         <span class="material-symbols-rounded">add_a_photo</span>
+                         <span class="upload-label">UPLOAD OR CAPTURE</span>
+                      </div>
+                      <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" capture="environment" class="hidden-input">
+                   </div>
+
+                   <div class="form-grid">
+                      <div class="form-group full">
+                         <label>Merchant</label>
+                         <input type="text" v-model="formData.merchant" list="mch-list" class="md-input">
+                      </div>
+                      <div class="form-group full">
+                         <label>Payment Source</label>
+                         <select v-model="formData.account" class="md-input">
+                            <option value="">Select Account...</option>
+                            <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
+                         </select>
+                      </div>
+                      <div class="form-group"><label>Date</label><input type="date" v-model="formData.date" class="md-input"></div>
+                      <div class="form-group"><label>Time</label><input type="time" v-model="formData.time" class="md-input"></div>
+                   </div>
+
+                   <div class="form-group full">
+                      <label>Notes</label>
+                      <textarea v-model="formData.notes" class="md-textarea"></textarea>
+                   </div>
+
+                   <div class="modal-actions mt-24">
+                      <button @click="saveReceipt" class="filled-btn">
+                         <span class="material-symbols-rounded">verified</span>
+                         SAVE CHANGES
+                      </button>
+                      <div class="secondary-actions">
+                         <button @click="isEditing = false" class="tonal-btn">Back</button>
+                         <button v-if="editingReceipt.receiptID" @click="deleteReceipt" class="danger-btn">Purge</button>
                       </div>
                    </div>
                 </div>
-
-                <div class="form-group full">
-                   <label>Notes</label>
-                   <textarea v-model="formData.notes" class="md-textarea"></textarea>
-                </div>
-
-                 <div class="modal-actions mt-24">
-                    <button @click="saveReceipt" class="filled-btn">
-                       <span class="material-symbols-rounded">verified</span>
-                       SAVE EVIDENCE
-                    </button>
-                    <div v-if="editingReceipt.receiptID" class="secondary-actions">
-                       <button @click="handleDuplicate" class="tonal-btn">Duplicate</button>
-                       <button @click="deleteReceipt" class="danger-btn">Purge</button>
-                    </div>
-                 </div>
              </div>
           </div>
        </div>
@@ -140,6 +197,7 @@ import { useUIStore } from '../stores/ui'
 const store = useFinanceStore()
 const uiStore = useUIStore()
 const isModalOpen = ref(false)
+const isEditing = ref(false)
 const editingReceipt = ref({})
 const formData = ref({})
 const showSearch = ref(false)
@@ -160,11 +218,25 @@ const openModal = (r) => {
   if (r) { 
     editingReceipt.value = { ...r }
     formData.value = { ...r } 
+    isEditing.value = false
   } else { 
     editingReceipt.value = {}
     formData.value = { merchant: '', account: '', date: '', time: '', notes: '', transactions: '', 'foto/dokumen': '' } 
+    isEditing.value = true
   }
   isModalOpen.value = true
+}
+
+const downloadPhoto = () => {
+   const url = formData.value['foto/dokumen']
+   if (!url) return
+   
+   const link = document.createElement('a')
+   link.href = url
+   link.download = `receipt-${formData.value.merchant || 'detail'}-${formData.value.date || 'file'}.jpg`
+   document.body.appendChild(link)
+   link.click()
+   document.body.removeChild(link)
 }
 
 const onFileChange = (e) => {
@@ -329,6 +401,23 @@ onBeforeUnmount(() => { uiStore.unregisterModal('receipts') })
 .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .sheet-title { font-size: 20px; font-weight: 400; margin: 0; }
 .sheet-content { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+/* VIEW MODE STYLES */
+.view-mode-content { display: flex; flex-direction: column; gap: 20px; }
+.preview-hero { height: 300px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 20px; }
+.hero-img { width: 100%; height: 100%; object-fit: contain; }
+.hero-placeholder { display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.3; color: white; }
+.hero-placeholder .material-symbols-rounded { font-size: 64px; }
+.hero-actions { position: absolute; bottom: 16px; right: 16px; }
+.fab-sm { width: 48px; height: 48px; border-radius: 16px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.fab-sm.tonal { background: var(--secondary-container); color: var(--on-secondary-container); }
+
+.insight-card { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.insight-item { display: flex; gap: 16px; align-items: center; }
+.insight-item .material-symbols-rounded { color: var(--primary); font-size: 24px; }
+.ii-text { display: flex; flex-direction: column; }
+.ii-label { font-size: 11px; font-weight: 700; opacity: 0.6; text-transform: uppercase; }
+.ii-val { font-size: 16px; font-weight: 500; }
 
 .upload-area { height: 200px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px dashed var(--outline); position: relative; overflow: hidden; }
 .upload-preview { width: 100%; height: 100%; object-fit: contain; }
