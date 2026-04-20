@@ -221,9 +221,13 @@ const formatQty = (val) => {
 const displayDate = computed(() => {
   if (!props.tx.date) return 'Waktu Tidak Diketahui'
   try {
-    const d = new Date(props.tx.date)
-    if (isNaN(d.getTime())) return props.tx.date
-    return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+    const parts = String(props.tx.date).split('-')
+    if (parts.length === 3) {
+      // Create date without timezone shift: March is index 2, etc.
+      const d = new Date(parts[0], parts[1] - 1, parts[2])
+      return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })
+    }
+    return props.tx.date
   } catch (e) { return props.tx.date }
 })
 

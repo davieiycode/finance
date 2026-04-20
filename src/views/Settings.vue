@@ -283,7 +283,10 @@ const resolvedAvatar = computed(() => {
 })
 
 const savePrefs = () => {
-  if (isSafe) localStorage.setItem('user_prefs', JSON.stringify(userPrefs.value))
+  if (isSafe) {
+    localStorage.setItem('user_prefs', JSON.stringify(userPrefs.value))
+    store.reformatAllTimes()
+  }
   alert('Pengaturan berhasil disimpan.')
 }
 

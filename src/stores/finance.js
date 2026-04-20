@@ -146,6 +146,13 @@ export const useFinanceStore = defineStore('finance', {
     // Transaction Actions
     addTransaction(tx) {
       if (!tx.transactionID) tx.transactionID = 'TX-' + Date.now()
+      
+      // Ensure canonical UTC dateTime exists
+      if (!tx.dateTime) {
+        const tz = this.getTimezone()
+        tx.dateTime = this.createIsoFromLocal(tx.date, tx.time, tz)
+      }
+
       this.transactions.push(tx)
       this.saveAll()
       this.handleVoucherUsage(tx)
@@ -154,6 +161,10 @@ export const useFinanceStore = defineStore('finance', {
     updateTransaction(tx) {
       const idx = this.transactions.findIndex(t => t.transactionID === tx.transactionID)
       if (idx !== -1) {
+        // Update canonical UTC dateTime
+        const tz = this.getTimezone()
+        tx.dateTime = this.createIsoFromLocal(tx.date, tx.time, tz)
+        
         this.transactions[idx] = tx
         this.saveAll()
       }
@@ -262,23 +273,71 @@ export const useFinanceStore = defineStore('finance', {
             { key: 'settings', state: 'settings', id: 'key' }
           ]
 
-          const tz = JSON.parse(localStorage.getItem('user_prefs') || '{}').timezone || 'Asia/Jakarta'
+    // Timezone Helpers
+    getTimezone() {
+      try {
+        const prefs = JSON.parse(localStorage.getItem('user_prefs') || '{}')
+        return prefs.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+      } catch (e) {
+        return 'UTC'
+      }
+    },
 
-          const formatInTZ = (date, timeZone) => {
-            try {
-              const parts = new Intl.DateTimeFormat('en-CA', {
-                timeZone,
-                year: 'numeric', month: '2-digit', day: '2-digit',
-                hour: '2-digit', minute: '2-digit', second: '2-digit',
-                hour12: false
-              }).formatToParts(date)
-              const p = {}
-              parts.forEach(({ type, value }) => p[type] = value)
-              return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` }
-            } catch (e) {
-              return { date: date.toISOString().split('T')[0], time: date.toISOString().split('T')[1].substring(0, 5) }
-            }
-          }
+    formatInTZ(date, timeZone) {
+      try {
+        const d = typeof date === 'string' ? new Date(date) : date
+        if (isNaN(d.getTime())) return { date: '', time: '' }
+        
+        const parts = new Intl.DateTimeFormat('en-CA', {
+          timeZone,
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit',
+          hour12: false
+        }).formatToParts(d)
+        const p = {}
+        parts.forEach(({ type, value }) => p[type] = value)
+        return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` }
+      } catch (e) {
+        const iso = (typeof date === 'string' ? new Date(date) : date).toISOString()
+        return { date: iso.split('T')[0], time: iso.split('T')[1].substring(0, 5) }
+      }
+    },
+
+    createIsoFromLocal(dateStr, timeStr, timeZone) {
+      if (!dateStr) return new Date().toISOString()
+      try {
+        const [y, m, d] = dateStr.split('-').map(Number)
+        const [hr, min] = (timeStr || '00:00').split(':').map(Number)
+        
+        // We need to find the UTC time that, when formatted in `timeZone`, gives this local time.
+        // 1. Start with a UTC date at the same "clock time"
+        let date = new Date(Date.UTC(y, m - 1, d, hr, min))
+        
+        // 2. Find what that UTC date is in the target timezone
+        const localized = this.formatInTZ(date, timeZone)
+        const [ly, lm, ld] = localized.date.split('-').map(Number)
+        const [lhr, lmin] = localized.time.split(':').map(Number)
+        const localDate = new Date(Date.UTC(ly, lm - 1, ld, lhr, lmin))
+        
+        // 3. The difference is the offset
+        const diff = date.getTime() - localDate.getTime()
+        return new Date(date.getTime() + diff).toISOString()
+      } catch (e) {
+        return `${dateStr}T${timeStr || '00:00'}:00Z`
+      }
+    },
+
+    reformatAllTimes() {
+      const tz = this.getTimezone()
+      this.transactions.forEach(t => {
+        if (t.dateTime) {
+          const localized = this.formatInTZ(t.dateTime, tz)
+          t.date = localized.date
+          t.time = localized.time
+        }
+      })
+      this.saveAll()
+    },
 
           const unwrapImage = (val) => {
             if (typeof val !== 'string') return val
@@ -313,47 +372,33 @@ export const useFinanceStore = defineStore('finance', {
              const rawData = data[ent.key]
              if (!rawData || !Array.isArray(rawData)) return
              
-              let incoming = data[ent.key] || []
-              if (!Array.isArray(incoming)) return
+              const tz = this.getTimezone()
 
               if (ent.key === 'transaction') {
                 incoming = incoming.map(row => {
                   const r = { ...row }
                   
-                  // Handle merged Date/Time columns (supporting 'dateTime', 'date', or 'time')
-                  let t = r.time ? String(r.time) : ''
-                  let dStr = (r.dateTime || r.date) ? String(r.dateTime || r.date) : ''
+                  // Priority: dateTime (ISO UTC)
+                  let isoStr = r.dateTime || ''
+                  if (!isoStr && r.date) {
+                    // Fallback to date + time, assume UTC if pulling from cloud
+                    isoStr = `${r.date}T${r.time || '00:00'}:00Z`
+                  }
 
-                  // Robust extraction: Detect if the incoming string is UTC/ISO or naive local 
-                  // If it has 'Z' or a timezone offset, we MUST parse it via Date() to get local time
-                  const isIso = dStr.includes('Z') || /[+-]\d{2}(:?\d{2})?$/.test(dStr)
-
-                  if (isIso || dStr.includes('T')) {
-                    const d = new Date(dStr)
+                  if (isoStr) {
+                    const d = new Date(isoStr.includes('Z') || isoStr.includes('+') ? isoStr : isoStr + 'Z')
                     if (!isNaN(d.getTime())) {
-                      const localized = formatInTZ(d, tz)
+                      const localized = this.formatInTZ(d, tz)
                       r.date = localized.date
-                      t = localized.time
-                    }
-                  } else {
-                    // Fallback to naive regex for local strings (like our own legacy format)
-                    const isoMatch = dStr.match(/^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}))?/)
-                    if (isoMatch) {
-                      r.date = isoMatch[1]
-                      if (!t || t === 'undefined' || t === '00:00') {
-                        t = isoMatch[2] || '00:00'
-                      }
+                      r.time = localized.time
+                      r.dateTime = d.toISOString() // Store canonical UTC
                     }
                   }
                   
-                  // Final Time Sanitization
-                  if (t.includes('T')) {
-                    t = t.split('T')[1].substring(0, 5)
-                  } else if (t.includes(':')) {
-                    const parts = t.split(':')
-                    t = parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0')
+                  // Final Time Sanitization for local display
+                  if (r.time && r.time.includes('T')) {
+                    r.time = r.time.split('T')[1].substring(0, 5)
                   }
-                  r.time = (t && t !== 'undefined') ? t : '00:00'
                   
                   // Ensure numeric types
                   if (r.total) r.total = Number(r.total)
@@ -369,9 +414,13 @@ export const useFinanceStore = defineStore('finance', {
                 })
               } else {
                  incoming = incoming.map(row => {
+                    // For non-transaction entities, updateTime and other dates should be handled
                     if (row.dateTime) row.date = formatDate(row.dateTime)
                     if (row.date) row.date = formatDate(row.date)
                     if (row.expiryDate) row.expiryDate = formatDate(row.expiryDate)
+                    if (row.updateTime) {
+                      // Optionally localize updateTime for UI if needed, but usually kept as is
+                    }
                     
                     if (ent.key === 'receipt' && row['foto/dokumen']) {
                       row['foto/dokumen'] = unwrapImage(row['foto/dokumen'])
@@ -432,64 +481,21 @@ export const useFinanceStore = defineStore('finance', {
       this.isSyncing = true
       this.syncProgress = 20
       
-      let prefs = {}
-      try {
-        const raw = localStorage.getItem('user_prefs')
-        if (raw) prefs = JSON.parse(raw)
-      } catch (e) { console.error('Settings parse failed', e) }
-
-      const timezone = prefs.timezone || 'Asia/Jakarta'
-
-      const wrapImage = (val) => {
-        if (typeof val === 'string' && (val.startsWith('http') || val.startsWith('https'))) {
-          // Only wrap if it's already a URL. 
-          // If it's base64 (starts with data:image), we don't wrap it here 
-          // so that AppScript can detect and upload it to Drive.
-          if (val.startsWith('=IMAGE')) return val
-          return `=IMAGE("${val}")`
-        }
-        return val
-      }
-      
-      const createIsoInTZ = (dateStr, timeStr, timeZone) => {
-        try {
-          const [y, m, d] = dateStr.split('-').map(Number)
-          const [hr, min] = (timeStr || '00:00').split(':').map(Number)
-          let date = new Date(Date.UTC(y, m - 1, d, hr, min))
-          const tzParts = new Intl.DateTimeFormat('en-US', { timeZone, hour12: false, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }).formatToParts(date)
-          const p = {}
-          tzParts.forEach(({ type, value }) => p[type] = value)
-          const formattedDate = new Date(Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute))
-          const diff = date.getTime() - formattedDate.getTime()
-          return new Date(date.getTime() + diff).toISOString()
-        } catch (e) {
-          return `${dateStr}T${timeStr || '00:00'}:00Z`
-        }
-      }
+      const timezone = this.getTimezone()
 
       const payload = {
         transaction: this.transactions.map(t => {
-          let isoDateTime = createIsoInTZ(t.date, t.time, timezone)
-          // For spreadsheet columns, we format them in the target timezone as well
-          const localized = { date: t.date, time: t.time }
-          try {
-             const d = new Date(isoDateTime)
-             const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d)
-             const p = {}
-             parts.forEach(({ type, value }) => p[type] = value)
-             localized.date = `${p.year}-${p.month}-${p.day}`
-             localized.time = `${p.hour}:${p.minute}`
-          } catch(e) {}
+          const isoUTC = this.createIsoFromLocal(t.date, t.time, timezone)
+          const utcComponents = this.formatInTZ(isoUTC, 'UTC')
 
           const txForCloud = { ...t }
-          delete txForCloud.date
-          delete txForCloud.time
-
-          return {
-            ...txForCloud,
-            dateTime: isoDateTime,
-            localPhoto: wrapImage(t.localPhoto)
-          }
+          // The spreadsheet should store UTC versions of these
+          txForCloud.date = utcComponents.date
+          txForCloud.time = utcComponents.time
+          txForCloud.dateTime = isoUTC
+          
+          if (txForCloud.localPhoto) txForCloud.localPhoto = wrapImage(txForCloud.localPhoto)
+          return txForCloud
         }),
         account: this.accounts,
         merchant: this.merchants,
@@ -507,7 +513,7 @@ export const useFinanceStore = defineStore('finance', {
         tag: this.tags,
         project: this.projects,
         author: this.authors,
-        settings: Object.entries(prefs || {}).map(([k, v]) => ({ key: k, value: typeof v === 'object' ? JSON.stringify(v) : v })),
+        settings: Object.entries(JSON.parse(localStorage.getItem('user_prefs') || '{}')).map(([k, v]) => ({ key: k, value: typeof v === 'object' ? JSON.stringify(v) : v })),
         updateTime: new Date().toISOString()
       }
       this.syncProgress = 50
