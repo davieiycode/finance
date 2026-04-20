@@ -262,6 +262,13 @@ export const useFinanceStore = defineStore('finance', {
             { key: 'settings', state: 'settings', id: 'key' }
           ]
 
+          const unwrapImage = (val) => {
+            if (typeof val === 'string' && val.startsWith('=IMAGE("') && val.endsWith('")')) {
+              return val.substring(8, val.length - 2)
+            }
+            return val
+          }
+
           const formatDate = (val) => {
             if (!val) return ''
             const s = String(val)
@@ -327,6 +334,9 @@ export const useFinanceStore = defineStore('finance', {
                   if (r.discount) r.discount = Number(r.discount)
                   if (r.fee) r.fee = Number(r.fee)
                   
+                  if (r.localPhoto) r.localPhoto = unwrapImage(r.localPhoto)
+                  if (r.receipt && String(r.receipt).startsWith('=IMAGE')) r.receipt = unwrapImage(r.receipt)
+
                   return r
                 })
               } else {
@@ -334,6 +344,11 @@ export const useFinanceStore = defineStore('finance', {
                     if (row.dateTime) row.date = formatDate(row.dateTime)
                     if (row.date) row.date = formatDate(row.date)
                     if (row.expiryDate) row.expiryDate = formatDate(row.expiryDate)
+                    
+                    if (ent.key === 'receipt' && row['foto/dokumen']) {
+                      row['foto/dokumen'] = unwrapImage(row['foto/dokumen'])
+                    }
+
                     return row
                  })
               }
@@ -389,6 +404,13 @@ export const useFinanceStore = defineStore('finance', {
       this.isSyncing = true
       this.syncProgress = 20
       
+      const wrapImage = (val) => {
+        if (typeof val === 'string' && (val.startsWith('http') || val.startsWith('https'))) {
+          return `=IMAGE("${val}")`
+        }
+        return val
+      }
+      
       let prefs = {}
       try {
         const raw = localStorage.getItem('user_prefs')
@@ -420,7 +442,8 @@ export const useFinanceStore = defineStore('finance', {
             ...t,
             date: outDate,
             time: outTime,
-            dateTime: isoDateTime
+            dateTime: isoDateTime,
+            localPhoto: wrapImage(t.localPhoto)
           }
         }),
         account: this.accounts,
@@ -430,7 +453,10 @@ export const useFinanceStore = defineStore('finance', {
         voucher: this.vouchers,
         budget: this.budgets,
         goal: this.goals,
-        receipt: this.receipts,
+        receipt: this.receipts.map(r => ({
+          ...r,
+          'foto/dokumen': wrapImage(r['foto/dokumen'])
+        })),
         category: this.categories,
         unitScale: this.unitScales,
         tag: this.tags,
