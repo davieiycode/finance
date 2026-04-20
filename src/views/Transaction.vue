@@ -89,7 +89,8 @@
                  <div class="dropdown-wrapper">
                     <input type="text" v-model="categorySearch" @focus="showCategoryDropdown = true" @blur="hideDropdown('category')" placeholder="Umum" class="md-input">
                     <div v-if="showCategoryDropdown && filteredCategories.length" class="dropdown-panel">
-                       <div v-for="c in filteredCategories" :key="c.categoryID" @mousedown="selectCategory(c)" class="dropdown-item">
+                       <div v-for="c in filteredCategories" :key="c.categoryID" @mousedown="selectCategory(c)" class="dropdown-item category-dropdown-item">
+                          <span class="material-symbols-rounded drp-icon">{{ c.iconName || c.icon || store.getTypeFallbackIcon(c.type) }}</span>
                           <span class="item-main">{{ c.category }}</span>
                        </div>
                     </div>
@@ -662,6 +663,8 @@ watch(() => route.query, () => initForm(), { deep: true })
 .dropdown-item:last-child { border-bottom: none; }
 .item-main { font-weight: 500; }
 .item-sub { font-size: 11px; color: var(--on-surface-variant); }
+.category-dropdown-item { flex-direction: row !important; align-items: center; gap: 12px; }
+.drp-icon { font-size: 20px; opacity: 0.7; }
 
 /* SCANNER */
 /* Global MD3 Buttons are used */

@@ -35,7 +35,7 @@
       <div class="registry-list">
         <div v-for="(item, i) in filteredList" :key="i" @click="openModal(item)" class="registry-item card-md3">
           <div class="registry-icon-box" :style="{ backgroundColor: colors[i % colors.length] + '15', color: colors[i % colors.length] }">
-            <span class="material-symbols-rounded">{{ item.icon || getItemIcon(item) }}</span>
+            <span class="material-symbols-rounded">{{ item.iconName || item.icon || getItemIcon(item) }}</span>
           </div>
           <div class="registry-info">
             <span class="registry-title">{{ getItemName(item) }}</span>
@@ -78,7 +78,7 @@
                 <div v-if="modalMode === 'analysis' && editingItem" class="analysis-view">
                    <div class="analysis-hero">
                       <div class="hero-icon" :style="{ backgroundColor: colors[0] + '15', color: colors[0] }">
-                         <span class="material-symbols-rounded">{{ editingItem.icon || getItemIcon(editingItem) }}</span>
+                         <span class="material-symbols-rounded">{{ editingItem.iconName || editingItem.icon || getItemIcon(editingItem) }}</span>
                       </div>
                       <div class="hero-text">
                          <span class="hero-title">{{ getItemName(editingItem) }}</span>
@@ -128,21 +128,7 @@
                                </div>
                             </div>
                          </div>
-                         <div class="form-group full">
-                            <label>Pilih Cepat</label>
-                            <div class="icon-picker card-md3">
-                               <div class="icon-search-box">
-                                  <span class="material-symbols-rounded">search</span>
-                                  <input type="text" v-model="iconSearch" placeholder="Cari di koleksi...">
-                               </div>
-                                <div class="icon-grid-scroll">
-                                   <button v-for="iconName in filteredIcons" :key="iconName" @click="formData.icon = iconName" 
-                                     class="icon-select-btn" :class="{ active: formData.icon === iconName }" type="button">
-                                      <span class="material-symbols-rounded">{{ iconName }}</span>
-                                   </button>
-                                </div>
-                             </div>
-                          </div>
+
                          <div class="form-group"><label>Grup</label><input type="text" v-model="formData.categoryGroup" class="md-input"></div>
                          <div class="form-group">
                             <label>Jenis</label>
@@ -198,7 +184,7 @@
                       <div v-if="isEditing" class="secondary-actions">
                          <button @click="handleDuplicate" class="tonal-btn">Duplikat</button>
                          <button @click="handleMerge" class="tonal-btn">Gabungkan</button>
-                         <button @click="handleDelete" class="error-btn-md3">Hapus</button>
+                         <button @click="handleDelete" class="danger-btn">Hapus</button>
                       </div>
                    </div>
                 </div>
@@ -255,32 +241,6 @@ const formData = ref({})
 const iconSearch = ref('')
 const editingItem = ref(null)
 
-const iconList = [
-  'payments', 'wallet', 'shopping_cart', 'restaurant', 'local_cafe', 
-  'smart_toy', 'rocket_launch', 'home', 'directions_bus', 'flight', 'savings', 'receipt_long', 
-  'medical_services', 'fitness_center', 'school', 'emoji_events', 'movie', 'sports_esports', 
-  'bolt', 'water_drop', 'wifi', 'smartphone', 'handyman', 'construction',
-  'shopping_bag', 'local_gas_station', 'pill', 'hospital', 'store', 'pizza',
-  'cake', 'ice_cream', 'sports_bar', 'wine_bar', 'smoking_rooms', 'vaping_rooms',
-  'directions_car', 'pedal_bike', 'train', 'directions_boat', 'local_shipping',
-  'package', 'inventory_2', 'grid_view', 'layers', 'sell', 'confirmation_number',
-  'description', 'table_chart', 'menu_book', 'edit', 'brush', 'edit_note',
-  'monitor', 'laptop', 'keyboard', 'headphones', 'photo_camera', 'videocam',
-  'palette', 'dashboard', 'science', 'biotech', 'psychology', 'memory',
-  'favorite', 'star', 'diamond', 'redeem', 'celebration',
-  'tent', 'apartment', 'account_balance', 'map', 'explore', 'terrain_chip',
-  'child_care', 'pets', 'groups', 'person', 'person_add', 'support_agent',
-  'lock', 'verified_user', 'key', 'fingerprint',
-  'cloud', 'database', 'hub', 'router', 'code', 'terminal',
-  'work', 'trending_up', 'pie_chart', 'sync', 'compare_arrows'
-]
-
-const filteredIcons = computed(() => {
-  const q = iconSearch.value.toLowerCase()
-  if (!q) return iconList
-  return iconList.filter(i => i.toLowerCase().includes(q))
-})
-
 const tabs = [
   { id: 'categories', label: 'Kategori', icon: 'sell' },
   { id: 'unitScales', label: 'Satuan', icon: 'straighten' },
@@ -293,7 +253,7 @@ const colors = ['#A8C7FA', '#BEC6DC', '#DEBCDF', '#B4E8A8', '#F2B8B5', '#82D3D0'
 const isEditing = computed(() => !!editingItem.value)
 
 const getItemIcon = (item) => {
-  if (activeTab.value === 'categories' && item.icon) return item.icon
+  if (activeTab.value === 'categories' && (item.iconName || item.icon)) return item.iconName || item.icon
   const t = tabs.find(t => t.id === activeTab.value)
   return t ? t.icon : 'grid_view'
 }
@@ -325,7 +285,7 @@ const filteredList = computed(() => {
 const openModal = (item) => {
   editingItem.value = item ? { ...item } : null
   if (item) {
-     formData.value = { icon: 'sell', ...item }
+     formData.value = { icon: item.iconName || item.icon || 'sell', ...item }
      iconSearch.value = ''
      modalMode.value = 'analysis'
   } else {
@@ -342,6 +302,7 @@ const openModal = (item) => {
 const handleSave = () => {
    const data = { ...formData.value }
    if (activeTab.value === 'categories') {
+      data.iconName = data.icon // Sync icon to iconName for spreadsheet compatibility
       if (isEditing.value) store.updateCategory(data)
       else store.addCategory(data)
    } else if (activeTab.value === 'unitScales') {
@@ -599,34 +560,8 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
 .mt-24 { margin-top: 24px; }
 .briefing-card.tonal { background-color: rgba(168, 199, 250, 0.1); border: 1px solid rgba(168, 199, 250, 0.2); color: var(--primary); }
 .registry-item:hover { background-color: var(--surface-variant); border-color: var(--primary); }
-.icon-grid-scroll { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); 
-  gap: 12px; 
-  max-height: 240px; 
-  overflow-y: auto; 
-  padding: 12px; 
-}
-
-.icon-select-btn { 
-  width: 48px;
-  height: 48px; 
-  border-radius: 12px; 
-  border: 1px solid var(--border); 
-  background: var(--bg-primary); 
-  color: var(--on-surface-variant); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  cursor: pointer; 
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.icon-select-btn .material-symbols-rounded { font-size: 24px; }
-.icon-select-btn:hover { background-color: var(--secondary-container); color: var(--on-secondary-container); }
-.icon-select-btn.active { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); transform: scale(1.1); }
-
-.icon-input-wrapper {
+ 
+ .icon-input-wrapper {
   display: flex;
   align-items: center;
   gap: 12px;

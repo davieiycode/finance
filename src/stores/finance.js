@@ -87,7 +87,7 @@ export const useFinanceStore = defineStore('finance', {
       if (!categoryName || !categoryName.trim()) return this.getTypeFallbackIcon(txType)
       const target = categoryName.trim().toLowerCase()
       const cat = this.categories.find(c => (c.category || '').trim().toLowerCase() === target)
-      return this.sanitizeIcon(cat?.icon) || this.getTypeFallbackIcon(txType)
+      return this.sanitizeIcon(cat?.iconName || cat?.icon) || this.getTypeFallbackIcon(txType)
     },
 
     sanitizeIcon(iconName) {
