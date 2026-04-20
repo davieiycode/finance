@@ -22,7 +22,7 @@
           <div class="profile-info">
             <span class="profile-label">Profil Pengguna</span>
             <span class="profile-name">{{ userPrefs.name || 'Pengguna' }}</span>
-            <span class="profile-meta">{{ userPrefs.email || 'Email belum diatur' }}</span>
+            <span class="profile-meta">{{ userPrefs.timezone || 'Waktu Lokal Browser' }}</span>
           </div>
           <span class="material-symbols-rounded">chevron_right</span>
         </div>
@@ -125,8 +125,30 @@
               <input type="text" v-model="userPrefs.name" class="md-input-field" placeholder="Masukkan nama">
             </div>
             <div class="field-item">
-              <span class="field-label">Alamat Email</span>
-              <input type="email" v-model="userPrefs.email" class="md-input-field" placeholder="Masukkan email">
+              <span class="field-label">Zona Waktu (Timezone)</span>
+              <select v-model="userPrefs.timezone" class="md-input-field">
+                <option value="">Gunakan Waktu Browser</option>
+                <optgroup label="Asia">
+                  <option value="Asia/Jakarta">Jakarta (WIB)</option>
+                  <option value="Asia/Makassar">Makassar (WITA)</option>
+                  <option value="Asia/Jayapura">Jayapura (WIT)</option>
+                  <option value="Asia/Singapore">Singapore (SGT)</option>
+                  <option value="Asia/Tokyo">Tokyo (JST)</option>
+                  <option value="Asia/Dubai">Dubai (GST)</option>
+                </optgroup>
+                <optgroup label="Australia & Pasifik">
+                  <option value="Australia/Sydney">Sydney (AEST)</option>
+                  <option value="Australia/Perth">Perth (AWST)</option>
+                </optgroup>
+                <optgroup label="Eropa">
+                  <option value="Europe/London">London (GMT/BST)</option>
+                  <option value="Europe/Paris">Paris (CET)</option>
+                </optgroup>
+                <optgroup label="Amerika">
+                  <option value="America/New_York">New York (EST)</option>
+                  <option value="America/Los_Angeles">Los Angeles (PST)</option>
+                </optgroup>
+              </select>
             </div>
           </div>
 
@@ -224,7 +246,7 @@ const subTitles = {
 }
 
 const isSafe = typeof localStorage !== 'undefined'
-const defaultPrefs = { name: "Pengguna", email: "", avatar: "👤", theme: "obsidian", radius: 24, color: "#A8C7FA" }
+const defaultPrefs = { name: "Pengguna", timezone: "Asia/Jakarta", avatar: "👤", theme: "obsidian", radius: 24, color: "#A8C7FA" }
 const storedPrefs = isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{}') : {}
 const userPrefs = ref({ ...defaultPrefs, ...storedPrefs })
 const cloudUrl = ref(isSafe ? (localStorage.getItem('cloud_sheet_url') || '') : '')

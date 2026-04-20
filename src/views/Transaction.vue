@@ -327,18 +327,24 @@ const route = useRoute()
 const store = useFinanceStore()
 const uiStore = useUIStore()
 
-const now = new Date()
-const formatDateLocal = (d) => {
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+const tz = JSON.parse(localStorage.getItem('user_prefs') || '{}').timezone || 'Asia/Jakarta'
+const getNowInTZ = () => {
+  const d = new Date()
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d)
+    const p = {}
+    parts.forEach(({ type, value }) => p[type] = value)
+    return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` }
+  } catch (e) {
+    return { date: d.toISOString().split('T')[0], time: d.toISOString().split('T')[1].substring(0, 5) }
+  }
 }
-const formatTimeLocal = (d) => {
-  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
-}
+const nowTZ = getNowInTZ()
 
 const form = ref({
   transactionID: '',
-  date: formatDateLocal(now),
-  time: formatTimeLocal(now),
+  date: nowTZ.date,
+  time: nowTZ.time,
   category: '',
   merchant: '',
   itemName: '',

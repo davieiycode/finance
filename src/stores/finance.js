@@ -262,6 +262,24 @@ export const useFinanceStore = defineStore('finance', {
             { key: 'settings', state: 'settings', id: 'key' }
           ]
 
+          const tz = JSON.parse(localStorage.getItem('user_prefs') || '{}').timezone || 'Asia/Jakarta'
+
+          const formatInTZ = (date, timeZone) => {
+            try {
+              const parts = new Intl.DateTimeFormat('en-CA', {
+                timeZone,
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false
+              }).formatToParts(date)
+              const p = {}
+              parts.forEach(({ type, value }) => p[type] = value)
+              return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` }
+            } catch (e) {
+              return { date: date.toISOString().split('T')[0], time: date.toISOString().split('T')[1].substring(0, 5) }
+            }
+          }
+
           const unwrapImage = (val) => {
             if (typeof val !== 'string') return val
             let url = val
@@ -310,12 +328,12 @@ export const useFinanceStore = defineStore('finance', {
                   // If it has 'Z' or a timezone offset, we MUST parse it via Date() to get local time
                   const isIso = dStr.includes('Z') || /[+-]\d{2}(:?\d{2})?$/.test(dStr)
 
-                  if (isIso) {
+                  if (isIso || dStr.includes('T')) {
                     const d = new Date(dStr)
                     if (!isNaN(d.getTime())) {
-                      // Always prioritize dateTime for consistency across devices
-                      r.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
-                      t = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
+                      const localized = formatInTZ(d, tz)
+                      r.date = localized.date
+                      t = localized.time
                     }
                   } else {
                     // Fallback to naive regex for local strings (like our own legacy format)
@@ -414,6 +432,14 @@ export const useFinanceStore = defineStore('finance', {
       this.isSyncing = true
       this.syncProgress = 20
       
+      let prefs = {}
+      try {
+        const raw = localStorage.getItem('user_prefs')
+        if (raw) prefs = JSON.parse(raw)
+      } catch (e) { console.error('Settings parse failed', e) }
+
+      const timezone = prefs.timezone || 'Asia/Jakarta'
+
       const wrapImage = (val) => {
         if (typeof val === 'string' && (val.startsWith('http') || val.startsWith('https'))) {
           return `=IMAGE("${val}")`
@@ -421,37 +447,42 @@ export const useFinanceStore = defineStore('finance', {
         return val
       }
       
-      let prefs = {}
-      try {
-        const raw = localStorage.getItem('user_prefs')
-        if (raw) prefs = JSON.parse(raw)
-      } catch (e) { console.error('Settings parse failed', e) }
+      const createIsoInTZ = (dateStr, timeStr, timeZone) => {
+        try {
+          const [y, m, d] = dateStr.split('-').map(Number)
+          const [hr, min] = (timeStr || '00:00').split(':').map(Number)
+          let date = new Date(Date.UTC(y, m - 1, d, hr, min))
+          const tzParts = new Intl.DateTimeFormat('en-US', { timeZone, hour12: false, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }).formatToParts(date)
+          const p = {}
+          tzParts.forEach(({ type, value }) => p[type] = value)
+          const formattedDate = new Date(Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute))
+          const diff = date.getTime() - formattedDate.getTime()
+          return new Date(date.getTime() + diff).toISOString()
+        } catch (e) {
+          return `${dateStr}T${timeStr || '00:00'}:00Z`
+        }
+      }
 
       const payload = {
         transaction: this.transactions.map(t => {
-          // Robustly combine date and time into a Date object to get an unambiguous ISO string
-          let isoDateTime = ''
-          let outDate = t.date
-          let outTime = t.time
+          let isoDateTime = createIsoInTZ(t.date, t.time, timezone)
+          // For spreadsheet columns, we format them in the target timezone as well
+          const localized = { date: t.date, time: t.time }
           try {
-             // Create a local date object from the naive strings
-             const d = new Date(`${t.date}T${t.time || '00:00'}:00`)
-             if (!isNaN(d.getTime())) {
-                isoDateTime = d.toISOString()
-                // Format the individual Date and Time columns as UTC for spreadsheet consistency
-                outDate = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0')
-                outTime = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0')
-             } else {
-                isoDateTime = `${t.date}T${t.time || '00:00'}:00`
-             }
-          } catch(e) {
-             isoDateTime = `${t.date}T${t.time || '00:00'}:00`
-          }
+             const d = new Date(isoDateTime)
+             const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d)
+             const p = {}
+             parts.forEach(({ type, value }) => p[type] = value)
+             localized.date = `${p.year}-${p.month}-${p.day}`
+             localized.time = `${p.hour}:${p.minute}`
+          } catch(e) {}
+
+          const txForCloud = { ...t }
+          delete txForCloud.date
+          delete txForCloud.time
 
           return {
-            ...t,
-            date: outDate,
-            time: outTime,
+            ...txForCloud,
             dateTime: isoDateTime,
             localPhoto: wrapImage(t.localPhoto)
           }
