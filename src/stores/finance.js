@@ -377,8 +377,10 @@ export const useFinanceStore = defineStore('finance', {
           }
 
           entities.forEach((ent, i) => {
-             const rawData = data[ent.key]
-             if (!rawData || !Array.isArray(rawData)) return
+              const rawData = data[ent.key]
+              if (!rawData || !Array.isArray(rawData)) return
+              
+              let incoming = rawData
              
 
               if (ent.key === 'transaction') {
