@@ -399,15 +399,27 @@ export const useFinanceStore = defineStore('finance', {
         transaction: this.transactions.map(t => {
           // Robustly combine date and time into a Date object to get an unambiguous ISO string
           let isoDateTime = ''
+          let outDate = t.date
+          let outTime = t.time
           try {
+             // Create a local date object from the naive strings
              const d = new Date(`${t.date}T${t.time || '00:00'}:00`)
-             isoDateTime = isNaN(d.getTime()) ? `${t.date}T${t.time || '00:00'}:00` : d.toISOString()
+             if (!isNaN(d.getTime())) {
+                isoDateTime = d.toISOString()
+                // Format the individual Date and Time columns as UTC for spreadsheet consistency
+                outDate = d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0')
+                outTime = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0')
+             } else {
+                isoDateTime = `${t.date}T${t.time || '00:00'}:00`
+             }
           } catch(e) {
              isoDateTime = `${t.date}T${t.time || '00:00'}:00`
           }
 
           return {
             ...t,
+            date: outDate,
+            time: outTime,
             dateTime: isoDateTime
           }
         }),
