@@ -395,12 +395,16 @@ export const useFinanceStore = defineStore('finance', {
                   }
 
                   if (isoStr) {
-                    const d = new Date(isoStr.includes('Z') || isoStr.includes('+') ? isoStr : isoStr + 'Z')
+                    // Ensure ISO format (replace space with T) and treat as UTC if no offset
+                    let iso = String(isoStr).trim().replace(' ', 'T')
+                    const hasOffset = iso.includes('Z') || /[+-]\d{2}:?\d{2}$/.test(iso)
+                    const d = new Date(hasOffset ? iso : iso + 'Z')
+                    
                     if (!isNaN(d.getTime())) {
                       const localized = this.formatInTZ(d, tz)
                       r.date = localized.date
                       r.time = localized.time
-                      r.dateTime = d.toISOString() // Store canonical UTC
+                      r.dateTime = d.toISOString()
                     }
                   }
                   
