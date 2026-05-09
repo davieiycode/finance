@@ -67,6 +67,11 @@
           <div id="cashflow-sankey" style="width: 100%; height: 400px;"></div>
         </div>
 
+        <div v-show="activeTab === 'trend'" class="chart-container">
+          <h3 class="chart-title">Tren Pengeluaran Harian</h3>
+          <div id="trend-line" style="width: 100%; height: 350px;"></div>
+        </div>
+
         <div v-show="activeTab === 'income'" class="chart-container">
           <h3 class="chart-title">Kategori Pemasukan</h3>
           <div id="income-treemap" style="width: 100%; height: 350px;"></div>
@@ -91,6 +96,20 @@
                 <span class="rank-value text-danger">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
               </div>
               <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/metrics.expense*100) + '%', background: colors[i % colors.length] }"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div v-show="activeTab === 'merchant'" class="chart-container">
+          <h3 class="chart-title">Pengeluaran per Toko/Vendor</h3>
+          <div id="merchant-treemap" style="width: 100%; height: 350px;"></div>
+          <div class="ranking-list">
+            <div v-for="(item, i) in merchantAnalysis" :key="item.name" @click="showModal('merchant', 'Expense', item.name)" class="rank-item">
+              <div class="rank-header">
+                <span class="rank-name">{{ item.name }}</span>
+                <span class="rank-value">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+              </div>
+              <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/maxMerchantValue*100) + '%', background: colors[i % colors.length] }"></div></div>
             </div>
           </div>
         </div>
@@ -191,8 +210,10 @@ const isModalOpen = computed(() => !!modalData.value)
 
 const tabs = [
   { id: 'cashflow', label: 'Aliran', icon: 'conversion_path' },
+  { id: 'trend', label: 'Tren', icon: 'trending_up' },
   { id: 'income', label: 'Pemasukan', icon: 'download' },
   { id: 'spend', label: 'Pengeluaran', icon: 'shopping_basket' },
+  { id: 'merchant', label: 'Toko', icon: 'store' },
   { id: 'tag', label: 'Tag', icon: 'tag' },
   { id: 'project', label: 'Proyek', icon: 'layers' }
 ]
@@ -240,11 +261,33 @@ const processData = (list, key, isTag = false) => {
 
 const categorySpending = computed(() => processData(filteredTransactions.value.filter(t => t.type === 'Expense'), 'category'))
 const categoryIncome = computed(() => processData(filteredTransactions.value.filter(t => t.type === 'Income'), 'category'))
+const merchantAnalysis = computed(() => processData(filteredTransactions.value.filter(t => t.type === 'Expense'), 'merchant'))
 const tagAnalysis = computed(() => processData(filteredTransactions.value, 'tags', true))
 const projectAnalysis = computed(() => processData(filteredTransactions.value, 'projects'))
 
+const trendAnalysis = computed(() => {
+  const map = {}
+  filteredTransactions.value.filter(t => t.type === 'Expense').forEach(t => {
+    const d = t.date || ''
+    map[d] = (map[d] || 0) + (t.total || 0)
+  })
+  
+  // Fill gaps for better chart representation
+  const result = []
+  const daysInMonth = new Date(activeDate.value.getFullYear(), activeDate.value.getMonth() + 1, 0).getDate()
+  const year = activeDate.value.getFullYear()
+  const month = activeDate.value.getMonth()
+  
+  for (let i = 1; i <= daysInMonth; i++) {
+    const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`
+    result.push({ date: dStr, value: map[dStr] || 0 })
+  }
+  return result
+})
+
 const maxTagValue = computed(() => Math.max(...tagAnalysis.value.map(t => t.value), 1))
 const maxProjectValue = computed(() => Math.max(...projectAnalysis.value.map(t => t.value), 1))
+const maxMerchantValue = computed(() => Math.max(...merchantAnalysis.value.map(t => t.value), 1))
 
 const filteredList = computed(() => {
    if (!modalData.value) return []
@@ -269,6 +312,8 @@ const filteredList = computed(() => {
          const prjStr = typeof prjVal === 'string' ? prjVal : (Array.isArray(prjVal) ? prjVal.join(', ') : '')
          return prjStr === filterValue
       })
+   } else if (filterType === 'merchant') {
+      list = list.filter(t => t.merchant === filterValue && t.type === mType)
    }
    
    return list.sort((a,b) => (b.total || 0) - (a.total || 0))
@@ -372,6 +417,26 @@ const initCharts = () => {
   }
   renderTM('income-treemap', categoryIncome.value, 'income', 'Income')
   renderTM('spend-treemap', categorySpending.value, 'spend', 'Expense')
+  renderTM('merchant-treemap', merchantAnalysis.value, 'merchant', 'Expense')
+
+  const trendEl = document.getElementById('trend-line')
+  if (trendEl && activeTab.value === 'trend') {
+    if (!charts.trend) charts.trend = window.echarts.init(trendEl, 'dark')
+    charts.trend.setOption({ 
+      ...darkTheme, 
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+      xAxis: { type: 'category', data: trendAnalysis.value.map(d => d.date.split('-')[2]), axisLabel: { fontSize: 9 } },
+      yAxis: { type: 'value', axisLabel: { fontSize: 9, formatter: (v) => v >= 1000000 ? (v/1000000).toFixed(1) + 'M' : (v/1000).toFixed(0) + 'K' } },
+      series: [{ 
+        name: 'Pengeluaran', 
+        type: 'bar', 
+        data: trendAnalysis.value.map(d => d.value), 
+        itemStyle: { color: '#F2B8B5', borderRadius: [4, 4, 0, 0] },
+        emphasis: { itemStyle: { color: '#D0BCFF' } }
+      }] 
+    })
+  }
 
   const tagEl = document.getElementById('tag-cloud')
   if (tagEl && activeTab.value === 'tag') {
