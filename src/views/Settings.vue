@@ -27,8 +27,18 @@
           <span class="material-symbols-rounded">chevron_right</span>
         </div>
 
-        <div class="section-title">Sistem & Aplikasi</div>
+        <div class="section-title">Sistem & Keamanan</div>
         <div class="list-card card-md3">
+          <div class="list-item" @click="currentView = 'security'">
+            <div class="list-icon-box primary">
+              <span class="material-symbols-rounded">lock</span>
+            </div>
+            <div class="list-text">
+              <span class="list-item-title">Keamanan & PIN</span>
+              <span class="list-item-sub">Kunci aplikasi dengan 4 digit PIN</span>
+            </div>
+            <span class="material-symbols-rounded">chevron_right</span>
+          </div>
           <div v-if="installPrompt" class="list-item" @click="installApp">
             <div class="list-icon-box tonal">
               <span class="material-symbols-rounded">download</span>
@@ -158,7 +168,34 @@
           </button>
         </div>
 
-        <!-- Visual selection removed as requested -->
+        <!-- Security View -->
+        <div v-if="currentView === 'security'" class="security-settings">
+          <div class="section-card card-md3">
+            <div class="switch-row">
+               <div class="list-text">
+                  <span class="list-item-title">Aktifkan Kunci PIN</span>
+                  <span class="list-item-sub">Minta PIN saat aplikasi dibuka</span>
+               </div>
+               <label class="md-switch">
+                  <input type="checkbox" v-model="userPrefs.appLockEnabled">
+                  <span class="slider"></span>
+               </label>
+            </div>
+          </div>
+
+          <div v-if="userPrefs.appLockEnabled" class="section-card card-md3">
+            <span class="section-header-text">Setel 4 Digit PIN</span>
+            <div class="pin-input-group">
+               <input type="password" v-model="userPrefs.appPin" maxlength="4" placeholder="••••" class="pin-field">
+            </div>
+            <p class="section-tip">Pastikan Anda mengingat PIN ini. Jika lupa, Anda harus mereset aplikasi.</p>
+          </div>
+
+          <button class="filled-btn" @click="savePrefs">
+            <span class="material-symbols-rounded">verified_user</span>
+            Simpan Setelan Keamanan
+          </button>
+        </div>
 
         <!-- Cloud View -->
         <div v-if="currentView === 'cloud'" class="cloud-settings">
@@ -240,13 +277,14 @@ const filteredAvatars = computed(() => {
 
 const subTitles = {
   personal: 'Profil Pengguna',
+  security: 'Keamanan & PIN',
   visual: 'Atur Tampilan',
   cloud: 'Sinkronisasi Cloud',
   metadata: 'Kategori & Label'
 }
 
 const isSafe = typeof localStorage !== 'undefined'
-const defaultPrefs = { name: "Pengguna", timezone: "Asia/Jakarta", avatar: "👤", theme: "obsidian", radius: 24, color: "#A8C7FA" }
+const defaultPrefs = { name: "Pengguna", timezone: "Asia/Jakarta", avatar: "👤", theme: "obsidian", radius: 24, color: "#A8C7FA", appLockEnabled: false, appPin: '' }
 const storedPrefs = isSafe ? JSON.parse(localStorage.getItem('user_prefs') || '{}') : {}
 const userPrefs = ref({ ...defaultPrefs, ...storedPrefs })
 const cloudUrl = ref(isSafe ? (localStorage.getItem('cloud_sheet_url') || '') : '')
@@ -597,4 +635,16 @@ onMounted(() => {
 .filled-btn-lg { background-color: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
 
 @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.switch-row { display: flex; justify-content: space-between; align-items: center; }
+.md-switch { position: relative; display: inline-block; width: 52px; height: 32px; }
+.md-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; inset: 0; background-color: var(--surface-variant); transition: .4s; border-radius: 16px; border: 2px solid var(--border); }
+.slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+.pin-input-group { display: flex; justify-content: center; padding: 16px 0; }
+.pin-field { width: 120px; height: 56px; background: var(--surface-variant); border: 2px solid var(--border); border-radius: 16px; text-align: center; font-size: 32px; letter-spacing: 8px; color: var(--on-surface); outline: none; }
+.pin-field:focus { border-color: var(--primary); }
 </style>
