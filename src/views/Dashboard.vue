@@ -21,7 +21,6 @@
              <span v-else>{{ userAvatar }}</span>
              <div class="status-indicator"></div>
           </div>
-        </div>
 
         <!-- Pencarian -->
         <div class="search-overlay" :class="{ 'active': showSearch }">
