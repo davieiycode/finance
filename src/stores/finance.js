@@ -69,6 +69,7 @@ export const useFinanceStore = defineStore('finance', {
     authors: safeList('authors'),
     subscriptions: safeList('subscriptions'),
     debts: safeList('debts'),
+    shoppingList: safeList('shoppingList'),
     // Notification & Progress State
     notifications: [],
     syncProgress: 0,
@@ -580,6 +581,12 @@ export const useFinanceStore = defineStore('finance', {
     addDebt(d) { if (!d.debtID) d.debtID = 'DBT-' + Date.now(); this.debts.push(d); this.saveAll() },
     updateDebt(d) { const idx = this.debts.findIndex(i => i.debtID === d.debtID); if (idx !== -1) { this.debts[idx] = d; this.saveAll() } },
     deleteDebt(id) { this.debts = this.debts.filter(i => i.debtID !== id); this.saveAll() },
+
+    // Shopping Actions
+    addShoppingItem(i) { if (!i.id) i.id = 'SHP-' + Date.now(); this.shoppingList.push(i); this.saveAll() },
+    toggleShoppingItem(id) { const i = this.shoppingList.find(x => x.id === id); if (i) i.checked = !i.checked; this.saveAll() },
+    deleteShoppingItem(id) { this.shoppingList = this.shoppingList.filter(i => i.id !== id); this.saveAll() },
+    clearCheckedItems() { this.shoppingList = this.shoppingList.filter(i => !i.checked); this.saveAll() },
     // Merge Engine
     mergeEntities(type, sourceName, targetName) {
       console.log(`Merging ${type}: ${sourceName} -> ${targetName}`)

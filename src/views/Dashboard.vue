@@ -115,6 +115,11 @@
           <div class="quick-icon secondary"><span class="material-symbols-rounded">account_balance</span></div>
           <div class="quick-label">Hutang</div>
         </div>
+        <div @click="$router.push('/shopping-list')" class="quick-card">
+          <div class="quick-icon warning"><span class="material-symbols-rounded">shopping_cart</span></div>
+          <div class="quick-label">Belanja</div>
+          <div v-if="store.shoppingList.length > 0" class="badge-dot info">{{ store.shoppingList.length }}</div>
+        </div>
       </div>
 
     </div>
@@ -641,4 +646,5 @@ onMounted(() => {
 .briefing-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--on-surface-variant); opacity: 0.7; }
 .briefing-text p { margin: 2px 0 0 0; font-size: 13px; font-weight: 500; line-height: 1.4; }
 .badge-dot.warning { background-color: var(--amber); color: #000; }
+.badge-dot.info { background-color: var(--blue); color: #fff; }
 </style>

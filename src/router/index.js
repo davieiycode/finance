@@ -34,6 +34,7 @@ const router = createRouter({
     { path: '/metadata', name: 'metadata', component: Metadata },
     { path: '/subscriptions', name: 'subscriptions', component: () => import('../views/Subscriptions.vue') },
     { path: '/debts', name: 'debts', component: () => import('../views/Debts.vue') },
+    { path: '/shopping-list', name: 'shopping-list', component: () => import('../views/ShoppingList.vue') },
     { path: '/audit', name: 'audit', component: () => import('../views/Audit.vue') },
     { path: '/setup', name: 'setup', component: () => import('../views/Setup.vue'), meta: { hideNav: true } }
   ]
