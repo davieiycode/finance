@@ -9,16 +9,26 @@
         <h1>Analisis</h1>
         
         <!-- Segmented Button Switcher -->
-        <div class="segmented-button">
+        <div class="segmented-button no-print">
           <button @click="analysisMode = 'monthly'" :class="{ active: analysisMode === 'monthly' }">Bulanan</button>
           <button @click="analysisMode = 'yearly'" :class="{ active: analysisMode === 'yearly' }">Tahunan</button>
         </div>
+
+        <button class="icon-btn no-print" @click="printReport">
+          <span class="material-symbols-rounded">print</span>
+        </button>
       </div>
     </div>
 
     <div class="content-scroll">
+      <div class="print-only report-header">
+         <h2>Laporan Keuangan Jurney</h2>
+         <p>Periode: {{ displayPeriod }}</p>
+         <p>Dicetak pada: {{ new Date().toLocaleString('id-ID') }}</p>
+      </div>
+
       <!-- Period Navigator -->
-      <div class="period-navigator">
+      <div class="period-navigator no-print">
         <button class="icon-btn sm" @click="changePeriod(-1)">
           <span class="material-symbols-rounded">chevron_left</span>
         </button>
@@ -207,6 +217,10 @@ const activeTab = ref('cashflow')
 const selectedTx = ref(null)
 const modalData = ref(null)
 const isModalOpen = computed(() => !!modalData.value)
+
+const printReport = () => {
+   window.print()
+}
 
 const tabs = [
   { id: 'cashflow', label: 'Aliran', icon: 'conversion_path' },
@@ -854,4 +868,28 @@ watch(analysisMode, (newMode) => {
 
 .text-success { color: var(--green); }
 .text-danger { color: var(--red); }
+
+/* PRINT STYLES */
+@media print {
+  .no-print, .top-app-bar, .floating-tabs, .icon-btn, .period-navigator, .segmented-button { display: none !important; }
+  .analysis-container { background-color: white !important; color: black !important; height: auto !important; overflow: visible !important; }
+  .content-scroll { overflow: visible !important; padding: 0 !important; }
+  .metric-card, .briefing-card, .chart-container { 
+    background-color: white !important; 
+    border: 1px solid #eee !important; 
+    color: black !important; 
+    break-inside: avoid; 
+    box-shadow: none !important;
+  }
+  .metric-value, .rank-name, .rank-value { color: black !important; }
+  .print-only { display: block !important; }
+  .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  .report-header h2 { margin: 0; font-family: 'Outfit', sans-serif; }
+  .report-header p { margin: 5px 0; font-size: 12px; color: #666; }
+  .metrics-grid { display: grid !important; grid-template-columns: 1fr 1fr 1fr 1fr !important; gap: 10px !important; }
+  .metric-card { padding: 10px !important; }
+  .chart-container { margin-bottom: 40px !important; }
+}
+
+.print-only { display: none; }
 </style>
