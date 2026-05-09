@@ -67,6 +67,7 @@ export const useFinanceStore = defineStore('finance', {
     tags: safeList('tags'),
     projects: safeList('projects'),
     authors: safeList('authors'),
+    subscriptions: safeList('subscriptions'),
     // Notification & Progress State
     notifications: [],
     syncProgress: 0,
@@ -568,6 +569,11 @@ export const useFinanceStore = defineStore('finance', {
     addAuthor(a) { if (!a.authorID) a.authorID = 'AUT-' + Date.now(); a.updateTime = new Date().toISOString(); this.authors.push(a); this.saveAll() },
     updateAuthor(a) { const idx = this.authors.findIndex(i => i.authorID === a.authorID); if (idx !== -1) { a.updateTime = new Date().toISOString(); this.authors[idx] = a; this.saveAll() } },
     deleteAuthor(id) { this.authors = this.authors.filter(i => i.authorID !== id); this.saveAll() },
+
+    // Subscription Actions
+    addSubscription(s) { if (!s.subscriptionID) s.subscriptionID = 'SUB-' + Date.now(); this.subscriptions.push(s); this.saveAll() },
+    updateSubscription(s) { const idx = this.subscriptions.findIndex(i => i.subscriptionID === s.subscriptionID); if (idx !== -1) { this.subscriptions[idx] = s; this.saveAll() } },
+    deleteSubscription(id) { this.subscriptions = this.subscriptions.filter(i => i.subscriptionID !== id); this.saveAll() },
     // Merge Engine
     mergeEntities(type, sourceName, targetName) {
       console.log(`Merging ${type}: ${sourceName} -> ${targetName}`)

@@ -37,6 +37,18 @@
     </div>
 
     <div class="content-scroll">
+      <!-- Subscription Alert Briefing -->
+      <div v-if="upcomingSubscriptions.length > 0" class="briefing-card card-md3" @click="$router.push('/subscriptions')">
+         <div class="briefing-icon warning"><span class="material-symbols-rounded">notifications_active</span></div>
+         <div class="briefing-text">
+            <span class="briefing-label">Tagihan Mendatang</span>
+            <p v-for="s in upcomingSubscriptions" :key="s.subscriptionID">
+               {{ s.name }} (Rp {{ (Number(s.amount)||0).toLocaleString('id-ID') }}) jatuh tempo dalam {{ getDaysLeft(s.nextBillDate) }} hari.
+            </p>
+         </div>
+         <span class="material-symbols-rounded" style="opacity: 0.3">chevron_right</span>
+      </div>
+
       <!-- Main Overview Cards -->
       <div class="stats-grid">
         <div class="stat-card" @click="$router.push('/accounts')">
@@ -93,6 +105,11 @@
           <div class="quick-icon danger"><span class="material-symbols-rounded">monitoring</span></div>
           <div class="quick-label">Audit</div>
           <div v-if="anomalyCount > 0" class="badge-dot">{{ anomalyCount }}</div>
+        </div>
+        <div @click="$router.push('/subscriptions')" class="quick-card">
+          <div class="quick-icon primary"><span class="material-symbols-rounded">event_repeat</span></div>
+          <div class="quick-label">Langganan</div>
+          <div v-if="upcomingSubscriptions.length > 0" class="badge-dot warning">{{ upcomingSubscriptions.length }}</div>
         </div>
       </div>
 
@@ -214,6 +231,19 @@ const anomalyCount = computed(() => {
   
   return count
 })
+
+const upcomingSubscriptions = computed(() => {
+  return (store.subscriptions || []).filter(s => {
+    const diff = new Date(s.nextBillDate) - new Date()
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
+    return days >= 0 && days <= 3
+  })
+})
+
+const getDaysLeft = (dateStr) => {
+  const diff = new Date(dateStr) - new Date()
+  return Math.ceil(diff / (1000 * 60 * 60 * 24))
+}
 
 onMounted(() => {
   if (scrollContainer.value) scrollContainer.value.scrollTo(0, 0)
@@ -588,4 +618,23 @@ onMounted(() => {
 /* ANIMATIONS */
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .spin span { animation: spin 1s infinite linear; }
+
+/* BRIEFING CARD */
+.briefing-card {
+  margin-bottom: 24px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, var(--surface-variant), var(--bg-secondary));
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  cursor: pointer;
+}
+.briefing-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.briefing-icon.warning { background: rgba(255, 217, 140, 0.2); color: var(--amber); }
+.briefing-text { flex: 1; }
+.briefing-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--on-surface-variant); opacity: 0.7; }
+.briefing-text p { margin: 2px 0 0 0; font-size: 13px; font-weight: 500; line-height: 1.4; }
+.badge-dot.warning { background-color: var(--amber); color: #000; }
 </style>
