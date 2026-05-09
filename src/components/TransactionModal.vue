@@ -80,25 +80,50 @@
                </div>
             </div>
 
-            <div class="action-grid mt-24">
-               <button @click="editTx" class="tonal-btn">
-                  <span class="material-symbols-rounded" style="font-size: 20px;">edit</span>
-                  Ubah
-               </button>
-               <button @click="duplicateTx" class="tonal-btn">
-                  <span class="material-symbols-rounded" style="font-size: 20px;">content_copy</span>
-                  Duplikat
-               </button>
-               <button @click="mergeTx" class="tonal-btn">
-                  <span class="material-symbols-rounded" style="font-size: 20px;">merge</span>
-                  Gabung
-               </button>
-               <button @click="deleteTx" class="danger-btn">
-                  <span class="material-symbols-rounded" style="font-size: 20px;">delete</span>
-                  Hapus
-               </button>
-            </div>
+             <div class="action-grid mt-24">
+                <button @click="editTx" class="tonal-btn">
+                   <span class="material-symbols-rounded" style="font-size: 20px;">edit</span>
+                   Ubah
+                </button>
+                <button @click="duplicateTx" class="tonal-btn">
+                   <span class="material-symbols-rounded" style="font-size: 20px;">content_copy</span>
+                   Duplikat
+                </button>
+                <button @click="mergeTx" class="tonal-btn">
+                   <span class="material-symbols-rounded" style="font-size: 20px;">merge</span>
+                   Gabung
+                </button>
+                <button @click="deleteTx" class="danger-btn">
+                   <span class="material-symbols-rounded" style="font-size: 20px;">delete</span>
+                   Hapus
+                </button>
+             </div>
+
+             <!-- Evidence Section -->
+             <div v-if="evidenceUrl" class="evidence-section mt-24">
+                <span class="label">Bukti / Nota</span>
+                <div class="evidence-card card-md3" @click="showFullscreen = true">
+                   <img :src="evidenceUrl" class="evidence-img">
+                   <div class="evidence-overlay">
+                      <span class="material-symbols-rounded">zoom_in</span>
+                      Ketuk untuk memperbesar
+                   </div>
+                </div>
+             </div>
          </div>
+    </div>
+
+    <!-- Fullscreen Viewer -->
+    <div v-if="showFullscreen" class="fullscreen-viewer" @click="showFullscreen = false">
+       <div class="viewer-header">
+          <span class="viewer-title">{{ tx.itemName }}</span>
+          <button class="icon-btn close-viewer">
+             <span class="material-symbols-rounded">close</span>
+          </button>
+       </div>
+       <div class="viewer-content">
+          <img :src="evidenceUrl" class="viewer-img">
+       </div>
     </div>
 
     <!-- Merge Panel (Nested Sheet) -->
@@ -163,7 +188,17 @@ const duplicateTx = () => {
 }
 
 const isMergePanelOpen = ref(false)
+const showFullscreen = ref(false)
 const mergeTargetSearch = ref('')
+
+const evidenceUrl = computed(() => {
+  if (props.tx.localPhoto) return store.unwrapImage(props.tx.localPhoto)
+  if (props.tx.receipt) {
+    const r = store.receipts.find(x => x.receiptID === props.tx.receipt)
+    if (r) return store.unwrapImage(r['foto/dokumen'])
+  }
+  return null
+})
 const filteredMergeTargets = computed(() => {
   const q = mergeTargetSearch.value.toLowerCase()
   return store.transactions
@@ -326,4 +361,20 @@ onUnmounted(() => { uiStore.unregisterModal('transaction-detail') })
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
 .mt-24 { margin-top: 24px; }
+
+.evidence-section { display: flex; flex-direction: column; gap: 8px; }
+.evidence-section .label { font-size: 11px; font-weight: 600; color: var(--on-surface-variant); text-transform: uppercase; letter-spacing: 1px; }
+.evidence-card { position: relative; width: 100%; height: 200px; border-radius: 20px; overflow: hidden; background: #000; border: 1px solid var(--border); }
+.evidence-img { width: 100%; height: 100%; object-fit: contain; }
+.evidence-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); display: flex; align-items: flex-end; padding: 12px; gap: 8px; color: white; font-size: 11px; opacity: 0.8; }
+.evidence-overlay .material-symbols-rounded { font-size: 18px; }
+
+/* FULLSCREEN VIEWER */
+.fullscreen-viewer { position: fixed; inset: 0; background-color: #000; z-index: 6000; display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out; }
+.viewer-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); position: absolute; top: 0; left: 0; right: 0; z-index: 2; }
+.viewer-title { font-weight: 500; color: white; font-family: 'Outfit', sans-serif; }
+.close-viewer { color: white !important; }
+.viewer-content { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.viewer-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>

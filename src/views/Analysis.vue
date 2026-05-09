@@ -111,7 +111,7 @@
         </div>
 
         <div v-show="activeTab === 'merchant'" class="chart-container">
-          <h3 class="chart-title">Pengeluaran per Toko/Vendor</h3>
+          <h3 class="chart-title">Analisis Toko & Vendor</h3>
           <div id="merchant-treemap" style="width: 100%; height: 350px;"></div>
           <div class="ranking-list">
             <div v-for="(item, i) in merchantAnalysis" :key="item.name" @click="showModal('merchant', 'Expense', item.name)" class="rank-item">
