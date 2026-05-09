@@ -111,6 +111,10 @@
           <div class="quick-label">Langganan</div>
           <div v-if="upcomingSubscriptions.length > 0" class="badge-dot warning">{{ upcomingSubscriptions.length }}</div>
         </div>
+        <div @click="$router.push('/debts')" class="quick-card">
+          <div class="quick-icon secondary"><span class="material-symbols-rounded">account_balance</span></div>
+          <div class="quick-label">Hutang</div>
+        </div>
       </div>
 
     </div>

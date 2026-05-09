@@ -68,6 +68,7 @@ export const useFinanceStore = defineStore('finance', {
     projects: safeList('projects'),
     authors: safeList('authors'),
     subscriptions: safeList('subscriptions'),
+    debts: safeList('debts'),
     // Notification & Progress State
     notifications: [],
     syncProgress: 0,
@@ -574,6 +575,11 @@ export const useFinanceStore = defineStore('finance', {
     addSubscription(s) { if (!s.subscriptionID) s.subscriptionID = 'SUB-' + Date.now(); this.subscriptions.push(s); this.saveAll() },
     updateSubscription(s) { const idx = this.subscriptions.findIndex(i => i.subscriptionID === s.subscriptionID); if (idx !== -1) { this.subscriptions[idx] = s; this.saveAll() } },
     deleteSubscription(id) { this.subscriptions = this.subscriptions.filter(i => i.subscriptionID !== id); this.saveAll() },
+
+    // Debt Actions
+    addDebt(d) { if (!d.debtID) d.debtID = 'DBT-' + Date.now(); this.debts.push(d); this.saveAll() },
+    updateDebt(d) { const idx = this.debts.findIndex(i => i.debtID === d.debtID); if (idx !== -1) { this.debts[idx] = d; this.saveAll() } },
+    deleteDebt(id) { this.debts = this.debts.filter(i => i.debtID !== id); this.saveAll() },
     // Merge Engine
     mergeEntities(type, sourceName, targetName) {
       console.log(`Merging ${type}: ${sourceName} -> ${targetName}`)
