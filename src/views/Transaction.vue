@@ -137,18 +137,20 @@
            <div class="receipt-section mt-16">
               <span class="field-label">Foto Nota / Bukti</span>
               <div class="receipt-actions">
-                 <select v-model="form.receipt" class="md-input">
-                    <option value="">Tidak ada nota tertaut</option>
-                    <option v-for="r in store.receipts" :key="r.receiptID" :value="r.receiptID">{{ r.merchant }} - {{ r.date }}</option>
-                 </select>
-                 <button type="button" @click="$refs.txPhoto.click()" class="icon-btn-outlined">
-                    <span class="material-symbols-rounded">photo_camera</span>
-                 </button>
-                 <input type="file" ref="txPhoto" @change="onTxPhotoChange" accept="image/*" capture="environment" style="display: none;">
-              </div>
+                  <select v-model="form.receipt" class="md-input" style="flex: 1;">
+                     <option value="">Link Nota Terdaftar...</option>
+                     <option v-for="r in store.receipts" :key="r.receiptID" :value="r.receiptID">{{ r.merchant }} - {{ r.date }}</option>
+                  </select>
+                  <button type="button" @click="showUrlInput = !showUrlInput" class="icon-btn-outlined" :class="{ active: showUrlInput }">
+                     <span class="material-symbols-rounded">link</span>
+                  </button>
+               </div>
               
-              <div v-if="form.localPhoto" class="receipt-preview">
-                 <img :src="form.localPhoto">
+              <div v-if="showUrlInput" class="url-input-box mt-12">
+                  <input type="text" v-model="form.localPhoto" placeholder="Tempel URL gambar atau Drive..." class="md-input-sm">
+               </div>
+                 <div v-if="form.localPhoto" class="receipt-preview mt-12">
+                  <img :src="store.unwrapImage(form.localPhoto)" class="evidence-img">
                  <button type="button" @click="form.localPhoto = ''" class="remove-evidence">
                     <span class="material-symbols-rounded">close</span>
                  </button>
@@ -368,6 +370,7 @@ const merchantSearch = ref('')
 const showMerchantDropdown = ref(false)
 const unitSearch = ref('')
 const showUnitDropdown = ref(false)
+const showUrlInput = ref(false)
 
 watch(itemSearch, (val) => { 
   if (val !== form.value.itemName) {
@@ -478,14 +481,6 @@ const suggestedReceipts = computed(() => {
     return r.merchant === form.value.merchant || r.date === form.value.date
   }).slice(0, 2)
 })
-
-const onTxPhotoChange = (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = (f) => { form.value.localPhoto = f.target.result }
-  reader.readAsDataURL(file)
-}
 
 const calculatedDiscount = computed(() => {
   let disc = 0
@@ -722,10 +717,19 @@ watch(() => route.query, () => initForm(), { deep: true })
 
 .mt-24 { margin-top: 24px; }
 /* Global MD3 Buttons are used */
-.icon-btn-outlined { width: 48px; height: 48px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.icon-btn-outlined { width: 48px; height: 48px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-primary); color: var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+.icon-btn-outlined.active { background: var(--primary-container); border-color: var(--primary); }
+
+.url-input-box { width: 100%; }
+.md-input-sm { background-color: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; height: 40px; padding: 0 12px; color: var(--on-surface); font-size: 13px; outline: none; width: 100%; }
+
+.evidence-img { max-width: 100%; max-height: 200px; border-radius: 16px; border: 1px solid var(--border); object-fit: contain; background: #000; }
 
 @media (max-width: 480px) {
   .form-row { flex-direction: column; }
   .border-left { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 16px; }
 }
+.url-input-box { width: 100%; }
+.md-input-sm { background-color: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; height: 40px; padding: 0 12px; color: var(--on-surface); font-size: 13px; outline: none; width: 100%; }
+.evidence-img { max-width: 100%; max-height: 200px; border-radius: 16px; border: 1px solid var(--border); object-fit: contain; background: #000; }
 </style>

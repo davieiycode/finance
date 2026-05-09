@@ -69,16 +69,20 @@
              <div class="sheet-content">
                 <!-- VIEW MODE -->
                 <div v-if="!isEditing" class="view-mode-content">
-                   <div class="preview-hero card-md3">
-                      <img v-if="formData['foto/dokumen']" :src="formData['foto/dokumen']" class="hero-img">
+                   <div class="preview-hero card-md3" @click="showFullscreen = true">
+                      <img v-if="formData['foto/dokumen']" :src="store.unwrapImage(formData['foto/dokumen'])" class="hero-img">
                       <div v-else class="hero-placeholder">
                          <span class="material-symbols-rounded">no_photography</span>
                          <p>Gambar tidak tersedia</p>
                       </div>
                       <div v-if="formData['foto/dokumen']" class="hero-actions">
-                         <button @click="downloadPhoto" class="fab-sm tonal">
+                         <button @click.stop="downloadPhoto" class="fab-sm tonal">
                             <span class="material-symbols-rounded">download</span>
                          </button>
+                      </div>
+                      <div class="view-hint" v-if="formData['foto/dokumen']">
+                         <span class="material-symbols-rounded">zoom_in</span>
+                         Ketuk untuk memperbesar
                       </div>
                    </div>
 
@@ -137,13 +141,18 @@
 
                 <!-- EDIT MODE -->
                 <div v-else class="edit-mode-content">
-                   <div class="upload-area card-md3" @click="$refs.fileInput.click()">
-                      <img v-if="formData['foto/dokumen']" :src="formData['foto/dokumen']" class="upload-preview">
-                      <div v-else class="upload-placeholder">
-                         <span class="material-symbols-rounded">add_a_photo</span>
-                         <span class="upload-label">UPLOAD OR CAPTURE</span>
+                   <div class="form-group full">
+                      <label>URL Gambar / Bukti (Google Drive / Link Langsung)</label>
+                      <div class="url-input-container">
+                        <input type="text" v-model="formData['foto/dokumen']" placeholder="Tempel URL gambar di sini..." class="md-input">
+                        <button v-if="formData['foto/dokumen']" @click="formData['foto/dokumen'] = ''" class="icon-btn-sm">
+                           <span class="material-symbols-rounded">close</span>
+                        </button>
                       </div>
-                      <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" capture="environment" class="hidden-input">
+                   </div>
+
+                   <div v-if="formData['foto/dokumen']" class="upload-area card-md3 has-img">
+                      <img :src="store.unwrapImage(formData['foto/dokumen'])" class="upload-preview">
                    </div>
 
                    <div class="form-grid">
@@ -183,6 +192,24 @@
        </div>
     </Teleport>
 
+    <!-- Fullscreen Viewer -->
+    <Teleport to="body">
+       <div v-if="showFullscreen" class="fullscreen-viewer" @click="showFullscreen = false">
+          <div class="viewer-header">
+             <span class="viewer-title">{{ formData.merchant }}</span>
+             <button class="icon-btn close-viewer">
+                <span class="material-symbols-rounded">close</span>
+             </button>
+          </div>
+          <div class="viewer-content">
+             <img :src="store.unwrapImage(formData['foto/dokumen'])" class="viewer-img">
+          </div>
+          <div class="viewer-footer">
+             <p>{{ formData.date }} • {{ formData.notes || 'No description' }}</p>
+          </div>
+       </div>
+    </Teleport>
+
     <datalist id="mch-list">
        <option v-for="m in store.merchants" :key="m.merchantID" :value="m.merchantName" />
     </datalist>
@@ -203,6 +230,7 @@ const formData = ref({})
 const showSearch = ref(false)
 const searchQuery = ref('')
 const fileInput = ref(null)
+const showFullscreen = ref(false)
 
 const filteredReceipts = computed(() => {
   if (!searchQuery.value) return store.receipts
@@ -228,7 +256,7 @@ const openModal = (r) => {
 }
 
 const downloadPhoto = () => {
-   const url = formData.value['foto/dokumen']
+   const url = store.unwrapImage(formData.value['foto/dokumen'])
    if (!url) return
    
    const link = document.createElement('a')
@@ -237,14 +265,6 @@ const downloadPhoto = () => {
    document.body.appendChild(link)
    link.click()
    document.body.removeChild(link)
-}
-
-const onFileChange = (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = (f) => { formData.value['foto/dokumen'] = f.target.result }
-  reader.readAsDataURL(file)
 }
 
 const suggestedTransactions = computed(() => {
@@ -408,9 +428,19 @@ onBeforeUnmount(() => { uiStore.unregisterModal('receipts') })
 .hero-img { width: 100%; height: 100%; object-fit: contain; }
 .hero-placeholder { display: flex; flex-direction: column; align-items: center; gap: 12px; opacity: 0.3; color: white; }
 .hero-placeholder .material-symbols-rounded { font-size: 64px; }
-.hero-actions { position: absolute; bottom: 16px; right: 16px; }
+.hero-actions { position: absolute; bottom: 16px; right: 16px; z-index: 2; }
 .fab-sm { width: 48px; height: 48px; border-radius: 16px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
 .fab-sm.tonal { background: var(--secondary-container); color: var(--on-secondary-container); }
+
+.view-hint { position: absolute; bottom: 16px; left: 16px; font-size: 10px; color: white; display: flex; align-items: center; gap: 4px; opacity: 0.6; pointer-events: none; }
+.view-hint .material-symbols-rounded { font-size: 14px; }
+
+.url-input-container { position: relative; display: flex; align-items: center; }
+.url-input-container .md-input { padding-right: 84px; width: 100%; }
+.url-actions { position: absolute; right: 8px; display: flex; align-items: center; gap: 4px; }
+.icon-btn-sm { background: transparent; border: none; color: var(--on-surface-variant); cursor: pointer; padding: 8px; display: flex; align-items: center; border-radius: 50%; }
+.icon-btn-sm:active { background: var(--surface-variant); }
+.primary-text { color: var(--primary); }
 
 .insight-card { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 .insight-item { display: flex; gap: 16px; align-items: center; }
@@ -451,4 +481,16 @@ onBeforeUnmount(() => { uiStore.unregisterModal('receipts') })
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
+
+/* FULLSCREEN VIEWER */
+.fullscreen-viewer { position: fixed; inset: 0; background-color: #000; z-index: 5000; display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out; }
+.viewer-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); position: absolute; top: 0; left: 0; right: 0; z-index: 2; }
+.viewer-title { font-weight: 500; color: white; }
+.close-viewer { color: white !important; }
+.viewer-content { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.viewer-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.viewer-footer { padding: 24px 16px; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); position: absolute; bottom: 0; left: 0; right: 0; color: white; text-align: center; }
+.viewer-footer p { margin: 0; font-size: 14px; opacity: 0.8; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>

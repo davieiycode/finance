@@ -63,25 +63,7 @@
         </div>
       </div>
 
-      <!-- Pengingat -->
-      <div v-if="upcomingReminders.length > 0" class="section">
-        <div class="section-header">
-          <h2 class="section-title">Pengingat Penting</h2>
-          <div class="badge danger">{{ upcomingReminders.length }} Tagihan</div>
-        </div>
-        <div class="reminder-list">
-          <div v-for="rem in upcomingReminders" :key="rem.id" class="reminder-card">
-            <div class="reminder-icon">
-              <span class="material-symbols-rounded">{{ rem.icon }}</span>
-            </div>
-            <div class="reminder-info">
-              <span class="reminder-name">{{ rem.name }}</span>
-              <span class="reminder-desc">Belum dibayar ({{ rem.period }})</span>
-            </div>
-            <button class="tonal-btn" @click="$router.push('/transaction')">Bayar</button>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Menu Cepat -->
       <div class="quick-access-grid">
@@ -192,61 +174,6 @@ const goalProgress = computed(() => {
   return avg * 100
 })
 
-const upcomingReminders = computed(() => {
-  const txs = store.transactions || []
-  const now = new Date()
-  const currentMonth = now.toISOString().substring(0, 7) // YYYY-MM
-  const currentYear = now.getFullYear().toString()
-  
-  // Detection Protocols (Keywords vs Regularity)
-  const protocols = [
-    { id: 'elec', name: 'Listrik (PLN)', keywords: ['listrik', 'pln', 'token'], type: 'monthly', icon: 'bolt' },
-    { id: 'net', name: 'Internet / WiFi', keywords: ['internet', 'wifi', 'indihome', 'biznet', 'myrepublic'], type: 'monthly', icon: 'wifi' },
-    { id: 'mobile', name: 'Seluler / Pulsa', keywords: ['pulsa', 'kuota', 'telkomsel', 'xl', 'indosat'], type: 'monthly', icon: 'smartphone' },
-    { id: 'water', name: 'Air (PDAM)', keywords: ['pdam', 'air'], type: 'monthly', icon: 'water_drop' },
-    { id: 'trash', name: 'Sampah / Keamanan', keywords: ['sampah', 'keamanan', 'iuran'], type: 'monthly', icon: 'security' },
-    { id: 'tax', name: 'Pajak (PBB)', keywords: ['pajak', 'pbb', 'samsat'], type: 'yearly', icon: 'description' },
-    { id: 'rent', name: 'Sewa / Cicilan', keywords: ['sewa', 'cicilan', 'kpr'], type: 'monthly', icon: 'home' },
-    { id: 'sub', name: 'Langganan', keywords: ['netflix', 'spotify', 'youtube', 'cloud', 'icloud', 'disney'], type: 'monthly', icon: 'play_arrow' },
-    { id: 'donate', name: 'Donasi / Zakat', keywords: ['donasi', 'zakat', 'sedekah', 'kitabisa'], type: 'monthly', icon: 'favorite' }
-  ]
-
-  const reminders = []
-
-  protocols.forEach(proto => {
-    // 1. Find the MOST RECENT transaction that matches this protocol
-    const relatedTxs = txs.filter(t => {
-      const target = (t.itemName + ' ' + t.category + ' ' + t.merchant).toLowerCase()
-      return proto.keywords.some(k => target.includes(k.toLowerCase()))
-    }).sort((a,b) => new Date(b.date) - new Date(a.date))
-
-    if (relatedTxs.length > 0) {
-      const lastTx = relatedTxs[0]
-      const lastDate = lastTx.date || ''
-      const lastMonth = lastDate.substring(0, 7)
-      const lastYear = lastDate.substring(0, 4)
-
-      let isPaid = false
-      if (proto.type === 'monthly') {
-        isPaid = lastMonth === currentMonth
-      } else if (proto.type === 'yearly') {
-        isPaid = lastYear === currentYear
-      }
-
-      if (!isPaid) {
-        reminders.push({
-          id: proto.id,
-          name: proto.name,
-          period: proto.type === 'monthly' ? now.toLocaleString('id-ID', { month: 'long' }) : currentYear,
-          lastDate: lastDate,
-          icon: proto.icon
-        })
-      }
-    }
-  })
-
-  return reminders
-})
 
 const anomalyCount = computed(() => {
   let count = 0
@@ -571,59 +498,6 @@ onMounted(() => {
   color: var(--red);
 }
 
-/* REMINDERS */
-.reminder-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.reminder-card {
-  background-color: var(--bg-secondary);
-  border-radius: 16px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.reminder-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  background-color: var(--surface-variant);
-  color: var(--on-surface-variant);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.reminder-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.reminder-name {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.reminder-desc {
-  font-size: 12px;
-  color: var(--on-surface-variant);
-}
-
-.tonal-btn {
-  background-color: var(--secondary-container);
-  color: var(--on-secondary-container);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 18px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
 
 /* QUICK ACCESS */
 .quick-access-grid {
