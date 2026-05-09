@@ -91,6 +91,40 @@
           <div id="trend-line" style="width: 100%; height: 350px;"></div>
         </div>
 
+        <div v-show="activeTab === 'networth'" class="chart-container">
+          <h3 class="chart-title">Struktur Kekayaan Bersih</h3>
+          <div class="networth-hero">
+             <span class="nw-label">Kekayaan Bersih Saat Ini</span>
+             <h2 class="nw-value" :class="{ 'pos': netWorthData.total >= 0, 'neg': netWorthData.total < 0 }">
+                Rp {{ netWorthData.total.toLocaleString('id-ID') }}
+             </h2>
+          </div>
+          <div class="nw-breakdown">
+             <div class="nw-row">
+                <div class="nw-info">
+                   <span class="material-symbols-rounded text-success">payments</span>
+                   <span>Total Saldo Akun</span>
+                </div>
+                <span class="nw-amount">Rp {{ netWorthData.accounts.toLocaleString('id-ID') }}</span>
+             </div>
+             <div class="nw-row">
+                <div class="nw-info">
+                   <span class="material-symbols-rounded text-success">call_made</span>
+                   <span>Total Piutang (Aset)</span>
+                </div>
+                <span class="nw-amount">Rp {{ netWorthData.lending.toLocaleString('id-ID') }}</span>
+             </div>
+             <div class="nw-row debt-row">
+                <div class="nw-info">
+                   <span class="material-symbols-rounded text-danger">call_received</span>
+                   <span>Total Hutang (Beban)</span>
+                </div>
+                <span class="nw-amount text-danger">-Rp {{ netWorthData.debt.toLocaleString('id-ID') }}</span>
+             </div>
+          </div>
+          <div id="networth-pie" style="width: 100%; height: 300px;"></div>
+        </div>
+
         <div v-show="activeTab === 'income'" class="chart-container">
           <h3 class="chart-title">Kategori Pemasukan</h3>
           <div id="income-treemap" style="width: 100%; height: 350px;"></div>
@@ -264,6 +298,7 @@ const printReport = () => {
 const tabs = [
   { id: 'cashflow', label: 'Aliran', icon: 'conversion_path' },
   { id: 'trend', label: 'Tren', icon: 'trending_up' },
+  { id: 'networth', label: 'Kekayaan', icon: 'account_balance' },
   { id: 'income', label: 'Pemasukan', icon: 'download' },
   { id: 'spend', label: 'Pengeluaran', icon: 'shopping_basket' },
   { id: 'budget', label: 'Anggaran', icon: 'pie_chart' },
@@ -318,6 +353,19 @@ const categoryIncome = computed(() => processData(filteredTransactions.value.fil
 const merchantAnalysis = computed(() => processData(filteredTransactions.value.filter(t => t.type === 'Expense'), 'merchant'))
 const tagAnalysis = computed(() => processData(filteredTransactions.value, 'tags', true))
 const projectAnalysis = computed(() => processData(filteredTransactions.value, 'projects'))
+
+const netWorthData = computed(() => {
+  const accountsTotal = store.accounts.reduce((sum, a) => sum + (Number(a.currentBalance) || 0), 0)
+  const lendingTotal = store.debts.filter(d => d.type === 'piutang').reduce((sum, d) => sum + (Number(d.remainingAmount) || 0), 0)
+  const debtTotal = store.debts.filter(d => d.type === 'hutang').reduce((sum, d) => sum + (Number(d.remainingAmount) || 0), 0)
+  
+  return {
+    accounts: accountsTotal,
+    lending: lendingTotal,
+    debt: debtTotal,
+    total: accountsTotal + lendingTotal - debtTotal
+  }
+})
 
 const budgetAnalysis = computed(() => {
   const currentMonth = activeDate.value.toISOString().substring(0, 7)
@@ -517,6 +565,28 @@ const initCharts = () => {
   }
   renderTM('income-treemap', categoryIncome.value, 'income', 'Income')
   renderTM('spend-treemap', categorySpending.value, 'spend', 'Expense')
+  renderTM('merchant-treemap', merchantAnalysis.value, 'merchant', 'Expense')
+
+  const nwEl = document.getElementById('networth-pie')
+  if (nwEl && activeTab.value === 'networth') {
+    if (!charts.networth) charts.networth = window.echarts.init(nwEl, 'dark')
+    charts.networth.setOption({
+      ...darkTheme,
+      tooltip: { trigger: 'item', formatter: '{b}: Rp {c} ({d}%)' },
+      series: [{
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        itemStyle: { borderRadius: 10, borderColor: '#121212', borderWidth: 2 },
+        label: { show: false },
+        data: [
+          { value: netWorthData.value.accounts, name: 'Saldo Tunai', itemStyle: { color: '#B4E8A8' } },
+          { value: netWorthData.value.lending, name: 'Piutang', itemStyle: { color: '#A8C7FA' } },
+          { value: netWorthData.value.debt, name: 'Hutang', itemStyle: { color: '#F2B8B5' } }
+        ]
+      }]
+    })
+  }
   renderTM('merchant-treemap', merchantAnalysis.value, 'merchant', 'Expense')
 
   const trendEl = document.getElementById('trend-line')
@@ -951,6 +1021,18 @@ watch(analysisMode, (newMode) => {
 .tx-amount { font-size: 16px; font-weight: 500; }
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.networth-hero { text-align: center; padding: 24px 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.nw-label { font-size: 12px; font-weight: 600; color: var(--on-surface-variant); opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+.nw-value { font-size: 32px; font-weight: 700; margin-top: 8px; font-family: 'Outfit', sans-serif; }
+.nw-value.pos { color: var(--green); }
+.nw-value.neg { color: var(--red); }
+.nw-breakdown { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.nw-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+.nw-info { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; }
+.nw-info .material-symbols-rounded { font-size: 20px; }
+.nw-amount { font-weight: 700; font-size: 14px; }
+.debt-row { border-top: 1px dashed var(--border); padding-top: 12px; }
 
 .briefing-card {
   margin-bottom: 16px;
