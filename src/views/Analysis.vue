@@ -41,6 +41,15 @@
         </button>
       </div>
 
+      <!-- MoM Briefing -->
+      <div v-if="momInsight" class="briefing-card card-md3 no-print">
+         <div class="briefing-icon"><span class="material-symbols-rounded">lightbulb</span></div>
+         <div class="briefing-content">
+            <span class="briefing-label">Wawasan Bulan Ini</span>
+            <p class="briefing-text">{{ momInsight }}</p>
+         </div>
+      </div>
+
       <!-- Metrics Grid -->
       <div class="metrics-grid">
         <div class="metric-card income" @click="showModal('category', 'Income', 'Total Income')">
@@ -107,6 +116,36 @@
               </div>
               <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/metrics.expense*100) + '%', background: colors[i % colors.length] }"></div></div>
             </div>
+          </div>
+        </div>
+
+        <div v-show="activeTab === 'budget'" class="chart-container">
+          <h3 class="chart-title">Monitor Anggaran Kategori</h3>
+          <div class="ranking-list">
+             <div v-for="b in budgetAnalysis" :key="b.name" class="rank-item budget-item" @click="showModal('category', 'Expense', b.name)">
+                <div class="rank-header">
+                   <div class="rank-name-group">
+                      <span class="rank-name">{{ b.name }}</span>
+                      <span class="budget-sub">{{ b.percent.toFixed(0) }}% terpakai</span>
+                   </div>
+                   <div class="rank-value-group">
+                      <span class="rank-value">Rp {{ b.spent.toLocaleString('id-ID') }}</span>
+                      <span class="budget-total">/ {{ b.limit.toLocaleString('id-ID') }}</span>
+                   </div>
+                </div>
+                <div class="rank-bar">
+                   <div class="rank-fill" :style="{ width: Math.min(b.percent, 100) + '%', background: getBudgetColor(b.percent) }"></div>
+                </div>
+                <div class="budget-footer">
+                   <span :class="{ 'over-budget': b.remaining < 0 }">
+                      {{ b.remaining < 0 ? 'Lebih: Rp ' + Math.abs(b.remaining).toLocaleString('id-ID') : 'Sisa: Rp ' + b.remaining.toLocaleString('id-ID') }}
+                   </span>
+                </div>
+             </div>
+             <div v-if="budgetAnalysis.length === 0" class="empty-state">
+                <p>Belum ada anggaran yang disetel untuk bulan ini.</p>
+                <button @click="$router.push('/budget')" class="tonal-btn sm">Setel Anggaran</button>
+             </div>
           </div>
         </div>
 
@@ -227,6 +266,7 @@ const tabs = [
   { id: 'trend', label: 'Tren', icon: 'trending_up' },
   { id: 'income', label: 'Pemasukan', icon: 'download' },
   { id: 'spend', label: 'Pengeluaran', icon: 'shopping_basket' },
+  { id: 'budget', label: 'Anggaran', icon: 'pie_chart' },
   { id: 'merchant', label: 'Toko', icon: 'store' },
   { id: 'tag', label: 'Tag', icon: 'tag' },
   { id: 'project', label: 'Proyek', icon: 'layers' }
@@ -278,6 +318,52 @@ const categoryIncome = computed(() => processData(filteredTransactions.value.fil
 const merchantAnalysis = computed(() => processData(filteredTransactions.value.filter(t => t.type === 'Expense'), 'merchant'))
 const tagAnalysis = computed(() => processData(filteredTransactions.value, 'tags', true))
 const projectAnalysis = computed(() => processData(filteredTransactions.value, 'projects'))
+
+const budgetAnalysis = computed(() => {
+  const currentMonth = activeDate.value.toISOString().substring(0, 7)
+  const results = []
+  
+  store.budgets.forEach(b => {
+    // Only show budget if it's for current month or recurring (if your logic supports it)
+    // For now, assume all budgets in store are relevant or filtered by name/category
+    const spent = categorySpending.value.find(c => c.name === b.category)?.value || 0
+    const limit = Number(b.amount) || 0
+    const percent = limit > 0 ? (spent / limit) * 100 : 0
+    results.push({
+      name: b.category,
+      spent,
+      limit,
+      percent,
+      remaining: limit - spent
+    })
+  })
+  return results.sort((a,b) => b.percent - a.percent)
+})
+
+const getBudgetColor = (p) => {
+  if (p >= 100) return 'var(--red)'
+  if (p >= 80) return 'var(--amber)'
+  return 'var(--green)'
+}
+
+const lastMonthSpending = computed(() => {
+  const prevDate = new Date(activeDate.value.getFullYear(), activeDate.value.getMonth() - 1, 1)
+  const monthStr = prevDate.toISOString().substring(0, 7)
+  return store.transactions
+    .filter(t => t.type === 'Expense' && (t.date || '').startsWith(monthStr))
+    .reduce((sum, t) => sum + (Number(t.total) || 0), 0)
+})
+
+const momInsight = computed(() => {
+  const current = categorySpending.value.reduce((sum, c) => sum + c.value, 0)
+  const prev = lastMonthSpending.value
+  if (prev === 0 || current === 0) return null
+  
+  const diff = ((current - prev) / prev) * 100
+  if (diff > 5) return `Pengeluaran naik ${diff.toFixed(0)}% dari bulan lalu. Periksa tab "Anggaran" untuk melihat kategori mana yang bocor.`
+  if (diff < -5) return `Hebat! Anda hemat ${Math.abs(diff).toFixed(0)}% dari bulan lalu. Surplus ini bisa dialokasikan ke "Target Tabungan".`
+  return `Pengeluaran Anda stabil (hanya selisih ${Math.abs(diff).toFixed(1)}%). Manajemen keuangan yang bagus!`
+})
 
 const trendAnalysis = computed(() => {
   const map = {}
@@ -865,6 +951,38 @@ watch(analysisMode, (newMode) => {
 .tx-amount { font-size: 16px; font-weight: 500; }
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.briefing-card {
+  margin-bottom: 16px;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: linear-gradient(135deg, var(--primary-container), var(--bg-secondary));
+  border: 1px solid var(--primary);
+}
+.briefing-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.briefing-content { flex: 1; }
+.briefing-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); display: block; margin-bottom: 2px; }
+.briefing-text { font-size: 13px; font-weight: 500; line-height: 1.4; margin: 0; }
+
+.rank-item.budget-item { padding: 16px; border-bottom: 1px solid var(--border); }
+.rank-name-group { display: flex; flex-direction: column; gap: 2px; }
+.budget-sub { font-size: 11px; color: var(--on-surface-variant); opacity: 0.7; }
+.rank-value-group { text-align: right; }
+.budget-total { font-size: 11px; opacity: 0.5; display: block; }
+.budget-footer { display: flex; justify-content: flex-end; margin-top: 8px; font-size: 12px; font-weight: 600; }
+.over-budget { color: var(--red); }
+.tonal-btn.sm { padding: 6px 12px; font-size: 12px; height: 32px; margin-top: 12px; }
 
 .text-success { color: var(--green); }
 .text-danger { color: var(--red); }

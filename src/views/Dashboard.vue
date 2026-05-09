@@ -10,7 +10,9 @@
           <h1>Jurney</h1>
         </div>
         
-        <div class="app-bar-actions">
+          <button @click="togglePrivacy" class="icon-btn">
+            <span class="material-symbols-rounded">{{ isPrivate ? 'visibility_off' : 'visibility' }}</span>
+          </button>
           <button @click="toggleSearch" class="icon-btn">
             <span class="material-symbols-rounded">search</span>
           </button>
@@ -40,19 +42,19 @@
         <div class="stat-card" @click="$router.push('/accounts')">
           <div class="card-icon"><span class="material-symbols-rounded">account_balance_wallet</span></div>
           <span class="card-title">Total Saldo</span>
-          <span class="card-value">Rp {{ Math.round(totalBalance || 0).toLocaleString('id-ID') }}</span>
+          <span class="card-value">{{ isPrivate ? '••••••' : 'Rp ' + Math.round(totalBalance || 0).toLocaleString('id-ID') }}</span>
           <span class="card-sub">{{ (store.accounts || []).length }} rekening</span>
         </div>
         <div class="stat-card spending" @click="$router.push('/analysis')">
           <div class="card-icon"><span class="material-symbols-rounded">trending_down</span></div>
           <span class="card-title">Pengeluaran</span>
-          <span class="card-value">Rp {{ Math.round(monthSpending || 0).toLocaleString('id-ID') }}</span>
+          <span class="card-value">{{ isPrivate ? '••••••' : 'Rp ' + Math.round(monthSpending || 0).toLocaleString('id-ID') }}</span>
           <span class="card-sub">Bulan ini</span>
         </div>
         <div class="stat-card success" @click="$router.push('/budget')">
           <div class="card-icon"><span class="material-symbols-rounded">pie_chart</span></div>
           <span class="card-title">Anggaran</span>
-          <span class="card-value">Rp {{ (totalBudget || 0).toLocaleString('id-ID') }}</span>
+          <span class="card-value">{{ isPrivate ? '••••••' : 'Rp ' + (totalBudget || 0).toLocaleString('id-ID') }}</span>
           <span class="card-sub">{{ (store.budgets || []).length }} kategori</span>
         </div>
         <div class="stat-card info" @click="$router.push('/goals')">
@@ -108,7 +110,13 @@ const store = useFinanceStore()
 const scrollContainer = ref(null)
 
 const showSearch = ref(false)
+const isPrivate = ref(localStorage.getItem('privacy_mode') === 'true')
 const searchQuery = ref('')
+
+const togglePrivacy = () => {
+  isPrivate.value = !isPrivate.value
+  localStorage.setItem('privacy_mode', isPrivate.value)
+}
 const userAvatar = computed(() => {
   if (typeof localStorage === 'undefined') return '👤'
   const prefs = JSON.parse(localStorage.getItem('user_prefs') || '{}')
