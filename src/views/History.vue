@@ -34,39 +34,68 @@
     <div class="content-scroll" ref="scrollContainer">
       <!-- Filter Panel (MD3 style) -->
       <div v-if="showFilter" class="filter-panel card-md3">
-         <div class="filter-grid">
-            <div class="filter-group">
-               <span class="filter-label">Mulai Tanggal</span>
-               <input type="date" v-model="filter.from" class="md-input">
-            </div>
-            <div class="filter-group">
-               <span class="filter-label">Sampai Tanggal</span>
-               <input type="date" v-model="filter.to" class="md-input">
-            </div>
-            <div class="filter-group">
-               <span class="filter-label">Jenis Transaksi</span>
-               <select v-model="filter.type" class="md-input">
-                  <option value="">Semua Jenis</option>
-                  <option value="Expense">Pengeluaran</option>
-                  <option value="Income">Pemasukan</option>
-                  <option value="Transfer">Transfer</option>
-                  <option value="Investment">Investasi</option>
-                  <option value="Savings">Tabungan</option>
-               </select>
-            </div>
-            <div class="filter-group">
-               <span class="filter-label">Status Cek</span>
-               <select v-model="filter.status" class="md-input">
-                  <option value="">Semua Status</option>
-                  <option value="yes">Sudah Dicek</option>
-                  <option value="no">Belum Dicek</option>
-               </select>
-            </div>
-         </div>
-         <div class="filter-actions">
-            <button @click="resetFilter" class="text-btn">Atur Ulang</button>
-            <button @click="showFilter = false" class="tonal-btn">Terapkan</button>
-         </div>
+          <div class="filter-grid">
+             <div class="filter-group">
+                <span class="filter-label">Mulai Tanggal</span>
+                <input type="date" v-model="filter.from" class="md-input">
+             </div>
+             <div class="filter-group">
+                <span class="filter-label">Sampai Tanggal</span>
+                <input type="date" v-model="filter.to" class="md-input">
+             </div>
+             <div class="filter-group">
+                <span class="filter-label">Jenis Transaksi</span>
+                <select v-model="filter.type" class="md-input">
+                   <option value="">Semua Jenis</option>
+                   <option value="Expense">Pengeluaran</option>
+                   <option value="Income">Pemasukan</option>
+                   <option value="Transfer">Transfer</option>
+                   <option value="Investment">Investasi</option>
+                   <option value="Savings">Tabungan</option>
+                </select>
+             </div>
+             <div class="filter-group">
+                <span class="filter-label">Rekening/Akun</span>
+                <select v-model="filter.account" class="md-input">
+                   <option value="">Semua Akun</option>
+                   <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
+                </select>
+             </div>
+             <div class="filter-group">
+                <span class="filter-label">Kategori</span>
+                <select v-model="filter.category" class="md-input">
+                   <option value="">Semua Kategori</option>
+                   <option v-for="c in store.categories" :key="c.categoryID" :value="c.categoryName">{{ c.categoryName }}</option>
+                </select>
+             </div>
+             <div class="filter-group">
+                <span class="filter-label">Min. Nominal</span>
+                <input type="number" v-model="filter.minAmount" placeholder="Rp 0" class="md-input">
+             </div>
+             <div class="filter-group">
+                <span class="filter-label">Max. Nominal</span>
+                <input type="number" v-model="filter.maxAmount" placeholder="Rp..." class="md-input">
+             </div>
+             <div class="filter-group">
+                <span class="filter-label">Status Cek</span>
+                <select v-model="filter.status" class="md-input">
+                   <option value="">Semua Status</option>
+                   <option value="yes">Sudah Dicek</option>
+                   <option value="no">Belum Dicek</option>
+                </select>
+             </div>
+             <div class="filter-group">
+                <span class="filter-label">Proyek</span>
+                <select v-model="filter.project" class="md-input">
+                   <option value="">Semua Proyek</option>
+                   <option v-for="p in store.projects" :key="p.projectID" :value="p.projectName">{{ p.projectName }}</option>
+                </select>
+             </div>
+          </div>
+          <div class="filter-actions">
+             <button @click="resetFilter" class="text-btn">Atur Ulang</button>
+             <button @click="showFilter = false" class="tonal-btn">Terapkan</button>
+          </div>
       </div>
 
       <!-- Log List -->
@@ -115,10 +144,20 @@ const scrollContainer = ref(null)
 const showSearch = ref(false)
 const showFilter = ref(false)
 const searchQuery = ref('')
-const filter = ref({ from: '', to: '', type: '', status: '' })
+const filter = ref({ 
+  from: '', 
+  to: '', 
+  type: '', 
+  status: '', 
+  account: '', 
+  category: '', 
+  minAmount: null, 
+  maxAmount: null, 
+  project: '' 
+})
 const selectedTx = ref(null)
 
-const isFilterActive = computed(() => !!(filter.value.from || filter.value.to || filter.value.type || filter.value.status))
+const isFilterActive = computed(() => Object.values(filter.value).some(v => v !== '' && v !== null))
 
 const groupedTransactions = computed(() => {
   let list = [...store.transactions]
@@ -134,6 +173,11 @@ const groupedTransactions = computed(() => {
   if (filter.value.to) list = list.filter(t => t.date <= filter.value.to)
   if (filter.value.type) list = list.filter(t => t.type === filter.value.type)
   if (filter.value.status) list = list.filter(t => t.cleared === filter.value.status)
+  if (filter.value.account) list = list.filter(t => t.account === filter.value.account || t.beneficiaryAccount === filter.value.account)
+  if (filter.value.category) list = list.filter(t => t.category === filter.value.category)
+  if (filter.value.minAmount !== null && filter.value.minAmount !== '') list = list.filter(t => Number(t.total) >= Number(filter.value.minAmount))
+  if (filter.value.maxAmount !== null && filter.value.maxAmount !== '') list = list.filter(t => Number(t.total) <= Number(filter.value.maxAmount))
+  if (filter.value.project) list = list.filter(t => (t.projects || '').includes(filter.value.project))
 
   list.sort((a,b) => (b.date + (b.time||'')).localeCompare(a.date + (a.time||'')))
 
@@ -192,7 +236,7 @@ const getTxSign = (type) => {
 }
 
 const resetFilter = () => {
-  filter.value = { from: '', to: '', type: '', status: '' }
+  filter.value = { from: '', to: '', type: '', status: '', account: '', category: '', minAmount: null, maxAmount: null, project: '' }
 }
 
 onMounted(() => { 
