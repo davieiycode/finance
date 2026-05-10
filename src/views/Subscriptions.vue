@@ -30,6 +30,8 @@
         </div>
       </div>
 
+        <!-- Subscription List -->
+      <div class="sub-list">
         <div v-for="s in sortedSubscriptions" :key="s.subscriptionID" class="sub-card card-md3" @click="openEditModal(s)">
           <div class="card-main">
             <div class="sub-icon-box" :style="{ backgroundColor: getStatusColor(s.nextBillDate) + '15', color: getStatusColor(s.nextBillDate) }">
