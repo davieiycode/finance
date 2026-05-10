@@ -1,9 +1,9 @@
 <template>
   <div class="view-content subscriptions-container">
-    <!-- Top App Bar -->
+    <!-- MD3 Top App Bar -->
     <div class="top-app-bar">
       <div class="app-bar-content">
-        <button class="icon-btn" @click="$router.push('/')">
+        <button class="icon-btn" @click="$router.back()">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
         <h1>Langganan</h1>
@@ -18,39 +18,43 @@
 
     <div class="content-scroll">
       <!-- Summary Card -->
-      <div class="summary-card card-md3">
-        <div class="summary-info">
-          <span class="summary-label">Total Pengeluaran Rutin</span>
-          <h2 class="summary-value">Rp {{ totalMonthlyCost.toLocaleString('id-ID') }}</h2>
-          <span class="summary-sub">per bulan dari {{ store.subscriptions.length }} layanan</span>
+      <div class="summary-hero card-md3">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+           <span class="hero-label">TOTAL PENGELUARAN RUTIN</span>
+           <h2 class="hero-value">Rp {{ totalMonthlyCost.toLocaleString('id-ID') }}</h2>
+           <span class="hero-sub">Mencakup {{ store.subscriptions.length }} layanan aktif per bulan</span>
         </div>
-        <div class="summary-icon">
-          <span class="material-symbols-rounded">event_repeat</span>
+        <div class="hero-icon-box">
+           <span class="material-symbols-rounded">event_repeat</span>
         </div>
       </div>
 
-      <!-- Subscription List -->
-      <div class="sub-list">
-        <div v-for="s in sortedSubscriptions" :key="s.subscriptionID" class="sub-item card-md3" @click="openEditModal(s)">
-          <div class="sub-main">
-            <div class="sub-icon-box" :style="{ background: getStatusColor(s.nextBillDate) + '15', color: getStatusColor(s.nextBillDate) }">
+        <div v-for="s in sortedSubscriptions" :key="s.subscriptionID" class="sub-card card-md3" @click="openEditModal(s)">
+          <div class="card-main">
+            <div class="sub-icon-box" :style="{ backgroundColor: getStatusColor(s.nextBillDate) + '15', color: getStatusColor(s.nextBillDate) }">
               <span class="material-symbols-rounded">{{ getCategoryIcon(s.category) }}</span>
             </div>
-            <div class="sub-info">
+            <div class="sub-details">
               <span class="sub-name">{{ s.name }}</span>
-              <span class="sub-meta">{{ s.category }} • Tagihan {{ formatDate(s.nextBillDate) }}</span>
+              <span class="sub-meta">{{ s.category }} • {{ formatDate(s.nextBillDate) }}</span>
             </div>
-            <div class="sub-amount">
-              <span class="amount-val">Rp {{ (Number(s.amount) || 0).toLocaleString('id-ID') }}</span>
-              <span class="amount-freq">/bln</span>
+            <div class="sub-price">
+              <span class="price-val">Rp {{ (Number(s.amount) || 0).toLocaleString('id-ID') }}</span>
+              <span class="price-freq">per bulan</span>
             </div>
           </div>
-          <div class="sub-status-bar">
-             <div class="status-chip" :style="{ backgroundColor: getStatusColor(s.nextBillDate) + '20', color: getStatusColor(s.nextBillDate) }">
-                <span class="material-symbols-rounded" style="font-size: 14px;">{{ getDaysLeft(s.nextBillDate) <= 3 ? 'warning' : 'schedule' }}</span>
-                {{ getStatusText(s.nextBillDate) }}
+          <div class="card-footer">
+             <div class="status-indicator">
+                <div class="status-badge" :style="{ backgroundColor: getStatusColor(s.nextBillDate) + '20', color: getStatusColor(s.nextBillDate) }">
+                   <span class="dot" :style="{ backgroundColor: getStatusColor(s.nextBillDate) }"></span>
+                   {{ getStatusText(s.nextBillDate) }}
+                </div>
+                <span class="days-count">{{ getDaysLeft(s.nextBillDate) }} hari lagi</span>
              </div>
-             <div class="progress-bg"><div class="progress-fill" :style="{ width: getProgressWidth(s.nextBillDate) + '%', backgroundColor: getStatusColor(s.nextBillDate) }"></div></div>
+             <div class="bill-progress">
+                <div class="progress-track"><div class="progress-bar" :style="{ width: getProgressWidth(s.nextBillDate) + '%', backgroundColor: getStatusColor(s.nextBillDate) }"></div></div>
+             </div>
           </div>
         </div>
 
@@ -198,58 +202,66 @@ const formatDate = (dateStr) => {
 </script>
 
 <style scoped>
-.subscriptions-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--bg-primary);
-}
+.subscriptions-container { height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-primary); }
+.content-scroll { flex: 1; overflow-y: auto; padding: 16px 16px 120px 16px; }
 
-.content-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 16px 120px 16px;
-}
-
-.summary-card {
-  padding: 24px;
-  background: linear-gradient(135deg, var(--secondary-container), var(--bg-secondary));
+.summary-hero {
+  padding: 32px 24px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border: none;
   margin-bottom: 24px;
 }
+.hero-glow { position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%); }
+.hero-content { position: relative; z-index: 1; color: white; }
+.hero-label { font-size: 10px; font-weight: 800; letter-spacing: 2px; opacity: 0.8; }
+.hero-value { font-size: 32px; font-weight: 800; margin: 4px 0; font-family: 'Outfit', sans-serif; }
+.hero-sub { font-size: 11px; opacity: 0.7; }
+.hero-icon-box { position: relative; z-index: 1; width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; backdrop-filter: blur(4px); }
 
-.summary-label { font-size: 12px; font-weight: 600; color: var(--primary); opacity: 0.8; text-transform: uppercase; }
-.summary-value { font-size: 28px; font-weight: 700; margin: 4px 0; font-family: 'Outfit', sans-serif; }
-.summary-sub { font-size: 11px; opacity: 0.6; }
-.summary-icon { width: 48px; height: 48px; background: var(--primary); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.sub-list { display: flex; flex-direction: column; gap: 16px; }
+.sub-card { 
+  padding: 20px; 
+  cursor: pointer; 
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border);
+}
+.sub-card:active { transform: scale(0.98); }
 
-.sub-list { display: flex; flex-direction: column; gap: 12px; }
-.sub-item { padding: 16px; cursor: pointer; transition: transform 0.2s; }
-.sub-item:active { transform: scale(0.98); }
+.card-main { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.sub-icon-box { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.sub-details { flex: 1; display: flex; flex-direction: column; }
+.sub-name { font-size: 17px; font-weight: 600; color: var(--on-surface); }
+.sub-meta { font-size: 12px; color: var(--on-surface-variant); opacity: 0.7; }
+.sub-price { text-align: right; }
+.price-val { display: block; font-size: 16px; font-weight: 800; color: var(--primary); }
+.price-freq { font-size: 10px; font-weight: 600; opacity: 0.5; text-transform: uppercase; }
 
-.sub-main { display: flex; align-items: center; gap: 12px; }
-.sub-icon-box { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.sub-info { flex: 1; display: flex; flex-direction: column; }
-.sub-name { font-size: 16px; font-weight: 600; }
-.sub-meta { font-size: 11px; opacity: 0.6; }
-.sub-amount { text-align: right; }
-.amount-val { display: block; font-size: 15px; font-weight: 700; }
-.amount-freq { font-size: 10px; opacity: 0.5; }
+.card-footer { display: flex; flex-direction: column; gap: 12px; }
+.status-indicator { display: flex; justify-content: space-between; align-items: center; }
+.status-badge { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+.dot { width: 6px; height: 6px; border-radius: 3px; }
+.days-count { font-size: 11px; font-weight: 600; opacity: 0.5; }
 
-.sub-status-bar { margin-top: 12px; display: flex; align-items: center; gap: 12px; }
-.status-chip { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 8px; }
-.progress-bg { flex: 1; height: 4px; background: var(--surface-variant); border-radius: 2px; }
-.progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.bill-progress { height: 6px; }
+.progress-track { height: 6px; background: var(--surface-variant); border-radius: 3px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 
 .sub-modal { background: var(--bg-primary); }
-
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 8px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 8px; }
 .form-group.full { grid-column: span 2; }
-.form-group label { font-size: 12px; font-weight: 600; color: var(--on-surface-variant); display: block; margin-bottom: 6px; }
+.form-group label { font-size: 12px; font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; margin-left: 4px; }
+.md-input { background: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 14px; height: 52px; padding: 0 16px; color: var(--on-surface); font-size: 15px; outline: none; transition: border-color 0.2s; }
+.md-input:focus { border-color: var(--primary); }
 
-.modal-actions { display: flex; gap: 12px; }
+.modal-actions { display: flex; gap: 12px; align-items: center; }
 .flex-spacer { flex: 1; }
 .mt-24 { margin-top: 24px; }
+
+.empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
+.empty-state .material-symbols-rounded { font-size: 64px; }
 </style>

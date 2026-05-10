@@ -1,12 +1,12 @@
 <template>
   <div class="view-content debts-container">
-    <!-- Top App Bar -->
+    <!-- MD3 Top App Bar -->
     <div class="top-app-bar">
       <div class="app-bar-content">
-        <button class="icon-btn" @click="$router.push('/')">
+        <button class="icon-btn" @click="$router.back()">
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
-        <h1>Hutang & Piutang</h1>
+        <h1>Pinjaman</h1>
         <div class="app-bar-actions">
           <button class="tonal-btn" @click="openAddModal">
             <span class="material-symbols-rounded">add</span>
@@ -17,19 +17,25 @@
     </div>
 
     <div class="content-scroll">
-      <!-- Summary Grid -->
+      <!-- Summary Cards -->
       <div class="stats-grid no-print">
-        <div class="stat-card success">
-          <div class="card-icon"><span class="material-symbols-rounded">call_made</span></div>
-          <span class="card-title">Total Piutang</span>
-          <span class="card-value">Rp {{ totalLending.toLocaleString('id-ID') }}</span>
-          <span class="card-sub">Dipinjam orang lain</span>
+        <div class="stat-card piutang-card card-md3">
+          <div class="card-glow"></div>
+          <div class="card-header-shp">
+             <span class="card-label-shp">TOTAL PIUTANG</span>
+             <div class="icon-shp"><span class="material-symbols-rounded">call_made</span></div>
+          </div>
+          <h2 class="card-value-shp">Rp {{ totalLending.toLocaleString('id-ID') }}</h2>
+          <span class="card-sub-shp">Dana di orang lain</span>
         </div>
-        <div class="stat-card danger">
-          <div class="card-icon"><span class="material-symbols-rounded">call_received</span></div>
-          <span class="card-title">Total Hutang</span>
-          <span class="card-value">Rp {{ totalDebt.toLocaleString('id-ID') }}</span>
-          <span class="card-sub">Kewajiban Anda</span>
+        <div class="stat-card hutang-card card-md3">
+          <div class="card-glow"></div>
+          <div class="card-header-shp">
+             <span class="card-label-shp">TOTAL HUTANG</span>
+             <div class="icon-shp"><span class="material-symbols-rounded">call_received</span></div>
+          </div>
+          <h2 class="card-value-shp">Rp {{ totalDebt.toLocaleString('id-ID') }}</h2>
+          <span class="card-sub-shp">Kewajiban bayar</span>
         </div>
       </div>
 
@@ -41,27 +47,32 @@
 
       <!-- Debt List -->
       <div class="debt-list">
-        <div v-for="d in filteredDebts" :key="d.debtID" class="debt-item card-md3" @click="openEditModal(d)">
-          <div class="debt-header">
-             <div class="person-info">
-                <span class="person-name">{{ d.person }}</span>
-                <span class="debt-date">{{ formatDate(d.startDate) }} • {{ d.notes || 'Tanpa Catatan' }}</span>
+        <div v-for="d in filteredDebts" :key="d.debtID" class="debt-card card-md3" @click="openEditModal(d)">
+          <div class="card-top">
+             <div class="person-box">
+                <div class="avatar-shp">{{ (d.person || '?')[0].toUpperCase() }}</div>
+                <div class="person-details">
+                   <span class="person-name">{{ d.person }}</span>
+                   <span class="debt-meta">{{ formatDate(d.startDate) }} • {{ d.notes || 'Tanpa Catatan' }}</span>
+                </div>
              </div>
-             <div class="amount-info">
-                <span class="total-val">Rp {{ (Number(d.remainingAmount) || 0).toLocaleString('id-ID') }}</span>
-                <span class="total-label">Sisa</span>
+             <div class="amount-box">
+                <span class="rem-amount">Rp {{ (Number(d.remainingAmount) || 0).toLocaleString('id-ID') }}</span>
+                <span class="rem-label">SISA SALDO</span>
              </div>
           </div>
-          <div class="debt-progress">
-             <div class="progress-info">
-                <span>{{ calculatePercent(d) }}% Terbayar</span>
-                <span>Total: Rp {{ (Number(d.totalAmount) || 0).toLocaleString('id-ID') }}</span>
+          
+          <div class="card-middle">
+             <div class="progress-header">
+                <span class="progress-text">{{ calculatePercent(d) }}% Terlunasi</span>
+                <span class="total-text">Pokok: Rp {{ (Number(d.totalAmount) || 0).toLocaleString('id-ID') }}</span>
              </div>
-             <div class="progress-bg"><div class="progress-fill" :style="{ width: calculatePercent(d) + '%', backgroundColor: activeTab === 'piutang' ? 'var(--green)' : 'var(--red)' }"></div></div>
+             <div class="progress-track-shp"><div class="progress-bar-shp" :style="{ width: calculatePercent(d) + '%', backgroundColor: activeTab === 'piutang' ? 'var(--green)' : 'var(--red)' }"></div></div>
           </div>
-          <div v-if="d.remainingAmount > 0" class="debt-actions" @click.stop>
-             <button @click="openPaymentModal(d)" class="tonal-btn sm">
-                <span class="material-symbols-rounded" style="font-size: 16px;">payments</span>
+
+          <div v-if="d.remainingAmount > 0" class="card-actions-shp" @click.stop>
+             <button @click="openPaymentModal(d)" class="tonal-btn-sm-shp">
+                <span class="material-symbols-rounded">payments</span>
                 Cicil / Bayar
              </button>
           </div>
@@ -259,38 +270,61 @@ const formatDate = (dateStr) => {
 </script>
 
 <style scoped>
+.debts-container { height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-primary); }
 .content-scroll { flex: 1; overflow-y: auto; padding: 16px 16px 120px 16px; }
 
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-.stat-card { background: var(--bg-secondary); padding: 16px; border-radius: 24px; display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--border); }
-.card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
-.stat-card.success .card-icon { background: rgba(180, 232, 168, 0.2); color: var(--green); }
-.stat-card.danger .card-icon { background: rgba(242, 184, 181, 0.2); color: var(--red); }
-.card-title { font-size: 11px; font-weight: 600; color: var(--on-surface-variant); }
-.card-value { font-size: 16px; font-weight: 700; }
-.card-sub { font-size: 10px; opacity: 0.6; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.stat-card { padding: 20px; position: relative; overflow: hidden; border: none; }
+.piutang-card { background: linear-gradient(135deg, var(--primary), #4facfe); color: white; }
+.hutang-card { background: linear-gradient(135deg, var(--red), #f093fb); color: white; }
+.card-glow { position: absolute; top: -50%; right: -20%; width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%; }
 
-.tabs-capsule { background: var(--surface-variant); padding: 4px; border-radius: 16px; display: flex; margin-bottom: 24px; }
-.tabs-capsule button { flex: 1; border: none; background: transparent; color: var(--on-surface-variant); padding: 8px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
-.tabs-capsule button.active { background: var(--bg-primary); color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.card-header-shp { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.card-label-shp { font-size: 10px; font-weight: 800; letter-spacing: 1px; opacity: 0.8; }
+.icon-shp { width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.card-value-shp { font-size: 18px; font-weight: 800; margin: 0; font-family: 'Outfit', sans-serif; }
+.card-sub-shp { font-size: 10px; opacity: 0.7; }
 
-.debt-list { display: flex; flex-direction: column; gap: 12px; }
-.debt-item { padding: 16px; cursor: pointer; }
-.debt-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-.person-name { display: block; font-size: 16px; font-weight: 600; }
-.debt-date { font-size: 11px; opacity: 0.6; }
-.amount-info { text-align: right; }
-.total-val { display: block; font-size: 16px; font-weight: 700; color: var(--primary); }
-.total-label { font-size: 10px; opacity: 0.5; }
+.tabs-capsule { background: var(--bg-secondary); padding: 6px; border-radius: 18px; display: flex; margin-bottom: 24px; border: 1px solid var(--border); }
+.tabs-capsule button { flex: 1; border: none; background: transparent; color: var(--on-surface-variant); padding: 10px; border-radius: 14px; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+.tabs-capsule button.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
-.debt-progress { margin-bottom: 12px; }
-.progress-info { display: flex; justify-content: space-between; font-size: 11px; font-weight: 500; margin-bottom: 4px; opacity: 0.8; }
-.progress-bg { height: 6px; background: var(--surface-variant); border-radius: 3px; }
-.progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.debt-list { display: flex; flex-direction: column; gap: 16px; }
+.debt-card { padding: 20px; cursor: pointer; border: 1px solid var(--border); transition: transform 0.2s; }
+.debt-card:active { transform: scale(0.98); }
 
-.debt-actions { border-top: 1px dashed var(--border); padding-top: 12px; display: flex; justify-content: flex-end; }
-.tonal-btn.sm { height: 32px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.person-box { display: flex; align-items: center; gap: 12px; }
+.avatar-shp { width: 44px; height: 44px; background: var(--surface-variant); color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
+.person-details { display: flex; flex-direction: column; }
+.person-name { font-size: 16px; font-weight: 700; color: var(--on-surface); }
+.debt-meta { font-size: 11px; color: var(--on-surface-variant); opacity: 0.7; }
 
-.sheet-desc { font-size: 13px; opacity: 0.7; margin-bottom: 20px; line-height: 1.5; }
+.amount-box { text-align: right; }
+.rem-amount { display: block; font-size: 17px; font-weight: 800; color: var(--primary); }
+.rem-label { font-size: 9px; font-weight: 800; opacity: 0.5; letter-spacing: 1px; }
+
+.card-middle { margin-bottom: 16px; }
+.progress-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+.progress-text { color: var(--on-surface); }
+.total-text { opacity: 0.5; }
+.progress-track-shp { height: 8px; background: var(--surface-variant); border-radius: 4px; overflow: hidden; }
+.progress-bar-shp { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.card-actions-shp { border-top: 1px dashed var(--border); padding-top: 16px; display: flex; justify-content: flex-end; }
+.tonal-btn-sm-shp { height: 36px; padding: 0 16px; border-radius: 12px; background: var(--primary-container); color: var(--on-primary-container); border: none; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+.debt-modal { background: var(--bg-primary); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 8px; }
+.form-group.full { grid-column: span 2; }
+.form-group label { font-size: 12px; font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; margin-left: 4px; }
+.md-input { background: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 14px; height: 52px; padding: 0 16px; color: var(--on-surface); font-size: 15px; outline: none; }
+
+.payment-modal { background: var(--bg-primary); }
+.sheet-desc { font-size: 14px; opacity: 0.8; margin-bottom: 24px; line-height: 1.6; }
+.mt-24 { margin-top: 24px; }
 .w-100 { width: 100%; }
+
+.empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
+.empty-state .material-symbols-rounded { font-size: 64px; }
 </style>
