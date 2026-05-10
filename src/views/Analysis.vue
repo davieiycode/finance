@@ -339,8 +339,9 @@ const filteredTransactions = computed(() => {
 })
 
 const metrics = computed(() => {
-  const income = filteredTransactions.value.filter(t => t.type === 'Income').reduce((s, t) => s + (t.total || 0), 0)
-  const expense = filteredTransactions.value.filter(t => t.type === 'Expense').reduce((s, t) => s + (t.total || 0), 0)
+  const txs = filteredTransactions.value || []
+  const income = txs.filter(t => t.type === 'Income').reduce((s, t) => s + (t.total || 0), 0)
+  const expense = txs.filter(t => t.type === 'Expense').reduce((s, t) => s + (t.total || 0), 0)
   const profit = income - expense
   const savingRate = income > 0 ? Math.round((profit / income) * 100) : 0
   return { income, expense, profit, savingRate }
@@ -369,9 +370,9 @@ const tagAnalysis = computed(() => processData(filteredTransactions.value, 'tags
 const projectAnalysis = computed(() => processData(filteredTransactions.value, 'projects'))
 
 const netWorthData = computed(() => {
-  const accountsTotal = store.accounts.reduce((sum, a) => sum + (Number(a.currentBalance) || 0), 0)
-  const lendingTotal = store.debts.filter(d => d.type === 'piutang').reduce((sum, d) => sum + (Number(d.remainingAmount) || 0), 0)
-  const debtTotal = store.debts.filter(d => d.type === 'hutang').reduce((sum, d) => sum + (Number(d.remainingAmount) || 0), 0)
+  const accountsTotal = (store.accounts || []).reduce((sum, a) => sum + (Number(a.currentBalance) || 0), 0)
+  const lendingTotal = (store.debts || []).filter(d => d.type === 'piutang').reduce((sum, d) => sum + (Number(d.remainingAmount) || 0), 0)
+  const debtTotal = (store.debts || []).filter(d => d.type === 'hutang').reduce((sum, d) => sum + (Number(d.remainingAmount) || 0), 0)
   
   return {
     accounts: accountsTotal,
@@ -383,7 +384,8 @@ const netWorthData = computed(() => {
 
 const budgetAnalysis = computed(() => {
   const results = []
-  store.budgets.forEach(b => {
+  const budgets = store.budgets || []
+  budgets.forEach(b => {
     const spent = categorySpending.value.find(c => c.name === b.category)?.value || 0
     const limit = Number(b.amount) || 0
     const percent = limit > 0 ? (spent / limit) * 100 : 0
@@ -515,58 +517,142 @@ let charts = {}
 const initCharts = () => {
   if (!window.echarts) return
   const darkTheme = { backgroundColor: 'transparent', textStyle: { fontFamily: 'inherit', color: '#CAC4D0' } }
-  
-  const colors = ['#A8C7FA', '#B4E8A8', '#F2B8B5', '#FFD98C', '#D0BCFF', '#C4C6D0']
+  const chartColors = ['#A8C7FA', '#B4E8A8', '#F2B8B5', '#FFD98C', '#D0BCFF', '#C4C6D0', '#7FCFFF', '#6DD5FA']
 
-  const trendEl = document.getElementById('trend-line')
-  if (trendEl && activeTab.value === 'trend') {
-    if (charts.trend) charts.trend.dispose()
-    charts.trend = window.echarts.init(trendEl, 'dark')
-    charts.trend.setOption({
-      ...darkTheme,
-      tooltip: { trigger: 'axis' },
-      xAxis: { type: 'category', data: trendAnalysis.value.map(d => d.date.split('-')[2]) },
-      yAxis: { type: 'value' },
-      series: [{ 
-        data: trendAnalysis.value.map(d => d.value), 
-        type: 'bar', 
-        itemStyle: { color: '#F2B8B5', borderRadius: [4, 4, 0, 0] } 
-      }]
-    })
+  // Helper to dispose and re-init
+  const refreshChart = (id, chartKey, option) => {
+    const el = document.getElementById(id)
+    if (el && activeTab.value === chartKey) {
+       if (charts[chartKey]) charts[chartKey].dispose()
+       charts[chartKey] = window.echarts.init(el, 'dark')
+       charts[chartKey].setOption({ ...darkTheme, ...option })
+    }
   }
 
-  const catEl = document.getElementById('spend-treemap')
-  if (catEl && activeTab.value === 'spend') {
-    if (charts.spend) charts.spend.dispose()
-    charts.spend = window.echarts.init(catEl, 'dark')
-    charts.spend.setOption({
-      ...darkTheme,
-      series: [{
-        type: 'treemap',
-        data: categorySpending.value.map((c, i) => ({ name: c.name, value: c.value, itemStyle: { color: colors[i % colors.length] } })),
-        breadcrumb: { show: false }
-      }]
-    })
+  // 1. CASHFLOW (Sankey)
+  if (activeTab.value === 'cashflow') {
+     const nodes = []
+     const links = []
+     const { income, expense } = metrics.value
+
+     // Unique nodes set to avoid duplicates
+     const nodesMap = new Set()
+     const addNode = (name, color) => {
+        if (!nodesMap.has(name)) {
+           nodes.push({ name, itemStyle: { color } })
+           nodesMap.add(name)
+        }
+     }
+
+     // Sources
+     categoryIncome.value.forEach(c => {
+        addNode(c.name, '#B4E8A8')
+        links.push({ source: c.name, target: 'Pemasukan', value: c.value })
+     })
+     
+     if (nodes.length > 0 || expense > 0) {
+        addNode('Pemasukan', '#81C784')
+        addNode('Pengeluaran', '#E57373')
+        
+        if (income > 0 && expense > 0) {
+           links.push({ source: 'Pemasukan', target: 'Pengeluaran', value: Math.min(income, expense) })
+        }
+        
+        if (income > expense) {
+           addNode('Tabungan', '#A8C7FA')
+           links.push({ source: 'Pemasukan', target: 'Tabungan', value: income - expense })
+        }
+
+        categorySpending.value.forEach(c => {
+           addNode(c.name, '#F2B8B5')
+           links.push({ source: 'Pengeluaran', target: c.name, value: c.value })
+        })
+
+        refreshChart('cashflow-sankey', 'cashflow', {
+           tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+           series: [{
+              type: 'sankey',
+              data: nodes,
+              links: links.filter(l => l.value > 0),
+              emphasis: { focus: 'adjacency' },
+              lineStyle: { color: 'gradient', curveness: 0.5 },
+              label: { color: '#fff', fontSize: 10 }
+           }]
+        })
+     }
   }
 
-  const nwEl = document.getElementById('networth-pie')
-  if (nwEl && activeTab.value === 'networth') {
-    if (charts.nw) charts.nw.dispose()
-    charts.nw = window.echarts.init(nwEl, 'dark')
-    charts.nw.setOption({
-      ...darkTheme,
-      series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-          { value: netWorthData.value.accounts, name: 'Cash', itemStyle: { color: '#B4E8A8' } },
-          { value: netWorthData.value.lending, name: 'Receivables', itemStyle: { color: '#A8C7FA' } },
-          { value: netWorthData.value.debt, name: 'Debts', itemStyle: { color: '#F2B8B5' } }
-        ],
-        label: { show: false }
-      }]
-    })
-  }
+  // 2. TREND
+  refreshChart('trend-line', 'trend', {
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: trendAnalysis.value.map(d => d.date.split('-')[2]) },
+    yAxis: { type: 'value' },
+    series: [{ 
+      data: trendAnalysis.value.map(d => d.value), 
+      type: 'bar', 
+      itemStyle: { color: '#F2B8B5', borderRadius: [4, 4, 0, 0] } 
+    }]
+  })
+
+  // 3. NETWORTH
+  refreshChart('networth-pie', 'networth', {
+    series: [{
+      type: 'pie',
+      radius: ['40%', '70%'],
+      data: [
+        { value: netWorthData.value.accounts, name: 'Tunai', itemStyle: { color: '#B4E8A8' } },
+        { value: netWorthData.value.lending, name: 'Piutang', itemStyle: { color: '#A8C7FA' } },
+        { value: netWorthData.value.debt, name: 'Hutang', itemStyle: { color: '#F2B8B5' } }
+      ],
+      label: { show: false }
+    }]
+  })
+
+  // 4. INCOME TREEMAP
+  refreshChart('income-treemap', 'income', {
+    series: [{
+      type: 'treemap',
+      data: categoryIncome.value.map((c, i) => ({ name: c.name, value: c.value, itemStyle: { color: chartColors[i % chartColors.length] } })),
+      breadcrumb: { show: false }
+    }]
+  })
+
+  // 5. SPEND TREEMAP
+  refreshChart('spend-treemap', 'spend', {
+    series: [{
+      type: 'treemap',
+      data: categorySpending.value.map((c, i) => ({ name: c.name, value: c.value, itemStyle: { color: chartColors[i % chartColors.length] } })),
+      breadcrumb: { show: false }
+    }]
+  })
+
+  // 6. MERCHANT TREEMAP
+  refreshChart('merchant-treemap', 'merchant', {
+    series: [{
+      type: 'treemap',
+      data: merchantAnalysis.value.map((c, i) => ({ name: c.name, value: c.value, itemStyle: { color: chartColors[i % chartColors.length] } })),
+      breadcrumb: { show: false }
+    }]
+  })
+
+  // 7. TAG CLOUD
+  refreshChart('tag-cloud', 'tag', {
+    series: [{
+      type: 'treemap',
+      data: tagAnalysis.value.map((c, i) => ({ name: '#' + c.name, value: c.value, itemStyle: { color: chartColors[i % chartColors.length] } })),
+      breadcrumb: { show: false }
+    }]
+  })
+
+  // 8. PROJECT PIE
+  refreshChart('project-pie', 'project', {
+    series: [{
+      type: 'pie',
+      radius: '60%',
+      data: projectAnalysis.value.map((c, i) => ({ name: c.name || 'Mandiri', value: c.value, itemStyle: { color: chartColors[i % chartColors.length] } })),
+      label: { color: '#fff', fontSize: 10 }
+    }]
+  })
 }
 
 const getTxColor = (type) => (type === 'Income' ? '#B4E8A8' : type === 'Expense' ? '#F2B8B5' : '#A8C7FA')
