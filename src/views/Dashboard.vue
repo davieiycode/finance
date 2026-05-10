@@ -36,15 +36,6 @@
     </div>
 
     <div class="content-scroll">
-      <!-- Update Briefing (New Version) -->
-      <div class="briefing-card card-md3 stagger-1 version-briefing" @click="showUpdateNote = true; uiStore.haptic('medium')">
-         <div class="briefing-icon success"><span class="material-symbols-rounded">auto_awesome</span></div>
-         <div class="briefing-text">
-            <span class="briefing-label" style="color: var(--green)">Sistem Diperbarui</span>
-            <p>Jurney Protocol v6.0.0 Aktif. Ketuk untuk melihat apa yang baru di perombakan UI/UX ini.</p>
-         </div>
-      </div>
-
       <!-- Subscription Alert Briefing -->
       <div v-if="upcomingSubscriptions.length > 0" class="briefing-card card-md3 stagger-1" @click="$router.push('/subscriptions'); uiStore.haptic('medium')">
          <div class="briefing-icon warning"><span class="material-symbols-rounded">notifications_active</span></div>
@@ -150,7 +141,6 @@ const uiStore = useUIStore()
 const scrollContainer = ref(null)
 
 const showSearch = ref(false)
-const showUpdateNote = ref(false)
 const isPrivate = ref(localStorage.getItem('privacy_mode') === 'true')
 const searchQuery = ref('')
 
