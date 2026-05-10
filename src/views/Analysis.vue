@@ -41,7 +41,7 @@
           <span class="material-symbols-rounded">chevron_left</span>
         </button>
         <div class="period-display">
-           <span class="period-label">{{ activeTab === 'yearly' ? 'Tahun' : 'Bulan' }}</span>
+           <span class="period-label">{{ analysisMode === 'yearly' ? 'Tahun' : 'Bulan' }}</span>
            <span class="period-value">{{ periodDisplay }}</span>
         </div>
         <button @click="nextPeriod(); uiStore.haptic('light')" class="icon-btn sm">
@@ -737,7 +737,14 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.period-display {
+  display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .period-label {
