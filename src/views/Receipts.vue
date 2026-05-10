@@ -329,4 +329,3 @@ onBeforeUnmount(() => { uiStore.unregisterModal('receipts') })
 .sheet-enter-from, .sheet-leave-to { transform: translateY(100%); }
 
 </style>
-</style>
