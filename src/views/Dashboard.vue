@@ -120,11 +120,6 @@
           <div v-if="store.shoppingList.length > 0" class="badge-dot info">{{ store.shoppingList.length }}</div>
         </div>
       </div>
-
-      <div class="app-footer stagger-5">
-        <div class="footer-core">JURNEY CORE v6.0.0</div>
-        <div class="footer-status">PREMIUM STABLE RELEASE</div>
-      </div>
     </div>
   </div>
 </template>

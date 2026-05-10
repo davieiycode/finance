@@ -91,12 +91,20 @@
       <div class="charts-section">
         <div v-show="activeTab === 'cashflow'" class="chart-container">
           <h3 class="chart-title">Aliran Kas</h3>
-          <div id="cashflow-sankey" style="width: 100%; height: 400px;"></div>
+          <div v-if="metrics.income > 0 || metrics.expense > 0" id="cashflow-sankey" style="width: 100%; height: 400px;"></div>
+          <div v-else class="empty-chart-state">
+             <span class="material-symbols-rounded">cloud_off</span>
+             <p>Tidak ada data aliran kas untuk periode ini.</p>
+          </div>
         </div>
 
         <div v-show="activeTab === 'trend'" class="chart-container">
           <h3 class="chart-title">Tren Pengeluaran Harian</h3>
-          <div id="trend-line" style="width: 100%; height: 350px;"></div>
+          <div v-if="trendAnalysis.length > 0 && metrics.expense > 0" id="trend-line" style="width: 100%; height: 350px;"></div>
+          <div v-else class="empty-chart-state">
+             <span class="material-symbols-rounded">show_chart</span>
+             <p>Belum ada tren pengeluaran untuk periode ini.</p>
+          </div>
         </div>
 
         <div v-show="activeTab === 'networth'" class="chart-container">
@@ -135,29 +143,41 @@
 
         <div v-show="activeTab === 'income'" class="chart-container">
           <h3 class="chart-title">Kategori Pemasukan</h3>
-          <div id="income-treemap" style="width: 100%; height: 350px;"></div>
-          <div class="ranking-list">
-            <div v-for="(item, i) in categoryIncome" :key="item.name" @click="showModal('category', 'Income', item.name)" class="rank-item">
-              <div class="rank-header">
-                <span class="rank-name">{{ item.name }}</span>
-                <span class="rank-value text-success">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+          <div v-if="categoryIncome.length > 0">
+            <div id="income-treemap" style="width: 100%; height: 350px;"></div>
+            <div class="ranking-list">
+              <div v-for="(item, i) in categoryIncome" :key="item.name" @click="showModal('category', 'Income', item.name)" class="rank-item">
+                <div class="rank-header">
+                  <span class="rank-name">{{ item.name }}</span>
+                  <span class="rank-value text-success">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+                </div>
+                <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/metrics.income*100) + '%', background: colors[i % colors.length] }"></div></div>
               </div>
-              <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/metrics.income*100) + '%', background: colors[i % colors.length] }"></div></div>
             </div>
+          </div>
+          <div v-else class="empty-chart-state">
+             <span class="material-symbols-rounded">download</span>
+             <p>Belum ada pemasukan tercatat.</p>
           </div>
         </div>
 
         <div v-show="activeTab === 'spend'" class="chart-container">
           <h3 class="chart-title">Kategori Pengeluaran</h3>
-          <div id="spend-treemap" style="width: 100%; height: 350px;"></div>
-          <div class="ranking-list">
-            <div v-for="(item, i) in categorySpending" :key="item.name" @click="showModal('category', 'Expense', item.name)" class="rank-item">
-              <div class="rank-header">
-                <span class="rank-name">{{ item.name }}</span>
-                <span class="rank-value text-danger">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+          <div v-if="categorySpending.length > 0">
+            <div id="spend-treemap" style="width: 100%; height: 350px;"></div>
+            <div class="ranking-list">
+              <div v-for="(item, i) in categorySpending" :key="item.name" @click="showModal('category', 'Expense', item.name)" class="rank-item">
+                <div class="rank-header">
+                  <span class="rank-name">{{ item.name }}</span>
+                  <span class="rank-value text-danger">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+                </div>
+                <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/metrics.expense*100) + '%', background: colors[i % colors.length] }"></div></div>
               </div>
-              <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/metrics.expense*100) + '%', background: colors[i % colors.length] }"></div></div>
             </div>
+          </div>
+          <div v-else class="empty-chart-state">
+             <span class="material-symbols-rounded">shopping_basket</span>
+             <p>Belum ada pengeluaran tercatat.</p>
           </div>
         </div>
 
@@ -193,43 +213,61 @@
 
         <div v-show="activeTab === 'merchant'" class="chart-container">
           <h3 class="chart-title">Analisis Toko & Vendor</h3>
-          <div id="merchant-treemap" style="width: 100%; height: 350px;"></div>
-          <div class="ranking-list">
-            <div v-for="(item, i) in merchantAnalysis" :key="item.name" @click="showModal('merchant', 'Expense', item.name)" class="rank-item">
-              <div class="rank-header">
-                <span class="rank-name">{{ item.name }}</span>
-                <span class="rank-value">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+          <div v-if="merchantAnalysis.length > 0">
+            <div id="merchant-treemap" style="width: 100%; height: 350px;"></div>
+            <div class="ranking-list">
+              <div v-for="(item, i) in merchantAnalysis" :key="item.name" @click="showModal('merchant', 'Expense', item.name)" class="rank-item">
+                <div class="rank-header">
+                  <span class="rank-name">{{ item.name }}</span>
+                  <span class="rank-value">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+                </div>
+                <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/maxMerchantValue*100) + '%', background: colors[i % colors.length] }"></div></div>
               </div>
-              <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value/maxMerchantValue*100) + '%', background: colors[i % colors.length] }"></div></div>
             </div>
+          </div>
+          <div v-else class="empty-chart-state">
+             <span class="material-symbols-rounded">store</span>
+             <p>Belum ada data toko tercatat.</p>
           </div>
         </div>
 
         <div v-show="activeTab === 'tag'" class="chart-container">
           <h3 class="chart-title">Kepadatan Tag</h3>
-          <div id="tag-cloud" style="width: 100%; height: 350px;"></div>
-          <div class="ranking-list">
-             <div v-for="(item, i) in tagAnalysis" :key="item.name" @click="showModal('tag', null, item.name)" class="rank-item">
-                <div class="rank-header">
-                  <span class="rank-name">#{{ item.name }}</span>
-                  <span class="rank-value">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
-                </div>
-                <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value / maxTagValue * 100) + '%', background: colors[i % colors.length] }"></div></div>
-             </div>
+          <div v-if="tagAnalysis.length > 0">
+            <div id="tag-cloud" style="width: 100%; height: 350px;"></div>
+            <div class="ranking-list">
+               <div v-for="(item, i) in tagAnalysis" :key="item.name" @click="showModal('tag', null, item.name)" class="rank-item">
+                  <div class="rank-header">
+                    <span class="rank-name">#{{ item.name }}</span>
+                    <span class="rank-value">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+                  </div>
+                  <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value / maxTagValue * 100) + '%', background: colors[i % colors.length] }"></div></div>
+               </div>
+            </div>
+          </div>
+          <div v-else class="empty-chart-state">
+             <span class="material-symbols-rounded">tag</span>
+             <p>Belum ada data tag tercatat.</p>
           </div>
         </div>
 
         <div v-show="activeTab === 'project'" class="chart-container">
           <h3 class="chart-title">Distribusi Proyek</h3>
-          <div id="project-pie" style="width: 100%; height: 350px;"></div>
-          <div class="ranking-list">
-             <div v-for="(item, i) in projectAnalysis" :key="item.name" @click="showModal('project', null, item.name)" class="rank-item">
-                <div class="rank-header">
-                  <span class="rank-name">{{ item.name || 'Lainnya' }}</span>
-                  <span class="rank-value">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
-                </div>
-                <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value / maxProjectValue * 100) + '%', background: colors[i % colors.length] }"></div></div>
-             </div>
+          <div v-if="projectAnalysis.length > 0">
+            <div id="project-pie" style="width: 100%; height: 350px;"></div>
+            <div class="ranking-list">
+               <div v-for="(item, i) in projectAnalysis" :key="item.name" @click="showModal('project', null, item.name)" class="rank-item">
+                  <div class="rank-header">
+                    <span class="rank-name">{{ item.name || 'Mandiri' }}</span>
+                    <span class="rank-value">Rp {{ (item.value || 0).toLocaleString('id-ID') }}</span>
+                  </div>
+                  <div class="rank-bar"><div class="rank-fill" :style="{ width: (item.value / maxProjectValue * 100) + '%', background: colors[i % colors.length] }"></div></div>
+               </div>
+            </div>
+          </div>
+          <div v-else class="empty-chart-state">
+             <span class="material-symbols-rounded">layers</span>
+             <p>Belum ada data proyek tercatat.</p>
           </div>
         </div>
       </div>
@@ -535,7 +573,11 @@ const initCharts = () => {
      const links = []
      const { income, expense } = metrics.value
 
-     // Unique nodes set to avoid duplicates
+     const IN_HUB = 'Pemasukan ' // Added space to avoid conflict
+     const OUT_HUB = 'Pengeluaran '
+     const SAVINGS = 'Tabungan/Sisa'
+     const BALANCE = 'Saldo/Simpanan'
+
      const nodesMap = new Set()
      const addNode = (name, color) => {
         if (!nodesMap.has(name)) {
@@ -544,41 +586,52 @@ const initCharts = () => {
         }
      }
 
-     // Sources
-     categoryIncome.value.forEach(c => {
+     // Build Sources -> Income Hub
+     categoryIncome.value.filter(c => c.value > 0).forEach(c => {
         addNode(c.name, '#B4E8A8')
-        links.push({ source: c.name, target: 'Pemasukan', value: c.value })
+        links.push({ source: c.name, target: IN_HUB, value: c.value })
      })
      
-     if (nodes.length > 0 || expense > 0) {
-        addNode('Pemasukan', '#81C784')
-        addNode('Pengeluaran', '#E57373')
+     if (income > 0 || expense > 0) {
+        addNode(IN_HUB, '#81C784')
+        addNode(OUT_HUB, '#E57373')
         
+        // Flow between hubs
         if (income > 0 && expense > 0) {
-           links.push({ source: 'Pemasukan', target: 'Pengeluaran', value: Math.min(income, expense) })
+           links.push({ source: IN_HUB, target: OUT_HUB, value: Math.min(income, expense) })
         }
         
+        // If income > expense, excess goes to Savings
         if (income > expense) {
-           addNode('Tabungan', '#A8C7FA')
-           links.push({ source: 'Pemasukan', target: 'Tabungan', value: income - expense })
+           addNode(SAVINGS, '#A8C7FA')
+           links.push({ source: IN_HUB, target: SAVINGS, value: income - expense })
+        }
+        
+        // If expense > income, deficit comes from Balance
+        if (expense > income) {
+           addNode(BALANCE, '#A8C7FA')
+           links.push({ source: BALANCE, target: OUT_HUB, value: expense - income })
         }
 
-        categorySpending.value.forEach(c => {
+        // Build Expense Hub -> Destinations
+        categorySpending.value.filter(c => c.value > 0).forEach(c => {
            addNode(c.name, '#F2B8B5')
-           links.push({ source: 'Pengeluaran', target: c.name, value: c.value })
+           links.push({ source: OUT_HUB, target: c.name, value: c.value })
         })
 
-        refreshChart('cashflow-sankey', 'cashflow', {
-           tooltip: { trigger: 'item', triggerOn: 'mousemove' },
-           series: [{
-              type: 'sankey',
-              data: nodes,
-              links: links.filter(l => l.value > 0),
-              emphasis: { focus: 'adjacency' },
-              lineStyle: { color: 'gradient', curveness: 0.5 },
-              label: { color: '#fff', fontSize: 10 }
-           }]
-        })
+        if (links.length > 0) {
+           refreshChart('cashflow-sankey', 'cashflow', {
+              tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+              series: [{
+                 type: 'sankey',
+                 data: nodes,
+                 links: links,
+                 emphasis: { focus: 'adjacency' },
+                 lineStyle: { color: 'gradient', curveness: 0.5 },
+                 label: { color: '#fff', fontSize: 10, fontWeight: 500 }
+              }]
+           })
+        }
      }
   }
 
@@ -1074,6 +1127,20 @@ onBeforeUnmount(() => {
   .metric-card { padding: 10px !important; }
   .chart-container { margin-bottom: 40px !important; }
 }
+
+.empty-chart-state {
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface-variant);
+  opacity: 0.5;
+  gap: 12px;
+  text-align: center;
+}
+.empty-chart-state .material-symbols-rounded { font-size: 48px; }
+.empty-chart-state p { font-size: 14px; margin: 0; }
 
 .print-only { display: none; }
 </style>

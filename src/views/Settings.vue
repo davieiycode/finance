@@ -99,8 +99,7 @@
         </div>
 
         <div class="version-badge">
-           <p>JURNEY PROTOCOL</p>
-           <span>v6.0.0 • PREMIUM STABLE</span>
+           <p>JURNEY v6.0.0</p>
         </div>
       </div>
 
