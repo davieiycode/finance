@@ -1,23 +1,31 @@
 <template>
   <div class="view-content analysis-container">
     <!-- MD3 Top App Bar -->
-    <div class="top-app-bar">
+    <div class="top-app-bar glass-panel">
       <div class="app-bar-content">
-        <button class="icon-btn" @click="$router.back()">
-          <span class="material-symbols-rounded">arrow_back</span>
-        </button>
-        <h1>Analisis</h1>
-        
-        <!-- Segmented Button Switcher -->
-        <div class="segmented-button no-print">
-          <button @click="analysisMode = 'monthly'" :class="{ active: analysisMode === 'monthly' }">Bulanan</button>
-          <button @click="analysisMode = 'yearly'" :class="{ active: analysisMode === 'yearly' }">Tahunan</button>
+        <div class="app-bar-actions left">
+           <button @click="$router.back(); uiStore.haptic('light')" class="icon-btn">
+             <span class="material-symbols-rounded">arrow_back</span>
+           </button>
         </div>
-
-        <button class="icon-btn no-print" @click="printReport">
-          <span class="material-symbols-rounded">print</span>
-        </button>
+        <div class="app-title-group">
+          <h1>Analisis Keuangan</h1>
+        </div>
+        <div class="app-bar-actions">
+           <button @click="printReport(); uiStore.haptic('medium')" class="icon-btn">
+             <span class="material-symbols-rounded">print</span>
+           </button>
+           <button @click="toggleExport(); uiStore.haptic('light')" class="icon-btn">
+             <span class="material-symbols-rounded">share</span>
+           </button>
+        </div>
       </div>
+    </div>
+
+    <!-- Segmented Button Switcher -->
+    <div class="segmented-button no-print">
+      <button @click="analysisMode = 'monthly'" :class="{ active: analysisMode === 'monthly' }">Bulanan</button>
+      <button @click="analysisMode = 'yearly'" :class="{ active: analysisMode === 'yearly' }">Tahunan</button>
     </div>
 
     <div class="content-scroll">
@@ -28,15 +36,15 @@
       </div>
 
       <!-- Period Navigator -->
-      <div class="period-navigator no-print">
-        <button class="icon-btn sm" @click="changePeriod(-1)">
+      <div class="period-navigator glass-panel stagger-1">
+        <button @click="prevPeriod(); uiStore.haptic('light')" class="icon-btn sm">
           <span class="material-symbols-rounded">chevron_left</span>
         </button>
-        <div class="period-info">
-          <span class="period-label">{{ displayPeriod }}</span>
-          <span class="period-sub">Analisis Periode</span>
+        <div class="period-display">
+           <span class="period-label">{{ activeTab === 'yearly' ? 'Tahun' : 'Bulan' }}</span>
+           <span class="period-value">{{ periodDisplay }}</span>
         </div>
-        <button class="icon-btn sm" @click="changePeriod(1)">
+        <button @click="nextPeriod(); uiStore.haptic('light')" class="icon-btn sm">
           <span class="material-symbols-rounded">chevron_right</span>
         </button>
       </div>
@@ -229,12 +237,14 @@
 
     <!-- Floating Analysis Navigation -->
     <Teleport to="body">
-       <div v-if="!isModalOpen && !selectedTx" class="floating-tabs">
-          <button v-for="t in tabs" :key="t.id" @click="activeTab = t.id" :class="{ active: activeTab === t.id }" class="tab-chip">
-             <span class="material-symbols-rounded">{{ t.icon }}</span>
-             <span class="tab-label">{{ t.label }}</span>
-          </button>
-       </div>
+       <transition name="pop">
+         <div v-if="!isModalOpen && !selectedTx" class="floating-tabs glass-panel">
+            <button v-for="t in tabs" :key="t.id" @click="activeTab = t.id; uiStore.haptic('medium')" :class="{ active: activeTab === t.id }" class="tab-chip">
+               <span class="material-symbols-rounded">{{ t.icon }}</span>
+               <span class="tab-label">{{ t.label }}</span>
+            </button>
+         </div>
+       </transition>
     </Teleport>
 
     <!-- LIST MODAL -->
@@ -295,6 +305,8 @@ const printReport = () => {
    window.print()
 }
 
+const toggleExport = () => { /* Export logic */ }
+
 const tabs = [
   { id: 'cashflow', label: 'Aliran', icon: 'conversion_path' },
   { id: 'trend', label: 'Tren', icon: 'trending_up' },
@@ -316,6 +328,8 @@ const displayPeriod = computed(() => {
   }
   return `${activeDate.value.getFullYear()}`
 })
+
+const periodDisplay = computed(() => displayPeriod.value)
 
 const filteredTransactions = computed(() => {
   const filterStr = analysisMode.value === 'monthly' 
@@ -368,12 +382,8 @@ const netWorthData = computed(() => {
 })
 
 const budgetAnalysis = computed(() => {
-  const currentMonth = activeDate.value.toISOString().substring(0, 7)
   const results = []
-  
   store.budgets.forEach(b => {
-    // Only show budget if it's for current month or recurring (if your logic supports it)
-    // For now, assume all budgets in store are relevant or filtered by name/category
     const spent = categorySpending.value.find(c => c.name === b.category)?.value || 0
     const limit = Number(b.amount) || 0
     const percent = limit > 0 ? (spent / limit) * 100 : 0
@@ -408,9 +418,9 @@ const momInsight = computed(() => {
   if (prev === 0 || current === 0) return null
   
   const diff = ((current - prev) / prev) * 100
-  if (diff > 5) return `Pengeluaran naik ${diff.toFixed(0)}% dari bulan lalu. Periksa tab "Anggaran" untuk melihat kategori mana yang bocor.`
-  if (diff < -5) return `Hebat! Anda hemat ${Math.abs(diff).toFixed(0)}% dari bulan lalu. Surplus ini bisa dialokasikan ke "Target Tabungan".`
-  return `Pengeluaran Anda stabil (hanya selisih ${Math.abs(diff).toFixed(1)}%). Manajemen keuangan yang bagus!`
+  if (diff > 5) return `Pengeluaran naik ${diff.toFixed(0)}% dari bulan lalu.`
+  if (diff < -5) return `Hebat! Anda hemat ${Math.abs(diff).toFixed(0)}% dari bulan lalu.`
+  return `Pengeluaran Anda stabil.`
 })
 
 const trendAnalysis = computed(() => {
@@ -420,7 +430,6 @@ const trendAnalysis = computed(() => {
     map[d] = (map[d] || 0) + (t.total || 0)
   })
   
-  // Fill gaps for better chart representation
   const result = []
   const daysInMonth = new Date(activeDate.value.getFullYear(), activeDate.value.getMonth() + 1, 0).getDate()
   const year = activeDate.value.getFullYear()
@@ -473,11 +482,10 @@ const showModal = (filterType, type, filterValue) => {
 
 const insightText = computed(() => {
   const { income, expense, savingRate } = metrics.value
-  if (income === 0 && expense === 0) return 'Tidak ada data terdeteksi pada periode ini. Mulailah mencatat untuk menghasilkan laporan analisis.'
-  if (expense > income) return 'Peringatan: Pengeluaran melebihi pemasukan. Cadangan dana Anda sedang menipis. Segera audit kembali pos pengeluaran Anda.'
-  if (savingRate > 60) return 'Logistik Teladan. Anda mengamankan lebih dari 60% sumber daya ke dalam Brankas. Kesuksesan finansial sangat mungkin tercapai.'
-  if (savingRate > 30) return 'Performa Normal. Tingkat pengeluaran stabil dan tingkat penyimpanan berada dalam parameter yang diharapkan.'
-  return 'Sedikit gejolak dalam pengelolaan sumber daya. Tingkat penyimpanan di bawah 30%. Pertimbangkan untuk mengoptimalkan pengeluaran.'
+  if (income === 0 && expense === 0) return 'Mulai mencatat untuk menghasilkan laporan analisis.'
+  if (expense > income) return 'Peringatan: Pengeluaran melebihi pemasukan.'
+  if (savingRate > 60) return 'Logistik Teladan.'
+  return 'Performa Normal.'
 })
 
 const formatDate = (dateStr) => {
@@ -492,6 +500,9 @@ const formatDate = (dateStr) => {
   } catch (e) { return dateStr }
 }
 
+const prevPeriod = () => changePeriod(-1)
+const nextPeriod = () => changePeriod(1)
+
 const changePeriod = (delta) => {
   const d = new Date(activeDate.value)
   if (analysisMode.value === 'monthly') d.setMonth(d.getMonth() + delta)
@@ -504,169 +515,75 @@ let charts = {}
 const initCharts = () => {
   if (!window.echarts) return
   const darkTheme = { backgroundColor: 'transparent', textStyle: { fontFamily: 'inherit', color: '#CAC4D0' } }
-
-  const sankeyEl = document.getElementById('cashflow-sankey')
-  if (sankeyEl && activeTab.value === 'cashflow') {
-    if (!charts.cf) charts.cf = window.echarts.init(sankeyEl, 'dark')
-    
-    const nodes = [
-      { name: '__INTERNAL_INFLOW__', label: { formatter: 'Pemasukan' }, itemStyle: { color: '#B4E8A8' } }, 
-      { name: '__INTERNAL_VAULT__', label: { formatter: 'Tabungan (Net)' }, itemStyle: { color: '#D0BCFF' } }
-    ]
-    const links = []
-    
-    categoryIncome.value.forEach(i => {
-      const nodeId = `INC_${i.name}`
-      nodes.push({ name: nodeId, label: { formatter: i.name } })
-      links.push({ source: nodeId, target: '__INTERNAL_INFLOW__', value: i.value })
-    })
-    
-    categorySpending.value.forEach(s => {
-      const nodeId = `EXP_${s.name}`
-      nodes.push({ name: nodeId, label: { formatter: s.name } })
-      links.push({ source: '__INTERNAL_INFLOW__', target: nodeId, value: s.value })
-    })
-    
-    if (metrics.value.profit > 0) {
-      links.push({ source: '__INTERNAL_INFLOW__', target: '__INTERNAL_VAULT__', value: metrics.value.profit })
-    }
-
-    if (links.length > 0) {
-      charts.cf.setOption({ 
-        ...darkTheme, 
-        series: [{ 
-          type: 'sankey', 
-          layout: 'none', 
-          data: nodes, 
-          links: links, 
-          label: { color: '#CAC4D0', fontSize: 10, fontWeight: 500, formatter: (p) => p.data.label?.formatter || p.name } 
-        }] 
-      })
-      
-      charts.cf.off('click')
-      charts.cf.on('click', (p) => { 
-         const cleanName = p.name.replace(/^(INC_|EXP_)/, '')
-         if (p.name.startsWith('INC_')) showModal('category', 'Income', cleanName)
-         else if (p.name.startsWith('EXP_')) showModal('category', 'Expense', cleanName)
-      })
-    } else {
-      charts.cf.clear()
-    }
-  }
-
-  const renderTM = (id, data, key, type) => {
-    const el = document.getElementById(id)
-    if (!el || activeTab.value !== key) return
-    if (!charts[key]) charts[key] = window.echarts.init(el, 'dark')
-    const coloredData = (data || []).map((d, i) => ({ ...d, itemStyle: { color: colors[i % colors.length] } }))
-    charts[key].setOption({ ...darkTheme, series: [{ type: 'treemap', data: coloredData, breadcrumb: { show: false }, itemStyle: { borderColor: '#1C1B1F', borderWidth: 2, gapWidth: 2 }, label: { show: true, fontSize: 10, fontWeight: 500 } }] })
-    charts[key].off('click')
-    charts[key].on('click', (p) => { showModal('category', type, p.name) })
-  }
-  renderTM('income-treemap', categoryIncome.value, 'income', 'Income')
-  renderTM('spend-treemap', categorySpending.value, 'spend', 'Expense')
-  renderTM('merchant-treemap', merchantAnalysis.value, 'merchant', 'Expense')
-
-  const nwEl = document.getElementById('networth-pie')
-  if (nwEl && activeTab.value === 'networth') {
-    if (!charts.networth) charts.networth = window.echarts.init(nwEl, 'dark')
-    charts.networth.setOption({
-      ...darkTheme,
-      tooltip: { trigger: 'item', formatter: '{b}: Rp {c} ({d}%)' },
-      series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        avoidLabelOverlap: false,
-        itemStyle: { borderRadius: 10, borderColor: '#121212', borderWidth: 2 },
-        label: { show: false },
-        data: [
-          { value: netWorthData.value.accounts, name: 'Saldo Tunai', itemStyle: { color: '#B4E8A8' } },
-          { value: netWorthData.value.lending, name: 'Piutang', itemStyle: { color: '#A8C7FA' } },
-          { value: netWorthData.value.debt, name: 'Hutang', itemStyle: { color: '#F2B8B5' } }
-        ]
-      }]
-    })
-  }
-  renderTM('merchant-treemap', merchantAnalysis.value, 'merchant', 'Expense')
+  
+  const colors = ['#A8C7FA', '#B4E8A8', '#F2B8B5', '#FFD98C', '#D0BCFF', '#C4C6D0']
 
   const trendEl = document.getElementById('trend-line')
   if (trendEl && activeTab.value === 'trend') {
-    if (!charts.trend) charts.trend = window.echarts.init(trendEl, 'dark')
-    charts.trend.setOption({ 
-      ...darkTheme, 
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-      grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-      xAxis: { type: 'category', data: trendAnalysis.value.map(d => d.date.split('-')[2]), axisLabel: { fontSize: 9 } },
-      yAxis: { type: 'value', axisLabel: { fontSize: 9, formatter: (v) => v >= 1000000 ? (v/1000000).toFixed(1) + 'M' : (v/1000).toFixed(0) + 'K' } },
+    if (charts.trend) charts.trend.dispose()
+    charts.trend = window.echarts.init(trendEl, 'dark')
+    charts.trend.setOption({
+      ...darkTheme,
+      tooltip: { trigger: 'axis' },
+      xAxis: { type: 'category', data: trendAnalysis.value.map(d => d.date.split('-')[2]) },
+      yAxis: { type: 'value' },
       series: [{ 
-        name: 'Pengeluaran', 
-        type: 'bar', 
         data: trendAnalysis.value.map(d => d.value), 
-        itemStyle: { color: '#F2B8B5', borderRadius: [4, 4, 0, 0] },
-        emphasis: { itemStyle: { color: '#D0BCFF' } }
-      }] 
+        type: 'bar', 
+        itemStyle: { color: '#F2B8B5', borderRadius: [4, 4, 0, 0] } 
+      }]
     })
   }
 
-  const tagEl = document.getElementById('tag-cloud')
-  if (tagEl && activeTab.value === 'tag') {
-    if (!charts.tag) charts.tag = window.echarts.init(tagEl, 'dark')
-    charts.tag.setOption({ ...darkTheme, series: [{ type: 'pie', radius: ['40%', '70%'], roseType: 'radius', data: tagAnalysis.value, label: { show: false }, itemStyle: { borderRadius: 8 } }] })
-    charts.tag.off('click')
-    charts.tag.on('click', (p) => showModal('tag', null, p.name))
+  const catEl = document.getElementById('spend-treemap')
+  if (catEl && activeTab.value === 'spend') {
+    if (charts.spend) charts.spend.dispose()
+    charts.spend = window.echarts.init(catEl, 'dark')
+    charts.spend.setOption({
+      ...darkTheme,
+      series: [{
+        type: 'treemap',
+        data: categorySpending.value.map((c, i) => ({ name: c.name, value: c.value, itemStyle: { color: colors[i % colors.length] } })),
+        breadcrumb: { show: false }
+      }]
+    })
   }
 
-  const projEl = document.getElementById('project-pie')
-  if (projEl && activeTab.value === 'project') {
-    if (!charts.proj) charts.proj = window.echarts.init(projEl, 'dark')
-    charts.proj.setOption({ ...darkTheme, series: [{ type: 'pie', radius: '60%', data: projectAnalysis.value, label: { color: '#CAC4D0', formatter: '{b} ({d}%)' } }]})
-    charts.proj.off('click')
-    charts.proj.on('click', (p) => showModal('project', null, p.name))
+  const nwEl = document.getElementById('networth-pie')
+  if (nwEl && activeTab.value === 'networth') {
+    if (charts.nw) charts.nw.dispose()
+    charts.nw = window.echarts.init(nwEl, 'dark')
+    charts.nw.setOption({
+      ...darkTheme,
+      series: [{
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: [
+          { value: netWorthData.value.accounts, name: 'Cash', itemStyle: { color: '#B4E8A8' } },
+          { value: netWorthData.value.lending, name: 'Receivables', itemStyle: { color: '#A8C7FA' } },
+          { value: netWorthData.value.debt, name: 'Debts', itemStyle: { color: '#F2B8B5' } }
+        ],
+        label: { show: false }
+      }]
+    })
   }
 }
 
-const getTxColor = (type) => {
-  if (type === 'Income') return '#B4E8A8'
-  if (type === 'Expense') return '#F2B8B5'
-  return '#A8C7FA'
-}
+const getTxColor = (type) => (type === 'Income' ? '#B4E8A8' : type === 'Expense' ? '#F2B8B5' : '#A8C7FA')
+const getTxSign = (type) => (type === 'Income' ? '+' : type === 'Expense' ? '-' : '')
 
-const getTxSign = (type) => {
-  if (type === 'Income') return '+'
-  if (type === 'Expense') return '-'
-  return ''
-}
-
-watch(isModalOpen, (val) => {
-  if (val) uiStore.registerModal('analysis')
-  else uiStore.unregisterModal('analysis')
+watch([filteredTransactions, activeTab, analysisMode], () => { 
+  nextTick(() => initCharts()) 
 })
-
-onBeforeUnmount(() => {
-  uiStore.unregisterModal('analysis')
-})
-
-watch([filteredTransactions, activeTab, analysisMode], () => { nextTick(() => initCharts()) })
 
 onMounted(() => {
-  if (filteredTransactions.value.length === 0 && store.transactions.length > 0) {
-    const lastTx = [...store.transactions].sort((a,b) => new Date(b.date) - new Date(a.date))[0]
-    if (lastTx && lastTx.date) {
-      activeDate.value = new Date(lastTx.date)
-    }
-  }
-
   initCharts()
   window.addEventListener('resize', () => Object.values(charts).forEach(c => c && c.resize()))
 })
 
-watch(analysisMode, (newMode) => {
-  if (newMode === 'yearly' && filteredTransactions.value.length === 0 && store.transactions.length > 0) {
-    const lastTx = [...store.transactions].sort((a,b) => new Date(b.date) - new Date(a.date))[0]
-    if (lastTx && lastTx.date) {
-      activeDate.value = new Date(lastTx.date)
-    }
-  }
+onBeforeUnmount(() => { 
+  uiStore.unregisterModal('analysis') 
+  Object.values(charts).forEach(c => c && c.dispose())
 })
 </script>
 
@@ -680,20 +597,23 @@ watch(analysisMode, (newMode) => {
   overflow: hidden;
 }
 
-
+.glass-panel {
+  background: rgba(var(--surface-rgb), 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
 
 .app-bar-content {
   height: 64px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  padding: 0 16px;
 }
 
-.app-bar-content h1 {
-  flex: 1;
-  font-size: 22px;
-  font-weight: 400;
-  font-family: 'Outfit', sans-serif;
+.app-title-group h1 {
+  font-size: 18px;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -702,18 +622,18 @@ watch(analysisMode, (newMode) => {
   background-color: var(--surface-variant);
   border-radius: 20px;
   padding: 4px;
+  margin: 16px;
 }
 
 .segmented-button button {
-  padding: 6px 16px;
+  flex: 1;
+  padding: 8px;
   border-radius: 16px;
   border: none;
   background: transparent;
   color: var(--on-surface-variant);
-  font-size: 12px;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .segmented-button button.active {
@@ -721,29 +641,16 @@ watch(analysisMode, (newMode) => {
   color: var(--on-primary-container);
 }
 
-
-
-/* CONTENT SCROLL */
 .content-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 16px 120px 16px;
+  padding: 0 16px 120px 16px;
 }
 
-/* PERIOD NAVIGATOR */
 .period-navigator {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg-secondary);
-  padding: 12px 16px;
-  border-radius: 24px;
-  margin-bottom: 24px;
-}
-
-.period-info {
-  text-align: center;
-  display: flex;
   flex-direction: column;
 }
 
@@ -880,19 +787,25 @@ watch(analysisMode, (newMode) => {
 /* FLOATING TABS */
 .floating-tabs {
   position: fixed;
-  bottom: 88px;
+  bottom: 104px; /* Higher to avoid BottomNav */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
-  background-color: var(--bg-secondary);
-  padding: 8px;
+  background: rgba(22, 22, 24, 0.7) !important;
+  backdrop-filter: blur(20px);
+  padding: 6px;
   border-radius: 32px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  z-index: 1000;
-  max-width: 95vw;
-  overflow-x: auto;
-  scrollbar-width: none;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  z-index: 1500;
+  max-width: 90vw;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: floatingIn 0.5s var(--spring-easing) both;
+}
+
+@keyframes floatingIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.9); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
 .floating-tabs::-webkit-scrollbar { display: none; }
