@@ -7,9 +7,12 @@
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
         <h1>Langganan</h1>
-        <button class="icon-btn" @click="openAddModal">
-          <span class="material-symbols-rounded">add</span>
-        </button>
+        <div class="app-bar-actions">
+          <button class="tonal-btn" @click="openAddModal">
+            <span class="material-symbols-rounded">add</span>
+            Baru
+          </button>
+        </div>
       </div>
     </div>
 
@@ -241,6 +244,7 @@ const formatDate = (dateStr) => {
 .progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
 
 .sub-modal { background: var(--bg-primary); }
+
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 8px; }
 .form-group.full { grid-column: span 2; }
 .form-group label { font-size: 12px; font-weight: 600; color: var(--on-surface-variant); display: block; margin-bottom: 6px; }

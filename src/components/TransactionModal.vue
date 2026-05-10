@@ -298,18 +298,7 @@ onUnmounted(() => { uiStore.unregisterModal('transaction-detail') })
   backdrop-filter: blur(8px);
 }
 
-.bottom-sheet {
-  width: 100%;
-  background-color: var(--bg-primary);
-  border-radius: 28px 28px 0 0;
-  padding: 8px 16px 32px 16px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
-}
 
-.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
 
 .sheet-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
 .summary-icon-container { width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; }

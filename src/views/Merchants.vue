@@ -271,9 +271,7 @@ onBeforeUnmount(() => { uiStore.unregisterModal('merchants') })
 
 <style scoped>
 .merchants-container { height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-primary); }
-/* TOP BAR SHARED */
-.search-input-field { flex: 1; background: transparent; border: none; color: var(--on-surface); font-size: 16px; outline: none; }
-.content-scroll { flex: 1; overflow-y: auto; padding: 16px 16px 120px 16px; }
+
 .merchant-list { display: flex; flex-direction: column; gap: 12px; }
 .merchant-item { display: flex; align-items: center; gap: 16px; padding: 16px; cursor: pointer; }
 .merchant-icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; }
@@ -282,14 +280,7 @@ onBeforeUnmount(() => { uiStore.unregisterModal('merchants') })
 .merchant-meta { font-size: 12px; color: var(--on-surface-variant); }
 .status-chip { font-size: 10px; padding: 2px 8px; border-radius: 12px; background: var(--surface-variant); color: var(--on-surface-variant); }
 
-.fab { position: fixed; bottom: 32px; right: 32px; width: 56px; height: 56px; border-radius: 16px; background-color: var(--primary); color: var(--on-primary); border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 1000; cursor: pointer; }
 
-.modal-backdrop-full { position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); z-index: 4000; display: flex; align-items: flex-end; }
-.bottom-sheet { width: 100%; background-color: var(--bg-primary); border-radius: 28px 28px 0 0; padding: 8px 16px 32px 16px; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1); }
-.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
-.sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.sheet-title { font-size: 20px; font-weight: 400; margin: 0; }
-.sheet-content { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 24px; }
 
 .analysis-view { display: flex; flex-direction: column; gap: 24px; }
 .analysis-hero { display: flex; align-items: center; gap: 20px; }

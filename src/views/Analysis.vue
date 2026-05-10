@@ -680,16 +680,7 @@ watch(analysisMode, (newMode) => {
   overflow: hidden;
 }
 
-/* TOP APP BAR */
-.top-app-bar {
-  padding-top: max(env(safe-area-inset-top), 16px);
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 8px;
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border);
-  z-index: 100;
-}
+
 
 .app-bar-content {
   height: 64px;
@@ -730,20 +721,7 @@ watch(analysisMode, (newMode) => {
   color: var(--on-primary-container);
 }
 
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  border: none;
-  background: transparent;
-  color: var(--on-surface-variant);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
 
-.icon-btn.sm { width: 32px; height: 32px; }
 
 /* CONTENT SCROLL */
 .content-scroll {

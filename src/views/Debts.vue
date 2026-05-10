@@ -7,9 +7,12 @@
           <span class="material-symbols-rounded">arrow_back</span>
         </button>
         <h1>Hutang & Piutang</h1>
-        <button class="icon-btn" @click="openAddModal">
-          <span class="material-symbols-rounded">add</span>
-        </button>
+        <div class="app-bar-actions">
+          <button class="tonal-btn" @click="openAddModal">
+            <span class="material-symbols-rounded">add</span>
+            Baru
+          </button>
+        </div>
       </div>
     </div>
 
@@ -256,7 +259,6 @@ const formatDate = (dateStr) => {
 </script>
 
 <style scoped>
-.debts-container { height: 100vh; display: flex; flex-direction: column; background-color: var(--bg-primary); }
 .content-scroll { flex: 1; overflow-y: auto; padding: 16px 16px 120px 16px; }
 
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }

@@ -441,16 +441,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-/* TOP BAR SHARED */
 
-.search-input-field {
-  flex: 1;
-  background: transparent;
-  border: none;
-  font-size: 16px;
-  color: var(--on-surface);
-  outline: none;
-}
 
 /* CONTENT SCROLL */
 .content-scroll {
@@ -553,30 +544,7 @@ onBeforeUnmount(() => {
 .expiry-value { font-size: 12px; font-weight: 600; color: white; }
 
 /* BOTTOM SHEET */
-.modal-backdrop-full {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0,0,0,0.6);
-  z-index: 4000;
-  display: flex;
-  align-items: flex-end;
-}
 
-.bottom-sheet {
-  width: 100%;
-  background-color: var(--bg-primary);
-  border-radius: 28px 28px 0 0;
-  padding: 8px 16px 32px 16px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
-.sheet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-.sheet-title { font-size: 22px; font-weight: 400; margin: 0; }
-.sheet-content { overflow-y: auto; flex: 1; }
 
 /* ANALYSIS VIEW */
 .vault-card.mini { min-height: 100px; padding: 16px; margin-bottom: 24px; }

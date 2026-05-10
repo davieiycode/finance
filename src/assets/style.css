@@ -126,6 +126,7 @@ body::after {
   padding: max(env(safe-area-inset-top), 8px) 16px 8px 16px;
   background-color: var(--bg-primary);
   border-bottom: 2px solid var(--border);
+  position: relative;
   z-index: 1000;
 }
 
@@ -146,9 +147,9 @@ body::after {
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
   border: none;
   background: transparent;
   color: var(--on-surface-variant);
@@ -962,6 +963,37 @@ input:not(:checked) + .slider .switch-label-yes { color: rgba(255,255,255,0.4); 
   z-index: 10000;
   animation: fadeIn 0.4s ease-out;
 }
+
+/* SHARED MODAL SYSTEM (Full Screen & Bottom Sheet) */
+.modal-backdrop-full {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.6);
+  z-index: 4000;
+  display: flex;
+  align-items: flex-end;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.bottom-sheet {
+  width: 100%;
+  background-color: var(--bg-primary);
+  border-radius: 28px 28px 0 0;
+  padding: 8px 16px 32px 16px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.3);
+}
+
+.sheet-drag-handle { width: 32px; height: 4px; background-color: var(--outline); border-radius: 2px; margin: 0 auto 16px auto; opacity: 0.4; }
+.sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 0 4px; }
+.sheet-title { font-size: 20px; font-weight: 400; margin: 0; font-family: 'Outfit', sans-serif; }
+.sheet-content { overflow-y: auto; flex: 1; }
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
 .modal-card {
   background: var(--bg-secondary);
