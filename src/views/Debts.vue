@@ -97,36 +97,51 @@
                 </button>
              </div>
              
-             <div class="form-grid">
-                <div class="form-group full">
-                   <label>Nama Orang / Lembaga</label>
-                   <input type="text" v-model="formData.person" placeholder="Misal: Budi, Bank Mandiri..." class="md-input">
-                </div>
-                <div class="form-group" v-if="!isEditing">
-                   <label>Tipe</label>
-                   <select v-model="formData.type" class="md-input">
-                      <option value="piutang">Piutang (Orang lain pinjam ke Anda)</option>
-                      <option value="hutang">Hutang (Anda pinjam ke orang lain)</option>
-                   </select>
-                </div>
-                <div class="form-group">
-                   <label>Jumlah Pinjaman (Rp)</label>
-                   <input type="number" v-model="formData.totalAmount" @input="!isEditing ? formData.remainingAmount = formData.totalAmount : null" class="md-input">
-                </div>
-                <div class="form-group full">
-                   <label>Catatan</label>
-                   <input type="text" v-model="formData.notes" placeholder="Tujuan pinjaman..." class="md-input">
-                </div>
-                <div class="form-group full">
-                   <label>Tanggal Mulai</label>
-                   <input type="date" v-model="formData.startDate" class="md-input">
-                </div>
-             </div>
+             <div class="sheet-content">
+                <section class="form-section-md3">
+                   <div class="section-header">
+                      <span class="material-symbols-rounded">person_search</span>
+                      <h3>Informasi Pinjaman</h3>
+                   </div>
+                   
+                   <div class="form-group">
+                      <span class="field-label">Nama Orang / Lembaga *</span>
+                      <input type="text" v-model="formData.person" placeholder="Misal: Budi, Bank Mandiri..." class="md-input">
+                   </div>
+                   
+                   <div class="form-row-shp mt-16">
+                      <div class="form-group" v-if="!isEditing">
+                         <span class="field-label">Tipe</span>
+                         <select v-model="formData.type" class="md-input">
+                            <option value="piutang">Piutang (Peminjaman ke Orang)</option>
+                            <option value="hutang">Hutang (Pinjaman dari Orang)</option>
+                         </select>
+                      </div>
+                      <div class="form-group">
+                         <span class="field-label">Jumlah Pinjaman (Rp)</span>
+                         <input type="number" v-model="formData.totalAmount" @input="!isEditing ? formData.remainingAmount = formData.totalAmount : null" class="md-input">
+                      </div>
+                   </div>
 
-             <div class="modal-actions mt-24">
-                <button v-if="isEditing" @click="deleteDebt" class="danger-btn">Hapus</button>
-                <div class="flex-spacer"></div>
-                <button @click="saveDebt" class="primary-btn">Simpan</button>
+                   <div class="form-group mt-16">
+                      <span class="field-label">Catatan</span>
+                      <input type="text" v-model="formData.notes" placeholder="Tujuan pinjaman..." class="md-input">
+                   </div>
+                   <div class="form-group mt-16">
+                      <span class="field-label">Tanggal Mulai</span>
+                      <input type="date" v-model="formData.startDate" class="md-input">
+                   </div>
+                </section>
+
+                <div class="modal-actions-shp mt-24">
+                   <button @click="saveDebt" class="filled-btn-lg">
+                      <span class="material-symbols-rounded">verified</span>
+                      {{ isEditing ? 'SIMPAN PERUBAHAN' : 'TAMBAHKAN CATATAN' }}
+                   </button>
+                   <button v-if="isEditing" @click="deleteDebt" class="danger-btn-text mt-12">
+                      Hapus Catatan Ini
+                   </button>
+                </div>
              </div>
           </div>
        </div>
@@ -143,22 +158,27 @@
                    <span class="material-symbols-rounded">close</span>
                 </button>
              </div>
-             <p class="sheet-desc">Mencatat cicilan untuk <strong>{{ activeDebt?.person }}</strong>. Catatan ini akan otomatis masuk ke Riwayat Transaksi.</p>
-             
-             <div class="form-grid">
-                <div class="form-group full">
-                   <label>Jumlah Bayar (Rp)</label>
-                   <input type="number" v-model="payAmount" class="md-input">
-                </div>
-                <div class="form-group full">
-                   <label>Sumber / Tujuan Rekening</label>
-                   <select v-model="payAccount" class="md-input">
-                      <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
-                   </select>
-                </div>
-             </div>
+             <div class="sheet-content">
+                <p class="sheet-desc">Mencatat cicilan untuk <strong>{{ activeDebt?.person }}</strong>. Catatan ini akan otomatis masuk ke Riwayat Transaksi.</p>
+                
+                <section class="form-section-md3">
+                   <div class="form-group">
+                      <span class="field-label">Jumlah Bayar (Rp) *</span>
+                      <input type="number" v-model="payAmount" class="md-input">
+                   </div>
+                   <div class="form-group mt-16">
+                      <span class="field-label">Sumber / Tujuan Rekening</span>
+                      <select v-model="payAccount" class="md-input">
+                         <option v-for="a in store.accounts" :key="a.accountID" :value="a.accountName">{{ a.accountName }}</option>
+                      </select>
+                   </div>
+                </section>
 
-             <button @click="confirmPayment" class="primary-btn mt-24 w-100">Konfirmasi Pembayaran</button>
+                <button @click="confirmPayment" class="filled-btn-lg mt-24">
+                   <span class="material-symbols-rounded">verified_user</span>
+                   KONFIRMASI PEMBAYARAN
+                </button>
+             </div>
           </div>
        </div>
     </Teleport>
@@ -315,15 +335,29 @@ const formatDate = (dateStr) => {
 .tonal-btn-sm-shp { height: 36px; padding: 0 16px; border-radius: 12px; background: var(--primary-container); color: var(--on-primary-container); border: none; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
 .debt-modal { background: var(--bg-primary); }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 8px; }
-.form-group.full { grid-column: span 2; }
-.form-group label { font-size: 12px; font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; margin-left: 4px; }
-.md-input { background: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 14px; height: 52px; padding: 0 16px; color: var(--on-surface); font-size: 15px; outline: none; }
-
 .payment-modal { background: var(--bg-primary); }
-.sheet-desc { font-size: 14px; opacity: 0.8; margin-bottom: 24px; line-height: 1.6; }
+.sheet-content { padding-bottom: 40px; }
+
+.form-section-md3 { background-color: var(--bg-secondary); border-radius: 28px; padding: 24px; border: 1px solid var(--border); margin-top: 16px; }
+.section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; color: var(--primary); }
+.section-header h3 { font-size: 13px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-row-shp { display: flex; gap: 16px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-left: 4px; opacity: 0.8; margin-bottom: 4px; letter-spacing: 0.5px; }
+
+.modal-actions-shp { display: flex; flex-direction: column; align-items: center; }
+.danger-btn-text { background: transparent; border: none; color: var(--red); font-size: 13px; font-weight: 700; cursor: pointer; opacity: 0.7; }
+
+.sheet-desc { font-size: 13px; opacity: 0.7; margin-bottom: 12px; line-height: 1.6; }
+
 .mt-24 { margin-top: 24px; }
-.w-100 { width: 100%; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+
+@media (max-width: 480px) {
+  .form-row-shp { flex-direction: column; }
+}
 
 .empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
 .empty-state .material-symbols-rounded { font-size: 64px; }

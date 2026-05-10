@@ -80,31 +80,46 @@
                 </button>
              </div>
              
-             <div class="form-grid">
-                <div class="form-group full">
-                   <label>Nama Layanan</label>
-                   <input type="text" v-model="formData.name" placeholder="Misal: Netflix, Spotify, Gym..." class="md-input">
-                </div>
-                <div class="form-group">
-                   <label>Kategori</label>
-                   <select v-model="formData.category" class="md-input">
-                      <option v-for="cat in subCategories" :key="cat" :value="cat">{{ cat }}</option>
-                   </select>
-                </div>
-                <div class="form-group">
-                   <label>Biaya (Rp)</label>
-                   <input type="number" v-model="formData.amount" placeholder="0" class="md-input">
-                </div>
-                <div class="form-group full">
-                   <label>Tanggal Tagihan Berikutnya</label>
-                   <input type="date" v-model="formData.nextBillDate" class="md-input">
-                </div>
-             </div>
+             <div class="sheet-content">
+                <section class="form-section-md3">
+                   <div class="section-header">
+                      <span class="material-symbols-rounded">identity_platform</span>
+                      <h3>Informasi Layanan</h3>
+                   </div>
+                   
+                   <div class="form-group">
+                      <span class="field-label">Nama Layanan *</span>
+                      <input type="text" v-model="formData.name" placeholder="Misal: Netflix, Spotify, Gym..." class="md-input">
+                   </div>
+                   
+                   <div class="form-row-shp mt-16">
+                      <div class="form-group">
+                         <span class="field-label">Kategori</span>
+                         <select v-model="formData.category" class="md-input">
+                            <option v-for="cat in subCategories" :key="cat" :value="cat">{{ cat }}</option>
+                         </select>
+                      </div>
+                      <div class="form-group">
+                         <span class="field-label">Biaya (Rp)</span>
+                         <input type="number" v-model="formData.amount" placeholder="0" class="md-input">
+                      </div>
+                   </div>
 
-             <div class="modal-actions mt-24">
-                <button v-if="isEditing" @click="deleteSub" class="danger-btn">Hapus</button>
-                <div class="flex-spacer"></div>
-                <button @click="saveSub" class="primary-btn">{{ isEditing ? 'Simpan Perubahan' : 'Tambahkan' }}</button>
+                   <div class="form-group mt-16">
+                      <span class="field-label">Tanggal Tagihan Berikutnya</span>
+                      <input type="date" v-model="formData.nextBillDate" class="md-input">
+                   </div>
+                </section>
+
+                <div class="modal-actions-shp mt-24">
+                   <button @click="saveSub" class="filled-btn-lg">
+                      <span class="material-symbols-rounded">verified</span>
+                      {{ isEditing ? 'SIMPAN PERUBAHAN' : 'TAMBAHKAN LAYANAN' }}
+                   </button>
+                   <button v-if="isEditing" @click="deleteSub" class="danger-btn-text mt-12">
+                      Hapus Langganan Ini
+                   </button>
+                </div>
              </div>
           </div>
        </div>
@@ -254,15 +269,22 @@ const formatDate = (dateStr) => {
 .progress-bar { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 
 .sub-modal { background: var(--bg-primary); }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 8px; }
-.form-group.full { grid-column: span 2; }
-.form-group label { font-size: 12px; font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; margin-left: 4px; }
-.md-input { background: var(--surface-variant); border: 1px solid var(--outline-variant); border-radius: 14px; height: 52px; padding: 0 16px; color: var(--on-surface); font-size: 15px; outline: none; transition: border-color 0.2s; }
-.md-input:focus { border-color: var(--primary); }
+.sheet-content { padding-bottom: 40px; }
 
-.modal-actions { display: flex; gap: 12px; align-items: center; }
-.flex-spacer { flex: 1; }
+.form-section-md3 { background-color: var(--bg-secondary); border-radius: 28px; padding: 24px; border: 1px solid var(--border); margin-top: 16px; }
+.section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; color: var(--primary); }
+.section-header h3 { font-size: 13px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-row-shp { display: flex; gap: 16px; }
+.field-label { font-size: 11px; font-weight: 700; color: var(--primary); margin-left: 4px; opacity: 0.8; margin-bottom: 4px; letter-spacing: 0.5px; }
+
+.modal-actions-shp { display: flex; flex-direction: column; align-items: center; }
+.danger-btn-text { background: transparent; border: none; color: var(--red); font-size: 13px; font-weight: 700; cursor: pointer; opacity: 0.7; }
+
 .mt-24 { margin-top: 24px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
 
 .empty-state { padding: 80px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; opacity: 0.3; }
 .empty-state .material-symbols-rounded { font-size: 64px; }
