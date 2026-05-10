@@ -333,7 +333,7 @@ import TransactionModal from '../components/TransactionModal.vue'
 const store = useFinanceStore()
 const uiStore = useUIStore()
 const analysisMode = ref('monthly')
-const activeDate = ref(new Date())
+const activeDate = ref(new Date(store.getNow().localDateObj))
 const activeTab = ref('cashflow')
 const selectedTx = ref(null)
 const modalData = ref(null)

@@ -178,8 +178,7 @@ const totalBalance = computed(() => {
 
 const monthSpending = computed(() => {
   if (!Array.isArray(store.transactions)) return 0
-  const now = new Date()
-  const month = now.toISOString().substring(0, 7)
+  const month = store.getNow().month
   return store.transactions
     .filter(t => t.type === 'Expense' && (t.date || '').startsWith(month))
     .reduce((sum, t) => sum + (Number(t.total) || 0), 0)

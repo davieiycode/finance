@@ -91,9 +91,9 @@ export const useFinanceStore = defineStore('finance', {
     getTimezone() {
       try {
         const prefs = JSON.parse(localStorage.getItem('user_prefs') || '{}')
-        return prefs.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+        return prefs.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta'
       } catch (e) {
-        return 'UTC'
+        return 'Asia/Jakarta'
       }
     },
 
@@ -102,20 +102,35 @@ export const useFinanceStore = defineStore('finance', {
         const d = typeof date === 'string' ? new Date(date) : date
         if (isNaN(d.getTime())) return { date: '', time: '' }
         
-        const parts = new Intl.DateTimeFormat('en-CA', {
-          timeZone,
-          year: 'numeric', month: '2-digit', day: '2-digit',
-          hour: '2-digit', minute: '2-digit', second: '2-digit',
-          hour12: false
-        }).formatToParts(d)
+        // Use Intl to get the localized strings directly
+        const options = { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }
+        const formatter = new Intl.DateTimeFormat('en-CA', options) // en-CA gives YYYY-MM-DD
+        const parts = formatter.formatToParts(d)
         const p = {}
         parts.forEach(({ type, value }) => p[type] = value)
-        return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` }
+        
+        // Ensure format is YYYY-MM-DD and HH:mm
+        return { 
+          date: `${p.year}-${p.month}-${p.day}`, 
+          time: `${p.hour}:${p.minute}` 
+        }
       } catch (e) {
         const d = (typeof date === 'string' ? new Date(date) : date)
-        if (isNaN(d.getTime())) return { date: '', time: '' }
         const iso = d.toISOString()
         return { date: iso.split('T')[0], time: iso.split('T')[1].substring(0, 5) }
+      }
+    },
+
+    getNow() {
+      const tz = this.getTimezone()
+      const d = new Date()
+      const localized = this.formatInTZ(d, tz)
+      return {
+        ...localized,
+        month: localized.date.substring(0, 7),
+        year: localized.date.substring(0, 4),
+        dateObj: d, // Original UTC date object
+        localDateObj: new Date(localized.date + 'T' + localized.time) // Simulated local date object
       }
     },
 
@@ -125,19 +140,33 @@ export const useFinanceStore = defineStore('finance', {
         const [y, m, d] = dateStr.split('-').map(Number)
         const [hr, min] = (timeStr || '00:00').split(':').map(Number)
         
-        // We need to find the UTC time that, when formatted in `timeZone`, gives this local time.
-        // 1. Start with a UTC date at the same "clock time"
-        let date = new Date(Date.UTC(y, m - 1, d, hr, min))
+        // 1. Create a date assuming it's in the target timezone
+        // We do this by finding the offset at that specific time in that timezone
+        const dummy = new Date(y, m - 1, d, hr, min)
+        // Note: dummy is in browser local time, but we just need a starting point
         
-        // 2. Find what that UTC date is in the target timezone
-        const localized = this.formatInTZ(date, timeZone)
-        const [ly, lm, ld] = localized.date.split('-').map(Number)
-        const [lhr, lmin] = localized.time.split(':').map(Number)
-        const localDate = new Date(Date.UTC(ly, lm - 1, ld, lhr, lmin))
+        const formatter = new Intl.DateTimeFormat('en-US', {
+           timeZone,
+           year: 'numeric', month: 'numeric', day: 'numeric',
+           hour: 'numeric', minute: 'numeric', second: 'numeric',
+           hour12: false
+        })
         
-        // 3. The difference is the offset
-        const diff = date.getTime() - localDate.getTime()
-        return new Date(date.getTime() + diff).toISOString()
+        // Iterative approach to find UTC
+        let utcCandidate = Date.UTC(y, m - 1, d, hr, min)
+        for (let i = 0; i < 2; i++) {
+           const check = new Date(utcCandidate)
+           const parts = formatter.formatToParts(check)
+           const p = {}
+           parts.forEach(({ type, value }) => p[type] = value)
+           
+           const checkDate = new Date(Date.UTC(p.year, p.month - 1, p.day, p.hour === '24' ? 0 : p.hour, p.minute))
+           const targetDate = new Date(Date.UTC(y, m - 1, d, hr, min))
+           const diff = targetDate.getTime() - checkDate.getTime()
+           utcCandidate += diff
+        }
+        
+        return new Date(utcCandidate).toISOString()
       } catch (e) {
         return `${dateStr}T${timeStr || '00:00'}:00Z`
       }
@@ -393,12 +422,13 @@ export const useFinanceStore = defineStore('finance', {
                   // Priority: dateTime (ISO UTC)
                   let isoStr = r.dateTime || ''
                   if (!isoStr && r.date) {
-                    // Fallback to date + time, assume UTC if pulling from cloud
-                    isoStr = `${r.date}T${r.time || '00:00'}:00Z`
+                    // Fallback to date + time, assume it's in the CURRENT selected timezone
+                    // if it was manually entered in spreadsheet without dateTime
+                    isoStr = this.createIsoFromLocal(r.date, r.time, tz)
                   }
 
                   if (isoStr) {
-                    // Ensure ISO format (replace space with T) and treat as UTC if no offset
+                    // Ensure ISO format (replace space with T)
                     let iso = String(isoStr).trim().replace(' ', 'T')
                     const hasOffset = iso.includes('Z') || /[+-]\d{2}:?\d{2}$/.test(iso)
                     const d = new Date(hasOffset ? iso : iso + 'Z')

@@ -330,8 +330,7 @@ const route = useRoute()
 const store = useFinanceStore()
 const uiStore = useUIStore()
 
-const tz = store.getTimezone()
-const nowTZ = store.formatInTZ(new Date(), tz)
+const nowTZ = store.getNow()
 
 const form = ref({
   transactionID: '',
