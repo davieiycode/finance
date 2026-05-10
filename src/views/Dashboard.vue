@@ -36,6 +36,15 @@
     </div>
 
     <div class="content-scroll">
+      <!-- Update Briefing (New Version) -->
+      <div class="briefing-card card-md3 stagger-1 version-briefing" @click="showUpdateNote = true; uiStore.haptic('medium')">
+         <div class="briefing-icon success"><span class="material-symbols-rounded">auto_awesome</span></div>
+         <div class="briefing-text">
+            <span class="briefing-label" style="color: var(--green)">Sistem Diperbarui</span>
+            <p>Jurney Protocol v6.0.0 Aktif. Ketuk untuk melihat apa yang baru di perombakan UI/UX ini.</p>
+         </div>
+      </div>
+
       <!-- Subscription Alert Briefing -->
       <div v-if="upcomingSubscriptions.length > 0" class="briefing-card card-md3 stagger-1" @click="$router.push('/subscriptions'); uiStore.haptic('medium')">
          <div class="briefing-icon warning"><span class="material-symbols-rounded">notifications_active</span></div>
@@ -121,6 +130,10 @@
         </div>
       </div>
 
+      <div class="app-footer stagger-5">
+        <div class="footer-core">JURNEY CORE v6.0.0</div>
+        <div class="footer-status">PREMIUM STABLE RELEASE</div>
+      </div>
     </div>
   </div>
 </template>
@@ -137,6 +150,7 @@ const uiStore = useUIStore()
 const scrollContainer = ref(null)
 
 const showSearch = ref(false)
+const showUpdateNote = ref(false)
 const isPrivate = ref(localStorage.getItem('privacy_mode') === 'true')
 const searchQuery = ref('')
 
@@ -516,16 +530,18 @@ onMounted(() => {
 .briefing-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--amber); opacity: 0.9; }
 .briefing-text p { margin: 4px 0 0 0; font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--on-surface); }
 
-/* STAGGER ANIMATIONS */
-@keyframes entrance {
-  from { opacity: 0; transform: translateY(20px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+.app-footer {
+  margin-top: 40px;
+  text-align: center;
+  padding-bottom: 20px;
+  opacity: 0.3;
 }
+.footer-core { font-size: 10px; font-weight: 900; letter-spacing: 2px; }
+.footer-status { font-size: 8px; font-weight: 500; margin-top: 4px; }
 
-.stagger-1 { animation: entrance 0.4s var(--spring-easing) both; animation-delay: 0.1s; }
-.stagger-2 { animation: entrance 0.4s var(--spring-easing) both; animation-delay: 0.15s; }
-.stagger-3 { animation: entrance 0.4s var(--spring-easing) both; animation-delay: 0.2s; }
-.stagger-4 { animation: entrance 0.4s var(--spring-easing) both; animation-delay: 0.25s; }
-.stagger-5 { animation: entrance 0.4s var(--spring-easing) both; animation-delay: 0.3s; }
+.version-briefing {
+  border: 1px solid var(--green) !important;
+  background: rgba(180, 232, 168, 0.05) !important;
+}
 
 </style>

@@ -99,8 +99,8 @@
         </div>
 
         <div class="version-badge">
-           <p>CATATAN KEUANGAN</p>
-           <span>v5.0.2 • AKTIF</span>
+           <p>JURNEY PROTOCOL</p>
+           <span>v6.0.0 • PREMIUM STABLE</span>
         </div>
       </div>
 
