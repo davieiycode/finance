@@ -940,13 +940,15 @@ onBeforeUnmount(() => {
   gap: 8px;
   background: rgba(22, 22, 24, 0.7) !important;
   backdrop-filter: blur(20px);
-  padding: 6px;
+  padding: 6px 12px;
   border-radius: 32px;
   box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   z-index: 1500;
   max-width: 90vw;
   border: 1px solid rgba(255, 255, 255, 0.1);
   animation: floatingIn 0.5s var(--spring-easing) both;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
 }
 
 @keyframes floatingIn {
@@ -966,6 +968,7 @@ onBeforeUnmount(() => {
   background: transparent;
   color: var(--on-surface-variant);
   white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition: all 0.2s;
 }

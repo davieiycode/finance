@@ -433,7 +433,7 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
   bottom: 88px;
   left: 16px;
   right: 16px;
-  padding: 8px;
+  padding: 8px 16px;
   display: flex;
   gap: 8px;
   overflow-x: auto;
@@ -454,6 +454,7 @@ onBeforeUnmount(() => { uiStore.unregisterModal('metadata') })
   background: transparent;
   color: var(--on-surface-variant);
   white-space: nowrap;
+  flex-shrink: 0;
   font-weight: 500;
   cursor: pointer;
 }
